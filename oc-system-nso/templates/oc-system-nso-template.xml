@@ -1,0 +1,29 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0">
+  <devices xmlns="http://tail-f.com/ns/ncs">
+    <device>
+      <name>{/device}</name>
+      <config>
+        <?if {/oc-sys/system/config/hostname}?>
+          <hostname xmlns="urn:ios">{/oc-sys/system/config/hostname}</hostname>
+        <?end?>
+        <?if {/oc-sys/system/config/domain-name}?>
+          <ip xmlns="urn:ios">
+            <domain>
+              <name>{/oc-sys/system/config/domain-name}</name>
+            </domain>
+           </ip>
+        <?end?>
+        <?if {/oc-sys/system/config/login-banner}?>
+          <banner xmlns="urn:ios">
+           <login>{/oc-sys/system/config/login-banner}</login>
+         </banner>
+        <?end?>
+        <?if {/oc-sys/system/config/motd-banner}?>
+         <banner xmlns="urn:ios">
+           <motd>{/oc-sys/system/config/motd-banner}</motd>
+         </banner>
+        <?end?>
+      </config>
+    </device>
+  </devices>
+</config-template>

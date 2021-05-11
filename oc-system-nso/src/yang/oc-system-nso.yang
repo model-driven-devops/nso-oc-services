@@ -1,0 +1,49 @@
+module oc-system-nso {
+
+  namespace "http://example.com/oc-system-nso";
+  prefix oc-system-nso;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import tailf-common {
+    prefix tailf;
+  }
+  import tailf-ncs {
+    prefix ncs;
+  }
+  import openconfig-system {
+    prefix oc-sys;
+  }
+  description
+    "Bla bla...";
+
+  revision 2016-01-01 {
+    description
+      "Initial revision.";
+  }
+
+  list oc-system-nso {
+    description "This is an RFS skeleton service";
+
+    key name;
+    leaf name {
+      tailf:info "Unique service id";
+      tailf:cli-allow-range;
+      type string;
+    }
+
+    uses ncs:service-data;
+    ncs:servicepoint oc-system-nso-servicepoint;
+
+    leaf device {
+      type leafref {
+        path "/ncs:devices/ncs:device/ncs:name";
+      }
+    }
+
+    container oc-sys {
+      uses oc-sys:system-top;
+    }
+  }
+}

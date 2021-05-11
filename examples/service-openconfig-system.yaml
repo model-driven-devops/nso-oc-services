@@ -1,0 +1,27 @@
+---
+- name: OC System test
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: OC System test
+      cisco.nso.nso_config:
+        url: http://X.X.X.X:8080/jsonrpc
+        username: admin
+        password: XXX
+        data:
+          oc-system-nso:oc-system-nso:
+            - name: R1
+              device: R1
+              oc-sys:
+                system:
+                  config:
+                    domain-name: 'www.example.com'
+                    hostname: 'R1'
+                    login-banner: |
+                      This is line 1.
+                      This is line 2.
+                      This is the last line.
+                    motd-banner: |
+                      This is line 1.
+                      This is line 2.
+                      This is the last line.
