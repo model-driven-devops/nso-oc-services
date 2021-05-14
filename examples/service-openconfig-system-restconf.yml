@@ -1,0 +1,36 @@
+---
+- name: OC System test
+  hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: OC System test
+    uri:
+      url: "http://X.X.X.X:8080/restconf/data/oc-system-nso:oc-system-nso"
+      url_username: admin
+      url_password: xxx
+      force_basic_auth: yes
+      validate_certs: no
+      status_code: [200,204]
+      method: PATCH
+      headers: "{
+        'Content-Type': 'application/yang-data+json',
+        'Accept': 'application/yang-data+json'}"
+      body_format: json
+      body: |
+        {
+          "oc-system-nso:oc-system-nso": [
+            {"name": "R1",
+             "device": "R1",
+             "oc-sys": {
+               "system": {
+                 "config": {
+                   "hostname": "R1",
+                   "domain-name": "www.cisco.com",
+                   "login-banner": "This is line 1.\nThis is line 2.\nThis is the last line.",
+                   "motd-banner": "This is line 1.\nThis is line 2.\nThis is the last line."
+                   }
+                 }
+               }
+             }
+          ]
+        }
