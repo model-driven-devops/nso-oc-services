@@ -42,7 +42,7 @@ module oc-system-nso {
       }
     }
 
-    container oc-sys {
+    container openconfig-system {
       uses oc-sys:system-top;
     }
   }

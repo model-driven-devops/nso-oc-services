@@ -12,7 +12,7 @@ payload = {
     "oc-system-nso:oc-system-nso": [
         {"name": "R1",
          "device": "R1",
-         "oc-sys": {
+         "openconfig-system": {
              "system": {
                  "config": {
                      "hostname": "R1",
