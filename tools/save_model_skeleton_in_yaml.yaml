@@ -1,0 +1,13 @@
+---
+- name: Save model skeleton in yaml
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Get interface yang config spec without defaults
+      set_fact:
+        spec: "{{ lookup('community.yang.spec', ../oc-system-nso/src/yang/openconfig-system.yang', search_path='../oc-system-nso/src/yang/', defaults=True, doctype='data') }}"
+    - debug:
+        var: spec.json_skeleton
+    - copy:
+        content: "{{ spec.json_skeleton | to_nice_yaml(indent=2) }}"
+        dest: ../specs/openconfig-system.skel.yml

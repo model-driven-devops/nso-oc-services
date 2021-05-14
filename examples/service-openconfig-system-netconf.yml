@@ -1,0 +1,30 @@
+---
+- name: OC System test
+  hosts: nso
+  gather_facts: no
+  vars:
+    ansible_connection: netconf
+    ansible_network_os: ios
+    ansible_user: "admin"
+    ansible_password: "xxx"
+    ansible_port: 2022
+  tasks:
+    - netconf_config:
+        target: running
+        content: |
+          <config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+            <oc-system-nso xmlns="http://cisco.com/oc-system-nso">
+              <name>R1</name>
+              <device>R1</device>
+              <oc-sys>
+                <system>
+                  <config>
+                    <hostname>R1</hostname>
+                    <domain-name>www.cisco.com</domain-name>
+                    <login-banner>This is line 1.\nThis is line 2.\nThis is the last line.</login-banner>
+                    <motd-banner>This is line 1.\nThis is line 2.\nThis is the last line.</motd-banner>
+                  </config>
+                </system>
+              </oc-sys>
+            </oc-system-nso>
+          </config>

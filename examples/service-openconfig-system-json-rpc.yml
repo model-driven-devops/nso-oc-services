@@ -15,7 +15,7 @@
               oc-sys:
                 system:
                   config:
-                    domain-name: 'www.example.com'
+                    domain-name: 'www.cisco.com'
                     hostname: 'R1'
                     login-banner: |
                       This is line 1.

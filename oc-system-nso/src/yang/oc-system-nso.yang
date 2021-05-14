@@ -1,6 +1,6 @@
 module oc-system-nso {
 
-  namespace "http://example.com/oc-system-nso";
+  namespace "http://cisco.com/oc-system-nso";
   prefix oc-system-nso;
 
   import ietf-inet-types {
@@ -16,7 +16,7 @@ module oc-system-nso {
     prefix oc-sys;
   }
   description
-    "Bla bla...";
+    "Model to include openconfig-system in an NSO service";
 
   revision 2016-01-01 {
     description
@@ -24,7 +24,7 @@ module oc-system-nso {
   }
 
   list oc-system-nso {
-    description "This is an RFS skeleton service";
+    description "Accepts items composed of service name, device name, and openconfig system model";
 
     key name;
     leaf name {
