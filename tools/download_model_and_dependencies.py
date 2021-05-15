@@ -16,7 +16,7 @@ def download_model(url: str) -> str:
     return result.text
 
 
-def find_model_dependencies(file: str):
+def find_model_dependencies(file: str) -> list:
     text_list = file.split("\n")
     dependencies = list()
     for line in text_list:
