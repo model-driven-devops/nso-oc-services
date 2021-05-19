@@ -10,12 +10,12 @@ url = "http://X.X.X.X:8080/restconf/data/oc-system-nso:oc-system-nso"
 
 payload = {
     "oc-system-nso:oc-system-nso": [
-        {"name": "R1",
-         "device": "R1",
+        {"name": "hq-rtr1",
+         "device": "hq-rtr1",
          "openconfig-system": {
              "system": {
                  "config": {
-                     "hostname": "R1",
+                     "hostname": "hq-rtr1",
                      "domain-name": "www.cisco.com",
                      "login-banner": "This is line 1.\nThis is line 2.\nThis is the last line.",
                      "motd-banner": "This is line 1.\nThis is line 2.\nThis is the last line."

@@ -10,13 +10,13 @@
         password: XXX
         data:
           oc-system-nso:oc-system-nso:
-            - name: R1
-              device: R1
+            - name: hq-rtr1
+              device: hq-rtr1
               openconfig-system:
                 system:
                   config:
                     domain-name: 'www.cisco.com'
-                    hostname: 'R1'
+                    hostname: 'hq-rtr1'
                     login-banner: |
                       This is line 1.
                       This is line 2.

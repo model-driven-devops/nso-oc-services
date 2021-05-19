@@ -3,24 +3,24 @@
     <device>
       <name>{/device}</name>
       <config>
-        <?if {/oc-sys/system/config/hostname}?>
-          <hostname xmlns="urn:ios">{/oc-sys/system/config/hostname}</hostname>
+        <?if {/openconfig-system/system/config/hostname}?>
+          <hostname xmlns="urn:ios">{/openconfig-system/system/config/hostname}</hostname>
         <?end?>
-        <?if {/oc-sys/system/config/domain-name}?>
+        <?if {/openconfig-system/system/config/domain-name}?>
           <ip xmlns="urn:ios">
             <domain>
-              <name>{/oc-sys/system/config/domain-name}</name>
+              <name>{/openconfig-system/system/config/domain-name}</name>
             </domain>
            </ip>
         <?end?>
-        <?if {/oc-sys/system/config/login-banner}?>
+        <?if {/openconfig-system/system/config/login-banner}?>
           <banner xmlns="urn:ios">
-           <login>{/oc-sys/system/config/login-banner}</login>
+           <login>{/openconfig-system/system/config/login-banner}</login>
          </banner>
         <?end?>
-        <?if {/oc-sys/system/config/motd-banner}?>
+        <?if {/openconfig-system/system/config/motd-banner}?>
          <banner xmlns="urn:ios">
-           <motd>{/oc-sys/system/config/motd-banner}</motd>
+           <motd>{/openconfig-system/system/config/motd-banner}</motd>
          </banner>
         <?end?>
       </config>
