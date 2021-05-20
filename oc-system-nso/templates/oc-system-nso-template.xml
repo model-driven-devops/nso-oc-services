@@ -3,6 +3,21 @@
     <device>
       <name>{/device}</name>
       <config>
+        <?if {/openconfig-system/system/clock/config/timezone-name}?>
+          <clock xmlns="urn:ios">
+            <timezone>
+              <?if {$TIMEZONE}?>
+                <zone>{$TIMEZONE}</zone>
+              <?end?>
+              <?if {$TIMEZONE_OFFSET_HOURS}?>
+                <hours>{$TIMEZONE_OFFSET_HOURS}</hours>
+              <?end?>
+              <?if {$TIMEZONE_OFFSET_MINUTES}?>
+                <minutes>{$TIMEZONE_OFFSET_MINUTES}</minutes>
+              <?end?>
+            </timezone>
+          </clock>
+        <?end?>
         <?if {/openconfig-system/system/config/hostname}?>
           <hostname xmlns="urn:ios">{/openconfig-system/system/config/hostname}</hostname>
         <?end?>

@@ -3,67 +3,65 @@ import ncs
 from ncs.application import Service
 
 
-# ------------------------
-# SERVICE CALLBACK EXAMPLE
-# ------------------------
 class ServiceCallbacks(Service):
+    @staticmethod
+    def transform_vars(service_object) -> list:
+        proplist = list()
+        if service_object.openconfig_system.system.clock.config.timezone_name:
+            tz = service_object.openconfig_system.system.clock.config.timezone_name.split()
+            if len(tz) != 3:
+                raise ValueError
+            else:
+                proplist.append(('TIMEZONE', tz[0]))
+            if -12 > int(tz[1]) or int(tz[1]) > 12:
+                raise ValueError
+            else:
+                proplist.append(('TIMEZONE_OFFSET_HOURS', tz[1]))
+            if 0 > int(tz[2]) or int(tz[2]) > 60:
+                raise ValueError
+            else:
+                proplist.append(('TIMEZONE_OFFSET_MINUTES', tz[2]))
 
-    # The create() callback is invoked inside NCS FASTMAP and
-    # must always exist.
+        return proplist
+
     @Service.create
     def cb_create(self, tctx, root, service, proplist):
         self.log.info('Service create(service=', service._path, ')')
 
-        vars = ncs.template.Variables()
-        vars.add('DUMMY', '127.0.0.1')
+        initial_vars = dict(TIMEZONE='',
+                            TIMEZONE_OFFSET_HOURS='',
+                            TIMEZONE_OFFSET_MINUTES='')
+
+        final_vars = self.update_vars(initial_vars, proplist)
+        vars_template = ncs.template.Variables()
+        for k in final_vars:
+            vars_template.add(k, final_vars[k])
         template = ncs.template.Template(service)
-        template.apply('oc-system-nso-template', vars)
+        template.apply('oc-system-nso-template', vars_template)
 
-    # The pre_modification() and post_modification() callbacks are optional,
-    # and are invoked outside FASTMAP. pre_modification() is invoked before
-    # create, update, or delete of the service, as indicated by the enum
-    # ncs_service_operation op parameter. Conversely
-    # post_modification() is invoked after create, update, or delete
-    # of the service. These functions can be useful e.g. for
-    # allocations that should be stored and existing also when the
-    # service instance is removed.
+    @Service.pre_modification
+    def cb_pre_modification(self, tctx, op, kp, root, proplist):
+        self.log.info(f'Service premod(service={kp})')
+        if op == ncs.dp.NCS_SERVICE_CREATE:
+            service = ncs.maagic.cd(root, kp)
+            proplist = self.transform_vars(service)
+        elif op == ncs.dp.NCS_SERVICE_DELETE:
+            self.log.info('Service premod(operation=NCS_SERVICE_DELETE, skip)')
+        return proplist
 
-    # @Service.pre_lock_create
-    # def cb_pre_lock_create(self, tctx, root, service, proplist):
-    #     self.log.info('Service plcreate(service=', service._path, ')')
-
-    # @Service.pre_modification
-    # def cb_pre_modification(self, tctx, op, kp, root, proplist):
-    #     self.log.info('Service premod(service=', kp, ')')
-
-    # @Service.post_modification
-    # def cb_post_modification(self, tctx, op, kp, root, proplist):
-    #     self.log.info('Service postmod(service=', kp, ')')
+    @staticmethod
+    def update_vars(initial_vars: dict, proplist: list) -> dict:
+        if proplist:
+            for var_tuple in proplist:
+                if var_tuple[0] in initial_vars:
+                    initial_vars[var_tuple[0]] = var_tuple[1]
+        return initial_vars
 
 
-# ---------------------------------------------
-# COMPONENT THREAD THAT WILL BE STARTED BY NCS.
-# ---------------------------------------------
 class Main(ncs.application.Application):
     def setup(self):
-        # The application class sets up logging for us. It is accessible
-        # through 'self.log' and is a ncs.log.Log instance.
         self.log.info('Main RUNNING')
-
-        # Service callbacks require a registration for a 'service point',
-        # as specified in the corresponding data model.
-        #
         self.register_service('oc-system-nso-servicepoint', ServiceCallbacks)
 
-        # If we registered any callback(s) above, the Application class
-        # took care of creating a daemon (related to the service/action point).
-
-        # When this setup method is finished, all registrations are
-        # considered done and the application is 'started'.
-
     def teardown(self):
-        # When the application is finished (which would happen if NCS went
-        # down, packages were reloaded or some error occurred) this teardown
-        # method will be called.
-
         self.log.info('Main FINISHED')

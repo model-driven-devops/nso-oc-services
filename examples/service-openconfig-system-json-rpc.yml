@@ -14,6 +14,9 @@
               device: hq-rtr1
               openconfig-system:
                 system:
+                  clock:
+                    config:
+                      timezone-name: 'EDT -4 0'
                   config:
                     domain-name: 'www.cisco.com'
                     hostname: 'hq-rtr1'
