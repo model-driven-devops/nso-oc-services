@@ -6,14 +6,14 @@
         <?if {/openconfig-system/system/clock/config/timezone-name}?>
           <clock xmlns="urn:ios">
             <timezone>
-              <?if {$TIMEZONE}?>
-                <zone>{$TIMEZONE}</zone>
+              <?if {$XE_TIMEZONE}?>
+                <zone>{$XE_TIMEZONE}</zone>
               <?end?>
-              <?if {$TIMEZONE_OFFSET_HOURS}?>
-                <hours>{$TIMEZONE_OFFSET_HOURS}</hours>
+              <?if {$XE_TIMEZONE_OFFSET_HOURS}?>
+                <hours>{$XE_TIMEZONE_OFFSET_HOURS}</hours>
               <?end?>
-              <?if {$TIMEZONE_OFFSET_MINUTES}?>
-                <minutes>{$TIMEZONE_OFFSET_MINUTES}</minutes>
+              <?if {$XE_TIMEZONE_OFFSET_MINUTES}?>
+                <minutes>{$XE_TIMEZONE_OFFSET_MINUTES}</minutes>
               <?end?>
             </timezone>
           </clock>
@@ -38,6 +38,18 @@
            <motd>{/openconfig-system/system/config/motd-banner}</motd>
          </banner>
         <?end?>
+        <?if {/openconfig-system/system/ntp}?>
+          <ntp xmlns="urn:ios">
+          <?if {/openconfig-system/system/ntp/config/ntp-source-address}?>
+            <?if {$XE_NTP_SOURCE_INF_TYPE}?>
+               <source>
+                 <Loopback when="{$XE_NTP_SOURCE_INF_TYPE='Loopback'}">{$XE_NTP_SOURCE_INF_NUMBER}</Loopback>
+                 <GigabitEthernet when="{$XE_NTP_SOURCE_INF_TYPE='GigabitEthernet'}">{$XE_NTP_SOURCE_INF_NUMBER}</GigabitEthernet>
+               </source>
+             <?end?>
+          <?end?>
+         </ntp>
+       <?end?>
       </config>
     </device>
   </devices>

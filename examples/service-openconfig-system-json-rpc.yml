@@ -28,3 +28,6 @@
                       This is line 1.
                       This is line 2.
                       This is the last line.
+                  ntp:
+                    config:
+                      ntp-source-address: '172.16.255.1'
