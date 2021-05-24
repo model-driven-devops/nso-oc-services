@@ -10,7 +10,7 @@ class ServiceCallbacks(Service):
     @Service.create
     def cb_create(self, tctx: _ncs.TransCtxRef, root: ncs.maagic.Root, service: ncs.maagic.ListElement, proplist: list):
         """
-        This is the main create/modify service method
+        This is the main create/modify service method.
         Note any values needed by the service template must be added as keys to 'initial_vars'.
         The appropriate OS transform_vars will add the appropriate values to the keys.
         """

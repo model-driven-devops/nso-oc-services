@@ -4,52 +4,73 @@
       <name>{/device}</name>
       <config>
         <?if {/openconfig-system/system/clock/config/timezone-name}?>
-          <clock xmlns="urn:ios">
-            <timezone>
-              <?if {$XE_TIMEZONE}?>
-                <zone>{$XE_TIMEZONE}</zone>
-              <?end?>
-              <?if {$XE_TIMEZONE_OFFSET_HOURS}?>
-                <hours>{$XE_TIMEZONE_OFFSET_HOURS}</hours>
-              <?end?>
-              <?if {$XE_TIMEZONE_OFFSET_MINUTES}?>
-                <minutes>{$XE_TIMEZONE_OFFSET_MINUTES}</minutes>
-              <?end?>
-            </timezone>
-          </clock>
+        <clock xmlns="urn:ios">
+          <timezone>
+            <?if {$XE_TIMEZONE}?>
+            <zone>{$XE_TIMEZONE}</zone>
+            <?end?>
+            <?if {$XE_TIMEZONE_OFFSET_HOURS}?>
+            <hours>{$XE_TIMEZONE_OFFSET_HOURS}</hours>
+            <?end?>
+            <?if {$XE_TIMEZONE_OFFSET_MINUTES}?>
+            <minutes>{$XE_TIMEZONE_OFFSET_MINUTES}</minutes>
+            <?end?>
+          </timezone>
+        </clock>
         <?end?>
         <?if {/openconfig-system/system/config/hostname}?>
-          <hostname xmlns="urn:ios">{/openconfig-system/system/config/hostname}</hostname>
+        <hostname xmlns="urn:ios">{/openconfig-system/system/config/hostname}</hostname>
         <?end?>
         <?if {/openconfig-system/system/config/domain-name}?>
-          <ip xmlns="urn:ios">
-            <domain>
-              <name>{/openconfig-system/system/config/domain-name}</name>
-            </domain>
-           </ip>
+        <ip xmlns="urn:ios">
+          <domain>
+            <name>{/openconfig-system/system/config/domain-name}</name>
+          </domain>
+        </ip>
         <?end?>
         <?if {/openconfig-system/system/config/login-banner}?>
-          <banner xmlns="urn:ios">
-           <login>{/openconfig-system/system/config/login-banner}</login>
-         </banner>
+        <banner xmlns="urn:ios">
+          <login>{/openconfig-system/system/config/login-banner}</login>
+        </banner>
         <?end?>
         <?if {/openconfig-system/system/config/motd-banner}?>
-         <banner xmlns="urn:ios">
-           <motd>{/openconfig-system/system/config/motd-banner}</motd>
-         </banner>
+        <banner xmlns="urn:ios">
+          <motd>{/openconfig-system/system/config/motd-banner}</motd>
+        </banner>
         <?end?>
         <?if {/openconfig-system/system/ntp}?>
-          <ntp xmlns="urn:ios">
+        <ntp xmlns="urn:ios" tags="replace">
+          <?if {/openconfig-system/system/ntp/config/enabled='true'}?>
           <?if {/openconfig-system/system/ntp/config/ntp-source-address}?>
-            <?if {$XE_NTP_SOURCE_INF_TYPE}?>
-               <source>
-                 <Loopback when="{$XE_NTP_SOURCE_INF_TYPE='Loopback'}">{$XE_NTP_SOURCE_INF_NUMBER}</Loopback>
-                 <GigabitEthernet when="{$XE_NTP_SOURCE_INF_TYPE='GigabitEthernet'}">{$XE_NTP_SOURCE_INF_NUMBER}</GigabitEthernet>
-               </source>
-             <?end?>
+          <?if {$XE_NTP_SOURCE_INF_TYPE}?>
+          <source>
+            <Loopback when="{$XE_NTP_SOURCE_INF_TYPE='Loopback'}">{$XE_NTP_SOURCE_INF_NUMBER}</Loopback>
+            <GigabitEthernet when="{$XE_NTP_SOURCE_INF_TYPE='GigabitEthernet'}">{$XE_NTP_SOURCE_INF_NUMBER}</GigabitEthernet>
+          </source>
           <?end?>
-         </ntp>
-       <?end?>
+          <?end?>
+          <?if {/openconfig-system/system/ntp/servers/server}?>
+          <server tags="replace">
+            <?foreach {/openconfig-system/system/ntp/servers/server}?>
+            <peer-list>
+              <name>{current()/config/address}</name>
+              <?if {current()/config/iburst='true'}?>
+              <iburst/>
+              <?end?>
+              <?if {current()/config/prefer='true'}?>
+              <prefer/>
+              <?end?>
+              <version>{current()/config/version}</version>
+            </peer-list>
+            <?end?>
+          </server>
+          <?end?>
+          <?else?>
+          <source tags="delete"/>
+          <server tags="delete"/>
+          <?end?>
+        </ntp>
+        <?end?>
       </config>
     </device>
   </devices>

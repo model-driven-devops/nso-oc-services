@@ -1,0 +1,51 @@
+<config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <oc-system-nso xmlns="http://cisco.com/oc-system-nso">
+    <name>hq-rtr1</name>
+    <device>hq-rtr1</device>
+    <openconfig-system>
+      <system>
+        <clock>
+          <config>
+            <timezone-name>EDT -4 0</timezone-name>
+          </config>
+        </clock>
+        <config>
+          <hostname>hq-rtr1</hostname>
+          <domain-name>www.cisco.com</domain-name>
+          <login-banner>This is line 1.&#10;This is line 2.&#10;This is the last line.</login-banner>
+          <motd-banner>This is line 1.&#10;This is line 2.&#10;This is the last line.</motd-banner>
+        </config>
+        <ntp>
+          <config>
+            <enabled>true</enabled>
+            <ntp-source-address>172.16.0.2</ntp-source-address>
+          </config>
+          <servers operation="replace">
+            <server>
+              <address>192.168.68.88</address>
+              <config>
+                <address>192.168.68.88</address>
+                <association-type>SERVER</association-type>
+                <iburst>true</iburst>
+                <port>123</port>
+                <prefer>false</prefer>
+                <version>4</version>
+              </config>
+            </server>
+            <server>
+              <address>192.168.68.89</address>
+              <config>
+                <address>192.168.68.89</address>
+                <association-type>SERVER</association-type>
+                <iburst>true</iburst>
+                <port>123</port>
+                <prefer>false</prefer>
+                <version>4</version>
+              </config>
+            </server>
+          </servers>
+        </ntp>
+      </system>
+    </openconfig-system>
+  </oc-system-nso>
+</config>

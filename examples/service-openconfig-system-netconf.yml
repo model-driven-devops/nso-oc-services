@@ -11,20 +11,4 @@
   tasks:
     - netconf_config:
         target: running
-        content: |
-          <config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-            <oc-system-nso xmlns="http://cisco.com/oc-system-nso">
-              <name>hq-rtr1</name>
-              <device>hq-rtr1</device>
-              <openconfig-system>
-                <system>
-                  <config>
-                    <hostname>hq-rtr1</hostname>
-                    <domain-name>www.cisco.com</domain-name>
-                    <login-banner>This is line 1.&#10;This is line 2.&#10;This is the last line.</login-banner>
-                    <motd-banner>This is line 1.&#10;This is line 2.&#10;This is the last line.</motd-banner>
-                  </config>
-                </system>
-              </openconfig-system>
-            </oc-system-nso>
-          </config>
+        content: "{{ lookup('file', './config_NETCONF_full.xml') }}"
