@@ -38,6 +38,17 @@
           <motd>{/openconfig-system/system/config/motd-banner}</motd>
         </banner>
         <?end?>
+        <?if {/openconfig-system/system/dns/servers}?>
+        <ip xmlns="urn:ios">
+          <name-server tags="replace">
+            <?foreach {/openconfig-system/system/dns/servers/server}?>
+            <name-server-list>
+              <address>{current()/address}</address>
+            </name-server-list>
+            <?end?>
+          </name-server>
+        </ip>
+        <?end?>
         <?if {/openconfig-system/system/ntp}?>
         <ntp xmlns="urn:ios" tags="replace">
           <?if {/openconfig-system/system/ntp/config/enabled='true'}?>

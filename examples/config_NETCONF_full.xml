@@ -15,16 +15,34 @@
           <login-banner>This is line 1.&#10;This is line 2.&#10;This is the last line.</login-banner>
           <motd-banner>This is line 1.&#10;This is line 2.&#10;This is the last line.</motd-banner>
         </config>
+        <dns>
+          <servers operation="replace">
+            <server>
+              <address>8.8.8.8</address>
+              <config>
+                <address>8.8.8.8</address>
+                <port>53</port>
+              </config>
+            </server>
+            <server>
+              <address>8.8.4.4</address>
+              <config>
+                <address>8.8.4.4</address>
+                <port>53</port>
+              </config>
+            </server>
+          </servers>
+        </dns>
         <ntp>
           <config>
             <enabled>true</enabled>
-            <ntp-source-address>172.16.0.2</ntp-source-address>
+            <ntp-source-address>10.0.0.2</ntp-source-address>
           </config>
           <servers operation="replace">
             <server>
-              <address>192.168.68.88</address>
+              <address>10.0.0.1</address>
               <config>
-                <address>192.168.68.88</address>
+                <address>10.0.0.1</address>
                 <association-type>SERVER</association-type>
                 <iburst>true</iburst>
                 <port>123</port>
@@ -33,9 +51,9 @@
               </config>
             </server>
             <server>
-              <address>192.168.68.89</address>
+              <address>10.0.0.2</address>
               <config>
-                <address>192.168.68.89</address>
+                <address>10.0.0.2</address>
                 <association-type>SERVER</association-type>
                 <iburst>true</iburst>
                 <port>123</port>
