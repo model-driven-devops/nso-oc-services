@@ -1,5 +1,5 @@
 <config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-  <oc-system-nso xmlns="http://cisco.com/oc-system-nso">
+  <oc-system-nso xmlns="http://cisco.com/oc-system-nso" operation="replace">
     <name>hq-rtr1</name>
     <device>hq-rtr1</device>
     <openconfig-system>
@@ -16,7 +16,7 @@
           <motd-banner>This is line 1.&#10;This is line 2.&#10;This is the last line.</motd-banner>
         </config>
         <dns>
-          <servers operation="replace">
+          <servers>
             <server>
               <address>8.8.8.8</address>
               <config>
@@ -38,7 +38,7 @@
             <enabled>true</enabled>
             <ntp-source-address>10.0.0.2</ntp-source-address>
           </config>
-          <servers operation="replace">
+          <servers>
             <server>
               <address>10.0.0.1</address>
               <config>
