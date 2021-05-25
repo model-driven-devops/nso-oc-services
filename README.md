@@ -1,14 +1,27 @@
-# nso-oc-services
-NSO OpenConfig Services
+# NSO OpenConfig Services
+
+## Overview
 
 <img src="https://github.com/model-driven-devops/nso-oc-services/raw/main/oc-nso.png" width="400">
 
 
 The NSO OpenConfig Services package is a set of services that implement the OpenConfig
 YANG models in NSO.  The goal is to provide an open, standard, model-driven API for
-any device using OpenConfig.
+any device using OpenConfig to make network automation easier and more uniform.
 
-The initial set of OpenConfig models to be implement are intended to provide covererage for
+This uniform API comes from two places.  First, the [OpenConfig](https://www.openconfig.net/)
+YANG models provide a
+"consistent set of vendor-neutral data models (written in YANG) based on actual operational
+needs from use cases and requirements from multiple network operators." (https://www.openconfig.net/).
+
+Second, Cisco Network Services Orchestrator (NSO) provides a consistent set of capabilities across
+all platforms such as:
+- Rollback
+- Transactional Changes
+
+
+
+The initial set of OpenConfig models to be implement are intended to provide coverage for
 80% of most network's use cases and include:
 - openconfig-system
 - openconfig-interfaces
