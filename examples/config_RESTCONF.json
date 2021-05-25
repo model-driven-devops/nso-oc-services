@@ -1,0 +1,75 @@
+{
+  "oc-system-nso:oc-system-nso": [
+    {
+      "name": "hq-rtr1",
+      "device": "hq-rtr1",
+      "openconfig-system": {
+        "system": {
+          "clock": {
+            "config": {
+              "timezone-name": "EDT -4 0"
+            }
+          },
+          "config": {
+            "hostname": "hq-rtr1",
+            "domain-name": "www.cisco.com",
+            "login-banner": "This is line 1.\nThis is line 2.\nThis is the last line.",
+            "motd-banner": "This is line 1.\nThis is line 2.\nThis is the last line."
+          },
+          "dns": {
+            "servers": {
+              "server":[
+                {
+                  "address": "8.8.8.8",
+                  "config": {
+                    "address": "8.8.8.8",
+                    "port": "53"
+                  }
+                },
+                {
+                  "address": "8.8.4.4",
+                  "config": {
+                    "address": "8.8.4.4",
+                    "port": "53"
+                  }
+                }
+              ]
+            }
+          },
+          "ntp": {
+            "config": {
+              "enabled": true,
+              "ntp-source-address": "172.16.255.1"
+            },
+            "servers": {
+              "server": [
+                {
+                  "address": "10.0.0.1",
+                  "config": {
+                    "address": "10.0.0.1",
+                    "association-type": "SERVER",
+                    "iburst": true,
+                    "port": "123",
+                    "prefer": false,
+                    "version": "4"
+                  }
+                },
+                {
+                  "address": "10.0.0.2",
+                  "config": {
+                    "address": "10.0.0.2",
+                    "association-type": "SERVER",
+                    "iburst": true,
+                    "port": "123",
+                    "prefer": false,
+                    "version": "4"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}
