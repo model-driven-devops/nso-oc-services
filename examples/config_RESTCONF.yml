@@ -1,0 +1,51 @@
+oc-system-nso:oc-system-nso:
+  - name: hq-rtr1
+    device: hq-rtr1
+    openconfig-system:
+      system:
+        clock:
+          config:
+            timezone-name: 'EDT -4 0'
+        config:
+          domain-name: 'www.cisco.com'
+          hostname: 'hq-rtr1'
+          login-banner: |
+            This is line 1.
+            This is line 2.
+            This is the last line.
+          motd-banner: |
+            This is line 1.
+            This is line 2.
+            This is the last line.
+        dns:
+          servers:
+            server:
+              - address: '8.8.8.8'
+                config:
+                  address: '8.8.8.8'
+                  port: '53'  # always 53 for ios
+              - address: '8.8.4.4'
+                config:
+                  address: '8.8.4.4'
+                  port: '53'  # always 53 for ios
+        ntp:
+          config:
+            enabled: true  # true or false - removes or adds ntp servers
+            ntp-source-address: '172.16.255.1'
+          servers:
+            server:
+              - address: '10.0.0.1'
+                config:
+                  address: '10.0.0.1'
+                  association-type: SERVER  # SERVER, PEER, POOL
+                  iburst: true
+                  port: '123'  # always 123 for ios
+                  prefer: false
+                  version: '4'
+        ssh-server:
+          config:
+            enable: true  #   adds line transport input ssh; must be enabled for this to work
+            protocol-version: 'V2'  # ip ssh version 2
+            rate-limit: '0'  # unsupported
+            session-limit: '16' # line session-limit 16
+            timeout: '1800'  # seconds - line exec-timeout 10 0

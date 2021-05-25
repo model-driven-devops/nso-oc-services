@@ -2,7 +2,13 @@
 - name: OC System test
   hosts: localhost
   gather_facts: no
+  vars:
+    content: "{{ lookup('file', './config_RESTCONF.yml') }}"
   tasks:
+  - set_fact:
+      configs: "{{ content | from_yaml | to_json }}"
+  - debug:
+      msg: "{{ configs }}"
   - name: OC System test
     uri:
       url: "http://X.X.X.X:8080/restconf/data/oc-system-nso:oc-system-nso"
@@ -16,4 +22,4 @@
         'Content-Type': 'application/yang-data+json',
         'Accept': 'application/yang-data+json'}"
       body_format: json
-      body: "{{ lookup('file', './config_RESTCONF.json') }}"
+      body: "{{ configs }}"
