@@ -1,7 +1,8 @@
 # nso-oc-services
 NSO OpenConfig Services
 
-![OpenConfig NSO Image](oc-nso.png)
+<img src="https://github.com/model-driven-devops/nso-oc-services/raw/main/oc-nso.png" width="300">
+
 
 The NSO OpenConfig Services package is a set of services that implement the OpenConfig
 YANG models in NSO.  The goal is to provide an open, standard, model-driven API for
