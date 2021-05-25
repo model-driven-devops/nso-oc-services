@@ -1,7 +1,7 @@
 # nso-oc-services
 NSO OpenConfig Services
 
-<img src="https://github.com/model-driven-devops/nso-oc-services/raw/main/oc-nso.png" width="300">
+<img src="https://github.com/model-driven-devops/nso-oc-services/raw/main/oc-nso.png" width="400">
 
 
 The NSO OpenConfig Services package is a set of services that implement the OpenConfig
