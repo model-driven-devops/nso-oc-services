@@ -11,4 +11,4 @@
   tasks:
     - netconf_config:
         target: running
-        content: "{{ lookup('file', './config_NETCONF_full.xml') }}"
+        content: "{{ lookup('file', './config_NETCONF.xml') }}"

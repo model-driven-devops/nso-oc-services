@@ -1,0 +1,19 @@
+---
+- name: OC System test
+  hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: OC System test
+    uri:
+      url: "http://X.X.X.X:8080/restconf/data/oc-system-nso:oc-system-nso=hq-rtr1"
+      url_username: admin
+      url_password: admin
+      force_basic_auth: yes
+      validate_certs: no
+      status_code: [200,204]
+      method: PUT
+      headers: "{
+        'Content-Type': 'application/yang-data+json',
+        'Accept': 'application/yang-data+json'}"
+      body_format: json
+      body: "{{ lookup('file', './config_RESTCONF.json') }}"
