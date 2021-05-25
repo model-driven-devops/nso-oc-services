@@ -18,7 +18,7 @@
           },
           "dns": {
             "servers": {
-              "server":[
+              "server": [
                 {
                   "address": "8.8.8.8",
                   "config": {
@@ -66,6 +66,15 @@
                   }
                 }
               ]
+            }
+          },
+          "ssh-server": {
+            "config": {
+              "enable": true,
+              "protocol-version": "V2",
+              "rate-limit": "0",
+              "session-limit": "16",
+              "timeout": "665"
             }
           }
         }

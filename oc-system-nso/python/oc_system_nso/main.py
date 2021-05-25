@@ -20,7 +20,9 @@ class ServiceCallbacks(Service):
                             XE_TIMEZONE_OFFSET_HOURS='',
                             XE_TIMEZONE_OFFSET_MINUTES='',
                             XE_NTP_SOURCE_INF_TYPE='',
-                            XE_NTP_SOURCE_INF_NUMBER='')
+                            XE_NTP_SOURCE_INF_NUMBER='',
+                            XE_EXEC_TIMEOUT_MINUTES='',
+                            XE_EXEC_TIMEOUT_SECONDS='')
 
         proplist = self.xe_transform_vars(service, proplist)
         self.log.info(proplist)
@@ -63,6 +65,12 @@ class ServiceCallbacks(Service):
                 interface_number = rn.group(0)
                 proplist.append(('XE_NTP_SOURCE_INF_TYPE', interface_name))
                 proplist.append(('XE_NTP_SOURCE_INF_NUMBER', interface_number))
+        if service_object.openconfig_system.system.ssh_server.config.timeout:
+            seconds_all = int(service_object.openconfig_system.system.ssh_server.config.timeout)
+            # minutes = seconds_all / 60
+            # seconds = seconds_all % 60
+            proplist.append(('XE_EXEC_TIMEOUT_MINUTES', str(seconds_all // 60)))
+            proplist.append(('XE_EXEC_TIMEOUT_SECONDS', str(seconds_all % 60)))
         return proplist
 
     @staticmethod

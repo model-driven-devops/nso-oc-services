@@ -26,6 +26,11 @@
           <domain>
             <name>{/openconfig-system/system/config/domain-name}</name>
           </domain>
+          <ssh>
+            <version when="{/openconfig-system/system/ssh-server/config/protocol-version='V2'}">2</version>
+            <version when="{/openconfig-system/system/ssh-server/config/protocol-version='V1'}">1</version>
+            <version when="{/openconfig-system/system/ssh-server/config/protocol-version='V1_V2'}" tags="delete"/>
+          </ssh>
         </ip>
         <?end?>
         <?if {/openconfig-system/system/config/login-banner}?>
@@ -81,6 +86,22 @@
           <server tags="delete"/>
           <?end?>
         </ntp>
+        <line xmlns="urn:ios">
+          <vty>
+            <first>0</first>
+            <last>4</last>
+            <exec-timeout>
+              <minutes>{$XE_EXEC_TIMEOUT_MINUTES}</minutes>
+              <seconds>{$XE_EXEC_TIMEOUT_SECONDS}</seconds>
+            </exec-timeout>
+            <session-limit>{/openconfig-system/system/ssh-server/config/session-limit}</session-limit>
+            <?if {/openconfig-system/system/ssh-server/config/enable='true'}?>
+            <transport>
+              <input>ssh</input>
+            </transport>
+            <?end?>
+          </vty>
+        </line>
         <?end?>
       </config>
     </device>
