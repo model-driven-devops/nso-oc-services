@@ -28,6 +28,42 @@ oc-system-nso:oc-system-nso:
                 config:
                   address: '8.8.4.4'
                   port: '53'  # always 53 for ios
+        logging:  # facility must be same for all in IOS
+          console:  # set console and monitor
+            config: { }
+            selectors:
+              selector:
+                - config:
+                    facility: 'SYSLOG'
+                    severity: 'CRITICAL'  # logging console CRITICAL; logging monitor CRITICAL
+                  facility: 'SYSLOG'
+                  severity: 'CRITICAL'
+          remote-servers:
+            remote-server:
+              - config:
+                  host: '10.0.0.1'  # logging host x.x.x.x
+                  remote-port: '514'
+                  source-address: '172.16.255.1'  # logging source-interface Loopback0
+                host: '10.0.0.1'
+                selectors:
+                  selector:
+                    - config:
+                        facility: 'SYSLOG'
+                        severity: 'INFORMATIONAL'
+                      facility: 'SYSLOG'
+                      severity: 'INFORMATIONAL'
+              - config:
+                  host: '10.0.0.2'  # logging host x.x.x.x
+                  remote-port: '514'
+                  source-address: '172.16.255.1'  # logging source-interface Loopback0
+                host: '10.0.0.2'
+                selectors:
+                  selector:
+                    - config:
+                        facility: 'SYSLOG'
+                        severity: 'INFORMATIONAL'
+                      facility: 'SYSLOG'
+                      severity: 'INFORMATIONAL'
         ntp:
           config:
             enabled: true  # true or false - removes or adds ntp servers
@@ -46,6 +82,6 @@ oc-system-nso:oc-system-nso:
           config:
             enable: true  #   adds line transport input ssh; must be enabled for this to work
             protocol-version: 'V2'  # ip ssh version 2
-            rate-limit: '0'  # unsupported
+            rate-limit: '0'  # unsupported in ios
             session-limit: '16' # line session-limit 16
-            timeout: '1800'  # seconds - line exec-timeout 10 0
+            timeout: '1800'  # seconds - line exec-timeout 30 0

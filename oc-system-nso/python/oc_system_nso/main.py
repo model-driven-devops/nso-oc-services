@@ -4,6 +4,7 @@ import re
 import ncs
 import _ncs
 from ncs.application import Service
+from typing import Tuple
 
 
 class ServiceCallbacks(Service):
@@ -22,7 +23,12 @@ class ServiceCallbacks(Service):
                             XE_NTP_SOURCE_INF_TYPE='',
                             XE_NTP_SOURCE_INF_NUMBER='',
                             XE_EXEC_TIMEOUT_MINUTES='',
-                            XE_EXEC_TIMEOUT_SECONDS='')
+                            XE_EXEC_TIMEOUT_SECONDS='',
+                            XE_CONSOLE_FACILITY='',
+                            XE_CONSOLE_SEVERITY='',
+                            XE_REMOTE_FACILITY='',
+                            XE_REMOTE_SEVERITY='',
+                            XE_LOGGING_SOURCE_INF_NAME='')
 
         proplist = self.xe_transform_vars(service, proplist)
         self.log.info(proplist)
@@ -59,18 +65,39 @@ class ServiceCallbacks(Service):
             output = self.xe_show_commands('ip interface brief | e unassigned|Interface', service_object.name)
             ip_name_dict = self.xe_get_interface_ip_address(output, service_object.name)
             if ip_name_dict[service_object.openconfig_system.system.ntp.config.ntp_source_address]:
-                rt = re.search(r"\D+", ip_name_dict.get(service_object.openconfig_system.system.ntp.config.ntp_source_address, ""))
-                interface_name = rt.group(0)
-                rn = re.search(r"[0-9]+(\/[0-9]+)*", ip_name_dict.get(service_object.openconfig_system.system.ntp.config.ntp_source_address, ""))
-                interface_number = rn.group(0)
+                interface_name, interface_number = self.xe_get_interface_name_and_number(ip_name_dict,
+                                                                                         service_object.openconfig_system.system.ntp.config.ntp_source_address)
                 proplist.append(('XE_NTP_SOURCE_INF_TYPE', interface_name))
                 proplist.append(('XE_NTP_SOURCE_INF_NUMBER', interface_number))
         if service_object.openconfig_system.system.ssh_server.config.timeout:
             seconds_all = int(service_object.openconfig_system.system.ssh_server.config.timeout)
-            # minutes = seconds_all / 60
-            # seconds = seconds_all % 60
             proplist.append(('XE_EXEC_TIMEOUT_MINUTES', str(seconds_all // 60)))
             proplist.append(('XE_EXEC_TIMEOUT_SECONDS', str(seconds_all % 60)))
+        if service_object.openconfig_system.system.logging.console.selectors.selector:
+            for i in service_object.openconfig_system.system.logging.console.selectors.selector:
+                proplist.append(('XE_CONSOLE_FACILITY', str(i.facility).lower().replace('oc-log:', '')))
+                proplist.append(('XE_CONSOLE_SEVERITY', str(i.severity).lower()))
+                break
+        if service_object.openconfig_system.system.logging.remote_servers.remote_server:
+            need_remote_facility = True
+            need_remote_severity = True
+            need_source_address = True
+            for n in service_object.openconfig_system.system.logging.remote_servers.remote_server:
+                for i in n.selectors.selector:
+                    if need_remote_facility:
+                        proplist.append(('XE_REMOTE_FACILITY', str(i.facility).lower().replace('oc-log:', '')))
+                        need_remote_facility = False
+                    if need_remote_severity:
+                        proplist.append(('XE_REMOTE_SEVERITY', str(i.severity).lower()))
+                        need_remote_severity = False
+                if need_source_address and n.config.source_address:
+                    output = self.xe_show_commands('ip interface brief | e unassigned|Interface', service_object.name)
+                    ip_name_dict = self.xe_get_interface_ip_address(output, service_object.name)
+                    if ip_name_dict[n.config.source_address]:
+                        interface_name, interface_number = self.xe_get_interface_name_and_number(ip_name_dict,
+                                                                                                 n.config.source_address)
+                        proplist.append(('XE_LOGGING_SOURCE_INF_NAME', f'{interface_name}{interface_number}'))
+                        need_source_address = False
         return proplist
 
     @staticmethod
@@ -120,6 +147,20 @@ class ServiceCallbacks(Service):
                 if n[0] != (device + '#'):
                     ip_name_dict[n[1]] = n[0]
         return ip_name_dict
+
+    @staticmethod
+    def xe_get_interface_name_and_number(ip_name_d: dict, ip: str) -> Tuple[str, str]:
+        """
+        Receive dictionary of IPs to interface names and IP. Returns interface type and number associated with IP.
+        :param ip_name_d: dictionary of IPs to interface names
+        :param ip: string IP to be match to interface name
+        :return: tuple of interface type, interaface number
+        """
+        rt = re.search(r"\D+", ip_name_d.get(ip, ""))
+        interface_name = rt.group(0)
+        rn = re.search(r"[0-9]+(\/[0-9]+)*", ip_name_d.get(ip, ""))
+        interface_number = rn.group(0)
+        return interface_name, interface_number
 
 
 class Main(ncs.application.Application):

@@ -54,6 +54,40 @@
           </name-server>
         </ip>
         <?end?>
+
+        <logging xmlns="urn:ios">
+          <?if {$XE_CONSOLE_SEVERITY}?>
+          <console>
+            <severity-level>{$XE_CONSOLE_SEVERITY}</severity-level>
+          </console>
+          <monitor>
+            <severity-level>{$XE_CONSOLE_SEVERITY}</severity-level>
+          </monitor>
+          <?end?>
+
+          <?if {$XE_CONSOLE_FACILITY or $XE_REMOTE_FACILITY}?>
+          <facility>{$XE_CONSOLE_FACILITY}</facility>
+          <?else?>
+          <facility>{$XE_REMOTE_FACILITY}</facility>
+          <?end?>
+
+          <host tags="replace">
+            <?foreach {/openconfig-system/system/logging/remote-servers/remote-server}?>
+            <ipv4>
+              <host>{current()/host}</host>
+            </ipv4>
+            <?end?>
+          </host>
+
+
+          <?if {$XE_LOGGING_SOURCE_INF_NAME}?>
+          <source-interface>
+            <name>{$XE_LOGGING_SOURCE_INF_NAME}</name>
+          </source-interface>
+          <?end?>
+
+        </logging>
+
         <?if {/openconfig-system/system/ntp}?>
         <ntp xmlns="urn:ios" tags="replace">
           <?if {/openconfig-system/system/ntp/config/enabled='true'}?>
