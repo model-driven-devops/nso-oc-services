@@ -3,6 +3,118 @@
     <device>
       <name>{/device}</name>
       <config>
+
+        <?if {/openconfig-system/system/aaa}?>
+        <?if {/openconfig-system/system/aaa/authentication/admin-user/admin-password}?>
+        <username xmlns="urn:ios">
+          <name>admin</name>
+          <privilege>15</privilege>
+          <secret>
+            <type>0</type>
+            <secret>{/openconfig-system/system/aaa/authentication/admin-user/admin-password}</secret>
+          </secret>
+        </username>
+        <?end?> <!-- end if {/openconfig-system/system/aaa/authentication/admin-user/admin-password} -->
+
+        <aaa xmlns="urn:ios">
+          <?if {/openconfig-system/system/aaa/authentication/config/authentication-method}?>
+          <new-model/>
+          <authentication>
+            <login>
+              <name>default</name>
+              <tacacsplus when="{$XE_AUTHENTICATION_TACACS='True'}"/>
+              <local when="{$XE_AUTHENTICATION_LOCAL='True'}"/>
+            </login>
+          </authentication>
+          <?end?> <!-- end if {/openconfig-system/system/aaa/authentication/config/authentication-method} -->
+          <authorization>
+            <?if {$XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_CONFIG='True'}?>
+            <exec>
+              <name>default</name>
+              <tacacsplus when="{$XE_AUTHORIZATION_TACACS='True'}"/>
+              <local when="{$XE_AUTHORIZATION_LOCAL='True'}"/>
+            </exec>
+            <?end?> <!-- end if {$XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_CONFIG='True'} -->
+            <?if {$XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_COMMAND='True'}?>
+            <config-commands/>
+            <commands>
+              <level>15</level>
+              <name>default</name>
+              <tacacsplus when="{$XE_AUTHORIZATION_TACACS='True'}"/>
+              <local when="{$XE_AUTHORIZATION_LOCAL='True'}"/>
+            </commands>
+            <?end?> <!-- end if {$XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_COMMAND='True'} -->
+          </authorization>
+        </aaa>
+
+        <?if {/openconfig-system/system/aaa/authentication/users/user}?>
+        <?foreach {/openconfig-system/system/aaa/authentication/users/user}?>
+        <username xmlns="urn:ios" tags="replace">
+          <name>{current()/username}</name>
+          <privilege when="{current()/config/role='SYSTEM_ROLE_ADMIN'}">15</privilege>
+          <password>
+            <type>0</type>
+            <secret>{current()/config/password}</secret>
+          </password>
+        </username>
+        <?end?> <!-- end foreach {/openconfig-system/system/aaa/authentication/users/user} -->
+        <?end?> <!-- end if {/openconfig-system/system/aaa/authentication/users/user} -->
+
+        <!--Create the servers 1st-->
+        <tacacs xmlns="urn:ios">
+          <?foreach {/openconfig-system/system/aaa/server-groups/server-group}?>
+          <?if {current()/servers/server}?>
+          <?foreach {current()/servers/server}?>
+          <server>
+            <name>{current()/config/name}</name>
+            <address>
+              <ipv4>{current()/address}</ipv4>
+            </address>
+            <timeout>10</timeout>
+            <!--           <timeout>{current()/config/timeout}</timeout>-->
+            <key>
+              <type>0</type>
+              <secret>PASSWORD123</secret>
+              <!--             <secret>{current()/tacacs/config/secret-key}</secret>-->
+            </key>
+            <port>{current()/tacacs/config/port}</port>
+          </server>
+          <?end?> <!-- end foreach {current()/servers/server} -->
+          <?end?> <!-- end if {current()/servers/server} -->
+          <?end?> <!-- end foreach {/openconfig-system/system/aaa/server-groups/server-group} -->
+        </tacacs>
+
+<!--        &lt;!&ndash;                Create the group&ndash;&gt;-->
+<!--        <aaa xmlns="urn:ios">-->
+<!--          <group tags="replace">-->
+<!--            <server>-->
+<!--              <?foreach {/openconfig-system/system/aaa/server-groups/server-group}?>-->
+<!--              <tacacs-plus>-->
+<!--                <name>{current()/name}</name>-->
+<!--                <server tags="replace">-->
+<!--                  <?foreach {current()/servers/server}?>-->
+<!--                  <name>-->
+<!--                    <name>{current()/config/name}</name>-->
+<!--                  </name>-->
+<!--                  <?if {current()/tacacs/config/source-address}?>-->
+<!--                  <?set SOURCE_ADDRESS={current()/tacacs/config/source-address}?>  &lt;!&ndash; Problem this is an IP &ndash;&gt;-->
+<!--                  <?end?>&lt;!&ndash; end if {current()/tacacs/config/source-address} &ndash;&gt;-->
+<!--                  <?end?> &lt;!&ndash; end foreach {current()/servers/server} &ndash;&gt;-->
+<!--                </server>-->
+<!--                <ip>-->
+<!--                  <tacacs>-->
+<!--                    <source-interface>-->
+<!--                      <Loopback>0</Loopback>-->
+<!--                    </source-interface>-->
+<!--                  </tacacs>-->
+<!--                </ip>-->
+<!--              </tacacs-plus>-->
+<!--              <?end?>-->
+<!--            </server>-->
+<!--          </group>-->
+<!--        </aaa>-->
+        <?end?> <!-- {/openconfig-system/system/aaa} -->
+
         <?if {/openconfig-system/system/clock/config/timezone-name}?>
         <clock xmlns="urn:ios">
           <timezone>
@@ -18,9 +130,11 @@
           </timezone>
         </clock>
         <?end?>
+
         <?if {/openconfig-system/system/config/hostname}?>
         <hostname xmlns="urn:ios">{/openconfig-system/system/config/hostname}</hostname>
         <?end?>
+
         <?if {/openconfig-system/system/config/domain-name}?>
         <ip xmlns="urn:ios">
           <domain>
@@ -33,16 +147,17 @@
           </ssh>
         </ip>
         <?end?>
-        <?if {/openconfig-system/system/config/login-banner}?>
+
+
         <banner xmlns="urn:ios">
+          <?if {/openconfig-system/system/config/login-banner}?>
           <login>{/openconfig-system/system/config/login-banner}</login>
-        </banner>
-        <?end?>
-        <?if {/openconfig-system/system/config/motd-banner}?>
-        <banner xmlns="urn:ios">
+          <?end?>
+          <?if {/openconfig-system/system/config/motd-banner}?>
           <motd>{/openconfig-system/system/config/motd-banner}</motd>
+          <?end?>
         </banner>
-        <?end?>
+
         <?if {/openconfig-system/system/dns/servers}?>
         <ip xmlns="urn:ios">
           <name-server tags="replace">
@@ -79,13 +194,11 @@
             <?end?>
           </host>
 
-
           <?if {$XE_LOGGING_SOURCE_INF_NAME}?>
           <source-interface>
             <name>{$XE_LOGGING_SOURCE_INF_NAME}</name>
           </source-interface>
           <?end?>
-
         </logging>
 
         <?if {/openconfig-system/system/ntp}?>
@@ -95,7 +208,8 @@
           <?if {$XE_NTP_SOURCE_INF_TYPE}?>
           <source>
             <Loopback when="{$XE_NTP_SOURCE_INF_TYPE='Loopback'}">{$XE_NTP_SOURCE_INF_NUMBER}</Loopback>
-            <GigabitEthernet when="{$XE_NTP_SOURCE_INF_TYPE='GigabitEthernet'}">{$XE_NTP_SOURCE_INF_NUMBER}</GigabitEthernet>
+            <GigabitEthernet when="{$XE_NTP_SOURCE_INF_TYPE='GigabitEthernet'}">{$XE_NTP_SOURCE_INF_NUMBER}
+            </GigabitEthernet>
           </source>
           <?end?>
           <?end?>

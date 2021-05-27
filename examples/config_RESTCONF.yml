@@ -3,6 +3,89 @@ oc-system-nso:oc-system-nso:
     device: hq-rtr1
     openconfig-system:
       system:
+        aaa:
+#          accounting:
+#            config:
+#              accounting-method:
+#                - '['
+#                - ']'
+#            events:
+#              event:
+#                - config:
+#                    event-type: ''
+#                    record: ''
+#                  event-type: ''
+          authentication:
+            admin-user:
+              config:
+                admin-password: 'admin'
+                admin-password-hashed: ''
+            config:
+              authentication-method:
+#                - 'TACACS_ALL'
+                - 'LOCAL'
+            users:
+              user:
+                - config:
+                    username: 'user1'
+                    password: 'password123'
+                    password-hashed: ''
+                    role: 'SYSTEM_ROLE_ADMIN'  # This is the one role in model
+                    ssh-key: ''
+                  username: 'user1'
+                - config:
+                    username: 'user3'
+                    password: 'password1234'
+                    password-hashed: ''
+                    role: 'SYSTEM_ROLE_ADMIN'  # This is the one role in model
+                    ssh-key: ''
+                  username: 'user3'
+          authorization:
+            config:
+              authorization-method:
+#                - 'TACACS_ALL'
+                - 'LOCAL'
+            events:
+              event:
+                - config:
+                    event-type: 'AAA_AUTHORIZATION_EVENT_CONFIG'  # Specifies configuration (e.g., EXEC) events for AAA
+                  event-type: 'AAA_AUTHORIZATION_EVENT_CONFIG'
+#                - config:
+#                    event-type: 'AAA_AUTHORIZATION_EVENT_COMMAND'  # Specifies interactive command events for AAA authorization
+#                  event-type: 'AAA_AUTHORIZATION_EVENT_COMMAND'
+#          config: { }
+#          server-groups:
+#            server-group:
+#              - config:
+#                  name: 'TACACS-1'
+#                  type: 'TACACS'
+#                name: 'TACACS-1'
+#              - config:
+#                  name: 'TACACS-SVRS'
+#                  type: 'TACACS'
+#                name: 'TACACS-SVRS'
+#                servers:
+#                  server:
+#                    - address: '10.1.1.1'
+#                      config:
+#                        address: '10.1.1.1'
+#                        name: 'TACACS1'
+#                        timeout: '10'  # Some how not being applied in template
+#                      tacacs:
+#                        config:
+#                          port: '49'  # Some how not being applied in template
+#                          secret-key: 'PasswordAAAA'  # Not being applied in template
+#                          source-address: '172.16.255.1'
+#                    - address: '10.2.2.2'
+#                      config:
+#                        address: '10.2.2.2'
+#                        name: 'TACACS2'
+#                        timeout: '10' # Some how not being applied in template
+#                      tacacs:
+#                        config:
+#                          port: '49'  # Not being applied in template
+#                          secret-key: 'PasswordBBBB'  # Is applied in template, but not when read from model
+#                          source-address: '172.16.255.1'
         clock:
           config:
             timezone-name: 'EDT -4 0'
@@ -35,9 +118,9 @@ oc-system-nso:oc-system-nso:
               selector:
                 - config:
                     facility: 'SYSLOG'
-                    severity: 'CRITICAL'  # logging console CRITICAL; logging monitor CRITICAL
+                    severity: 'INFORMATIONAL'  # logging console & logging monitor
                   facility: 'SYSLOG'
-                  severity: 'CRITICAL'
+                  severity: 'INFORMATIONAL'
           remote-servers:
             remote-server:
               - config:

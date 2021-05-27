@@ -28,7 +28,13 @@ class ServiceCallbacks(Service):
                             XE_CONSOLE_SEVERITY='',
                             XE_REMOTE_FACILITY='',
                             XE_REMOTE_SEVERITY='',
-                            XE_LOGGING_SOURCE_INF_NAME='')
+                            XE_LOGGING_SOURCE_INF_NAME='',
+                            XE_AUTHENTICATION_TACACS='',
+                            XE_AUTHENTICATION_LOCAL='',
+                            XE_AUTHORIZATION_TACACS='',
+                            XE_AUTHORIZATION_LOCAL='',
+                            XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_CONFIG='',
+                            XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_COMMAND='')
 
         proplist = self.xe_transform_vars(service, proplist)
         self.log.info(proplist)
@@ -98,6 +104,24 @@ class ServiceCallbacks(Service):
                                                                                                  n.config.source_address)
                         proplist.append(('XE_LOGGING_SOURCE_INF_NAME', f'{interface_name}{interface_number}'))
                         need_source_address = False
+        if service_object.openconfig_system.system.aaa.authentication.config.authentication_method:
+            for i in service_object.openconfig_system.system.aaa.authentication.config.authentication_method:
+                if i == 'TACACS_ALL':
+                    proplist.append(('XE_AUTHENTICATION_TACACS', 'True'))
+                elif i == 'LOCAL':
+                    proplist.append(('XE_AUTHENTICATION_LOCAL', 'True'))
+        if service_object.openconfig_system.system.aaa.authorization.config.authorization_method:
+            for i in service_object.openconfig_system.system.aaa.authorization.config.authorization_method:
+                if i == 'TACACS_ALL':
+                    proplist.append(('XE_AUTHORIZATION_TACACS', 'True'))
+                elif i == 'LOCAL':
+                    proplist.append(('XE_AUTHORIZATION_LOCAL', 'True'))
+        if service_object.openconfig_system.system.aaa.authorization.events.event:
+            for i in service_object.openconfig_system.system.aaa.authorization.events.event:
+                if i.event_type == 'oc-aaa-types:AAA_AUTHORIZATION_EVENT_CONFIG':
+                    proplist.append(('XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_CONFIG', 'True'))
+                if i.event_type == 'oc-aaa-types:AAA_AUTHORIZATION_EVENT_COMMAND':
+                    proplist.append(('XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_COMMAND', 'True'))
         return proplist
 
     @staticmethod
