@@ -34,7 +34,9 @@ class ServiceCallbacks(Service):
                             XE_AUTHORIZATION_TACACS='',
                             XE_AUTHORIZATION_LOCAL='',
                             XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_CONFIG='',
-                            XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_COMMAND='')
+                            XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_COMMAND='',
+                            XE_TACACS_SOURCE_INF_TYPE='',
+                            XE_TACACS_SOURCE_INF_NUMBER='')
 
         proplist = self.xe_transform_vars(service, proplist)
         self.log.info(proplist)
@@ -122,6 +124,16 @@ class ServiceCallbacks(Service):
                     proplist.append(('XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_CONFIG', 'True'))
                 if i.event_type == 'oc-aaa-types:AAA_AUTHORIZATION_EVENT_COMMAND':
                     proplist.append(('XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_COMMAND', 'True'))
+        for i in service_object.openconfig_system.system.aaa.server_groups.server_group:
+            for n in i.servers.server:
+                if n.tacacs.config.source_address:
+                    output = self.xe_show_commands('ip interface brief | e unassigned|Interface', service_object.name)
+                    ip_name_dict = self.xe_get_interface_ip_address(output, service_object.name)
+                    if ip_name_dict[n.tacacs.config.source_address]:
+                        interface_name, interface_number = self.xe_get_interface_name_and_number(ip_name_dict,
+                                                                                                 n.tacacs.config.source_address)
+                        proplist.append(('XE_TACACS_SOURCE_INF_TYPE', interface_name))
+                        proplist.append(('XE_TACACS_SOURCE_INF_NUMBER', interface_number))
         return proplist
 
     @staticmethod
