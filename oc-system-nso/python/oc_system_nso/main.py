@@ -70,8 +70,7 @@ class ServiceCallbacks(Service):
             else:
                 proplist.append(('XE_TIMEZONE_OFFSET_MINUTES', tz[2]))
         if service_object.openconfig_system.system.ntp.config.ntp_source_address:
-            output = self.xe_show_commands('ip interface brief | e unassigned|Interface', service_object.name)
-            ip_name_dict = self.xe_get_interface_ip_address(output, service_object.name)
+            ip_name_dict = self.xe_get_interface_ip_address(service_object.name)
             if ip_name_dict[service_object.openconfig_system.system.ntp.config.ntp_source_address]:
                 interface_name, interface_number = self.xe_get_interface_name_and_number(ip_name_dict,
                                                                                          service_object.openconfig_system.system.ntp.config.ntp_source_address)
@@ -99,8 +98,7 @@ class ServiceCallbacks(Service):
                         proplist.append(('XE_REMOTE_SEVERITY', str(i.severity).lower()))
                         need_remote_severity = False
                 if need_source_address and n.config.source_address:
-                    output = self.xe_show_commands('ip interface brief | e unassigned|Interface', service_object.name)
-                    ip_name_dict = self.xe_get_interface_ip_address(output, service_object.name)
+                    ip_name_dict = self.xe_get_interface_ip_address(service_object.name)
                     if ip_name_dict[n.config.source_address]:
                         interface_name, interface_number = self.xe_get_interface_name_and_number(ip_name_dict,
                                                                                                  n.config.source_address)
@@ -127,8 +125,7 @@ class ServiceCallbacks(Service):
         for i in service_object.openconfig_system.system.aaa.server_groups.server_group:
             for n in i.servers.server:
                 if n.tacacs.config.source_address:
-                    output = self.xe_show_commands('ip interface brief | e unassigned|Interface', service_object.name)
-                    ip_name_dict = self.xe_get_interface_ip_address(output, service_object.name)
+                    ip_name_dict = self.xe_get_interface_ip_address(service_object.name)
                     if ip_name_dict[n.tacacs.config.source_address]:
                         interface_name, interface_number = self.xe_get_interface_name_and_number(ip_name_dict,
                                                                                                  n.tacacs.config.source_address)
@@ -151,37 +148,26 @@ class ServiceCallbacks(Service):
         return initial_vars
 
     @staticmethod
-    def xe_show_commands(command: str, device_name: str) -> str:
+    def xe_get_interface_ip_address(device: str) -> dict:
         """
-        Receives IOS XE show command and returns output
-        :param command: str of command, i.e. ip interface brief
-        :param device_name: str name of device
-        :return: output of command
-        """
-        with ncs.maapi.Maapi() as m:
-            with ncs.maapi.Session(m, 'admin', 'python'):
-                root = ncs.maagic.get_root(m)
-                device = root.devices.device[device_name]
-                input1 = device.live_status.ios_stats__exec.show.get_input()
-                input1.args = [command]
-                return device.live_status.ios_stats__exec.show(input1).result
-
-    @staticmethod
-    def xe_get_interface_ip_address(op: str, device: str) -> dict:
-        """
-        Receives output of show ip interface brief and device name and returns a dictionary of
+        Receives device name and returns a dictionary of
         IPs and interface names, e.g. {'172.16.255.1: 'Loopback0', '192.168.1.1': 'GigabitEthernet1'}
-        :param op: str output from 'show ip interface brief'
-        :param device: str name of device
+        :param device: str device name
         :return: dictionary of ips to interface names
         """
         ip_name_dict = dict()
-        output_lines = op.split('\n')
-        for i in output_lines:
-            n = i.split()
-            if len(n) > 0:
-                if n[0] != (device + '#'):
-                    ip_name_dict[n[1]] = n[0]
+        with ncs.maapi.single_write_trans('admin', 'python') as t:
+            root = ncs.maagic.get_root(t)
+            device_config = root.devices.device[device].config
+            for a in dir(device_config.ios__interface):
+                if not a.startswith('__'):
+                    class_method = getattr(device_config.ios__interface, a)
+                    for i in class_method:
+                        try:
+                            if i.ip.address.primary.address:
+                                ip_name_dict[str(i.ip.address.primary.address)] = str(i) + str(i.name)
+                        except:
+                            pass
         return ip_name_dict
 
     @staticmethod
