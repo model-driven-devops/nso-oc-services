@@ -16,7 +16,7 @@ payload = {
              "system": {
                  "config": {
                      "hostname": "hq-rtr1",
-                     "domain-name": "www.cisco.com",
+                     "domain-name": "cisco.com",
                      "login-banner": "This is line 1.\nThis is line 2.\nThis is the last line.",
                      "motd-banner": "This is line 1.\nThis is line 2.\nThis is the last line."
                  }

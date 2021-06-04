@@ -115,7 +115,7 @@ oc-system-nso:oc-system-nso:
           config:
             timezone-name: 'EDT -4 0'
         config:
-          domain-name: 'www.cisco.com'
+          domain-name: 'cisco.com'
           hostname: 'hq-rtr1'
           login-banner: |
             This is line 1.
@@ -192,4 +192,4 @@ oc-system-nso:oc-system-nso:
             protocol-version: 'V2'  # ip ssh version 2
             rate-limit: '0'  # unsupported in ios
             session-limit: '16' # line session-limit 16
-            timeout: '0'  # seconds - line exec-timeout 30 0
+            timeout: '1800'  # seconds - line exec-timeout 30 0

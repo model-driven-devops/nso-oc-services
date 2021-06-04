@@ -136,50 +136,46 @@
             </server>
           </group>
         </aaa>
-        <?end?> <!-- {/openconfig-system/system/aaa} -->
+        <?end?> <!-- if {/openconfig-system/system/aaa} -->
 
         <?if {/openconfig-system/system/clock/config/timezone-name}?>
         <clock xmlns="urn:ios">
           <timezone>
             <?if {$XE_TIMEZONE}?>
             <zone>{$XE_TIMEZONE}</zone>
-            <?end?>
+            <?end?> <!-- if {$XE_TIMEZONE} -->
             <?if {$XE_TIMEZONE_OFFSET_HOURS}?>
             <hours>{$XE_TIMEZONE_OFFSET_HOURS}</hours>
-            <?end?>
+            <?end?> <!-- if {$XE_TIMEZONE_OFFSET_HOURS} -->
             <?if {$XE_TIMEZONE_OFFSET_MINUTES}?>
             <minutes>{$XE_TIMEZONE_OFFSET_MINUTES}</minutes>
-            <?end?>
+            <?end?> <!-- if {$XE_TIMEZONE_OFFSET_MINUTES} -->
           </timezone>
         </clock>
-        <?end?>
+        <?end?> <!-- if {/openconfig-system/system/clock/config/timezone-name} -->
 
+        <?if {/openconfig-system/system/config}?>
         <?if {/openconfig-system/system/config/hostname}?>
         <hostname xmlns="urn:ios">{/openconfig-system/system/config/hostname}</hostname>
-        <?end?>
+        <?end?> <!-- if {/openconfig-system/system/config/hostname} -->
 
         <?if {/openconfig-system/system/config/domain-name}?>
         <ip xmlns="urn:ios">
           <domain>
             <name>{/openconfig-system/system/config/domain-name}</name>
           </domain>
-          <ssh>
-            <version when="{/openconfig-system/system/ssh-server/config/protocol-version='V2'}">2</version>
-            <version when="{/openconfig-system/system/ssh-server/config/protocol-version='V1'}">1</version>
-            <version when="{/openconfig-system/system/ssh-server/config/protocol-version='V1_V2'}" tags="delete"/>
-          </ssh>
         </ip>
-        <?end?>
-
+        <?end?> <!-- if {/openconfig-system/system/config/domain-name} -->
 
         <banner xmlns="urn:ios">
           <?if {/openconfig-system/system/config/login-banner}?>
           <login>{/openconfig-system/system/config/login-banner}</login>
-          <?end?>
+          <?end?> <!-- if {/openconfig-system/system/config/login-banner} -->
           <?if {/openconfig-system/system/config/motd-banner}?>
           <motd>{/openconfig-system/system/config/motd-banner}</motd>
-          <?end?>
+          <?end?> <!-- if {/openconfig-system/system/config/motd-banner} -->
         </banner>
+        <?end?> <!-- if {/openconfig-system/system/config} -->
 
         <?if {/openconfig-system/system/dns/servers}?>
         <ip xmlns="urn:ios">
@@ -188,11 +184,12 @@
             <name-server-list>
               <address>{current()/address}</address>
             </name-server-list>
-            <?end?>
+            <?end?> <!-- foreach {/openconfig-system/system/dns/servers/server} -->
           </name-server>
         </ip>
-        <?end?>
+        <?end?> <!-- if {/openconfig-system/system/dns/servers} -->
 
+        <?if {/openconfig-system/system/logging}?>
         <logging xmlns="urn:ios">
           <?if {$XE_CONSOLE_SEVERITY}?>
           <console>
@@ -201,30 +198,33 @@
           <monitor>
             <severity-level>{$XE_CONSOLE_SEVERITY}</severity-level>
           </monitor>
-          <?end?>
+          <?end?> <!-- if {$XE_CONSOLE_SEVERITY} -->
 
           <?if {$XE_CONSOLE_FACILITY or $XE_REMOTE_FACILITY}?>
           <facility>{$XE_CONSOLE_FACILITY}</facility>
           <?else?>
           <facility>{$XE_REMOTE_FACILITY}</facility>
-          <?end?>
+          <?end?> <!-- if {$XE_CONSOLE_FACILITY or $XE_REMOTE_FACILITY} -->
 
+          <?if {/openconfig-system/system/logging/remote-servers/remote-server}?>
           <host tags="replace">
             <?foreach {/openconfig-system/system/logging/remote-servers/remote-server}?>
             <ipv4>
               <host>{current()/host}</host>
             </ipv4>
-            <?end?>
+            <?end?> <!-- foreach {/openconfig-system/system/logging/remote-servers/remote-server} -->
           </host>
+          <?end?> <!-- if {/openconfig-system/system/logging/remote-servers/remote-server} -->
 
           <?if {$XE_LOGGING_SOURCE_INF_NAME}?>
           <source-interface>
             <name>{$XE_LOGGING_SOURCE_INF_NAME}</name>
           </source-interface>
-          <?end?>
+          <?end?> <!-- if {$XE_LOGGING_SOURCE_INF_NAME} -->
         </logging>
+        <?end?> <!-- if {/openconfig-system/system/logging} -->
 
-        <?if {/openconfig-system/system/ntp}?>
+        <?if {/openconfig-system/system/ntp/servers/server}?>
         <ntp xmlns="urn:ios" tags="replace">
           <?if {/openconfig-system/system/ntp/config/enabled='true'}?>
           <?if {/openconfig-system/system/ntp/config/ntp-source-address}?>
@@ -234,8 +234,8 @@
             <GigabitEthernet when="{$XE_NTP_SOURCE_INF_TYPE='GigabitEthernet'}">{$XE_NTP_SOURCE_INF_NUMBER}
             </GigabitEthernet>
           </source>
-          <?end?>
-          <?end?>
+          <?end?> <!-- if {$XE_NTP_SOURCE_INF_TYPE} -->
+          <?end?> <!-- if {/openconfig-system/system/ntp/config/ntp-source-address} -->
           <?if {/openconfig-system/system/ntp/servers/server}?>
           <server tags="replace">
             <?foreach {/openconfig-system/system/ntp/servers/server}?>
@@ -243,20 +243,30 @@
               <name>{current()/config/address}</name>
               <?if {current()/config/iburst='true'}?>
               <iburst/>
-              <?end?>
+              <?end?> <!-- if {current()/config/iburst='true'} -->
               <?if {current()/config/prefer='true'}?>
               <prefer/>
-              <?end?>
+              <?end?> <!-- if {current()/config/prefer='true'} -->
               <version>{current()/config/version}</version>
             </peer-list>
-            <?end?>
+            <?end?> <!-- foreach {/openconfig-system/system/ntp/servers/server} -->
           </server>
-          <?end?>
-          <?else?>
+          <?end?> <!-- if {/openconfig-system/system/ntp/servers/server} -->
+          <?else?> <!-- if {/openconfig-system/system/ntp/config/enabled='true'} -->
           <source tags="delete"/>
           <server tags="delete"/>
-          <?end?>
+          <?end?> <!-- if {/openconfig-system/system/ntp/config/enabled='true'} -->
         </ntp>
+        <?end?>  <!-- if {/openconfig-system/system/ntp/servers/server} -->
+
+        <?if {/openconfig-system/system/ssh-server}?>
+        <ip xmlns="urn:ios">
+          <ssh>
+            <version when="{/openconfig-system/system/ssh-server/config/protocol-version='V2'}">2</version>
+            <version when="{/openconfig-system/system/ssh-server/config/protocol-version='V1'}">1</version>
+            <version when="{/openconfig-system/system/ssh-server/config/protocol-version='V1_V2'}" tags="delete"/>
+          </ssh>
+        </ip>
         <line xmlns="urn:ios">
           <vty>
             <first>0</first>
@@ -270,10 +280,10 @@
             <transport>
               <input>ssh</input>
             </transport>
-            <?end?>
+            <?end?> <!-- if {/openconfig-system/system/ssh-server/config/enable='true'} -->
           </vty>
         </line>
-        <?end?>
+        <?end?> <!-- if {/openconfig-system/system/ssh-server} -->
       </config>
     </device>
   </devices>

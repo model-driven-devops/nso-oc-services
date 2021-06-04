@@ -16,7 +16,7 @@ config = """
       <system>
         <config>
             <hostname>hq-rtr1</hostname>
-            <domain-name>www.cisco.com</domain-name>
+            <domain-name>cisco.com</domain-name>
             <login-banner>This is line 1.\nThis is line 2.\nThis is the last line.</login-banner>
             <motd-banner>This is line 1.\nThis is line 2.\nThis is the last line.</motd-banner>
         </config>
