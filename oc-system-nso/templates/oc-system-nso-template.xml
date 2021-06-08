@@ -62,60 +62,8 @@
         <?end?> <!-- end foreach {/openconfig-system/system/aaa/authentication/users/user} -->
         <?end?> <!-- end if {/openconfig-system/system/aaa/authentication/users/user} -->
 
-        <!--Create the servers 1st-->
-        <tacacs xmlns="urn:ios">
-          <?foreach {/openconfig-system/system/aaa/server-groups/server-group}?>
-          <?if {current()/servers/server}?>
-          <?foreach {current()/servers/server}?>
-          <?set TIMEOUT = {current()/config/timeout}?>
-          <?set PASSWORD = {current()/tacacs/config/secret-key}?>
-          <?set PORT = {current()/tacacs/config/port}?>
-          <server>
-            <name>{current()/config/name}</name>
-            <address>
-              <ipv4>{current()/address}</ipv4>
-            </address>
-            <timeout>{$TIMEOUT}</timeout>
-            <key>
-              <type>0</type>
-              <secret>{$PASSWORD}</secret>
-            </key>
-            <port>{$PORT}</port>
-          </server>
-          <?end?> <!-- end foreach {current()/servers/server} -->
-          <?end?> <!-- end if {current()/servers/server} -->
-          <?end?> <!-- end foreach {/openconfig-system/system/aaa/server-groups/server-group} -->
-        </tacacs>
+<!--        Due to templating limitations, aaa server-groups are being configured in python-->
 
-        <!--                Create the groups -->
-        <aaa xmlns="urn:ios">
-          <group tags="replace">
-            <server>
-              <?foreach {/openconfig-system/system/aaa/server-groups/server-group}?>
-              <tacacs-plus>
-                <name>{current()/name}</name>
-                <server tags="replace">
-                  <?foreach {current()/servers/server}?>
-                  <name>
-                    <name>{current()/config/name}</name>
-                  </name>
-                  <?end?> <!-- end foreach {current()/servers/server} -->
-                </server>
-                <ip>
-                  <tacacs>
-                    <source-interface>
-                      <Loopback when="{$XE_TACACS_SOURCE_INF_TYPE='Loopback'}">{$XE_TACACS_SOURCE_INF_NUMBER}</Loopback>
-                      <GigabitEthernet when="{$XE_TACACS_SOURCE_INF_TYPE='GigabitEthernet'}">
-                        {$XE_TACACS_SOURCE_INF_NUMBER}
-                      </GigabitEthernet>
-                    </source-interface>
-                  </tacacs>
-                </ip>
-              </tacacs-plus>
-              <?end?> <!-- end foreach {/openconfig-system/system/aaa/server-groups/server-group} -->
-            </server>
-          </group>
-        </aaa>
         <?end?> <!-- if {/openconfig-system/system/aaa} -->
 
         <?if {/openconfig-system/system/clock/config/timezone-name}?>

@@ -75,7 +75,7 @@ oc-system-nso:oc-system-nso:
                         config:
                           port: '49'
                           secret-key: 'Password123'
-                          source-address: '172.16.255.1'  # Template has 1 var = For all groups, all sources must be the same
+                          source-address: '172.16.255.1'  # For each group, sources must be the same
                     - address: '10.2.2.2'
                       config:
                         address: '10.2.2.2'
@@ -85,7 +85,7 @@ oc-system-nso:oc-system-nso:
                         config:
                           port: '49'
                           secret-key: 'Password123'
-                          source-address: '172.16.255.1'  # Template has 1 var = For all groups, all sources must be the same
+                          source-address: '172.16.255.1'  # For each group, sources must be the same
               - config:
                   name: 'TACACS-GROUP-2'
                   type: 'TACACS'
@@ -101,7 +101,7 @@ oc-system-nso:oc-system-nso:
                         config:
                           port: '49'
                           secret-key: 'Password123'
-                          source-address: '172.16.255.1'  # Template has 1 var = For all groups, all sources must be the same
+                          source-address: '172.16.0.2'  # For each group, sources must be the same
                     - address: '10.4.4.4'
                       config:
                         address: '10.4.4.4'
@@ -111,7 +111,7 @@ oc-system-nso:oc-system-nso:
                         config:
                           port: '49'
                           secret-key: 'Password123'
-                          source-address: '172.16.255.1'  # Template has 1 var = For all groups, all sources must be the same
+                          source-address: '172.16.0.2'  # For each group, sources must be the same
         clock:
           config:
             timezone-name: 'EDT -4 0'

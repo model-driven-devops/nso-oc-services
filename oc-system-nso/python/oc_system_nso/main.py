@@ -38,9 +38,7 @@ class ServiceCallbacks(Service):
                             XE_AUTHORIZATION_TACACS='',
                             XE_AUTHORIZATION_LOCAL='',
                             XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_CONFIG='',
-                            XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_COMMAND='',
-                            XE_TACACS_SOURCE_INF_TYPE='',
-                            XE_TACACS_SOURCE_INF_NUMBER='')
+                            XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_COMMAND='')
 
         # Each NED type with have a x_transform_vars here
         self.xe_transform_vars()
@@ -59,7 +57,9 @@ class ServiceCallbacks(Service):
         Program service for xe NED features too complex for XML template.
         Includes:
             - aaa accounting
+            - aaa server-groups
         """
+        ### aaa accounting
         aaa_accounting_accounting_methods = list()
         aaa_accounting_events = list()
         if self.service.openconfig_system.system.aaa.accounting.config.accounting_method:
@@ -131,6 +131,51 @@ class ServiceCallbacks(Service):
                         elif counter == 2:
                             event['group3']['group'] = method
                             counter += 1
+
+        ### aaa server-groups
+        if self.service.openconfig_system.system.aaa.server_groups.server_group:
+            server_groups = list()
+            for group in self.service.openconfig_system.system.aaa.server_groups.server_group:
+                server_group = dict(name=group.name, type=group.config.type, servers=[])
+                for server in group.servers.server:
+                    server_info = dict(address=server.address,
+                                       name=server.config.name,
+                                       timeout=server.config.timeout,
+                                       port=server.tacacs.config.port,
+                                       secret_key=server.tacacs.config.secret_key,
+                                       source_address=server.tacacs.config.source_address)
+                    server_group['servers'].append(server_info)
+                server_groups.append(server_group)
+            self.log.info(server_groups)
+            for g in server_groups:
+                source_address = ''
+                for s in g['servers']:
+                    if self.root.devices.device[self.service.name].config.ios__tacacs.server.exists((s.get('name'))):
+                        server = self.root.devices.device[self.service.name].config.ios__tacacs.server[(s.get('name'))]
+                    else:
+                        server = self.root.devices.device[self.service.name].config.ios__tacacs.server.create(s.get('name'))
+
+                    if s.get('address'): server.address.ipv4 = s.get('address')
+                    server.key.type = '0'
+                    if s.get('secret_key'): server.key.secret = s.get('secret_key')
+                    if server.timeout: server.timeout = s.get('timeout')
+                    if s.get('port'): server.port = s.get('port')
+                    if s.get('source_address'): source_address = s.get('source_address')
+
+                if self.root.devices.device[self.service.name].config.ios__aaa.group.server.tacacs_plus.exists((g.get('name'))):
+                    group = self.root.devices.device[self.service.name].config.ios__aaa.group.server.tacacs_plus[(g.get('name'))]
+                else:
+                    group = self.root.devices.device[self.service.name].config.ios__aaa.group.server.tacacs_plus.create((g.get('name')))
+
+                for s in g['servers']:
+                    if not group.server.name.exists(s.get('name')):
+                        group.server.name.create(s.get('name'))
+                if source_address:
+                    ip_name_dict = self.xe_get_interface_ip_address()
+                    if ip_name_dict[source_address]:
+                        interface_name, interface_number = self.xe_get_interface_name_and_number(ip_name_dict,
+                                                                                                 source_address)
+                        setattr(group.ip.tacacs.source_interface, interface_name, interface_number)
 
     def xe_transform_vars(self):
         """
