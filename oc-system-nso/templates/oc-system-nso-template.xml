@@ -16,27 +16,7 @@
         </username>
         <?end?> <!-- end if {/openconfig-system/system/aaa/authentication/admin-user/admin-password} -->
 
-<!--        <aaa xmlns="urn:ios">-->
-<!--          <accounting>-->
-<!--            <commands>-->
-<!--              <level>15</level>-->
-<!--              <name>default</name>-->
-<!--              <action-type>stop-only</action-type>-->
-<!--              <group>tacacs+</group>-->
-<!--              <group2>-->
-<!--                <group>TACACS-GROUP-1</group>-->
-<!--              </group2>-->
-<!--            </commands>-->
-<!--            <exec>-->
-<!--              <name>default</name>-->
-<!--              <action-type>stop-only</action-type>-->
-<!--              <group>tacacs+</group>-->
-<!--              <group2>-->
-<!--                <group>TACACS-GROUP-1</group>-->
-<!--              </group2>-->
-<!--            </exec>-->
-<!--          </accounting>-->
-<!--        </aaa>-->
+<!--        Due to templating limitations, aaa accounting is being configured in python-->
 
         <aaa xmlns="urn:ios">
           <?if {/openconfig-system/system/aaa/authentication/config/authentication-method}?>

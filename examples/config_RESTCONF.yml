@@ -4,20 +4,21 @@ oc-system-nso:oc-system-nso:
     openconfig-system:
       system:
         aaa:
-#          accounting:
-#            config:
-#              accounting-method:
-#                - 'TACACS-GROUP-1'
-#            events:
-#              event:
-##                - config:
-##                    event-type: 'AAA_ACCOUNTING_EVENT_LOGIN'
-##                    record: 'STOP'
-##                  event-type: 'AAA_ACCOUNTING_EVENT_LOGIN'
-#                - config:
-#                    event-type: 'AAA_ACCOUNTING_EVENT_COMMAND'  # OC supports command and login
-#                    record: 'STOP'
-#                  event-type: 'AAA_ACCOUNTING_EVENT_COMMAND'
+          accounting:
+            config:
+              accounting-method:  # group name, TACACS_ALL
+#                - 'TACACS_ALL'
+                - 'TACACS-GROUP-1'
+            events:
+              event:  # OC supports command and login
+                - config:
+                    event-type: 'AAA_ACCOUNTING_EVENT_LOGIN'  # IOS aaa accounting exec for ios
+                    record: 'START_STOP'  # or START_STOP
+                  event-type: 'AAA_ACCOUNTING_EVENT_LOGIN'
+                - config:
+                    event-type: 'AAA_ACCOUNTING_EVENT_COMMAND'  # IOS aaa accounting commanda and priv 15
+                    record: 'STOP'  # or START_STOP
+                  event-type: 'AAA_ACCOUNTING_EVENT_COMMAND'
           authentication:
             admin-user:
               config:
@@ -74,7 +75,7 @@ oc-system-nso:oc-system-nso:
                         config:
                           port: '49'
                           secret-key: 'Password123'
-                          source-address: '172.16.255.1'  # All sources must be the same
+                          source-address: '172.16.255.1'  # Template has 1 var = For all groups, all sources must be the same
                     - address: '10.2.2.2'
                       config:
                         address: '10.2.2.2'
@@ -84,7 +85,7 @@ oc-system-nso:oc-system-nso:
                         config:
                           port: '49'
                           secret-key: 'Password123'
-                          source-address: '172.16.255.1'  # All sources must be the same
+                          source-address: '172.16.255.1'  # Template has 1 var = For all groups, all sources must be the same
               - config:
                   name: 'TACACS-GROUP-2'
                   type: 'TACACS'
@@ -100,7 +101,7 @@ oc-system-nso:oc-system-nso:
                         config:
                           port: '49'
                           secret-key: 'Password123'
-                          source-address: '172.16.255.1'  # All sources must be the same
+                          source-address: '172.16.255.1'  # Template has 1 var = For all groups, all sources must be the same
                     - address: '10.4.4.4'
                       config:
                         address: '10.4.4.4'
@@ -110,7 +111,7 @@ oc-system-nso:oc-system-nso:
                         config:
                           port: '49'
                           secret-key: 'Password123'
-                          source-address: '172.16.255.1'  # All sources must be the same
+                          source-address: '172.16.255.1'  # Template has 1 var = For all groups, all sources must be the same
         clock:
           config:
             timezone-name: 'EDT -4 0'
@@ -151,7 +152,7 @@ oc-system-nso:oc-system-nso:
               - config:
                   host: '10.0.0.1'  # logging host x.x.x.x
                   remote-port: '514'
-                  source-address: '172.16.255.1'  # logging source-interface Loopback0
+                  source-address: '172.16.255.1'  # logging source-interface Loopback0; same for all servers
                 host: '10.0.0.1'
                 selectors:
                   selector:
@@ -163,7 +164,7 @@ oc-system-nso:oc-system-nso:
               - config:
                   host: '10.0.0.2'  # logging host x.x.x.x
                   remote-port: '514'
-                  source-address: '172.16.255.1'  # logging source-interface Loopback0
+                  source-address: '172.16.255.1'  # logging source-interface Loopback0; same for all servers
                 host: '10.0.0.2'
                 selectors:
                   selector:

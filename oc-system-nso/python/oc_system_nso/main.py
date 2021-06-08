@@ -17,6 +17,10 @@ class ServiceCallbacks(Service):
         """
         self.log.info('Service create(service=', service._path, ')')
 
+        self.service = service
+        self.root = root
+        self.proplist = proplist
+
         initial_vars = dict(XE_TIMEZONE='',
                             XE_TIMEZONE_OFFSET_HOURS='',
                             XE_TIMEZONE_OFFSET_MINUTES='',
@@ -38,100 +42,176 @@ class ServiceCallbacks(Service):
                             XE_TACACS_SOURCE_INF_TYPE='',
                             XE_TACACS_SOURCE_INF_NUMBER='')
 
-        proplist = self.xe_transform_vars(service, proplist)
-        self.log.info(proplist)
-
-        final_vars = self.update_vars(initial_vars, proplist)
+        # Each NED type with have a x_transform_vars here
+        self.xe_transform_vars()
+        final_vars = self.update_vars(initial_vars, self.proplist)
         vars_template = ncs.template.Variables()
         for k in final_vars:
             vars_template.add(k, final_vars[k])
         template = ncs.template.Template(service)
         template.apply('oc-system-nso-template', vars_template)
 
-    def xe_transform_vars(self, service_object: ncs.maagic.ListElement, proplist: list) -> list:
+        # Each NED type may have a x_program_server here
+        self.xe_program_service()
+
+    def xe_program_service(self):
         """
-        Receives variables from service and transforms values into appropriate format IOS XE template values.
-        :param service_object: ncs.maagic.ListElement of current service
-        :param proplist: list of template values
-        :return: list of updated template values
+        Program service for xe NED features too complex for XML template.
+        Includes:
+            - aaa accounting
         """
-        if service_object.openconfig_system.system.clock.config.timezone_name:
-            tz = service_object.openconfig_system.system.clock.config.timezone_name.split()
+        aaa_accounting_accounting_methods = list()
+        aaa_accounting_events = list()
+        if self.service.openconfig_system.system.aaa.accounting.config.accounting_method:
+            for i in self.service.openconfig_system.system.aaa.accounting.config.accounting_method:
+                aaa_accounting_accounting_methods.append(i)
+        if self.service.openconfig_system.system.aaa.accounting.events.event:
+            for i in self.service.openconfig_system.system.aaa.accounting.events.event:
+                aaa_accounting_events.append(
+                    {"config": {"event-type": i['config']['event-type'], "record": i['config']['record']},
+                     "event-type": i['event-type']})
+        if aaa_accounting_accounting_methods and aaa_accounting_events:
+            for e in aaa_accounting_events:
+                self.log.info(e)
+                if e['event-type'] == 'oc-aaa-types:AAA_ACCOUNTING_EVENT_COMMAND':
+                    if self.root.devices.device[self.service.name].config.ios__aaa.accounting.commands.exists(
+                            ("15", "default")):
+                        event = self.root.devices.device[self.service.name].config.ios__aaa.accounting.commands[
+                            ("15", "default")]
+                    else:
+                        event = self.root.devices.device[self.service.name].config.ios__aaa.accounting.commands.create(
+                            ("15", "default"))
+
+                    if e['config']['record'] == "STOP":
+                        event.action_type = 'stop-only'
+                    elif e['config']['record'] == "START_STOP":
+                        event.action_type = 'start-stop'
+
+                    counter = 0
+                    for m in aaa_accounting_accounting_methods:
+                        if m == "TACACS_ALL":
+                            method = "tacacs+"
+                        else:
+                            method = m
+                        if counter == 0:
+                            event['group'] = method
+                            counter += 1
+                        elif counter == 1:
+                            event['group2']['group'] = method
+                            counter += 1
+                        elif counter == 2:
+                            event['group3']['group'] = method
+                            counter += 1
+                if e['event-type'] == 'oc-aaa-types:AAA_ACCOUNTING_EVENT_LOGIN':
+                    if self.root.devices.device[self.service.name].config.ios__aaa.accounting.exec.exists(("default")):
+                        event = self.root.devices.device[self.service.name].config.ios__aaa.accounting.exec[("default")]
+                    else:
+                        event = self.root.devices.device[self.service.name].config.ios__aaa.accounting.exec.create(
+                            ("default"))
+
+                    if e['config']['record'] == "STOP":
+                        self.log.info('YES IT IS STOP')
+                        event.action_type = 'stop-only'
+                    elif e['config']['record'] == "START_STOP":
+                        self.log.info('YES IT IS START_STOP')
+                        event.action_type = 'start-stop'
+
+                    counter = 0
+                    for m in aaa_accounting_accounting_methods:
+                        if m == "TACACS_ALL":
+                            method = "tacacs+"
+                        else:
+                            method = m
+                        if counter == 0:
+                            event['group'] = method
+                            counter += 1
+                        elif counter == 1:
+                            event['group2']['group'] = method
+                            counter += 1
+                        elif counter == 2:
+                            event['group3']['group'] = method
+                            counter += 1
+
+    def xe_transform_vars(self):
+        """
+        Transforms values into appropriate format IOS XE template values.
+        """
+        if self.service.openconfig_system.system.clock.config.timezone_name:
+            tz = self.service.openconfig_system.system.clock.config.timezone_name.split()
             if len(tz) != 3:
                 raise ValueError
             else:
-                proplist.append(('XE_TIMEZONE', tz[0]))
+                self.proplist.append(('XE_TIMEZONE', tz[0]))
             if -12 > int(tz[1]) or int(tz[1]) > 12:
                 raise ValueError
             else:
-                proplist.append(('XE_TIMEZONE_OFFSET_HOURS', tz[1]))
+                self.proplist.append(('XE_TIMEZONE_OFFSET_HOURS', tz[1]))
             if 0 > int(tz[2]) or int(tz[2]) > 60:
                 raise ValueError
             else:
-                proplist.append(('XE_TIMEZONE_OFFSET_MINUTES', tz[2]))
-        if service_object.openconfig_system.system.ntp.config.ntp_source_address:
-            ip_name_dict = self.xe_get_interface_ip_address(service_object.name)
-            if ip_name_dict[service_object.openconfig_system.system.ntp.config.ntp_source_address]:
+                self.proplist.append(('XE_TIMEZONE_OFFSET_MINUTES', tz[2]))
+        if self.service.openconfig_system.system.ntp.config.ntp_source_address:
+            ip_name_dict = self.xe_get_interface_ip_address()
+            if ip_name_dict[self.service.openconfig_system.system.ntp.config.ntp_source_address]:
                 interface_name, interface_number = self.xe_get_interface_name_and_number(ip_name_dict,
-                                                                                         service_object.openconfig_system.system.ntp.config.ntp_source_address)
-                proplist.append(('XE_NTP_SOURCE_INF_TYPE', interface_name))
-                proplist.append(('XE_NTP_SOURCE_INF_NUMBER', interface_number))
-        if service_object.openconfig_system.system.ssh_server.config.timeout:
-            seconds_all = int(service_object.openconfig_system.system.ssh_server.config.timeout)
-            proplist.append(('XE_EXEC_TIMEOUT_MINUTES', str(seconds_all // 60)))
-            proplist.append(('XE_EXEC_TIMEOUT_SECONDS', str(seconds_all % 60)))
-        if service_object.openconfig_system.system.logging.console.selectors.selector:
-            for i in service_object.openconfig_system.system.logging.console.selectors.selector:
-                proplist.append(('XE_CONSOLE_FACILITY', str(i.facility).lower().replace('oc-log:', '')))
-                proplist.append(('XE_CONSOLE_SEVERITY', str(i.severity).lower()))
+                                                                                         self.service.openconfig_system.system.ntp.config.ntp_source_address)
+                self.proplist.append(('XE_NTP_SOURCE_INF_TYPE', interface_name))
+                self.proplist.append(('XE_NTP_SOURCE_INF_NUMBER', interface_number))
+        if self.service.openconfig_system.system.ssh_server.config.timeout:
+            seconds_all = int(self.service.openconfig_system.system.ssh_server.config.timeout)
+            self.proplist.append(('XE_EXEC_TIMEOUT_MINUTES', str(seconds_all // 60)))
+            self.proplist.append(('XE_EXEC_TIMEOUT_SECONDS', str(seconds_all % 60)))
+        if self.service.openconfig_system.system.logging.console.selectors.selector:
+            for i in self.service.openconfig_system.system.logging.console.selectors.selector:
+                self.proplist.append(('XE_CONSOLE_FACILITY', str(i.facility).lower().replace('oc-log:', '')))
+                self.proplist.append(('XE_CONSOLE_SEVERITY', str(i.severity).lower()))
                 break
-        if service_object.openconfig_system.system.logging.remote_servers.remote_server:
+        if self.service.openconfig_system.system.logging.remote_servers.remote_server:
             need_remote_facility = True
             need_remote_severity = True
             need_source_address = True
-            for n in service_object.openconfig_system.system.logging.remote_servers.remote_server:
+            for n in self.service.openconfig_system.system.logging.remote_servers.remote_server:
                 for i in n.selectors.selector:
                     if need_remote_facility:
-                        proplist.append(('XE_REMOTE_FACILITY', str(i.facility).lower().replace('oc-log:', '')))
+                        self.proplist.append(('XE_REMOTE_FACILITY', str(i.facility).lower().replace('oc-log:', '')))
                         need_remote_facility = False
                     if need_remote_severity:
-                        proplist.append(('XE_REMOTE_SEVERITY', str(i.severity).lower()))
+                        self.proplist.append(('XE_REMOTE_SEVERITY', str(i.severity).lower()))
                         need_remote_severity = False
                 if need_source_address and n.config.source_address:
-                    ip_name_dict = self.xe_get_interface_ip_address(service_object.name)
+                    ip_name_dict = self.xe_get_interface_ip_address()
                     if ip_name_dict[n.config.source_address]:
                         interface_name, interface_number = self.xe_get_interface_name_and_number(ip_name_dict,
                                                                                                  n.config.source_address)
-                        proplist.append(('XE_LOGGING_SOURCE_INF_NAME', f'{interface_name}{interface_number}'))
+                        self.proplist.append(('XE_LOGGING_SOURCE_INF_NAME', f'{interface_name}{interface_number}'))
                         need_source_address = False
-        if service_object.openconfig_system.system.aaa.authentication.config.authentication_method:
-            for i in service_object.openconfig_system.system.aaa.authentication.config.authentication_method:
+        if self.service.openconfig_system.system.aaa.authentication.config.authentication_method:
+            for i in self.service.openconfig_system.system.aaa.authentication.config.authentication_method:
                 if i == 'TACACS_ALL':
-                    proplist.append(('XE_AUTHENTICATION_TACACS', 'True'))
+                    self.proplist.append(('XE_AUTHENTICATION_TACACS', 'True'))
                 elif i == 'LOCAL':
-                    proplist.append(('XE_AUTHENTICATION_LOCAL', 'True'))
-        if service_object.openconfig_system.system.aaa.authorization.config.authorization_method:
-            for i in service_object.openconfig_system.system.aaa.authorization.config.authorization_method:
+                    self.proplist.append(('XE_AUTHENTICATION_LOCAL', 'True'))
+        if self.service.openconfig_system.system.aaa.authorization.config.authorization_method:
+            for i in self.service.openconfig_system.system.aaa.authorization.config.authorization_method:
                 if i == 'TACACS_ALL':
-                    proplist.append(('XE_AUTHORIZATION_TACACS', 'True'))
+                    self.proplist.append(('XE_AUTHORIZATION_TACACS', 'True'))
                 elif i == 'LOCAL':
-                    proplist.append(('XE_AUTHORIZATION_LOCAL', 'True'))
-        if service_object.openconfig_system.system.aaa.authorization.events.event:
-            for i in service_object.openconfig_system.system.aaa.authorization.events.event:
+                    self.proplist.append(('XE_AUTHORIZATION_LOCAL', 'True'))
+        if self.service.openconfig_system.system.aaa.authorization.events.event:
+            for i in self.service.openconfig_system.system.aaa.authorization.events.event:
                 if i.event_type == 'oc-aaa-types:AAA_AUTHORIZATION_EVENT_CONFIG':
-                    proplist.append(('XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_CONFIG', 'True'))
+                    self.proplist.append(('XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_CONFIG', 'True'))
                 if i.event_type == 'oc-aaa-types:AAA_AUTHORIZATION_EVENT_COMMAND':
-                    proplist.append(('XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_COMMAND', 'True'))
-        for i in service_object.openconfig_system.system.aaa.server_groups.server_group:
+                    self.proplist.append(('XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_COMMAND', 'True'))
+        for i in self.service.openconfig_system.system.aaa.server_groups.server_group:
             for n in i.servers.server:
                 if n.tacacs.config.source_address:
-                    ip_name_dict = self.xe_get_interface_ip_address(service_object.name)
+                    ip_name_dict = self.xe_get_interface_ip_address()
                     if ip_name_dict[n.tacacs.config.source_address]:
                         interface_name, interface_number = self.xe_get_interface_name_and_number(ip_name_dict,
                                                                                                  n.tacacs.config.source_address)
-                        proplist.append(('XE_TACACS_SOURCE_INF_TYPE', interface_name))
-                        proplist.append(('XE_TACACS_SOURCE_INF_NUMBER', interface_number))
-        return proplist
+                        self.proplist.append(('XE_TACACS_SOURCE_INF_TYPE', interface_name))
+                        self.proplist.append(('XE_TACACS_SOURCE_INF_NUMBER', interface_number))
 
     @staticmethod
     def update_vars(initial_vars: dict, proplist: list) -> dict:
@@ -147,27 +227,22 @@ class ServiceCallbacks(Service):
                     initial_vars[var_tuple[0]] = var_tuple[1]
         return initial_vars
 
-    @staticmethod
-    def xe_get_interface_ip_address(device: str) -> dict:
+    def xe_get_interface_ip_address(self) -> dict:
         """
-        Receives device name and returns a dictionary of
+        Returns a dictionary of
         IPs and interface names, e.g. {'172.16.255.1: 'Loopback0', '192.168.1.1': 'GigabitEthernet1'}
-        :param device: str device name
-        :return: dictionary of ips to interface names
         """
         ip_name_dict = dict()
-        with ncs.maapi.single_write_trans('admin', 'python') as t:
-            root = ncs.maagic.get_root(t)
-            device_config = root.devices.device[device].config
-            for a in dir(device_config.ios__interface):
-                if not a.startswith('__'):
-                    class_method = getattr(device_config.ios__interface, a)
-                    for i in class_method:
-                        try:
-                            if i.ip.address.primary.address:
-                                ip_name_dict[str(i.ip.address.primary.address)] = str(i) + str(i.name)
-                        except:
-                            pass
+        device_config = self.root.devices.device[self.service.name].config
+        for a in dir(device_config.ios__interface):
+            if not a.startswith('__'):
+                class_method = getattr(device_config.ios__interface, a)
+                for i in class_method:
+                    try:
+                        if i.ip.address.primary.address:
+                            ip_name_dict[str(i.ip.address.primary.address)] = str(i) + str(i.name)
+                    except:
+                        pass
         return ip_name_dict
 
     @staticmethod
