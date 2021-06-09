@@ -87,6 +87,15 @@
         <hostname xmlns="urn:ios">{/openconfig-system/system/config/hostname}</hostname>
         <?end?> <!-- if {/openconfig-system/system/config/hostname} -->
 
+        <?if {/openconfig-system/system/config/nso-enable-secret}?>
+        <enable xmlns="urn:ios">
+          <secret>
+            <type>0</type>
+          <secret>{/openconfig-system/system/config/nso-enable-secret}</secret>
+          </secret>
+        </enable>
+        <?end?> <!-- if {/openconfig-system/system/config/nso-enable-secret} -->
+
         <?if {/openconfig-system/system/config/domain-name}?>
         <ip xmlns="urn:ios">
           <domain>
@@ -128,6 +137,10 @@
           </monitor>
           <?end?> <!-- if {$XE_CONSOLE_SEVERITY} -->
 
+          <?if {$XE_REMOTE_SEVERITY}?>
+          <trap>{$XE_REMOTE_SEVERITY}</trap>
+          <?end?> <!-- if {$XE_REMOTE_SEVERITY} -->
+
           <?if {$XE_CONSOLE_FACILITY or $XE_REMOTE_FACILITY}?>
           <facility>{$XE_CONSOLE_FACILITY}</facility>
           <?else?>
@@ -137,9 +150,16 @@
           <?if {/openconfig-system/system/logging/remote-servers/remote-server}?>
           <host tags="replace">
             <?foreach {/openconfig-system/system/logging/remote-servers/remote-server}?>
+            <?if {current()/config/nso-use-vrf!=''}?>
+            <ipv4-vrf>
+              <host>{current()/host}</host>
+              <vrf>{current()/config/nso-use-vrf}</vrf>
+            </ipv4-vrf>
+            <?else?> <!-- if {current()/config/nso-use-vrf} -->
             <ipv4>
               <host>{current()/host}</host>
             </ipv4>
+            <?end?> <!-- if {current()/config/nso-use-vrf} -->
             <?end?> <!-- foreach {/openconfig-system/system/logging/remote-servers/remote-server} -->
           </host>
           <?end?> <!-- if {/openconfig-system/system/logging/remote-servers/remote-server} -->
@@ -188,6 +208,23 @@
         <?end?>  <!-- if {/openconfig-system/system/ntp/servers/server} -->
 
         <?if {/openconfig-system/system/ssh-server}?>
+        <ip xmlns="urn:ios">
+          <ssh>
+            <?if {/openconfig-system/system/ssh-server/config/nso-ssh-timeout}?>
+            <time-out>{/openconfig-system/system/ssh-server/config/nso-ssh-timeout}</time-out>
+            <?end?>  <!-- if  {/openconfig-system/system/ssh-server/config/nso-ssh-timeout} -->
+
+            <?if {/openconfig-system/system/ssh-server/config/nso-ssh-source-interface}?>
+            <source-interface>
+              <GigabitEthernet>8</GigabitEthernet>
+              <Loopback when="{$XE_SSH_SOURCE_INF_TYPE='Loopback'}">{$XE_SSH_SOURCE_INF_NUMBER}</Loopback>
+              <GigabitEthernet when="{$XE_SSH_SOURCE_INF_TYPE='GigabitEthernet'}">{$XE_SSH_SOURCE_INF_NUMBER}</GigabitEthernet>
+            </source-interface>
+          <?end?>  <!-- if {/openconfig-system/system/ssh-server/config/nso-ssh-source-interface} -->
+          </ssh>
+        </ip>
+
+
         <ip xmlns="urn:ios">
           <ssh>
             <version when="{/openconfig-system/system/ssh-server/config/protocol-version='V2'}">2</version>

@@ -13,7 +13,7 @@ oc-system-nso:oc-system-nso:
               event:  # OC supports command and login
                 - config:
                     event-type: 'AAA_ACCOUNTING_EVENT_LOGIN'  # IOS aaa accounting exec for ios
-                    record: 'START_STOP'  # or START_STOP
+                    record: 'STOP'  # or START_STOP
                   event-type: 'AAA_ACCOUNTING_EVENT_LOGIN'
                 - config:
                     event-type: 'AAA_ACCOUNTING_EVENT_COMMAND'  # IOS aaa accounting commanda and priv 15
@@ -38,12 +38,12 @@ oc-system-nso:oc-system-nso:
                     ssh-key: ''
                   username: 'user1'
                 - config:
-                    username: 'user3'
+                    username: 'user2'
                     password: 'Password123'
                     password-hashed: ''
                     role: 'SYSTEM_ROLE_ADMIN'  # This is the one role in model
                     ssh-key: ''
-                  username: 'user3'
+                  username: 'user2'
           authorization:
             config:
               authorization-method:
@@ -116,6 +116,7 @@ oc-system-nso:oc-system-nso:
           config:
             timezone-name: 'EDT -4 0'
         config:
+          nso-enable-secret: "admin"
           domain-name: 'cisco.com'
           hostname: 'hq-rtr1'
           login-banner: |
@@ -153,6 +154,7 @@ oc-system-nso:oc-system-nso:
                   host: '10.0.0.1'  # logging host x.x.x.x
                   remote-port: '514'
                   source-address: '172.16.255.1'  # logging source-interface Loopback0; same for all servers
+                  nso-use-vrf: ''  # '' for default or VRF eg Mgmt-intf
                 host: '10.0.0.1'
                 selectors:
                   selector:
@@ -165,6 +167,7 @@ oc-system-nso:oc-system-nso:
                   host: '10.0.0.2'  # logging host x.x.x.x
                   remote-port: '514'
                   source-address: '172.16.255.1'  # logging source-interface Loopback0; same for all servers
+                  nso-use-vrf: ''  # '' for default or VRF eg Mgmt-intf
                 host: '10.0.0.2'
                 selectors:
                   selector:
@@ -189,6 +192,8 @@ oc-system-nso:oc-system-nso:
                   version: '4'
         ssh-server:
           config:
+            nso-ssh-timeout: '60'  # ip ssh timeout
+            nso-ssh-source-interface: 'GigabitEthernet8'
             enable: true  #   adds line transport input ssh; must be enabled for this to work
             protocol-version: 'V2'  # ip ssh version 2
             rate-limit: '0'  # unsupported in ios

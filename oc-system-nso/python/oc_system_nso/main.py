@@ -38,7 +38,9 @@ class ServiceCallbacks(Service):
                             XE_AUTHORIZATION_TACACS='',
                             XE_AUTHORIZATION_LOCAL='',
                             XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_CONFIG='',
-                            XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_COMMAND='')
+                            XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_COMMAND='',
+                            XE_SSH_SOURCE_INF_TYPE='',
+                            XE_SSH_SOURCE_INF_NUMBER='')
 
         # Each NED type with have a x_transform_vars here
         self.xe_transform_vars()
@@ -173,7 +175,7 @@ class ServiceCallbacks(Service):
                 if source_address:
                     ip_name_dict = self.xe_get_interface_ip_address()
                     if ip_name_dict[source_address]:
-                        interface_name, interface_number = self.xe_get_interface_name_and_number(ip_name_dict,
+                        interface_name, interface_number = self.xe_get_interface_type_and_number(ip_name_dict,
                                                                                                  source_address)
                         setattr(group.ip.tacacs.source_interface, interface_name, interface_number)
 
@@ -198,10 +200,16 @@ class ServiceCallbacks(Service):
         if self.service.openconfig_system.system.ntp.config.ntp_source_address:
             ip_name_dict = self.xe_get_interface_ip_address()
             if ip_name_dict[self.service.openconfig_system.system.ntp.config.ntp_source_address]:
-                interface_name, interface_number = self.xe_get_interface_name_and_number(ip_name_dict,
+                interface_name, interface_number = self.xe_get_interface_type_and_number(ip_name_dict,
                                                                                          self.service.openconfig_system.system.ntp.config.ntp_source_address)
                 self.proplist.append(('XE_NTP_SOURCE_INF_TYPE', interface_name))
                 self.proplist.append(('XE_NTP_SOURCE_INF_NUMBER', interface_number))
+        
+        if self.service.openconfig_system.system.ssh_server.config.nso_ssh_source_interface:
+            interface_name, interface_number = self.xe_get_interface_type_and_number_from_name(self.service.openconfig_system.system.ssh_server.config.nso_ssh_source_interface)
+            self.proplist.append(('XE_SSH_SOURCE_INF_TYPE', interface_name))
+            self.proplist.append(('XE_SSH_SOURCE_INF_NUMBER', interface_number))
+        
         if self.service.openconfig_system.system.ssh_server.config.timeout:
             seconds_all = int(self.service.openconfig_system.system.ssh_server.config.timeout)
             self.proplist.append(('XE_EXEC_TIMEOUT_MINUTES', str(seconds_all // 60)))
@@ -226,7 +234,7 @@ class ServiceCallbacks(Service):
                 if need_source_address and n.config.source_address:
                     ip_name_dict = self.xe_get_interface_ip_address()
                     if ip_name_dict[n.config.source_address]:
-                        interface_name, interface_number = self.xe_get_interface_name_and_number(ip_name_dict,
+                        interface_name, interface_number = self.xe_get_interface_type_and_number(ip_name_dict,
                                                                                                  n.config.source_address)
                         self.proplist.append(('XE_LOGGING_SOURCE_INF_NAME', f'{interface_name}{interface_number}'))
                         need_source_address = False
@@ -253,7 +261,7 @@ class ServiceCallbacks(Service):
                 if n.tacacs.config.source_address:
                     ip_name_dict = self.xe_get_interface_ip_address()
                     if ip_name_dict[n.tacacs.config.source_address]:
-                        interface_name, interface_number = self.xe_get_interface_name_and_number(ip_name_dict,
+                        interface_name, interface_number = self.xe_get_interface_type_and_number(ip_name_dict,
                                                                                                  n.tacacs.config.source_address)
                         self.proplist.append(('XE_TACACS_SOURCE_INF_TYPE', interface_name))
                         self.proplist.append(('XE_TACACS_SOURCE_INF_NUMBER', interface_number))
@@ -291,16 +299,29 @@ class ServiceCallbacks(Service):
         return ip_name_dict
 
     @staticmethod
-    def xe_get_interface_name_and_number(ip_name_d: dict, ip: str) -> Tuple[str, str]:
+    def xe_get_interface_type_and_number(ip_name_d: dict, ip: str) -> Tuple[str, str]:
         """
         Receive dictionary of IPs to interface names and IP. Returns interface type and number associated with IP.
         :param ip_name_d: dictionary of IPs to interface names
         :param ip: string IP to be match to interface name
-        :return: tuple of interface type, interaface number
+        :return: tuple of interface type, interface number
         """
         rt = re.search(r"\D+", ip_name_d.get(ip, ""))
         interface_name = rt.group(0)
         rn = re.search(r"[0-9]+(\/[0-9]+)*", ip_name_d.get(ip, ""))
+        interface_number = rn.group(0)
+        return interface_name, interface_number
+
+    @staticmethod
+    def xe_get_interface_type_and_number_from_name(interface: str) -> Tuple[str, str]:
+        """
+        Receive full interface name. Returns interface type and number.
+        :param interface: full interface name
+        :return: tuple of interface type, interface number
+        """
+        rt = re.search(r"\D+", interface)
+        interface_name = rt.group(0)
+        rn = re.search(r"[0-9]+(\/[0-9]+)*", interface)
         interface_number = rn.group(0)
         return interface_name, interface_number
 

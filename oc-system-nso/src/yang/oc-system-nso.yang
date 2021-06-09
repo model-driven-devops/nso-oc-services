@@ -18,7 +18,16 @@ module oc-system-nso {
   description
     "Model to include openconfig-system in an NSO service";
 
-  revision 2016-01-01 {
+  revision 2021-06-09 {
+    description
+      "Augmented:
+      nso-enable-secret,
+      nso-ssh-timeout,
+      nso-ssh-source-interface,
+      nso-use-vrf";
+  }
+
+  revision 2021-05-11 {
     description
       "Initial revision.";
   }
@@ -46,4 +55,35 @@ module oc-system-nso {
       uses oc-sys:system-top;
     }
   }
+     augment /oc-system-nso:oc-system-nso/openconfig-system/system/config {
+      leaf nso-enable-secret {
+        type string;
+        description
+          "Sets a local password to control access to various privilege levels.
+          At this time, only encryption-type 0 is supported.";
+      }
+    }
+     augment /oc-system-nso:oc-system-nso/openconfig-system/system/ssh-server/config {
+      leaf nso-ssh-timeout {
+        type string;
+        description
+          "Secure Shell (SSH) control parameter to set the time interval that the router waits for the SSH client to respond.
+          In IOS, seconds from 1-120.";
+      }
+    }
+     augment /oc-system-nso:oc-system-nso/openconfig-system/system/ssh-server/config {
+      leaf nso-ssh-source-interface {
+        type string;
+        description
+          "Secure Shell (SSH) control parameter to set the time interval that the router waits for the SSH client to respond.
+          In IOS, seconds from 1-120.";
+      }
+    }
+     augment /oc-system-nso:oc-system-nso/openconfig-system/system/logging/remote-servers/remote-server/config {
+      leaf nso-use-vrf {
+        type string;
+        description
+          "VRF from which to reach the logging servers. '' for no VRF.";
+      }
+    }
 }
