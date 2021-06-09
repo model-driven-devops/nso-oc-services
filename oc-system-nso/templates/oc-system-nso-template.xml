@@ -216,7 +216,6 @@
 
             <?if {/openconfig-system/system/ssh-server/config/nso-ssh-source-interface}?>
             <source-interface>
-              <GigabitEthernet>8</GigabitEthernet>
               <Loopback when="{$XE_SSH_SOURCE_INF_TYPE='Loopback'}">{$XE_SSH_SOURCE_INF_NUMBER}</Loopback>
               <GigabitEthernet when="{$XE_SSH_SOURCE_INF_TYPE='GigabitEthernet'}">{$XE_SSH_SOURCE_INF_NUMBER}</GigabitEthernet>
             </source-interface>
