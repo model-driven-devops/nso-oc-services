@@ -86,8 +86,7 @@ module oc-system-nso {
       leaf nso-ntp-use-vrf {
         type string;
         description
-          "VRF for communication with NTP servers. Note if ntp-source address is defined, this much match
-          VRF of source-address interface.";
+          "VRF for communication with NTP servers.";
       }
     }
      augment /oc-system-nso:oc-system-nso/openconfig-system/system/ntp/servers/server/config {
