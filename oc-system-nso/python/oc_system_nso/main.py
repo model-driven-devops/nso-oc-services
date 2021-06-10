@@ -63,7 +63,21 @@ class ServiceCallbacks(Service):
             - aaa accounting
             - aaa server-groups
         """
-        ### aaa accounting
+        # helper functions
+        def populate_accounting_events():
+            for counter, m in enumerate(aaa_accounting_accounting_methods):
+                if m == "TACACS_ALL":
+                    method = "tacacs+"
+                else:
+                    method = m
+                if counter == 0:
+                    event['group'] = method
+                elif counter == 1:
+                    event['group2']['group'] = method
+                elif counter == 2:
+                    event['group3']['group'] = method
+
+        # aaa accounting
         aaa_accounting_accounting_methods = list()
         aaa_accounting_events = list()
         if self.service.openconfig_system.system.aaa.accounting.config.accounting_method:
@@ -91,21 +105,8 @@ class ServiceCallbacks(Service):
                     elif e['config']['record'] == "START_STOP":
                         event.action_type = 'start-stop'
 
-                    counter = 0
-                    for m in aaa_accounting_accounting_methods:
-                        if m == "TACACS_ALL":
-                            method = "tacacs+"
-                        else:
-                            method = m
-                        if counter == 0:
-                            event['group'] = method
-                            counter += 1
-                        elif counter == 1:
-                            event['group2']['group'] = method
-                            counter += 1
-                        elif counter == 2:
-                            event['group3']['group'] = method
-                            counter += 1
+                    populate_accounting_events()
+
                 if e['event-type'] == 'oc-aaa-types:AAA_ACCOUNTING_EVENT_LOGIN':
                     if self.root.devices.device[self.service.name].config.ios__aaa.accounting.exec.exists(("default")):
                         event = self.root.devices.device[self.service.name].config.ios__aaa.accounting.exec[("default")]
@@ -120,23 +121,9 @@ class ServiceCallbacks(Service):
                         self.log.info('YES IT IS START_STOP')
                         event.action_type = 'start-stop'
 
-                    counter = 0
-                    for m in aaa_accounting_accounting_methods:
-                        if m == "TACACS_ALL":
-                            method = "tacacs+"
-                        else:
-                            method = m
-                        if counter == 0:
-                            event['group'] = method
-                            counter += 1
-                        elif counter == 1:
-                            event['group2']['group'] = method
-                            counter += 1
-                        elif counter == 2:
-                            event['group3']['group'] = method
-                            counter += 1
+                    populate_accounting_events()
 
-        ### aaa server-groups
+        # aaa server-groups
         if self.service.openconfig_system.system.aaa.server_groups.server_group:
             server_groups = list()
             for group in self.service.openconfig_system.system.aaa.server_groups.server_group:
@@ -157,19 +144,28 @@ class ServiceCallbacks(Service):
                     if self.root.devices.device[self.service.name].config.ios__tacacs.server.exists((s.get('name'))):
                         server = self.root.devices.device[self.service.name].config.ios__tacacs.server[(s.get('name'))]
                     else:
-                        server = self.root.devices.device[self.service.name].config.ios__tacacs.server.create(s.get('name'))
+                        server = self.root.devices.device[self.service.name].config.ios__tacacs.server.create(
+                            s.get('name'))
 
-                    if s.get('address'): server.address.ipv4 = s.get('address')
+                    if s.get('address'):
+                        server.address.ipv4 = s.get('address')
                     server.key.type = '0'
-                    if s.get('secret_key'): server.key.secret = s.get('secret_key')
-                    if server.timeout: server.timeout = s.get('timeout')
-                    if s.get('port'): server.port = s.get('port')
-                    if s.get('source_address'): source_address = s.get('source_address')
+                    if s.get('secret_key'):
+                        server.key.secret = s.get('secret_key')
+                    if server.timeout:
+                        server.timeout = s.get('timeout')
+                    if s.get('port'):
+                        server.port = s.get('port')
+                    if s.get('source_address'):
+                        source_address = s.get('source_address')
 
-                if self.root.devices.device[self.service.name].config.ios__aaa.group.server.tacacs_plus.exists((g.get('name'))):
-                    group = self.root.devices.device[self.service.name].config.ios__aaa.group.server.tacacs_plus[(g.get('name'))]
+                if self.root.devices.device[self.service.name].config.ios__aaa.group.server.tacacs_plus.exists(
+                        (g.get('name'))):
+                    group = self.root.devices.device[self.service.name].config.ios__aaa.group.server.tacacs_plus[
+                        (g.get('name'))]
                 else:
-                    group = self.root.devices.device[self.service.name].config.ios__aaa.group.server.tacacs_plus.create((g.get('name')))
+                    group = self.root.devices.device[self.service.name].config.ios__aaa.group.server.tacacs_plus.create(
+                        (g.get('name')))
 
                 for s in g['servers']:
                     if not group.server.name.exists(s.get('name')):
@@ -177,8 +173,8 @@ class ServiceCallbacks(Service):
                 if source_address:
                     ip_name_dict = self.xe_get_interface_ip_address()
                     if ip_name_dict[source_address]:
-                        interface_name, interface_number = self.xe_get_interface_type_and_number(ip_name_dict,
-                                                                                                 source_address)
+                        interface_name, interface_number = self.xe_get_interface_type_and_number(
+                            ip_name_dict.get(source_address))
                         setattr(group.ip.tacacs.source_interface, interface_name, interface_number)
 
     def xe_transform_vars(self):
@@ -206,16 +202,17 @@ class ServiceCallbacks(Service):
         if self.service.openconfig_system.system.ntp.config.ntp_source_address:
             ip_name_dict = self.xe_get_interface_ip_address()
             if ip_name_dict[self.service.openconfig_system.system.ntp.config.ntp_source_address]:
-                interface_name, interface_number = self.xe_get_interface_type_and_number(ip_name_dict,
-                                                                                         self.service.openconfig_system.system.ntp.config.ntp_source_address)
+                interface_name, interface_number = self.xe_get_interface_type_and_number(
+                    ip_name_dict.get(self.service.openconfig_system.system.ntp.config.ntp_source_address))
                 self.proplist.append(('XE_NTP_SOURCE_INF_TYPE', interface_name))
                 self.proplist.append(('XE_NTP_SOURCE_INF_NUMBER', interface_number))
-        
+
         if self.service.openconfig_system.system.ssh_server.config.nso_ssh_source_interface:
-            interface_name, interface_number = self.xe_get_interface_type_and_number_from_name(self.service.openconfig_system.system.ssh_server.config.nso_ssh_source_interface)
+            interface_name, interface_number = self.xe_get_interface_type_and_number(
+                self.service.openconfig_system.system.ssh_server.config.nso_ssh_source_interface)
             self.proplist.append(('XE_SSH_SOURCE_INF_TYPE', interface_name))
             self.proplist.append(('XE_SSH_SOURCE_INF_NUMBER', interface_number))
-        
+
         if self.service.openconfig_system.system.ssh_server.config.timeout:
             seconds_all = int(self.service.openconfig_system.system.ssh_server.config.timeout)
             self.proplist.append(('XE_EXEC_TIMEOUT_MINUTES', str(seconds_all // 60)))
@@ -240,9 +237,9 @@ class ServiceCallbacks(Service):
                 if need_source_address and n.config.source_address:
                     ip_name_dict = self.xe_get_interface_ip_address()
                     if ip_name_dict[n.config.source_address]:
-                        interface_name, interface_number = self.xe_get_interface_type_and_number(ip_name_dict,
-                                                                                                 n.config.source_address)
-                        self.proplist.append(('XE_LOGGING_SOURCE_INF_NAME', f'{interface_name}{interface_number}'))
+                        interface_type, interface_number = self.xe_get_interface_type_and_number(
+                            ip_name_dict.get(n.config.source_address))
+                        self.proplist.append(('XE_LOGGING_SOURCE_INF_NAME', f'{interface_type}{interface_number}'))
                         need_source_address = False
         if self.service.openconfig_system.system.aaa.authentication.config.authentication_method:
             for i in self.service.openconfig_system.system.aaa.authentication.config.authentication_method:
@@ -267,9 +264,9 @@ class ServiceCallbacks(Service):
                 if n.tacacs.config.source_address:
                     ip_name_dict = self.xe_get_interface_ip_address()
                     if ip_name_dict[n.tacacs.config.source_address]:
-                        interface_name, interface_number = self.xe_get_interface_type_and_number(ip_name_dict,
-                                                                                                 n.tacacs.config.source_address)
-                        self.proplist.append(('XE_TACACS_SOURCE_INF_TYPE', interface_name))
+                        interface_type, interface_number = self.xe_get_interface_type_and_number(
+                            ip_name_dict.get(n.tacacs.config.source_address))
+                        self.proplist.append(('XE_TACACS_SOURCE_INF_TYPE', interface_type))
                         self.proplist.append(('XE_TACACS_SOURCE_INF_NUMBER', interface_number))
 
     @staticmethod
@@ -305,21 +302,7 @@ class ServiceCallbacks(Service):
         return ip_name_dict
 
     @staticmethod
-    def xe_get_interface_type_and_number(ip_name_d: dict, ip: str) -> Tuple[str, str]:
-        """
-        Receive dictionary of IPs to interface names and IP. Returns interface type and number associated with IP.
-        :param ip_name_d: dictionary of IPs to interface names
-        :param ip: string IP to be match to interface name
-        :return: tuple of interface type, interface number
-        """
-        rt = re.search(r"\D+", ip_name_d.get(ip, ""))
-        interface_name = rt.group(0)
-        rn = re.search(r"[0-9]+(\/[0-9]+)*", ip_name_d.get(ip, ""))
-        interface_number = rn.group(0)
-        return interface_name, interface_number
-
-    @staticmethod
-    def xe_get_interface_type_and_number_from_name(interface: str) -> Tuple[str, str]:
+    def xe_get_interface_type_and_number(interface: str) -> Tuple[str, str]:
         """
         Receive full interface name. Returns interface type and number.
         :param interface: full interface name
