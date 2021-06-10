@@ -22,6 +22,11 @@ module oc-system-nso {
     description
       "Augmented:
       nso-enable-secret,
+      nso-console-exec-timeout-seconds,
+      nso-ntp-enable-logging,
+      nso-ntp-use-vrf,
+      nso-ntp-auth-key-id,
+      nso-absolute-timeout-minutes,
       nso-ssh-timeout,
       nso-ssh-source-interface,
       nso-use-vrf";
@@ -61,6 +66,42 @@ module oc-system-nso {
         description
           "Sets a local password to control access to various privilege levels.
           At this time, only encryption-type 0 is supported.";
+      }
+    }
+     augment /oc-system-nso:oc-system-nso/openconfig-system/system/config {
+      leaf nso-console-exec-timeout-seconds {
+        type string;
+        description
+          "Configure the inactive session timeout on the console port in seconds.";
+      }
+    }
+    augment /oc-system-nso:oc-system-nso/openconfig-system/system/ntp/config {
+      leaf nso-ntp-enable-logging {
+        type boolean;
+        description
+          "Enables Network Time Protocol (NTP) message logging.";
+      }
+    }
+     augment /oc-system-nso:oc-system-nso/openconfig-system/system/ntp/servers/server {
+      leaf nso-ntp-use-vrf {
+        type string;
+        description
+          "VRF for communication with NTP servers. Note if ntp-source address is defined, this much match
+          VRF of source-address interface.";
+      }
+    }
+     augment /oc-system-nso:oc-system-nso/openconfig-system/system/ntp/servers/server/config {
+      leaf nso-ntp-auth-key-id {
+        type string;
+        description
+          "Links to authentication key in openconfig-system/system/ntp/ntp-keys";
+      }
+    }
+     augment /oc-system-nso:oc-system-nso/openconfig-system/system/ssh-server/config {
+      leaf nso-absolute-timeout-minutes {
+        type string;
+        description
+          "The absolute timeout for line disconnection in minutes.";
       }
     }
      augment /oc-system-nso:oc-system-nso/openconfig-system/system/ssh-server/config {

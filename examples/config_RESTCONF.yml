@@ -116,7 +116,8 @@ oc-system-nso:oc-system-nso:
           config:
             timezone-name: 'EDT -4 0'
         config:
-          nso-enable-secret: "admin"
+          nso-enable-secret: 'admin'
+          nso-console-exec-timeout-seconds: '600'
           domain-name: 'cisco.com'
           hostname: 'hq-rtr1'
           login-banner: |
@@ -178,13 +179,39 @@ oc-system-nso:oc-system-nso:
                       severity: 'INFORMATIONAL'
         ntp:
           config:
+            nso-ntp-enable-logging: true
+            enable-ntp-auth: true
             enabled: true  # true or false - removes or adds ntp servers
             ntp-source-address: '172.16.255.1'
+          ntp-keys:
+            ntp-key:
+            - config:
+                key-id: '1'
+                key-type: 'NTP_AUTH_MD5'
+                key-value: 'password1'
+              key-id: '1'
+            - config:
+                key-id: '2'
+                key-type: 'NTP_AUTH_MD5'
+                key-value: 'password2'
+              key-id: '2'
           servers:
             server:
               - address: '10.0.0.1'
+                nso-ntp-use-vrf: ''  # '' for default
                 config:
+                  nso-ntp-auth-key-id: '1'
                   address: '10.0.0.1'
+                  association-type: SERVER  # SERVER, PEER, POOL
+                  iburst: true
+                  port: '123'  # always 123 for ios
+                  prefer: false
+                  version: '4'
+              - address: '10.0.0.2'
+                nso-ntp-use-vrf: 'Mgmt-intf'  # '' for default
+                config:
+                  nso-ntp-auth-key-id: ''
+                  address: '10.0.0.2'
                   association-type: SERVER  # SERVER, PEER, POOL
                   iburst: true
                   port: '123'  # always 123 for ios
@@ -192,6 +219,7 @@ oc-system-nso:oc-system-nso:
                   version: '4'
         ssh-server:
           config:
+            nso-absolute-timeout-minutes: '1200'
             nso-ssh-timeout: '60'  # ip ssh timeout
             nso-ssh-source-interface: 'GigabitEthernet8'
             enable: true  #   adds line transport input ssh; must be enabled for this to work

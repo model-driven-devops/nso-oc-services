@@ -87,6 +87,18 @@
         <hostname xmlns="urn:ios">{/openconfig-system/system/config/hostname}</hostname>
         <?end?> <!-- if {/openconfig-system/system/config/hostname} -->
 
+        <?if {/openconfig-system/system/config/nso-console-exec-timeout-seconds}?>
+        <line xmlns="urn:ios">
+          <console>
+            <first>0</first>
+            <exec-timeout>
+              <minutes>{$XE_CONSOLE_EXEC_TIMEOUT_MINUTES}</minutes>
+              <seconds>{$XE_CONSOLE_EXEC_TIMEOUT_SECONDS}</seconds>
+            </exec-timeout>
+          </console>
+        </line>
+        <?end?> <!-- if {/openconfig-system/system/config/nso-console-exec-timeout-seconds} -->
+
         <?if {/openconfig-system/system/config/nso-enable-secret}?>
         <enable xmlns="urn:ios">
           <secret>
@@ -184,19 +196,71 @@
           </source>
           <?end?> <!-- if {$XE_NTP_SOURCE_INF_TYPE} -->
           <?end?> <!-- if {/openconfig-system/system/ntp/config/ntp-source-address} -->
+
+          <?if {/openconfig-system/system/ntp/config/nso-ntp-enable-logging='true'}?>
+            <logging/>
+          <?else?> <!-- if {/openconfig-system/system/ntp/config/nso-ntp-enable-logging='true'} -->
+            <logging tags="delete"/>
+          <?end?> <!-- if {/openconfig-system/system/ntp/config/nso-ntp-enable-logging='true'} -->
+
+
+          <?if {/openconfig-system/system/ntp/config/enable-ntp-auth='true'}?>
+            <authenticate/>
+          <?else?> <!-- if {/openconfig-system/system/ntp/config/enable-ntp-auth='true'} -->
+            <authenticate tags="delete"/>
+          <?end?> <!-- if {/openconfig-system/system/ntp/config/enable-ntp-auth='true'} -->
+
+          <?if {/openconfig-system/system/ntp/ntp-keys/ntp-key}?>
+          <?foreach {/openconfig-system/system/ntp/ntp-keys/ntp-key}?>
+          <authentication-key tags="replace">
+            <number>{current()/key-id}</number>
+            <md5>
+              <secret>{current()/config/key-value}</secret>
+            </md5>
+          </authentication-key>
+          <trusted-key>
+           <key-number>{current()/key-id}</key-number>
+          </trusted-key>
+          <?end?> <!-- foreach {/openconfig-system/system/ntp/ntp-keys/ntp-key} -->
+          <?end?> <!-- if {/openconfig-system/system/ntp/ntp-keys/ntp-key} -->
+
           <?if {/openconfig-system/system/ntp/servers/server}?>
           <server tags="replace">
             <?foreach {/openconfig-system/system/ntp/servers/server}?>
-            <peer-list>
-              <name>{current()/config/address}</name>
-              <?if {current()/config/iburst='true'}?>
-              <iburst/>
-              <?end?> <!-- if {current()/config/iburst='true'} -->
-              <?if {current()/config/prefer='true'}?>
-              <prefer/>
-              <?end?> <!-- if {current()/config/prefer='true'} -->
-              <version>{current()/config/version}</version>
-            </peer-list>
+            <?set AUTH-KEY = {current()/config/nso-ntp-auth-key-id}?>
+            <?set NTP-VRF = {current()/nso-ntp-use-vrf}?>
+            <?if {$NTP-VRF}?>
+            <vrf>
+              <name>{$NTP-VRF}</name>
+              <peer-list>
+                <name>{current()/config/address}</name>
+                <?if {$AUTH-KEY}?>
+                <key>{$AUTH-KEY}</key>
+                <?end?> <!-- if {$AUTH-KEY} -->
+                <?if {current()/config/iburst='true'}?>
+                <iburst/>
+                <?end?> <!-- if {current()/config/iburst='true'} -->
+                <?if {current()/config/prefer='true'}?>
+                <prefer/>
+                <?end?> <!-- if {current()/config/prefer='true'} -->
+                <version>{current()/config/version}</version>
+              </peer-list>
+            </vrf>
+            <?else?> <!-- if {$NTP-VRF} -->
+              <peer-list>
+                <name>{current()/config/address}</name>
+                <?if {$AUTH-KEY}?>
+                <key>{$AUTH-KEY}</key>
+                <?end?> <!-- if {$AUTH-KEY} -->
+                <?if {current()/config/iburst='true'}?>
+                <iburst/>
+                <?end?> <!-- if {current()/config/iburst='true'} -->
+                <?if {current()/config/prefer='true'}?>
+                <prefer/>
+                <?end?> <!-- if {current()/config/prefer='true'} -->
+                <version>{current()/config/version}</version>
+              </peer-list>
+            <?end?> <!-- if {$NTP-VRF} -->
             <?end?> <!-- foreach {/openconfig-system/system/ntp/servers/server} -->
           </server>
           <?end?> <!-- if {/openconfig-system/system/ntp/servers/server} -->
@@ -240,6 +304,11 @@
               <seconds>{$XE_EXEC_TIMEOUT_SECONDS}</seconds>
             </exec-timeout>
             <session-limit>{/openconfig-system/system/ssh-server/config/session-limit}</session-limit>
+
+            <?if {/openconfig-system/system/ssh-server/config/nso-absolute-timeout-minutes}?>
+            <absolute-timeout>{/openconfig-system/system/ssh-server/config/nso-ssh-timeout}</absolute-timeout>
+            <?end?>  <!-- if {/openconfig-system/system/ssh-server/config/nso-absolute-timeout-minutes} -->
+
             <?if {/openconfig-system/system/ssh-server/config/enable='true'}?>
             <transport>
               <input>ssh</input>

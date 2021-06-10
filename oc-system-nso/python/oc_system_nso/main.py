@@ -28,6 +28,8 @@ class ServiceCallbacks(Service):
                             XE_NTP_SOURCE_INF_NUMBER='',
                             XE_EXEC_TIMEOUT_MINUTES='',
                             XE_EXEC_TIMEOUT_SECONDS='',
+                            XE_CONSOLE_EXEC_TIMEOUT_MINUTES='',
+                            XE_CONSOLE_EXEC_TIMEOUT_SECONDS='',
                             XE_CONSOLE_FACILITY='',
                             XE_CONSOLE_SEVERITY='',
                             XE_REMOTE_FACILITY='',
@@ -197,6 +199,10 @@ class ServiceCallbacks(Service):
                 raise ValueError
             else:
                 self.proplist.append(('XE_TIMEZONE_OFFSET_MINUTES', tz[2]))
+        if self.service.openconfig_system.system.config.nso_console_exec_timeout_seconds:
+            seconds_all = int(self.service.openconfig_system.system.ssh_server.config.timeout)
+            self.proplist.append(('XE_CONSOLE_EXEC_TIMEOUT_MINUTES', str(seconds_all // 60)))
+            self.proplist.append(('XE_CONSOLE_EXEC_TIMEOUT_SECONDS', str(seconds_all % 60)))
         if self.service.openconfig_system.system.ntp.config.ntp_source_address:
             ip_name_dict = self.xe_get_interface_ip_address()
             if ip_name_dict[self.service.openconfig_system.system.ntp.config.ntp_source_address]:
