@@ -1,0 +1,53 @@
+module oc-interfaces-nso {
+
+  namespace "http://cisco.com/oc-interfaces-nso";
+  prefix oc-interfaces-nso;
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import tailf-common {
+    prefix tailf;
+  }
+  import tailf-ncs {
+    prefix ncs;
+  }
+  import iana-if-type {
+    prefix ianaift;
+  }
+  import openconfig-interfaces {
+    prefix oc-if;
+  }
+
+  description
+    "Model to include openconfig-interfaces in an NSO service";
+
+  revision 2016-01-01 {
+    description
+      "Initial revision.";
+  }
+
+  list oc-interfaces-nso {
+    description "Accepts items composed of service name, device name, and openconfig interfaces model";
+
+    key name;
+    leaf name {
+      tailf:info "Unique service id";
+      tailf:cli-allow-range;
+      type string;
+    }
+
+    uses ncs:service-data;
+    ncs:servicepoint oc-interfaces-nso-servicepoint;
+
+    leaf device {
+      type leafref {
+        path "/ncs:devices/ncs:device/ncs:name";
+      }
+    }
+
+    container openconfig-interfaces {
+      uses oc-if:interfaces-top;
+    }
+  }
+}
