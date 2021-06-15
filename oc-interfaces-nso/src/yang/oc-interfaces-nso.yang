@@ -18,7 +18,10 @@ module oc-interfaces-nso {
   import openconfig-if-ethernet {
     prefix oc-eth;
   }
-   import openconfig-if-aggregate {
+  import openconfig-if-poe {
+    prefix oc-poe;
+  }
+  import openconfig-if-aggregate {
     prefix oc-lag;
   }
    import openconfig-if-ip {
@@ -74,6 +77,14 @@ module oc-interfaces-nso {
       the interface type is Ethernet";
       }
     }
+  }
+
+  // openconfig-if-poe augments
+  augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/ethernet" {
+    description
+    "Adds PoE to the ethernet model.";
+
+    uses oc-poe:poe-ethernet-top;
   }
 
   // openconfig-if-ip augments
