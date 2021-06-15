@@ -15,6 +15,12 @@ module oc-interfaces-nso {
   import iana-if-type {
     prefix ianaift;
   }
+  import openconfig-if-ethernet {
+    prefix oc-eth;
+  }
+   import openconfig-if-aggregate {
+    prefix oc-lag;
+  }
    import openconfig-if-ip {
     prefix oc-ip;
   }
@@ -56,59 +62,90 @@ module oc-interfaces-nso {
       uses oc-if:interfaces-top;
     }
   }
+
+  // openconfig-if-ethernet augments
+  augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface" {
+    description "Adds addtional Ethernet-specific configuration to
+    interfaces model";
+
+    uses oc-eth:ethernet-top {
+      when "current()/config/type = 'ianaift:ethernetCsmacd'" {
+      description "Additional interface configuration parameters when
+      the interface type is Ethernet";
+      }
+    }
+  }
+
   // openconfig-if-ip augments
   augment  "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/subinterfaces/subinterface" {
     description
       "IPv4 address family configuration for
       interfaces";
-
     uses oc-ip:ipv4-top;
-
   }
-
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/subinterfaces/subinterface" {
     description
       "IPv6 address family configuration for
       interfaces";
-
     uses oc-ip:ipv6-top;
-
   }
-
-  // VRRP for IPv4 interfaces
-
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/subinterfaces/subinterface/ipv4/addresses/address" {
     description
       "Additional IP addr family configuration for
       interfaces";
-
     uses oc-ip:ip-vrrp-top;
-
   }
-
-  // VRRP for IPv6 interfaces
-
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/subinterfaces/subinterface/ipv6/addresses/address" {
     description
       "Additional IP addr family configuration for
       interfaces";
-
     uses oc-ip:ip-vrrp-top;
-
   }
-
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/subinterfaces/subinterface/ipv6/addresses/address/vrrp/vrrp-group/config" {
     description
       "Additional VRRP data for IPv6 interfaces";
-
     uses oc-ip:ip-vrrp-ipv6-config;
   }
 
-  // Create Routed VLAN
+  // openconfig-if-aggregate augments
+  augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface" {
+    when "(current()/config/type = 'ianaift:ieee8023adLag' or current()/config/type = 'ianaift:propVirtual') and"+
+         " not (contains(current()/config/name, 'LISP'))"+
+         " and not (contains(current()/config/name, 'VirtualPortGroup'))" {
+      description "active when the interface is set to type LAG";
+    }
+    description "Adds LAG configuration to the interface module";
+    uses oc-lag:aggregation-logical-top;
+  }
+  augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/ethernet/config" {
+    description "Adds LAG settings to individual Ethernet
+    interfaces";
+    uses oc-lag:ethernet-if-aggregation-config;
+  }
+
+  // openconfig-vlan augments
+   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/subinterfaces/subinterface" {
+      description
+        "Adds VLAN settings to individual subinterfaces";
+    uses oc-vlan:vlan-logical-top;
+  }
+  augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/config" {
+    description
+      "Adds TPID / ethertype setting for the base interface";
+    uses oc-vlan:vlan-tpid-config;
+  }
+  augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/ethernet" {
+    description
+      "Adds VLAN settings to individual Ethernet interfaces";
+    uses oc-vlan:vlan-switched-top;
+  }
+  augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/aggregation" {
+    description "Adds VLAN settings to a LAG interface";
+    uses oc-vlan:vlan-switched-top;
+  }
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface" {
     description
       "Adds configuration and state for routed VLAN interfaces";
-
     uses oc-vlan:vlan-routed-top {
       when "current()/config/type = 'ianaift:l3ipvlan'" {
       description
@@ -118,48 +155,34 @@ module oc-interfaces-nso {
     }
   }
 
-  // Augments for for routed VLANs
-
+  // openconfig-if-ip augments
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/routed-vlan" {
     description
       "IPv4 address family configuration for
       interfaces";
-
     uses oc-ip:ipv4-top;
   }
-
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/routed-vlan" {
     description
       "IPv6 address family configuration for
       interfaces";
-
     uses oc-ip:ipv6-top;
   }
-
-  // VRRP for routed VLAN interfaces
-
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/routed-vlan/ipv4/addresses/address" {
     description
       "Additional IP addr family configuration for
       interfaces";
-
     uses oc-ip:ip-vrrp-top;
-
   }
-
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/routed-vlan/ipv6/addresses/address" {
     description
       "Additional IP addr family configuration for
       interfaces";
-
     uses oc-ip:ip-vrrp-top;
-
   }
-
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/routed-vlan/ipv6/addresses/address/vrrp/vrrp-group/config" {
     description
       "Additional VRRP data for IPv6 interfaces";
-
     uses oc-ip:ip-vrrp-ipv6-config;
   }
 }
