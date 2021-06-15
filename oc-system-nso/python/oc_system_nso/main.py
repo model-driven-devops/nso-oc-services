@@ -46,14 +46,14 @@ class ServiceCallbacks(Service):
 
         # Each NED type with have a x_transform_vars here
         self.xe_transform_vars()
+        self.log.info(self.proplist)
         final_vars = self.update_vars(initial_vars, self.proplist)
         vars_template = ncs.template.Variables()
         for k in final_vars:
             vars_template.add(k, final_vars[k])
         template = ncs.template.Template(service)
         template.apply('oc-system-nso-template', vars_template)
-
-        # Each NED type may have a x_program_server here
+        # Each NED type may have a x_program_service here
         self.xe_program_service()
 
     def xe_program_service(self):
@@ -90,7 +90,6 @@ class ServiceCallbacks(Service):
                      "event-type": i['event-type']})
         if aaa_accounting_accounting_methods and aaa_accounting_events:
             for e in aaa_accounting_events:
-                self.log.info(e)
                 if e['event-type'] == 'oc-aaa-types:AAA_ACCOUNTING_EVENT_COMMAND':
                     if self.root.devices.device[self.service.name].config.ios__aaa.accounting.commands.exists(
                             ("15", "default")):
@@ -115,10 +114,8 @@ class ServiceCallbacks(Service):
                             ("default"))
 
                     if e['config']['record'] == "STOP":
-                        self.log.info('YES IT IS STOP')
                         event.action_type = 'stop-only'
                     elif e['config']['record'] == "START_STOP":
-                        self.log.info('YES IT IS START_STOP')
                         event.action_type = 'start-stop'
 
                     populate_accounting_events()
@@ -137,7 +134,6 @@ class ServiceCallbacks(Service):
                                        source_address=server.tacacs.config.source_address)
                     server_group['servers'].append(server_info)
                 server_groups.append(server_group)
-            self.log.info(server_groups)
             for g in server_groups:
                 source_address = ''
                 for s in g['servers']:

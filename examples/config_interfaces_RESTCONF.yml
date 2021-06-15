@@ -1,0 +1,48 @@
+oc-interfaces-nso:oc-interfaces-nso:
+  - name: hq-rtr1
+    device: hq-rtr1
+    openconfig-interfaces:
+      interfaces:
+      - config:
+          description: 'physical interface'
+          enabled: 'True'
+          loopback-mode: 'False'
+          mtu: ''  # default is interface default, can be changed
+          name: 'GigabitEthernet4'  #
+          type: 'ethernetCsmacd'  # in iana-if-type.yang
+        hold-time:
+          config:  # IOS carrier delay
+            down: '0'
+            up: '0'
+        name: 'GigabitEthernet4'
+        subinterfaces:
+          subinterface:
+      - config:
+          description: 'Test trunk description'
+          enabled: 'True'
+          loopback-mode: 'False'
+          mtu: ''  # default is interface default, can be changed
+          name: 'GigabitEthernet5'  #
+          type: 'l3ipvlan'
+        hold-time:
+          config:  # IOS carrier delay
+            down: '0'
+            up: '0'
+        name: 'GigabitEthernet5'
+        subinterfaces:
+          subinterface:
+          - config:
+              description: 'VLAN 100 sub-interface'
+              enabled: 'True'
+              index: '100'
+            index: '100'
+          - config:
+              description: 'VLAN 200 sub-interface'
+              enabled: 'True'
+              index: '200'
+            index: '200'
+          - config:
+              description: 'VLAN 300 sub-interface'
+              enabled: 'True'
+              index: '300'
+            index: '300'

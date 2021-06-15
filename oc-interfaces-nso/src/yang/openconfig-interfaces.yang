@@ -312,6 +312,7 @@ module openconfig-interfaces {
       type identityref {
         base ietf-if:interface-type;
       }
+      config true;
       mandatory true;
       description
         "The type of the interface.
@@ -971,7 +972,7 @@ module openconfig-interfaces {
 
         container state {
 
-          config false;
+          config true;
           description
             "Operational state data at the global interface level";
 
