@@ -65,12 +65,21 @@ module oc-interfaces-nso {
       uses oc-if:interfaces-top;
     }
   }
-
+  // Needed to point selection options to the new model
+  deviation "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/ethernet/config/aggregate-id" {
+    description
+    "Specify the logical aggregate interface to which
+        this interface belongs";
+    deviate replace {
+      type leafref {
+      path "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/name";
+      }
+    }
+  }
   // openconfig-if-ethernet augments
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface" {
     description "Adds addtional Ethernet-specific configuration to
     interfaces model";
-
     uses oc-eth:ethernet-top {
       when "current()/config/type = 'ianaift:ethernetCsmacd'" {
       description "Additional interface configuration parameters when
@@ -83,7 +92,6 @@ module oc-interfaces-nso {
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/ethernet" {
     description
     "Adds PoE to the ethernet model.";
-
     uses oc-poe:poe-ethernet-top;
   }
 
@@ -139,11 +147,6 @@ module oc-interfaces-nso {
       description
         "Adds VLAN settings to individual subinterfaces";
     uses oc-vlan:vlan-logical-top;
-  }
-  augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/config" {
-    description
-      "Adds TPID / ethertype setting for the base interface";
-    uses oc-vlan:vlan-tpid-config;
   }
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/ethernet" {
     description

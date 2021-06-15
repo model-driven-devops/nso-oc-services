@@ -313,7 +313,7 @@ module openconfig-interfaces {
         base ietf-if:interface-type;
       }
       config true;
-      mandatory true;
+      //mandatory true;
       description
         "The type of the interface.
 
@@ -972,13 +972,15 @@ module openconfig-interfaces {
 
         container state {
 
+          // Had to change to true since interface-phys-config is configurable
           config true;
           description
             "Operational state data at the global interface level";
 
           uses interface-phys-config;
-          uses interface-common-state;
-          uses interface-counters-state;
+          // without commenting out the below, configs expect state values
+          //uses interface-common-state;
+          //uses interface-counters-state;
         }
 
         uses interface-phys-holdtime-top;
