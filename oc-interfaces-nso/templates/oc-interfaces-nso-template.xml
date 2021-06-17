@@ -3,62 +3,9 @@
     <device>
       <name>{/device}</name>
       <config>
-<!--        -->
-        <vlan xmlns="urn:ios">
-                     <vlan-list>
-                       <id>15</id>
-                       <name>15</name>
-                     </vlan-list>
-                   </vlan>
-                   <interface xmlns="urn:ios">
-                     <GigabitEthernet>
-                       <name>0/2</name>
-                       <switchport>
-                         <mode>
-                           <access/>
-                         </mode>
-                         <access>
-                           <vlan>15</vlan>
-                         </access>
-                       </switchport>
-                     </GigabitEthernet>
-                     <Vlan>
-                       <name>15</name>
-                       <ip>
-                         <address>
-                           <primary>
-                             <address>5.5.5.5</address>
-                             <mask>255.255.255.0</mask>
-                           </primary>
-                         </address>
-                       </ip>
-                     </Vlan>
-                   </interface>
 
 
-<!--        <interface xmlns="urn:ios">-->
-<!--        <?foreach {/openconfig-interfaces/interfaces/interface}?>-->
-<!--        <?if {current()/config/type=='l3ipvlan'}?>-->
-<!--         <Vlan>-->
-<!--           <name>{current()/routed-vlan/config/vlan}</name>-->
-<!--         </Vlan>-->
-<!--         <Vlan>-->
-<!--           <name>{current()/routed-vlan/config/vlan}</name>-->
-<!--           <?if {current()/config/mtu!=''}?>-->
-<!--           <mtu>{current()/config/mtu}</mtu>-->
-<!--           <?end?>  &lt;!&ndash; end if {current()/config/mtu!=''} &ndash;&gt;-->
-<!--           <ip>-->
-<!--             <address>-->
-<!--               <primary>-->
-<!--                 <address>{current()/routed-vlan/ipv4/addresses/address/config/ip}</address>-->
-<!--                 <mask>255.255.255.0</mask>-->
-<!--               </primary>-->
-<!--             </address>-->
-<!--           </ip>-->
-<!--         </Vlan>-->
-<!--        <?end?> &lt;!&ndash; end if {current()/config/type=='l3ipvlan'} &ndash;&gt;-->
-<!--        <?end?> &lt;!&ndash; end foreach {/openconfig-interfaces/interfaces/interface} &ndash;&gt;-->
-<!--        </interface>-->
+
       </config>
     </device>
   </devices>
