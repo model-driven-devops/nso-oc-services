@@ -1,19 +1,64 @@
 <config-template xmlns="http://tail-f.com/ns/config/1.0">
   <devices xmlns="http://tail-f.com/ns/ncs">
     <device>
-      <!--
-          Select the devices from some data structure in the service
-          model. In this skeleton the devices are specified in a leaf-list.
-          Select all devices in that leaf-list:
-      -->
       <name>{/device}</name>
       <config>
-        <!--
-            Add device-specific parameters here.
-            In this skeleton the, java code sets a variable DUMMY, use it
-            to set something on the device e.g.:
-            <ip-address-on-device>{$DUMMY}</ip-address-on-device>
-        -->
+<!--        -->
+        <vlan xmlns="urn:ios">
+                     <vlan-list>
+                       <id>15</id>
+                       <name>15</name>
+                     </vlan-list>
+                   </vlan>
+                   <interface xmlns="urn:ios">
+                     <GigabitEthernet>
+                       <name>0/2</name>
+                       <switchport>
+                         <mode>
+                           <access/>
+                         </mode>
+                         <access>
+                           <vlan>15</vlan>
+                         </access>
+                       </switchport>
+                     </GigabitEthernet>
+                     <Vlan>
+                       <name>15</name>
+                       <ip>
+                         <address>
+                           <primary>
+                             <address>5.5.5.5</address>
+                             <mask>255.255.255.0</mask>
+                           </primary>
+                         </address>
+                       </ip>
+                     </Vlan>
+                   </interface>
+
+
+<!--        <interface xmlns="urn:ios">-->
+<!--        <?foreach {/openconfig-interfaces/interfaces/interface}?>-->
+<!--        <?if {current()/config/type=='l3ipvlan'}?>-->
+<!--         <Vlan>-->
+<!--           <name>{current()/routed-vlan/config/vlan}</name>-->
+<!--         </Vlan>-->
+<!--         <Vlan>-->
+<!--           <name>{current()/routed-vlan/config/vlan}</name>-->
+<!--           <?if {current()/config/mtu!=''}?>-->
+<!--           <mtu>{current()/config/mtu}</mtu>-->
+<!--           <?end?>  &lt;!&ndash; end if {current()/config/mtu!=''} &ndash;&gt;-->
+<!--           <ip>-->
+<!--             <address>-->
+<!--               <primary>-->
+<!--                 <address>{current()/routed-vlan/ipv4/addresses/address/config/ip}</address>-->
+<!--                 <mask>255.255.255.0</mask>-->
+<!--               </primary>-->
+<!--             </address>-->
+<!--           </ip>-->
+<!--         </Vlan>-->
+<!--        <?end?> &lt;!&ndash; end if {current()/config/type=='l3ipvlan'} &ndash;&gt;-->
+<!--        <?end?> &lt;!&ndash; end foreach {/openconfig-interfaces/interfaces/interface} &ndash;&gt;-->
+<!--        </interface>-->
       </config>
     </device>
   </devices>

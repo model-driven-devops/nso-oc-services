@@ -65,6 +65,7 @@ module oc-interfaces-nso {
       uses oc-if:interfaces-top;
     }
   }
+
   // Needed to point selection options to the new model
   deviation "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/ethernet/config/aggregate-id" {
     description
@@ -76,6 +77,7 @@ module oc-interfaces-nso {
       }
     }
   }
+
   // openconfig-if-ethernet augments
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface" {
     description "Adds addtional Ethernet-specific configuration to

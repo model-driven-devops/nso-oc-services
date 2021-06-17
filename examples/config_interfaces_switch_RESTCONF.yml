@@ -1,0 +1,145 @@
+oc-interfaces-nso:oc-interfaces-nso:
+  - name: s1
+    device: s1
+    openconfig-interfaces:
+      interfaces:
+        interface:
+        - config:
+            description: 'Example Routed VLAN'
+            enabled: true
+            loopback-mode: false
+            name: 'Vlan10'
+            type: 'l3ipvlan'
+          name: 'Vlan10'
+          routed-vlan:
+            config:
+              vlan: '10'
+            ipv4:
+              config:
+                dhcp-client: true
+                enabled: true
+        - config:
+            description: 'Example Routed VLAN'
+            enabled: true
+            loopback-mode: false
+            name: 'Vlan11'
+            type: 'l3ipvlan'
+          name: 'Vlan11'
+          routed-vlan:
+            config:
+              vlan: '11'
+            ipv4:
+              config:
+                dhcp-client: true
+                enabled: true
+        - config:
+            description: 'Example Routed VLAN'
+            enabled: true
+            loopback-mode: false
+            mtu: '1500'
+            name: 'Vlan100'
+            type: 'l3ipvlan'
+          name: 'Vlan100'
+          routed-vlan:
+            config:
+              vlan: '100'
+            ipv4:
+              addresses:
+                address:
+                - config:
+                    ip: '192.168.100.1'
+                    prefix-length: '24'
+                  ip: '192.168.100.1'
+        - config:
+            description: 'Trunk Port Example'
+            enabled: true
+            loopback-mode: false
+            name: 'gigabitEthernet2'
+            type: 'ethernetCsmacd'
+          ethernet:
+            config:
+              auto-negotiate: true
+              enable-flow-control: false
+            switched-vlan:
+              config:
+                interface-mode: 'TRUNK'
+                native-vlan: '99'
+                trunk-vlans:
+                - '100'
+                - '200'
+                - '300'
+          hold-time:
+            config:
+              down: '0'
+              up: '0'
+          name: 'gigabitEthernet2'
+#        - aggregation:
+#            config:
+#              lag-type: 'LACP'
+#              min-links: '1'
+#            switched-vlan:
+#              config:
+#                interface-mode: 'TRUNK'
+#                native-vlan: '99'  # when interface-mode = TRUNK
+#                trunk-vlans:
+#                - '100'
+#                - '200'
+#                - '300'
+#          config:
+#            description: 'LACP Example'
+#            enabled: true
+#            loopback-mode: false
+#            mtu: '1500'
+#            name: 'port-channel1'
+#            type: 'ieee8023adLag'
+#          name: 'port-channel1'
+#        - config:
+#            description: 'Access Port Example'
+#            enabled: true
+#            loopback-mode: false
+##            mtu: ''
+#            name: 'gigabitEthernet1'
+#            type: 'ethernetCsmacd'
+#          ethernet:
+#            config:
+##              aggregate-id: ''
+#              auto-negotiate: true
+##              duplex-mode: ''
+#              enable-flow-control: false
+##              mac-address: ''
+##              port-speed: ''
+#            switched-vlan:
+#              config:
+#                access-vlan: '100'
+#                interface-mode: 'ACCESS'
+#          hold-time:
+#            config:
+#              down: '0'
+#              up: '0'
+#          name: 'gigabitEthernet1'
+#        - config:
+#            description: 'LACP Trunk Port Example'
+#            enabled: true
+#            loopback-mode: false
+#            mtu: '1500'
+#            name: 'gigabitEthernet4'
+#            type: 'ethernetCsmacd'
+#          ethernet:
+#            config:
+#              aggregate-id: 'port-channel1'
+#              auto-negotiate: true
+#              duplex-mode: 'FULL'
+#              enable-flow-control: false
+#            switched-vlan:
+#              config:
+#                interface-mode: 'TRUNK'
+#                native-vlan: '99'
+#                trunk-vlans:
+#                - '100'
+#                - '200'
+#                - '300'
+#          hold-time:
+#            config:
+#              down: '0'
+#              up: '0'
+#          name: 'gigabitEthernet4'

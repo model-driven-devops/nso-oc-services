@@ -3,8 +3,8 @@
   hosts: localhost
   gather_facts: no
   vars:
-    service_instance_name: "hq-rtr1"
-    content: "{{ lookup('file', './config_interfaces_RESTCONF.yml') }}"
+    service_instance_name: "s1"
+    content: "{{ lookup('file', './config_interfaces_switch_RESTCONF.yml') }}"
   tasks:
   - set_fact:
       configs: "{{ content | from_yaml | to_json }}"

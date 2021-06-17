@@ -269,7 +269,7 @@ class ServiceCallbacks(Service):
     def update_vars(initial_vars: dict, proplist: list) -> dict:
         """
         Updates initial vars with transformed vars
-        :param initial_vars: dictionary of template vaiables
+        :param initial_vars: dictionary of template variables
         :param proplist: list of tuples containing template variable to value
         :return: dictionary of template variable names to values
         """

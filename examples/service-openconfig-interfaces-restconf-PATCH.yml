@@ -3,7 +3,7 @@
   hosts: localhost
   gather_facts: no
   vars:
-    content: "{{ lookup('file', './config_interfaces_RESTCONF.yml') }}"
+    content: "{{ lookup('file', './config_interfaces_switch_RESTCONF.yml') }}"
   tasks:
   - set_fact:
       configs: "{{ content | from_yaml | to_json }}"
