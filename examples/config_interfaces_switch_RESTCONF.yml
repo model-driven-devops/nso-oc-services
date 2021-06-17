@@ -7,7 +7,6 @@ oc-interfaces-nso:oc-interfaces-nso:
         - config:
             description: 'Example Routed VLAN'
             enabled: true
-            loopback-mode: false
             name: 'Vlan10'
             type: 'l3ipvlan'
           name: 'Vlan10'
@@ -17,7 +16,6 @@ oc-interfaces-nso:oc-interfaces-nso:
             ipv4:
               config:
                 dhcp-client: true
-                enabled: true
         - config:
             description: 'Example Routed VLAN'
             enabled: true
@@ -31,7 +29,18 @@ oc-interfaces-nso:oc-interfaces-nso:
             ipv4:
               config:
                 dhcp-client: true
-                enabled: true
+        - config:
+            description: 'Example Routed VLAN'
+            enabled: false
+            name: 'Vlan12'
+            type: 'l3ipvlan'
+          name: 'Vlan12'
+          routed-vlan:
+            config:
+              vlan: '12'
+            ipv4:
+              config:
+                dhcp-client: true
         - config:
             description: 'Example Routed VLAN'
             enabled: true

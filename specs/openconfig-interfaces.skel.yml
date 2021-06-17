@@ -35,7 +35,6 @@ oc-interfaces-nso:oc-interfaces-nso:
           loopback-mode: 'False'
           mtu: ''
           name: ''
-          tpid: identity TPID_0X8100
           type: ''
         ethernet:
           config:

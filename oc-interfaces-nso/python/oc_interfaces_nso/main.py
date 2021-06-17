@@ -1,4 +1,6 @@
 # -*- mode: python; python-indent: 4 -*-
+import ipaddress
+
 import ncs
 import _ncs
 from ncs.application import Service
@@ -38,6 +40,47 @@ class ServiceCallbacks(Service):
         """
         self.xe_reconcile_vlan_db()
         self.xe_reconcile_vlan_interfaces()
+        self.xe_process_interfaces()
+
+    def xe_process_interfaces(self):
+        """
+        Programs device interfaces as defined in model
+        """
+        for i in self.service.openconfig_interfaces.interfaces.interface:
+            if i.config.type == 'ianaift:l3ipvlan':
+                if not self.root.devices.device[self.service.name].config.ios__interface.Vlan.exists(
+                        i.routed_vlan.config.vlan):
+                    self.root.devices.device[self.service.name].config.ios__interface.Vlan.create(
+                        i.routed_vlan.config.vlan)
+
+                vlan = self.root.devices.device[self.service.name].config.ios__interface.Vlan[
+                    i.routed_vlan.config.vlan]
+                vlan.description = i.config.description
+                if i.config.enabled:
+                    if vlan.shutdown.exists():
+                        vlan.shutdown.delete()
+                else:
+                    vlan.shutdown.create()
+
+                ips_and_masks = list()
+                if i.routed_vlan.ipv4.addresses.address:
+                    vlan.ip.address.dhcp.delete()
+                    for a in i.routed_vlan.ipv4.addresses.address:
+                        ip = ipaddress.ip_network(f'10.0.0.0/{a.config.prefix_length}')
+                        ips_and_masks.append(dict(ip=a.config.ip, sm=str(ip.netmask)))
+
+                    for counter, ip_dict in enumerate(ips_and_masks):
+                        self.log.info(f'ips_and_masks {counter} {ip_dict}')
+                        if counter == 0:
+                            vlan.ip.address.primary.address = ip_dict.get('ip')
+                            vlan.ip.address.primary.mask = ip_dict.get('sm')
+                        if counter > 0:  # TODO Add any secondary IP addresses
+                            pass
+                else:
+                    if i.routed_vlan.ipv4.config.dhcp_client:
+                        vlan.ip.address.dhcp.create()
+                if not i.routed_vlan.ipv4.config.dhcp_client:
+                    vlan.ip.address.dhcp.delete()
 
     def xe_reconcile_vlan_db(self):
         """
