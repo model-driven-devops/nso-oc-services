@@ -80,10 +80,10 @@ module oc-interfaces-nso {
 
   // openconfig-if-ethernet augments
   augment "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface" {
-    description "Adds addtional Ethernet-specific configuration to
+    description "Adds additional Ethernet-specific configuration to
     interfaces model";
     uses oc-eth:ethernet-top {
-      when "current()/config/type = 'ianaift:ethernetCsmacd'" {
+      when "current()/config/type = 'ianaift:ethernetCsmacd' or current()/config/type = 'ianaift:l2vlan'" {
       description "Additional interface configuration parameters when
       the interface type is Ethernet";
       }

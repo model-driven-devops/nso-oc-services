@@ -59,16 +59,23 @@ oc-interfaces-nso:oc-interfaces-nso:
                     ip: '192.168.100.1'
                     prefix-length: '24'
                   ip: '192.168.100.1'
+#                - config:
+#                    ip: '192.168.200.1'
+#                    prefix-length: '24'
+#                  ip: '192.168.200.1'
+#                - config:
+#                    ip: '192.168.222.1'
+#                    prefix-length: '24'
+#                  ip: '192.168.222.1'
         - config:
             description: 'Trunk Port Example'
             enabled: true
-            loopback-mode: false
-            name: 'gigabitEthernet2'
-            type: 'ethernetCsmacd'
+            name: 'GigabitEthernet0/2'
+            type: 'l2vlan'
           ethernet:
             config:
               auto-negotiate: true
-              enable-flow-control: false
+              enable-flow-control: true
             switched-vlan:
               config:
                 interface-mode: 'TRUNK'
@@ -77,11 +84,34 @@ oc-interfaces-nso:oc-interfaces-nso:
                 - '100'
                 - '200'
                 - '300'
+                - '400'
+          hold-time:
+            config:
+              down: '0'  # in msec
+              up: '0'  # not in xe
+          name: 'GigabitEthernet0/2'
+        - config:
+            description: 'Access Port Example'
+            enabled: true
+            loopback-mode: false
+#            mtu: ''
+            name: 'GigabitEthernet0/3'
+            type: 'l2vlan'
+          ethernet:
+            config:
+              auto-negotiate: true
+              enable-flow-control: false
+#              mac-address: ''  # VV:VV:VV:SS:SS:SS
+            switched-vlan:
+              config:
+                access-vlan: '100'
+                interface-mode: 'ACCESS'
           hold-time:
             config:
               down: '0'
               up: '0'
-          name: 'gigabitEthernet2'
+          name: 'GigabitEthernet0/3'
+
 #        - aggregation:
 #            config:
 #              lag-type: 'LACP'
@@ -107,7 +137,7 @@ oc-interfaces-nso:oc-interfaces-nso:
 #            enabled: true
 #            loopback-mode: false
 ##            mtu: ''
-#            name: 'gigabitEthernet1'
+#            name: 'GigabitEthernet0/1'
 #            type: 'ethernetCsmacd'
 #          ethernet:
 #            config:
@@ -115,7 +145,7 @@ oc-interfaces-nso:oc-interfaces-nso:
 #              auto-negotiate: true
 ##              duplex-mode: ''
 #              enable-flow-control: false
-##              mac-address: ''
+##              mac-address: ''  # VV:VV:VV:SS:SS:SS
 ##              port-speed: ''
 #            switched-vlan:
 #              config:
@@ -125,13 +155,13 @@ oc-interfaces-nso:oc-interfaces-nso:
 #            config:
 #              down: '0'
 #              up: '0'
-#          name: 'gigabitEthernet1'
+#          name: 'GigabitEthernet0/1'
 #        - config:
 #            description: 'LACP Trunk Port Example'
 #            enabled: true
 #            loopback-mode: false
 #            mtu: '1500'
-#            name: 'gigabitEthernet4'
+#            name: 'GigabitEthernet0/4'
 #            type: 'ethernetCsmacd'
 #          ethernet:
 #            config:
@@ -151,4 +181,4 @@ oc-interfaces-nso:oc-interfaces-nso:
 #            config:
 #              down: '0'
 #              up: '0'
-#          name: 'gigabitEthernet4'
+#          name: 'GigabitEthernet0/4'

@@ -1,10 +1,10 @@
 # -*- mode: python; python-indent: 4 -*-
 import re
+from typing import Tuple
 
 import ncs
 import _ncs
 from ncs.application import Service
-from typing import Tuple
 
 
 class ServiceCallbacks(Service):
