@@ -42,6 +42,7 @@ class ServiceCallbacks(Service):
         """
         self.xe_reconcile_vlan_db()
         self.xe_reconcile_vlan_interfaces()
+        self.xe_reconcile_port_channel_interfaces()
         self.xe_process_interfaces()
 
     def xe_process_interfaces(self):
@@ -106,7 +107,7 @@ class ServiceCallbacks(Service):
                     vlan.ip.address.dhcp.delete()
 
             # Layer 2 interfaces
-            if i.config.type == 'ianaift:l2vlan' and i.ethernet.switched_vlan.config.interface_mode == 'TRUNK':
+            if i.config.type == 'ianaift:l2vlan' or (i.config.type == 'ianaift:ethernetCsmacd' and i.ethernet.config.aggregate_id):
                 interface_type, interface_number = self.xe_get_interface_type_and_number(i.config.name)
                 class_attribute = getattr(self.root.devices.device[self.service.name].config.ios__interface,
                                           interface_type)
@@ -114,6 +115,19 @@ class ServiceCallbacks(Service):
                 self.xe_interface_config(i, l2_interface)
                 self.xe_interface_hold_time(i, l2_interface)
                 self.xe_interface_ethernet(i, l2_interface)
+
+            # Port channels
+            if i.config.type == 'ianaift:ieee8023adLag':
+                port_channel_number = self.xe_get_port_channel_number(i.name)
+                if not self.root.devices.device[self.service.name].config.ios__interface.Port_channel.exists(
+                        port_channel_number):
+                    self.root.devices.device[self.service.name].config.ios__interface.Port_channel.create(
+                        port_channel_number)
+                port_channel = self.root.devices.device[self.service.name].config.ios__interface.Port_channel[
+                    port_channel_number]
+                self.xe_interface_config(i, port_channel)
+                self.xe_interface_hold_time(i, port_channel)
+                self.xe_interface_aggregation(i, port_channel)
 
     @staticmethod
     def xe_interface_hold_time(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement):
@@ -139,11 +153,7 @@ class ServiceCallbacks(Service):
         if interface_service.config.mtu:
             interface_cdb.mtu = interface_service.config.mtu
 
-    @staticmethod
-    def xe_interface_ethernet(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement):
-        # # aggregate-id TODO
-        # if interface_service.ethernet.config.aggregate_id:
-        #     interface_cdb.description = interface_service.ethernet.config.aggregate_id
+    def xe_interface_ethernet(self, interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement):
         # auto-negotiate
         if interface_service.ethernet.config.auto_negotiate:
             interface_cdb.negotiation.auto = interface_service.ethernet.config.auto_negotiate
@@ -191,7 +201,8 @@ class ServiceCallbacks(Service):
                 if not interface_cdb.switchport.mode.trunk.exists():
                     interface_cdb.switchport.mode.trunk.create()
                 if interface_service.ethernet.switched_vlan.config.native_vlan:
-                    interface_cdb.switchport.trunk.native.vlan = int(interface_service.ethernet.switched_vlan.config.native_vlan)
+                    interface_cdb.switchport.trunk.native.vlan = int(
+                        interface_service.ethernet.switched_vlan.config.native_vlan)
                 elif interface_service.ethernet.switched_vlan.config.native_vlan == '':
                     interface_cdb.switchport.trunk.native.vlan = None
                 # Reconcile trunked VLANs
@@ -211,7 +222,84 @@ class ServiceCallbacks(Service):
                 if not interface_cdb.switchport.mode.access.exists():
                     interface_cdb.switchport.mode.access.create()
                 if interface_service.ethernet.switched_vlan.config.access_vlan:
-                    interface_cdb.switchport.access.vlan = int(interface_service.ethernet.switched_vlan.config.access_vlan)
+                    interface_cdb.switchport.access.vlan = int(
+                        interface_service.ethernet.switched_vlan.config.access_vlan)
+        if interface_service.ethernet.config.aggregate_id:
+            self.log.info('Made it to new aggregate link')
+            interface_cdb.channel_group.number = self.xe_get_port_channel_number(interface_service.ethernet.config.aggregate_id)
+            interface_cdb.channel_group.mode = 'active'
+
+    def xe_interface_aggregation(self, interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement):
+        if interface_service.aggregation.config.min_links:
+            interface_cdb.port_channel.min_links = int(interface_service.aggregation.config.min_links)
+        # switched-vlan interface-mode
+        if interface_service.aggregation.switched_vlan.config.interface_mode:
+            if interface_service.aggregation.switched_vlan.config.interface_mode == 'TRUNK':
+                if not interface_cdb.switchport.exists():
+                    interface_cdb.switchport.create()
+                interface_cdb.switchport.trunk.encapsulation = 'dot1q'
+                if not interface_cdb.switchport.mode.trunk.exists():
+                    interface_cdb.switchport.mode.trunk.create()
+                if interface_service.aggregation.switched_vlan.config.native_vlan:
+                    interface_cdb.switchport.trunk.native.vlan = int(
+                        interface_service.aggregation.switched_vlan.config.native_vlan)
+                elif interface_service.aggregation.switched_vlan.config.native_vlan == '':
+                    interface_cdb.switchport.trunk.native.vlan = None
+                # Reconcile trunked VLANs
+                allowed_vlans_cdb = [v for v in interface_cdb.switchport.trunk.allowed.vlan.vlans]
+                allowed_vlans_config = [int(v) for v in interface_service.aggregation.switched_vlan.config.trunk_vlans]
+                # Remove unspecified VLANs
+                for v in allowed_vlans_cdb:
+                    if v not in allowed_vlans_config:
+                        interface_cdb.switchport.trunk.allowed.vlan.vlans.remove(v)
+                # Added specified VLANs
+                for v in allowed_vlans_config:
+                    if v not in allowed_vlans_cdb:
+                        interface_cdb.switchport.trunk.allowed.vlan.vlans.create(v)
+            elif interface_service.aggregation.switched_vlan.config.interface_mode == 'ACCESS':
+                if not interface_cdb.switchport.exists():
+                    interface_cdb.switchport.create()
+                if not interface_cdb.switchport.mode.access.exists():
+                    interface_cdb.switchport.mode.access.create()
+                if interface_service.aggregation.switched_vlan.config.access_vlan:
+                    interface_cdb.switchport.access.vlan = int(
+                        interface_service.aggregation.switched_vlan.config.access_vlan)
+        elif interface_service.aggregation.ipv4:
+            # Get current cdb addresses
+            ips_and_masks_cdb = list()
+            for x in interface_cdb.ip.address.secondary:
+                ips_and_masks_cdb.append((x.address, x.mask))
+
+            # Create service config address mask list
+            ips_and_masks = list()
+            if interface_service.aggregation.ipv4.addresses.address:
+                interface_cdb.ip.address.dhcp.delete()
+                for a in interface_service.aggregation.ipv4.addresses.address:
+                    ip = ipaddress.ip_network(f'10.0.0.0/{a.config.prefix_length}')
+                    ips_and_masks.append((a.config.ip, str(ip.netmask)))
+
+                # Remove unrequested IPs from CDB
+                ips_to_remove = list()
+                for ips in ips_and_masks_cdb:
+                    if ips not in ips_and_masks[1:]:
+                        ips_to_remove.append(ips)
+                for ips in ips_to_remove:
+                    del interface_cdb.ip.address.secondary[ips]
+
+                # Update/Create needed IP addresses in CDB
+                for counter, ip_mask in enumerate(ips_and_masks):
+                    self.log.info(f'ips_and_masks {counter} {ip_mask}')
+                    if counter == 0:
+                        interface_cdb.ip.address.primary.address = ip_mask[0]
+                        interface_cdb.ip.address.primary.mask = ip_mask[1]
+                    # elif counter > 0: TODO
+                    #     if not interface_cdb.ip.address.secondary.exists(ip_mask):
+                    #         interface_cdb.ip.address.secondary.create(ip_mask)
+            else:
+                if interface_service.aggregation.ipv4.config.dhcp_client:
+                    interface_cdb.ip.address.dhcp.create()
+            if not interface_service.aggregation.ipv4.config.dhcp_client:
+                interface_cdb.ip.address.dhcp.delete()
 
     @staticmethod
     def xe_get_interface_type_and_number(interface: str) -> Tuple[str, str]:
@@ -226,6 +314,11 @@ class ServiceCallbacks(Service):
         interface_number = rn.group(0)
         return interface_name, interface_number
 
+    @staticmethod
+    def xe_get_port_channel_number(interface: str) -> int:
+        pn = re.search(r"\d+", interface)
+        return int(pn.group(0))
+
     def xe_reconcile_vlan_db(self):
         """
         Ensure device VLAN DB is in sync with incoming configs
@@ -237,7 +330,7 @@ class ServiceCallbacks(Service):
             vlans_device_db.append(v.id)
         self.log.info(f'VLANs in device DB: {vlans_device_db}')
 
-        # Get VLANs from incoming configs  TODO Keep this up to date
+        # Get VLANs from incoming configs
         vlans_in_model_configs = list()
         for v in self.service.openconfig_interfaces.interfaces.interface:
             if v.aggregation.switched_vlan.config.access_vlan:
@@ -301,6 +394,34 @@ class ServiceCallbacks(Service):
         if vlan_interfaces_to_remove:
             for v in vlan_interfaces_to_remove:
                 del self.root.devices.device[self.service.name].config.ios__interface.Vlan[v]
+
+    def xe_reconcile_port_channel_interfaces(self):
+        """
+        Ensure device does not have extra port channel interfaces
+        """
+        # Get all device port-channel interfaces
+        port_channel_interfaces_existing = list()
+        for p in self.root.devices.device[self.service.name].config.ios__interface.Port_channel:
+            port_channel_interfaces_existing.append(p.name)
+        self.log.info(f'Port channel interfaces existing: {port_channel_interfaces_existing}')
+
+        # Get all port-channel interfaces from incoming configs
+        port_channel_interfaces_proposed = list()
+        for p in self.service.openconfig_interfaces.interfaces.interface:
+            if p.config.type == 'ianaift:ieee8023adLag':
+                port_channel_number = self.xe_get_port_channel_number(p.name)
+                port_channel_interfaces_proposed.append(port_channel_number)
+        self.log.info(f'Port channel interfaces proposed: {port_channel_interfaces_proposed}')
+
+        # Find port-channel interfaces to remove
+        port_channel_interfaces_to_remove = [p for p in port_channel_interfaces_existing if
+                                             p not in set(port_channel_interfaces_proposed)]
+        self.log.info(f'Port-channels to remove: {port_channel_interfaces_to_remove}')
+
+        # Delete port-channel interfaces
+        if port_channel_interfaces_to_remove:
+            for p in port_channel_interfaces_to_remove:
+                del self.root.devices.device[self.service.name].config.ios__interface.Port_channel[p]
 
     def xe_transform_vars(self):
         """

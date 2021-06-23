@@ -5,7 +5,7 @@ oc-interfaces-nso:oc-interfaces-nso:
       interfaces:
         interface:
         - config:
-            description: 'Example Routed VLAN'
+            description: 'Example Routed Vlan10 DHCP'
             enabled: true
             name: 'Vlan10'
             type: 'l3ipvlan'
@@ -17,32 +17,7 @@ oc-interfaces-nso:oc-interfaces-nso:
               config:
                 dhcp-client: true
         - config:
-            description: 'Example Routed VLAN'
-            enabled: true
-            loopback-mode: false
-            name: 'Vlan11'
-            type: 'l3ipvlan'
-          name: 'Vlan11'
-          routed-vlan:
-            config:
-              vlan: '11'
-            ipv4:
-              config:
-                dhcp-client: true
-        - config:
-            description: 'Example Routed VLAN'
-            enabled: false
-            name: 'Vlan12'
-            type: 'l3ipvlan'
-          name: 'Vlan12'
-          routed-vlan:
-            config:
-              vlan: '12'
-            ipv4:
-              config:
-                dhcp-client: true
-        - config:
-            description: 'Example Routed VLAN'
+            description: 'Example Routed Vlan100 IP'
             enabled: true
             loopback-mode: false
             mtu: '1500'
@@ -59,18 +34,10 @@ oc-interfaces-nso:oc-interfaces-nso:
                     ip: '192.168.100.1'
                     prefix-length: '24'
                   ip: '192.168.100.1'
-#                - config:
-#                    ip: '192.168.200.1'
-#                    prefix-length: '24'
-#                  ip: '192.168.200.1'
-#                - config:
-#                    ip: '192.168.222.1'
-#                    prefix-length: '24'
-#                  ip: '192.168.222.1'
         - config:
             description: 'Trunk Port Example'
             enabled: true
-            name: 'GigabitEthernet0/2'
+            name: 'GigabitEthernet0/1'
             type: 'l2vlan'
           ethernet:
             config:
@@ -89,13 +56,12 @@ oc-interfaces-nso:oc-interfaces-nso:
             config:
               down: '0'  # in msec
               up: '0'  # not in xe
-          name: 'GigabitEthernet0/2'
+          name: 'GigabitEthernet0/1'
         - config:
             description: 'Access Port Example'
             enabled: true
             loopback-mode: false
-#            mtu: ''
-            name: 'GigabitEthernet0/3'
+            name: 'GigabitEthernet0/2'
             type: 'l2vlan'
           ethernet:
             config:
@@ -110,75 +76,68 @@ oc-interfaces-nso:oc-interfaces-nso:
             config:
               down: '0'
               up: '0'
+          name: 'GigabitEthernet0/2'
+        - aggregation:
+            config:
+              lag-type: 'LACP'
+            switched-vlan:
+              config:
+                interface-mode: 'TRUNK'
+                native-vlan: '99'  # when interface-mode = TRUNK
+                trunk-vlans:
+                - '100'
+                - '200'
+                - '300'
+          config:
+            description: 'LACP Example PO1'
+            enabled: true
+            mtu: '1500'
+            name: 'port-channel1'
+            type: 'ieee8023adLag'
+          name: 'port-channel1'
+        - aggregation:
+            config:
+              lag-type: 'LACP'
+            ipv4:
+              addresses:
+                address:
+                  - config:
+                      ip: '192.168.50.1'
+                      prefix-length: '24'
+                    ip: '192.168.50.1'
+          config:
+            description: 'LACP Example PO2'
+            enabled: true
+            mtu: '1500'
+            name: 'port-channel2'
+            type: 'ieee8023adLag'
+          hold-time:
+            config:
+              down: '10'  # in msec
+              up: '0'  # not in xe
+          name: 'port-channel2'
+        - config:
+            description: 'LACP Link Trunk Port Example'
+            enabled: true
+            mtu: '1500'
+            name: 'GigabitEthernet0/3'
+            type: 'ethernetCsmacd'
+          ethernet:
+            config:
+              aggregate-id: 'port-channel1'
+              auto-negotiate: true
+              duplex-mode: 'FULL'
+              enable-flow-control: false
+            switched-vlan:
+              config:
+                interface-mode: 'TRUNK'
+                native-vlan: '99'
+                trunk-vlans:
+                - '100'
+                - '200'
+                - '300'
+          hold-time:
+            config:
+              down: '0'
+              up: '0'
           name: 'GigabitEthernet0/3'
-
-#        - aggregation:
-#            config:
-#              lag-type: 'LACP'
-#              min-links: '1'
-#            switched-vlan:
-#              config:
-#                interface-mode: 'TRUNK'
-#                native-vlan: '99'  # when interface-mode = TRUNK
-#                trunk-vlans:
-#                - '100'
-#                - '200'
-#                - '300'
-#          config:
-#            description: 'LACP Example'
-#            enabled: true
-#            loopback-mode: false
-#            mtu: '1500'
-#            name: 'port-channel1'
-#            type: 'ieee8023adLag'
-#          name: 'port-channel1'
-#        - config:
-#            description: 'Access Port Example'
-#            enabled: true
-#            loopback-mode: false
-##            mtu: ''
-#            name: 'GigabitEthernet0/1'
-#            type: 'ethernetCsmacd'
-#          ethernet:
-#            config:
-##              aggregate-id: ''
-#              auto-negotiate: true
-##              duplex-mode: ''
-#              enable-flow-control: false
-##              mac-address: ''  # VV:VV:VV:SS:SS:SS
-##              port-speed: ''
-#            switched-vlan:
-#              config:
-#                access-vlan: '100'
-#                interface-mode: 'ACCESS'
-#          hold-time:
-#            config:
-#              down: '0'
-#              up: '0'
-#          name: 'GigabitEthernet0/1'
-#        - config:
-#            description: 'LACP Trunk Port Example'
-#            enabled: true
-#            loopback-mode: false
-#            mtu: '1500'
-#            name: 'GigabitEthernet0/4'
-#            type: 'ethernetCsmacd'
-#          ethernet:
-#            config:
-#              aggregate-id: 'port-channel1'
-#              auto-negotiate: true
-#              duplex-mode: 'FULL'
-#              enable-flow-control: false
-#            switched-vlan:
-#              config:
-#                interface-mode: 'TRUNK'
-#                native-vlan: '99'
-#                trunk-vlans:
-#                - '100'
-#                - '200'
-#                - '300'
-#          hold-time:
-#            config:
-#              down: '0'
-#              up: '0'
-#          name: 'GigabitEthernet0/4'
