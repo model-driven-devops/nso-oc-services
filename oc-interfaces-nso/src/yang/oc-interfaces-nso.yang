@@ -98,6 +98,12 @@ module oc-interfaces-nso {
   }
 
   // openconfig-if-ip augments
+  augment  "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/config" {
+    description
+      "IPv4 address family configuration for
+      port channels";
+    uses oc-ip:ipv4-top;
+  }
   augment  "/oc-interfaces-nso:oc-interfaces-nso/openconfig-interfaces/interfaces/interface/aggregation" {
     description
       "IPv4 address family configuration for
