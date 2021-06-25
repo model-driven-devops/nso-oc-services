@@ -34,6 +34,9 @@ oc-interfaces-nso:oc-interfaces-nso:
                     ip: '192.168.100.1'
                     prefix-length: '24'
                   ip: '192.168.100.1'
+              proxy-arp:
+                config:
+                  mode: DISABLE  # Default is DISABLE other option is REMOTE_ONLY for IOS
         - config:
             description: 'Trunk Port Example'
             enabled: true

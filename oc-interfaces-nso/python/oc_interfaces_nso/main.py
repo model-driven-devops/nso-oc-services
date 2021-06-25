@@ -251,7 +251,6 @@ class ServiceCallbacks(Service):
 
         # Create VLANs in device VLAN DB
         for v in vlans_to_create_in_db:
-            self.log.info(f'Type of v in vlans_to_create_in_db: {type(v)}')
             self.root.devices.device[self.service.name].config.ios__vlan.vlan_list.create(v)
             vlan = self.root.devices.device[self.service.name].config.ios__vlan.vlan_list[v]
             if vlan.shutdown.exists():
@@ -349,7 +348,7 @@ class ServiceCallbacks(Service):
         """
         pass
 
-    @staticmethod
+    # @staticmethod
     def xe_configure_ipv4(self, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container):
         """
         Configures openconfig-if-ip ipv4-top
@@ -388,6 +387,11 @@ class ServiceCallbacks(Service):
                 interface_cdb.ip.address.dhcp.create()
         if not service_ipv4.config.dhcp_client:
             interface_cdb.ip.address.dhcp.delete()
+        # proxy-arp
+        if service_ipv4.proxy_arp.config.mode == 'DISABLE' or not service_ipv4.proxy_arp.config.mode:
+            interface_cdb.ip.proxy_arp = False
+        if service_ipv4.proxy_arp.config.mode == 'REMOTE_ONLY':
+            interface_cdb.ip.proxy_arp = True
 
     @staticmethod
     def xe_configure_switched_vlan(interface_cdb: ncs.maagic.ListElement,
