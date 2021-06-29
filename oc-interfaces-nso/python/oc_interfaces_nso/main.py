@@ -96,17 +96,6 @@ class ServiceCallbacks(Service):
                 self.xe_interface_hold_time(i, port_channel)
                 self.xe_interface_aggregation(i, port_channel)
 
-            # Physical ethernet
-            if i.config.type == 'ianaift:ethernetCsmacd' and i.config.ipv4:
-                interface_type, interface_number = self.xe_get_interface_type_and_number(i.config.name)
-                class_attribute = getattr(self.root.devices.device[self.service.name].config.ios__interface,
-                                          interface_type)
-                l3_physical_interface_cdb = class_attribute[interface_number]
-                self.xe_interface_config(i, l3_physical_interface_cdb)
-                self.xe_interface_hold_time(i, l3_physical_interface_cdb)
-                self.xe_interface_ethernet(i, l3_physical_interface_cdb)
-                self.xe_configure_ipv4(l3_physical_interface_cdb, i.config.ipv4)
-
             # Sub-interfaces
             if i.config.type == 'ianaift:ethernetCsmacd' and i.subinterfaces.subinterface:
                 interface_type, interface_number = self.xe_get_interface_type_and_number(i.config.name)
@@ -118,21 +107,24 @@ class ServiceCallbacks(Service):
                 self.xe_interface_ethernet(i, physical_interface)
                 for subinterface_service in i.subinterfaces.subinterface:
                     self.log.info(f'subinterface is: {interface_type}  {interface_number}.{subinterface_service.index}')
-                    if not class_attribute.exists(f'{interface_number}.{subinterface_service.index}'):
-                        class_attribute.create(f'{interface_number}.{subinterface_service.index}')
-                    subinterface_cdb = class_attribute[f'{interface_number}.{subinterface_service.index}']
-                    # description
-                    if subinterface_service.config.description:
-                        subinterface_cdb.description = subinterface_service.config.description
-                    # enabled
-                    if subinterface_service.config.enabled:
-                        if subinterface_cdb.shutdown.exists():
-                            subinterface_cdb.shutdown.delete()
-                    else:
-                        if not subinterface_cdb.shutdown.exists():
-                            subinterface_cdb.shutdown.create()
-                    subinterface_cdb.encapsulation.dot1Q.vlan_id = subinterface_service.vlan.config.vlan_id
-                    self.xe_configure_ipv4(subinterface_cdb, subinterface_service.ipv4)
+                    if subinterface_service.index != 0:
+                        if not class_attribute.exists(f'{interface_number}.{subinterface_service.index}'):
+                            class_attribute.create(f'{interface_number}.{subinterface_service.index}')
+                        subinterface_cdb = class_attribute[f'{interface_number}.{subinterface_service.index}']
+                        # description
+                        if subinterface_service.config.description:
+                            subinterface_cdb.description = subinterface_service.config.description
+                        # enabled
+                        if subinterface_service.config.enabled:
+                            if subinterface_cdb.shutdown.exists():
+                                subinterface_cdb.shutdown.delete()
+                        else:
+                            if not subinterface_cdb.shutdown.exists():
+                                subinterface_cdb.shutdown.create()
+                        subinterface_cdb.encapsulation.dot1Q.vlan_id = subinterface_service.vlan.config.vlan_id
+                        self.xe_configure_ipv4(subinterface_cdb, subinterface_service.ipv4)
+                    else:  # IPv4 for main interface
+                        self.xe_configure_ipv4(physical_interface, subinterface_service.ipv4)
 
     def xe_get_subinterfaces(self) -> list:
         """

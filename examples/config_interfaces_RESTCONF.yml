@@ -152,15 +152,6 @@ oc-interfaces-nso:oc-interfaces-nso:
             mtu: '1500'
             name: 'GigabitEthernet0/2'
             type: 'ethernetCsmacd'
-            ipv4:
-              addresses:
-                address:
-                  - config:
-                      ip: '192.168.111.1'
-                      prefix-length: '24'
-                    ip: '192.168.111.1'
-              config:
-                dhcp-client: false
           ethernet:
             config:
               auto-negotiate: true
@@ -170,6 +161,20 @@ oc-interfaces-nso:oc-interfaces-nso:
               down: '10'
               up: '0'
           name: 'GigabitEthernet0/2'
+          subinterfaces:
+            subinterface:
+            - config:
+                index: '0'
+              index: '0'
+              ipv4:
+                addresses:
+                  address:
+                    - config:
+                        ip: '192.168.111.1'
+                        prefix-length: '24'
+                      ip: '192.168.111.1'
+                config:
+                  dhcp-client: false
         - config:
             description: 'Physical Interface 2'
             enabled: true
