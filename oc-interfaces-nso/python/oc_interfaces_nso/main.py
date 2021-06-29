@@ -96,7 +96,7 @@ class ServiceCallbacks(Service):
                 self.xe_interface_hold_time(i, port_channel)
                 self.xe_interface_aggregation(i, port_channel)
 
-            # Sub-interfaces
+            # Physical and Sub-interfaces
             if i.config.type == 'ianaift:ethernetCsmacd' and i.subinterfaces.subinterface:
                 interface_type, interface_number = self.xe_get_interface_type_and_number(i.config.name)
                 class_attribute = getattr(self.root.devices.device[self.service.name].config.ios__interface,
