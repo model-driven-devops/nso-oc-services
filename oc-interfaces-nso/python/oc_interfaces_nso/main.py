@@ -102,10 +102,9 @@ class ServiceCallbacks(Service):
                 class_attribute = getattr(self.root.devices.device[self.service.name].config.ios__interface,
                                           interface_type)
                 l3_physical_interface_cdb = class_attribute[interface_number]
-                if l3_physical_interface_cdb.switchport.exists():
-                    l3_physical_interface_cdb.switchport.delete()
                 self.xe_interface_config(i, l3_physical_interface_cdb)
                 self.xe_interface_hold_time(i, l3_physical_interface_cdb)
+                self.xe_interface_ethernet(i, l3_physical_interface_cdb)
                 self.xe_configure_ipv4(l3_physical_interface_cdb, i.config.ipv4)
 
             # Sub-interfaces
@@ -116,6 +115,7 @@ class ServiceCallbacks(Service):
                 physical_interface = class_attribute[interface_number]
                 self.xe_interface_config(i, physical_interface)
                 self.xe_interface_hold_time(i, physical_interface)
+                self.xe_interface_ethernet(i, physical_interface)
                 for subinterface_service in i.subinterfaces.subinterface:
                     self.log.info(f'subinterface is: {interface_type}  {interface_number}.{subinterface_service.index}')
                     if not class_attribute.exists(f'{interface_number}.{subinterface_service.index}'):
@@ -192,6 +192,9 @@ class ServiceCallbacks(Service):
         # switched-vlan interface-mode
         if interface_service.ethernet.switched_vlan.config.interface_mode:
             self.xe_configure_switched_vlan(interface_cdb, interface_service.ethernet.switched_vlan)
+        else:
+            if interface_cdb.switchport.exists():
+                interface_cdb.switchport.delete()
         if interface_service.ethernet.config.aggregate_id:
             interface_cdb.channel_group.number = self.xe_get_port_channel_number(
                 interface_service.ethernet.config.aggregate_id)
@@ -205,7 +208,10 @@ class ServiceCallbacks(Service):
         # switched-vlan interface-mode
         if interface_service.aggregation.switched_vlan.config.interface_mode:
             self.xe_configure_switched_vlan(interface_cdb, interface_service.aggregation.switched_vlan)
-        elif interface_service.aggregation.ipv4:
+        else:
+            if interface_cdb.switchport.exists():
+                interface_cdb.switchport.delete()
+        if interface_service.aggregation.ipv4:
             self.xe_configure_ipv4(interface_cdb, interface_service.aggregation.ipv4)
 
     def xe_reconcile_vlan_db(self):
