@@ -34,7 +34,8 @@ class ServiceCallbacks(Service):
         template = ncs.template.Template(service)
         template.apply('oc-interfaces-nso-template', vars_template)
         # Each NED type may have a x_program_service here
-        self.xe_program_service()
+        if 'cisco-ios-cli' in self.root.devices.device[self.service.name].device_type.cli.ned_id:
+            self.xe_program_service()
 
     def xe_program_service(self):
         """
