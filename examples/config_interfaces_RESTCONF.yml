@@ -225,6 +225,17 @@ oc-interfaces-nso:oc-interfaces-nso:
                       ip: '192.168.106.2'
                       prefix-length: '24'
                     ip: '192.168.106.2'
+                    vrrp:
+                      vrrp-group:
+                        - config:
+                            advertisement-interval: '300'  # units "centiseconds"; vrrp 5 timers advertise 3
+                            preempt: true
+                            preempt-delay: '10'  # vrrp 5 preempt delay minimum 100
+                            priority: '200'  # vrrp 5 priority 200
+                            virtual-address:  # vrrp 5 ip 192.168.106.200
+                              - '192.168.106.200'
+                            virtual-router-id: '5'  # group number
+                          virtual-router-id: '5'  # group number
                 config:
                   dhcp-client: false
                   enabled: true

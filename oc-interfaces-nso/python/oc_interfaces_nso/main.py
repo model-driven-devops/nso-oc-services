@@ -346,8 +346,8 @@ class ServiceCallbacks(Service):
         """
         pass
 
-    # @staticmethod
-    def xe_configure_ipv4(self, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container):
+    @staticmethod
+    def xe_configure_ipv4(interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container):
         """
         Configures openconfig-if-ip ipv4-top
         """
@@ -385,11 +385,40 @@ class ServiceCallbacks(Service):
                 interface_cdb.ip.address.dhcp.create()
         if not service_ipv4.config.dhcp_client:
             interface_cdb.ip.address.dhcp.delete()
+
         # proxy-arp
         if service_ipv4.proxy_arp.config.mode == 'DISABLE' or not service_ipv4.proxy_arp.config.mode:
             interface_cdb.ip.proxy_arp = False
         if service_ipv4.proxy_arp.config.mode == 'REMOTE_ONLY':
             interface_cdb.ip.proxy_arp = True
+
+        # VRRP
+        for a in service_ipv4.addresses.address:
+            if a.vrrp.vrrp_group:
+                for v in a.vrrp.vrrp_group:
+                    if not interface_cdb.vrrp.exists(v.virtual_router_id):
+                        interface_cdb.vrrp.create(v.virtual_router_id)
+                    vrrp_group = interface_cdb.vrrp[v.virtual_router_id]
+                    # accept_mode TODO
+                    # priority
+                    if v.config.priority:
+                        vrrp_group.priority = v.config.priority
+                    # preempt
+                    if v.config.preempt:
+                        if v.config.preempt_delay:
+                            vrrp_group.preempt.delay.minimum = v.config.preempt_delay
+                        else:
+                            vrrp_group.preempt.delay.minimum = 0
+                    # virtual address
+                    if v.config.virtual_address:
+                        for counter, address in enumerate(v.config.virtual_address):
+                            if counter == 0:
+                                vrrp_group.ip.address = address
+                            # else:  TODO add secondaries
+                            #     vrrp_group.ip.secondary_address.create(address)
+                    if v.config.advertisement_interval:
+                        vrrp_group.timers.advertise.seconds = v.config.advertisement_interval//100  # oc-ip uses centiseconds
+                    # VRRP interface tracking TODO
 
     @staticmethod
     def xe_configure_switched_vlan(interface_cdb: ncs.maagic.ListElement,
