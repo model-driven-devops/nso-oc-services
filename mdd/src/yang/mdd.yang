@@ -1,0 +1,21 @@
+module mdd {
+  yang-version "1.1";
+  namespace "http://cisco.com/mdd";
+  prefix mdd;
+
+  import tailf-ncs {
+    prefix ncs;
+  }
+  description
+    "This module adapts OpenConfig to networking devices.";
+
+  revision 2020-08-06 {
+    description "Initial revision";
+  }
+  augment "/ncs:devices/ncs:device" {
+    container openconfig {
+      description
+        "Container to link OpenConfig models to NSO devices.";
+    }
+  }
+}

@@ -1,0 +1,26 @@
+---
+- name: OC Device test
+  hosts: localhost
+  gather_facts: no
+  vars:
+    device_name: "s1"
+    content: "{{ lookup('file', './config_switch.yml') }}"
+  tasks:
+  - set_fact:
+      configs: "{{ content | from_yaml | to_json }}"
+  - debug:
+      msg: "{{ configs }}"
+  - name: OC Device test
+    uri:
+      url: "http://x.x.x.x:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+      url_username: admin
+      url_password: admin
+      force_basic_auth: yes
+      validate_certs: no
+      status_code: [200,201,204]
+      method: PUT
+      headers: "{
+        'Content-Type': 'application/yang-data+json',
+        'Accept': 'application/yang-data+json'}"
+      body_format: json
+      body: "{{ configs }}"

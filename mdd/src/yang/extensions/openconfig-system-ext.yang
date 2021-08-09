@@ -1,0 +1,103 @@
+module openconfig-system-ext{
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/openconfig-system-ext";
+
+  prefix "oc-system-ext";
+
+  import openconfig-system { prefix oc-sys; }
+  import openconfig-interfaces { prefix oc-if; }
+  import tailf-ncs { prefix ncs; }
+  import mdd { prefix mdd; }
+  import openconfig-network-instance { prefix "oc-netinst"; }
+  import openconfig-extensions { prefix oc-ext; }
+
+
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Augmentation to openconfig system model.";
+
+  revision "2021-08-08" {
+    description
+      "Initial revision";
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:config {
+    leaf enable-secret {
+      type string;
+      description
+        "Sets a local password to control access to various privilege levels.
+        At this time, only encryption-type 0 is supported.";
+    }
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:config {
+    leaf console-exec-timeout-seconds {
+      type string;
+      description
+        "Configure the inactive session timeout on the console port in seconds.";
+    }
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ntp/oc-sys:config {
+    leaf ntp-enable-logging {
+      type boolean;
+      description
+        "Enables Network Time Protocol (NTP) message logging.";
+    }
+  }
+   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ntp/oc-sys:servers/oc-sys:server {
+    leaf ntp-use-vrf {
+      type leafref {
+        path "/ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:name";
+      }
+      description
+        "VRF for communication with NTP servers.";
+    }
+  }
+   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ntp/oc-sys:servers/oc-sys:server/oc-sys:config {
+    leaf ntp-auth-key-id {
+      type string;
+      description
+        "Links to authentication key in oc-sys:system/ntp/ntp-keys";
+    }
+  }
+   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ssh-server/oc-sys:config {
+    leaf absolute-timeout-minutes {
+      type string;
+      description
+        "The absolute timeout for line disconnection in minutes.";
+    }
+  }
+   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ssh-server/oc-sys:config {
+    leaf ssh-timeout {
+      type string;
+      description
+        "Secure Shell (SSH) control parameter to set the time interval that the router waits for the SSH client to respond.
+        In IOS, seconds from 1-120.";
+    }
+  }
+   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ssh-server/oc-sys:config {
+    leaf ssh-source-interface {
+      type leafref {
+        path "/ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-if:name";
+      }
+      description
+        "Secure Shell (SSH) control parameter to set the time interval that the router waits for the SSH client to respond.
+        In IOS, seconds from 1-120.";
+    }
+  }
+   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:logging/oc-sys:remote-servers/oc-sys:remote-server/oc-sys:config {
+    leaf use-vrf {
+      type leafref {
+        path "/ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:name";
+      }
+      description
+        "VRF from which to reach the logging servers. '' for no VRF.";
+    }
+  }
+}
