@@ -1,4 +1,5 @@
 # -*- mode: python; python-indent: 4 -*-
+import ipaddress
 import re
 from typing import Tuple
 
@@ -9,6 +10,7 @@ def xe_network_instance_program_service(self):
     """
     xe_ensure_present_vrf_with_address_families(self)
     xe_reconcile_vrf_interfaces(self)
+    xe_configure_protocols(self)
 
 
 def xe_ensure_present_vrf_with_address_families(self):
@@ -89,6 +91,40 @@ def xe_reconcile_vrf_interfaces(self):
             self.log.error(
                 f'{self.device_name} Failed to ensure VRF configs for interface {interface_type, interface_number}')
             self.log.info(f'{self.device_name} interface vrf failure traceback: {e}')
+
+
+def xe_configure_protocols(self):
+    """
+    Configures the protocols section of openconfig-network-instance
+    """
+    if self.service.protocols.protocol:
+        for p in self.service.protocols.protocol:
+            self.log.info(f'protocol identifier: {p.identifier}')
+            if p.identifier == 'oc-pol-types:STATIC':
+                device_route = self.root.devices.device[self.device_name].config.ios__ip.route
+                if self.service.config.type == 'oc-ni-types:DEFAULT_INSTANCE':  # if global table
+                    if p.static_routes.static:
+                        for static in p.static_routes.static:
+                            network = ipaddress.ip_network(static.prefix)
+                            for nh in static.next_hops.next_hop:
+                                route = device_route.ip_route_forwarding_list.create(str(network.network_address),
+                                                                                     str(network.netmask),
+                                                                                     nh.config.next_hop)
+                                if nh.config.metric:
+                                    route.metric = nh.config.metric
+                if self.service.config.type == 'oc-ni-types:L3VRF':  # if VRF table
+                    if not device_route.vrf.exists(self.service.name):
+                        device_route.vrf.create(self.service.name)
+                    if p.static_routes.static:
+                        for static in p.static_routes.static:
+                            route_vrf = device_route.vrf[self.service.name]
+                            network = ipaddress.ip_network(static.prefix)
+                            for nh in static.next_hops.next_hop:
+                                route = route_vrf.ip_route_forwarding_list.create(str(network.network_address),
+                                                                                  str(network.netmask),
+                                                                                  nh.config.next_hop)
+                                if nh.config.metric:
+                                    route.metric = nh.config.metric
 
 
 def xe_get_interface_type_number_and_subinterface(interface: str) -> Tuple[str, str]:
