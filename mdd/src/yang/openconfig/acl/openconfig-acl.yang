@@ -791,6 +791,8 @@ module openconfig-acl {
 
       list interface {
         key "id";
+        uses ncs:service-data;
+        ncs:servicepoint oc-acl-interfaces-servicepoint;
         description
           "List of interfaces on which ACLs are set";
 

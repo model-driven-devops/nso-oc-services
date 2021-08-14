@@ -17,7 +17,7 @@ def xe_ensure_present_vrf_with_address_families(self):
     """
     Ensure VRF with correct address families is on the device
     """
-    if self.service.name != 'default':
+    if self.service.config.type != 'oc-ni-types:DEFAULT_INSTANCE':
         # Get VRFs from device cdb
         vrfs_device_db = list()
         for v in self.root.devices.device[self.device_name].config.ios__vrf.definition:
@@ -56,12 +56,21 @@ def xe_reconcile_vrf_interfaces(self):
     """
     Ensure device interfaces are in appropriate VRFs
     """
-    # Get interfaces from configs
-    vrf_interfaces_in_model_configs = dict()
-    for a in self.service.interfaces.interface:
-        vrf_interfaces_in_model_configs[a.id] = self.service.name
-    self.log.info(
-        f'{self.device_name} Interfaces in VRF configuration: {vrf_interfaces_in_model_configs}')
+    # interfaces in default route table are marked None, else their VRF name
+    if self.service.config.type == 'oc-ni-types:DEFAULT_INSTANCE':
+        # Get interfaces from configs
+        vrf_interfaces_in_model_configs = dict()
+        for a in self.service.interfaces.interface:
+            vrf_interfaces_in_model_configs[a.id] = None
+        self.log.info(
+            f'{self.device_name} Interfaces in VRF configuration: {vrf_interfaces_in_model_configs}')
+    else:
+        # Get interfaces from configs
+        vrf_interfaces_in_model_configs = dict()
+        for a in self.service.interfaces.interface:
+            vrf_interfaces_in_model_configs[a.id] = self.service.name
+        self.log.info(
+            f'{self.device_name} Interfaces in VRF configuration: {vrf_interfaces_in_model_configs}')
 
     # Get interfaces from CDB
     vrf_interfaces_in_cdb = xe_get_all_interfaces(self)
@@ -112,7 +121,7 @@ def xe_configure_protocols(self):
                                                                                      nh.config.next_hop)
                                 if nh.config.metric:
                                     route.metric = nh.config.metric
-                if self.service.config.type == 'oc-ni-types:L3VRF':  # if VRF table
+                elif self.service.config.type == 'oc-ni-types:L3VRF':  # if VRF table
                     if not device_route.vrf.exists(self.service.name):
                         device_route.vrf.create(self.service.name)
                     if p.static_routes.static:

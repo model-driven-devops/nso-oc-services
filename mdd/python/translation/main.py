@@ -4,10 +4,13 @@ import re
 import ncs
 import _ncs
 from ncs.application import Service
-from translation.openconfig_xe.xe_interface import *
-from translation.openconfig_xe.xe_network_instance import *
-from translation.openconfig_xe.xe_system import *
-from translation.openconfig_xe.xe_acl import *
+from translation.openconfig_xe.xe_acl import xe_acl_program_service
+from translation.openconfig_xe.xe_acl import xe_acl_interfaces_program_service
+from translation.openconfig_xe.xe_interface import xe_interface_program_service
+from translation.openconfig_xe.xe_network_instance import xe_network_instance_program_service
+from translation.openconfig_xe.xe_system import xe_system_transform_vars
+from translation.openconfig_xe.xe_system import xe_system_initial_vars
+from translation.openconfig_xe.xe_system import xe_system_program_service
 
 
 class InterfaceCallback(Service):
@@ -88,6 +91,23 @@ class AclCallback(Service):
             xe_acl_program_service(self)
 
 
+class AclInterfacesCallback(Service):
+    @Service.create
+    def cb_create(self, tctx: _ncs.TransCtxRef, root: ncs.maagic.Root, service: ncs.maagic.ListElement, proplist: list):
+        self.log.info('Service create(service=', service._path, ')')
+        self.service = service
+        self.root = root
+        self.proplist = proplist
+        # Get device name from service path
+        p = re.compile("device{(.*)}\/")
+        r = p.search(service._path)
+        self.device_name = r.group(1)
+
+        # Each NED may have a template and will have python processing code
+        if 'cisco-ios-cli' in self.root.devices.device[self.device_name].device_type.cli.ned_id:
+            xe_acl_interfaces_program_service(self)
+
+
 def update_vars(initial_vars: dict, proplist: list) -> dict:
     """
     Updates initial vars with transformed vars
@@ -109,6 +129,7 @@ class Main(ncs.application.Application):
         self.register_service('oc-netinst-servicepoint', NetworkInstanceCallback)
         self.register_service('oc-system-servicepoint', SystemCallback)
         self.register_service('oc-acl-servicepoint', AclCallback)
+        self.register_service('oc-acl-interfaces-servicepoint', AclInterfacesCallback)
 
     def teardown(self):
         self.log.info('Main FINISHED')
