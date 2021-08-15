@@ -1,9 +1,9 @@
 # -*- mode: python; python-indent: 4 -*-
 import ipaddress
 import re
-from typing import Tuple
 
 import ncs
+from translation.openconfig_xe.common import xe_get_interface_type_and_number
 
 
 def xe_interface_program_service(self):
@@ -358,19 +358,6 @@ def xe_interface_config(interface_service: ncs.maagic.ListElement, interface_cdb
 def xe_interface_hold_time(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement):
     if interface_service.hold_time.config.down:
         interface_cdb.carrier_delay.msec = int(interface_service.hold_time.config.down)
-
-
-def xe_get_interface_type_and_number(interface: str) -> Tuple[str, str]:
-    """
-    Receive full interface name. Returns interface type and number.
-    :param interface: full interface name
-    :return: tuple of interface type, interface number
-    """
-    rt = re.search(r"\D+", interface)
-    interface_name = rt.group(0)
-    rn = re.search(r"[0-9]+(\/[0-9]+)*", interface)
-    interface_number = rn.group(0)
-    return interface_name, interface_number
 
 
 def xe_get_port_channel_number(interface: str) -> int:

@@ -2,6 +2,8 @@
 import ipaddress
 import re
 
+from translation.openconfig_xe.common import xe_get_interface_type_and_number
+
 
 def prefix_to_network_and_mask(prefix: str) -> str:
     """
@@ -91,8 +93,32 @@ def xe_acl_program_service(self):
             acl.ext_access_list_rule.create(i)
 
 
-def xe_acl_interfaces_program_service(self):  # TODO
+def xe_acl_interfaces_program_service(self):
     """
     Program xe interfaces ingress and egress acls
     """
-    pass
+    # Get interface object
+    interface_type, interface_number = xe_get_interface_type_and_number(
+        self.service.interface_ref.config.interface)
+    class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+                              interface_type)
+    if self.service.interface_ref.config.subinterface == 0:
+        interface_cdb = class_attribute[interface_number]
+    else:
+        interface_cdb = class_attribute[f'{interface_number}.{self.service.interface_ref.config.subinterface}']
+
+    # Apply ACLs  TODO add other ACL types
+    if self.service.egress_acl_sets:
+        for acl in self.service.egress_acl_sets.egress_acl_set:
+            if acl.type == 'oc-acl:ACL_IPV4':
+                if not interface_cdb.ip.access_group.exists('in'):
+                    interface_cdb.ip.access_group.create('in')
+                interface_cdb.ip.access_group['in'].access_list = acl.set_name
+                self.log.info(f'{self.device_name} ACL {acl.set_name} added to interface {self.service.id} ingress')
+    if self.service.ingress_acl_sets:
+        for acl in self.service.ingress_acl_sets.ingress_acl_set:
+            if acl.type == 'oc-acl:ACL_IPV4':
+                if not interface_cdb.ip.access_group.exists('out'):
+                    interface_cdb.ip.access_group.create('out')
+                interface_cdb.ip.access_group['out'].access_list = acl.set_name
+                self.log.info(f'{self.device_name} ACL {acl.set_name} added to interface {self.service.id} egress')
