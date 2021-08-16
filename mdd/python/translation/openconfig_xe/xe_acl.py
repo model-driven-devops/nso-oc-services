@@ -59,7 +59,8 @@ def xe_acl_program_service(self):
                 rule += 'any '
             else:
                 rule += prefix_to_network_and_mask(i.ipv4.config.source_address) + ' '
-            if i.ipv4.config.protocol == 'oc-pkt-match-types:IP_TCP' or i.ipv4.config.protocol == 'oc-pkt-match-types:IP_UDP':
+            if (i.ipv4.config.protocol == 'oc-pkt-match-types:IP_TCP') or \
+                    (i.ipv4.config.protocol == 'oc-pkt-match-types:IP_UDP'):
                 if i.transport.config.source_port:
                     source_port = str(i.transport.config.source_port)
                     if source_port == 'ANY':
@@ -75,7 +76,8 @@ def xe_acl_program_service(self):
                 rule += 'any '
             else:
                 rule += prefix_to_network_and_mask(i.ipv4.config.destination_address) + ' '
-            if i.ipv4.config.protocol == 'oc-pkt-match-types:IP_TCP' or i.ipv4.config.protocol == 'oc-pkt-match-types:IP_UDP':
+            if (i.ipv4.config.protocol == 'oc-pkt-match-types:IP_TCP') or \
+                    (i.ipv4.config.protocol == 'oc-pkt-match-types:IP_UDP'):
                 if i.transport.config.destination_port:
                     dest_port = str(i.transport.config.destination_port)
                     if dest_port == 'ANY':
@@ -87,6 +89,20 @@ def xe_acl_program_service(self):
                         ml = [int(result.group(1)), int(result.group(2))]
                         ml.sort()
                         rule += f'range {ml[0]} {ml[1]} '
+                if i.transport.config.tcp_flags:
+                    if (len(i.transport.config.tcp_flags) == 1) and (
+                            i.transport.config.tcp_flags[0] == 'oc-pkt-match-types:TCP_ACK'):
+                        rule += 'ack '
+                    elif (len(i.transport.config.tcp_flags) == 1) and (
+                            i.transport.config.tcp_flags[0] == 'oc-pkt-match-types:TCP_RST'):
+                        rule += 'rst '
+                    elif (len(i.transport.config.tcp_flags) == 2) and \
+                            ('oc-pkt-match-types:TCP_ACK' in i.transport.config.tcp_flags) and \
+                            ('oc-pkt-match-types:TCP_RST' in i.transport.config.tcp_flags):
+                        rule += 'established '
+            if i.actions.config.log_action:
+                if i.actions.config.log_action == 'LOG_SYSLOG':
+                    rule += 'log-input'
             rules_oc_config.append(rule)
         for i in rules_oc_config:
             self.log.info(f'{self.device_name} ACL {self.service.name} ACE: {i}')
