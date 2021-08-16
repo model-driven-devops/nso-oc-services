@@ -91,14 +91,14 @@ def xe_acl_program_service(self):
                         rule += f'range {ml[0]} {ml[1]} '
                 if i.transport.config.tcp_flags:
                     if (len(i.transport.config.tcp_flags) == 1) and (
-                            i.transport.config.tcp_flags[0] == 'oc-pkt-match-types:TCP_ACK'):
+                            i.transport.config.tcp_flags[0] == 'TCP_ACK'):
                         rule += 'ack '
                     elif (len(i.transport.config.tcp_flags) == 1) and (
-                            i.transport.config.tcp_flags[0] == 'oc-pkt-match-types:TCP_RST'):
+                            i.transport.config.tcp_flags[0] == 'TCP_RST'):
                         rule += 'rst '
                     elif (len(i.transport.config.tcp_flags) == 2) and \
-                            ('oc-pkt-match-types:TCP_ACK' in i.transport.config.tcp_flags) and \
-                            ('oc-pkt-match-types:TCP_RST' in i.transport.config.tcp_flags):
+                            ('TCP_ACK' in i.transport.config.tcp_flags) and \
+                            ('TCP_RST' in i.transport.config.tcp_flags):
                         rule += 'established '
             if i.actions.config.log_action:
                 if i.actions.config.log_action == 'LOG_SYSLOG':
