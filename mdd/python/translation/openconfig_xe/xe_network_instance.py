@@ -3,6 +3,9 @@ import ipaddress
 import re
 from typing import Tuple
 
+from translation.openconfig_xe.common import xe_get_interface_type_and_number
+from translation.openconfig_xe.common import xe_system_get_interface_ip_address
+
 
 def xe_network_instance_program_service(self):
     """
@@ -10,6 +13,7 @@ def xe_network_instance_program_service(self):
     """
     xe_ensure_present_vrf_with_address_families(self)
     xe_reconcile_vrf_interfaces(self)
+    xe_configure_mpls(self)
     xe_configure_protocols(self)
 
 
@@ -34,7 +38,8 @@ def xe_ensure_present_vrf_with_address_families(self):
             vrf_address_families_in_model_configs.append(af)
 
         # Create/delete address family presence containers as needed
-        if self.root.devices.device[self.device_name].config.ios__vrf.definition[self.service.name].address_family.ipv4.exists():
+        if self.root.devices.device[self.device_name].config.ios__vrf.definition[
+            self.service.name].address_family.ipv4.exists():
             if 'IPV4' not in vrf_address_families_in_model_configs:
                 del self.root.devices.device[self.device_name].config.ios__vrf.definition[
                     self.service.name].address_family.ipv4
@@ -100,6 +105,54 @@ def xe_reconcile_vrf_interfaces(self):
             self.log.error(
                 f'{self.device_name} Failed to ensure VRF configs for interface {interface_type, interface_number}')
             self.log.info(f'{self.device_name} interface vrf failure traceback: {e}')
+
+
+def xe_configure_mpls(self):
+    """
+    Configures the mpls section of openconfig-network-instance
+    """
+    if self.service.mpls.oc_netinst__global.config:
+        if not self.service.mpls.oc_netinst__global.config.ttl_propagation:
+            self.root.devices.device[
+                self.device_name].config.ios__mpls.mpls_ip_conf.ip.propagate_ttl_conf.propagate_ttl = "false"
+    if self.service.mpls.oc_netinst__global.interface_attributes.interface:
+        self.root.devices.device[self.device_name].config.ios__mpls.ip = "true"
+        for interface in self.service.mpls.oc_netinst__global.interface_attributes.interface:
+            if interface.config.mpls_enabled:
+                interface_type, interface_number = xe_get_interface_type_and_number(
+                    interface.interface_ref.config.interface)
+                class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+                                          interface_type)
+                if interface.interface_ref.config.subinterface == 0:
+                    interface_cdb = class_attribute[interface_number]
+                else:
+                    interface_cdb = class_attribute[f'{interface_number}.{interface.interface_ref.config.subinterface}']
+                if not interface_cdb.mpls.ip.exists():
+                    interface_cdb.mpls.ip.create()
+    if self.service.mpls.signaling_protocols:
+        if self.service.mpls.signaling_protocols.ldp:
+            xe_configure_mpls_signaling_protocols_ldp(self)
+
+
+def xe_configure_mpls_signaling_protocols_ldp(self):
+    """
+    Configures LDP
+    """
+    self.log.info(f'dir of self.service.mpls.signaling_protocols.ldp {dir(self.service.mpls.signaling_protocols.ldp)}')
+    if self.service.mpls.signaling_protocols.ldp.oc_netinst__global.config.lsr_id:
+        ip_name_dict = xe_system_get_interface_ip_address(self)
+        self.root.devices.device[self.device_name].config.ios__mpls.ldp.router_id.interface = ip_name_dict.get(
+            self.service.mpls.signaling_protocols.ldp.oc_netinst__global.config.lsr_id)
+        self.root.devices.device[self.device_name].config.ios__mpls.ldp.router_id.force.create()
+    if self.service.mpls.signaling_protocols.ldp.oc_netinst__global.graceful_restart.config.enabled:
+        self.root.devices.device[
+            self.device_name].config.ios__mpls.ldp.graceful_restart_enable.graceful_restart.create()
+    if self.service.mpls.signaling_protocols.ldp.interface_attributes.config.hello_holdtime:
+        self.root.devices.device[
+            self.device_name].config.ios__mpls.ldp.discovery.hello.holdtime = self.service.mpls.signaling_protocols.ldp.interface_attributes.config.hello_holdtime
+    if self.service.mpls.signaling_protocols.ldp.interface_attributes.config.hello_interval:
+        self.root.devices.device[
+            self.device_name].config.ios__mpls.ldp.discovery.hello.interval = self.service.mpls.signaling_protocols.ldp.interface_attributes.config.hello_interval
 
 
 def xe_configure_protocols(self):
