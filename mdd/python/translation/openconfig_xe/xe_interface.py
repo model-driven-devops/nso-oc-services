@@ -140,6 +140,15 @@ def xe_process_interface(self):
                     physical_interface.switchport.delete()
                 xe_configure_ipv4(self, physical_interface, subinterface_service.ipv4)
 
+    # Loopback interfaces
+    if self.service.config.type == 'ianaift:softwareLoopback':
+        interface_type, interface_number = xe_get_interface_type_and_number(self.service.config.name)
+        if not self.root.devices.device[self.device_name].config.ios__interface.Loopback.exists(interface_number):
+            self.root.devices.device[self.device_name].config.ios__interface.Loopback.create(interface_number)
+        loopback = self.root.devices.device[self.device_name].config.ios__interface.Loopback[interface_number]
+        xe_interface_config(self.service, loopback)
+        xe_configure_ipv4(self, loopback, self.service.subinterfaces.subinterface[0].ipv4)
+
 
 def xe_get_subinterfaces(self) -> list:
     """
