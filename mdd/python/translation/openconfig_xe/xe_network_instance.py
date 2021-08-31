@@ -7,7 +7,7 @@ from translation.openconfig_xe.common import xe_get_interface_type_and_number
 from translation.openconfig_xe.common import xe_system_get_interface_ip_address
 
 
-def xe_network_instance_program_service(self):
+def xe_network_instance_program_service(self) -> None:
     """
     Program service for xe NED features
     """
@@ -17,7 +17,7 @@ def xe_network_instance_program_service(self):
     xe_configure_protocols(self)
 
 
-def xe_ensure_present_vrf_with_address_families(self):
+def xe_ensure_present_vrf_with_address_families(self) -> None:
     """
     Ensure VRF with correct address families is on the device
     """
@@ -57,7 +57,7 @@ def xe_ensure_present_vrf_with_address_families(self):
                 self.service.name].address_family.ipv6.create()
 
 
-def xe_reconcile_vrf_interfaces(self):
+def xe_reconcile_vrf_interfaces(self) -> None:
     """
     Ensure device interfaces are in appropriate VRFs
     """
@@ -107,16 +107,16 @@ def xe_reconcile_vrf_interfaces(self):
             self.log.info(f'{self.device_name} interface vrf failure traceback: {e}')
 
 
-def xe_configure_mpls(self):
+def xe_configure_mpls(self) -> None:
     """
     Configures the mpls section of openconfig-network-instance
     """
     if self.service.mpls.oc_netinst__global.config:
         if not self.service.mpls.oc_netinst__global.config.ttl_propagation:
             self.root.devices.device[
-                self.device_name].config.ios__mpls.mpls_ip_conf.ip.propagate_ttl_conf.propagate_ttl = "false"
+                self.device_name].config.ios__mpls.mpls_ip_conf.ip.propagate_ttl_conf.propagate_ttl = 'false'
     if self.service.mpls.oc_netinst__global.interface_attributes.interface:
-        self.root.devices.device[self.device_name].config.ios__mpls.ip = "true"
+        self.root.devices.device[self.device_name].config.ios__mpls.ip = 'true'
         for interface in self.service.mpls.oc_netinst__global.interface_attributes.interface:
             if interface.config.mpls_enabled:
                 interface_type, interface_number = xe_get_interface_type_and_number(
@@ -134,7 +134,7 @@ def xe_configure_mpls(self):
             xe_configure_mpls_signaling_protocols_ldp(self)
 
 
-def xe_configure_mpls_signaling_protocols_ldp(self):
+def xe_configure_mpls_signaling_protocols_ldp(self) -> None:
     """
     Configures LDP
     """
@@ -155,7 +155,7 @@ def xe_configure_mpls_signaling_protocols_ldp(self):
             self.device_name].config.ios__mpls.ldp.discovery.hello.interval = self.service.mpls.signaling_protocols.ldp.interface_attributes.config.hello_interval
 
 
-def xe_configure_protocols(self):
+def xe_configure_protocols(self) -> None:
     """
     Configures the protocols section of openconfig-network-instance
     """
@@ -195,9 +195,9 @@ def xe_get_interface_type_number_and_subinterface(interface: str) -> Tuple[str, 
     :param interface: full interface name
     :return: tuple of interface type, interface number.subinterface number
     """
-    rt = re.search(r"\D+", interface)
+    rt = re.search(r'\D+', interface)
     interface_name = rt.group(0)
-    rn = re.search(r"[0-9]+(\/[0-9]+)*(\.[0-9]+)*", interface)
+    rn = re.search(r'[0-9]+(\/[0-9]+)*(\.[0-9]+)*', interface)
     interface_number = rn.group(0)
     return interface_name, interface_number
 

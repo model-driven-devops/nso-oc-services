@@ -6,7 +6,7 @@ import ncs
 from translation.openconfig_xe.common import xe_get_interface_type_and_number
 
 
-def xe_interface_program_service(self):
+def xe_interface_program_service(self) -> None:
     """
     Program service for xe NED features too complex for XML template.
     """
@@ -14,7 +14,7 @@ def xe_interface_program_service(self):
     xe_process_interface(self)
 
 
-def xe_update_vlan_db(self):
+def xe_update_vlan_db(self) -> None:
     """
     Ensure vlan is available for incoming configuration
     """
@@ -53,7 +53,7 @@ def xe_update_vlan_db(self):
             vlan.shutdown.delete()
 
 
-def xe_process_interface(self):
+def xe_process_interface(self) -> None:
     """
     Programs device interfaces as defined in model
     """
@@ -168,7 +168,7 @@ def xe_get_subinterfaces(self) -> list:
     return interfaces
 
 
-def xe_interface_ethernet(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement):
+def xe_interface_ethernet(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
     # auto-negotiate
     if interface_service.ethernet.config.auto_negotiate:
         interface_cdb.negotiation.auto = interface_service.ethernet.config.auto_negotiate
@@ -219,7 +219,7 @@ def xe_interface_ethernet(interface_service: ncs.maagic.ListElement, interface_c
 
 
 def xe_interface_aggregation(s, interface_service: ncs.maagic.ListElement,
-                             interface_cdb: ncs.maagic.ListElement):
+                             interface_cdb: ncs.maagic.ListElement) -> None:
     if interface_service.aggregation.config.min_links:
         interface_cdb.port_channel.min_links = int(interface_service.aggregation.config.min_links)
 
@@ -233,7 +233,7 @@ def xe_interface_aggregation(s, interface_service: ncs.maagic.ListElement,
         xe_configure_ipv4(s, interface_cdb, interface_service.aggregation.ipv4)
 
 
-def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container):
+def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container) -> None:
     """
     Configures openconfig-if-ip ipv4-top
     """
@@ -308,7 +308,7 @@ def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: nc
 
 
 def xe_configure_switched_vlan(interface_cdb: ncs.maagic.ListElement,
-                               service_switched_vlan: ncs.maagic.Container):
+                               service_switched_vlan: ncs.maagic.Container) -> None:
     """
     Configures openconfig-vlan vlan-switched-top
     """
@@ -345,7 +345,7 @@ def xe_configure_switched_vlan(interface_cdb: ncs.maagic.ListElement,
                 service_switched_vlan.config.access_vlan)
 
 
-def xe_interface_config(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement):
+def xe_interface_config(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
     # description
     if interface_service.config.description:
         interface_cdb.description = interface_service.config.description
@@ -364,11 +364,11 @@ def xe_interface_config(interface_service: ncs.maagic.ListElement, interface_cdb
         interface_cdb.mtu = interface_service.config.mtu
 
 
-def xe_interface_hold_time(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement):
+def xe_interface_hold_time(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
     if interface_service.hold_time.config.down:
         interface_cdb.carrier_delay.msec = int(interface_service.hold_time.config.down)
 
 
 def xe_get_port_channel_number(interface: str) -> int:
-    pn = re.search(r"\d+", interface)
+    pn = re.search(r'\d+', interface)
     return int(pn.group(0))
