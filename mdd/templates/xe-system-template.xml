@@ -191,8 +191,16 @@
           <?if {mdd:openconfig/oc-sys:system/ntp/config/ntp-source-address}?>
           <?if {$XE_NTP_SOURCE_INF_TYPE}?>
           <source>
-            <Loopback when="{$XE_NTP_SOURCE_INF_TYPE='Loopback'}">{$XE_NTP_SOURCE_INF_NUMBER}</Loopback>
             <GigabitEthernet when="{$XE_NTP_SOURCE_INF_TYPE='GigabitEthernet'}">{$XE_NTP_SOURCE_INF_NUMBER}</GigabitEthernet>
+            <TwoGigabitEthernet when="{$XE_NTP_SOURCE_INF_TYPE='TwoGigabitEthernet'}">{$XE_NTP_SOURCE_INF_NUMBER}</TwoGigabitEthernet>
+            <TenGigabitEthernet when="{$XE_NTP_SOURCE_INF_TYPE='TenGigabitEthernet'}">{$XE_NTP_SOURCE_INF_NUMBER}</TenGigabitEthernet>
+            <TwentyFiveGigE when="{$XE_NTP_SOURCE_INF_TYPE='TwentyFiveGigE'}">{$XE_NTP_SOURCE_INF_NUMBER}</TwentyFiveGigE>
+            <FortyGigabitEthernet when="{$XE_NTP_SOURCE_INF_TYPE='FortyGigabitEthernet'}">{$XE_NTP_SOURCE_INF_NUMBER}</FortyGigabitEthernet>
+            <HundredGigE when="{$XE_NTP_SOURCE_INF_TYPE='HundredGigE'}">{$XE_NTP_SOURCE_INF_NUMBER}</HundredGigE>
+            <Loopback when="{$XE_NTP_SOURCE_INF_TYPE='Loopback'}">{$XE_NTP_SOURCE_INF_NUMBER}</Loopback>
+            <Tunnel when="{$XE_NTP_SOURCE_INF_TYPE='Tunnel'}">{$XE_NTP_SOURCE_INF_NUMBER}</Tunnel>
+            <Port_channel when="{$XE_NTP_SOURCE_INF_TYPE='Port_channel'}">{$XE_NTP_SOURCE_INF_NUMBER}</Port_channel>
+            <Vlan when="{$XE_NTP_SOURCE_INF_TYPE='Vlan'}">{$XE_NTP_SOURCE_INF_NUMBER}</Vlan>
           </source>
           <?end?> <!-- if {$XE_NTP_SOURCE_INF_TYPE} -->
           <?end?> <!-- if {mdd:openconfig/oc-sys:system/ntp/config/ntp-source-address} -->
@@ -281,8 +289,16 @@
 
             <?if {mdd:openconfig/oc-sys:system/ssh-server/config/ssh-source-interface}?>
             <source-interface>
-              <Loopback when="{$XE_SSH_SOURCE_INF_TYPE='Loopback'}">{$XE_SSH_SOURCE_INF_NUMBER}</Loopback>
               <GigabitEthernet when="{$XE_SSH_SOURCE_INF_TYPE='GigabitEthernet'}">{$XE_SSH_SOURCE_INF_NUMBER}</GigabitEthernet>
+              <TwoGigabitEthernet when="{$XE_SSH_SOURCE_INF_TYPE='TwoGigabitEthernet'}">{$XE_SSH_SOURCE_INF_NUMBER}</TwoGigabitEthernet>
+              <TenGigabitEthernet when="{$XE_SSH_SOURCE_INF_TYPE='TenGigabitEthernet'}">{$XE_SSH_SOURCE_INF_NUMBER}</TenGigabitEthernet>
+              <TwentyFiveGigE when="{$XE_SSH_SOURCE_INF_TYPE='TwentyFiveGigE'}">{$XE_SSH_SOURCE_INF_NUMBER}</TwentyFiveGigE>
+              <FortyGigabitEthernet when="{$XE_SSH_SOURCE_INF_TYPE='FortyGigabitEthernet'}">{$XE_SSH_SOURCE_INF_NUMBER}</FortyGigabitEthernet>
+              <HundredGigE when="{$XE_SSH_SOURCE_INF_TYPE='HundredGigE'}">{$XE_SSH_SOURCE_INF_NUMBER}</HundredGigE>
+              <Loopback when="{$XE_SSH_SOURCE_INF_TYPE='Loopback'}">{$XE_SSH_SOURCE_INF_NUMBER}</Loopback>
+              <Tunnel when="{$XE_SSH_SOURCE_INF_TYPE='Tunnel'}">{$XE_SSH_SOURCE_INF_NUMBER}</Tunnel>
+              <Port_channel when="{$XE_SSH_SOURCE_INF_TYPE='Port_channel'}">{$XE_SSH_SOURCE_INF_NUMBER}</Port_channel>
+              <Vlan when="{$XE_SSH_SOURCE_INF_TYPE='Vlan'}">{$XE_SSH_SOURCE_INF_NUMBER}</Vlan>
             </source-interface>
             <?end?>  <!-- if {mdd:openconfig/oc-sys:system/ssh-server/config/ssh-source-interface} -->
           </ssh>
