@@ -50,7 +50,7 @@ class NetworkInstanceCallback(Service):
 class SystemCallback(Service):
     @Service.create
     def cb_create(self, tctx: _ncs.TransCtxRef, root: ncs.maagic.Root, service: ncs.maagic.ListElement, proplist: list):
-        self.log.info('Service create(service={service._path})')
+        self.log.info(f'Service create(service={service._path})')
         self.service = service
         self.root = root
         self.proplist = proplist
@@ -76,7 +76,7 @@ class SystemCallback(Service):
 class AclCallback(Service):
     @Service.create
     def cb_create(self, tctx: _ncs.TransCtxRef, root: ncs.maagic.Root, service: ncs.maagic.ListElement, proplist: list):
-        self.log.info('Service create(service={service._path})')
+        self.log.info(f'Service create(service={service._path})')
         self.service = service
         self.root = root
         self.proplist = proplist
@@ -92,7 +92,7 @@ class AclCallback(Service):
 class AclInterfacesCallback(Service):
     @Service.create
     def cb_create(self, tctx: _ncs.TransCtxRef, root: ncs.maagic.Root, service: ncs.maagic.ListElement, proplist: list):
-        self.log.info('Service create(service={service._path})')
+        self.log.info(f'Service create(service={service._path})')
         self.service = service
         self.root = root
         self.proplist = proplist
