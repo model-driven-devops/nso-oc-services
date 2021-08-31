@@ -28,7 +28,7 @@ xe_system_initial_vars = dict(XE_TIMEZONE='',
                               XE_SSH_SOURCE_INF_NUMBER='')
 
 
-def xe_system_program_service(self):
+def xe_system_program_service(self) -> None:
     """
     Program service for xe NED features too complex for XML template.
     Includes:
@@ -37,10 +37,10 @@ def xe_system_program_service(self):
     """
 
     # helper functions
-    def populate_accounting_events():
+    def populate_accounting_events() -> None:
         for counter, m in enumerate(aaa_accounting_accounting_methods):
-            if m == "TACACS_ALL":
-                method = "tacacs+"
+            if m == 'TACACS_ALL':
+                method = 'tacacs+'
             else:
                 method = m
             if counter == 0:
@@ -59,36 +59,36 @@ def xe_system_program_service(self):
     if self.service.aaa.accounting.events.event:
         for i in self.service.aaa.accounting.events.event:
             aaa_accounting_events.append(
-                {"config": {"event-type": i['config']['event-type'], "record": i['config']['record']},
-                 "event-type": i['event-type']})
+                {'config': {'event-type': i['config']['event-type'], 'record': i['config']['record']},
+                 'event-type': i['event-type']})
     if aaa_accounting_accounting_methods and aaa_accounting_events:
         for e in aaa_accounting_events:
             if e['event-type'] == 'oc-aaa-types:AAA_ACCOUNTING_EVENT_COMMAND':
                 if self.root.devices.device[self.device_name].config.ios__aaa.accounting.commands.exists(
-                        ("15", "default")):
+                        ('15', 'default')):
                     event = self.root.devices.device[self.device_name].config.ios__aaa.accounting.commands[
-                        ("15", "default")]
+                        ('15', 'default')]
                 else:
                     event = self.root.devices.device[self.device_name].config.ios__aaa.accounting.commands.create(
-                        ("15", "default"))
+                        ('15', 'default'))
 
-                if e['config']['record'] == "STOP":
+                if e['config']['record'] == 'STOP':
                     event.action_type = 'stop-only'
-                elif e['config']['record'] == "START_STOP":
+                elif e['config']['record'] == 'START_STOP':
                     event.action_type = 'start-stop'
 
                 populate_accounting_events()
 
             if e['event-type'] == 'oc-aaa-types:AAA_ACCOUNTING_EVENT_LOGIN':
-                if self.root.devices.device[self.device_name].config.ios__aaa.accounting.exec.exists(("default")):
-                    event = self.root.devices.device[self.device_name].config.ios__aaa.accounting.exec[("default")]
+                if self.root.devices.device[self.device_name].config.ios__aaa.accounting.exec.exists(('default')):
+                    event = self.root.devices.device[self.device_name].config.ios__aaa.accounting.exec[('default')]
                 else:
                     event = self.root.devices.device[self.device_name].config.ios__aaa.accounting.exec.create(
-                        ("default"))
+                        ('default'))
 
-                if e['config']['record'] == "STOP":
+                if e['config']['record'] == 'STOP':
                     event.action_type = 'stop-only'
-                elif e['config']['record'] == "START_STOP":
+                elif e['config']['record'] == 'START_STOP':
                     event.action_type = 'start-stop'
 
                 populate_accounting_events()
@@ -147,7 +147,7 @@ def xe_system_program_service(self):
                     setattr(group.ip.tacacs.source_interface, interface_name, interface_number)
 
 
-def xe_system_transform_vars(self):
+def xe_system_transform_vars(self) -> None:
     """
     Transforms values into appropriate format IOS XE template values.
     """
@@ -247,8 +247,8 @@ def xe_system_get_interface_type_and_number(interface: str) -> Tuple[str, str]:
     :param interface: full interface name
     :return: tuple of interface type, interface number
     """
-    rt = re.search(r"\D+", interface)
+    rt = re.search(r'\D+', interface)
     interface_name = rt.group(0)
-    rn = re.search(r"[0-9]+(\/[0-9]+)*", interface)
+    rn = re.search(r'[0-9]+(\/[0-9]+)*', interface)
     interface_number = rn.group(0)
     return interface_name, interface_number

@@ -4,6 +4,8 @@ import re
 
 from translation.openconfig_xe.common import xe_get_interface_type_and_number
 
+regex_ports = re.compile(r'(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})\.\.(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})')
+
 
 def prefix_to_network_and_mask(prefix: str) -> str:
     """
@@ -15,7 +17,7 @@ def prefix_to_network_and_mask(prefix: str) -> str:
     return f'{str(network.network_address)} {str(network.hostmask)}'
 
 
-def xe_acl_program_service(self):
+def xe_acl_program_service(self) -> None:
     """
     Program service for xe NED features
     """
@@ -46,9 +48,8 @@ def xe_acl_program_service(self):
             device.ios__ip.access_list.extended.ext_named_acl.create(self.service.name)
 
         acl = device.ios__ip.access_list.extended.ext_named_acl[self.service.name]
-        rules_oc_config = list()  # {"10 permit tcp any 1.1.1.1 0.0.0.0 eq 80"}'
-        pattern_ports = '(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})\.\.(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})'
-        regex_ports = re.compile(pattern_ports)
+        rules_oc_config = list()  # {'10 permit tcp any 1.1.1.1 0.0.0.0 eq 80'}
+
         for i in self.service.acl_entries.acl_entry:
             rule = str(i.sequence_id) + ' ' + actions_oc_to_xe[i.actions.config.forwarding_action] + ' '
             if i.ipv4.config.protocol:
@@ -109,7 +110,7 @@ def xe_acl_program_service(self):
             acl.ext_access_list_rule.create(i)
 
 
-def xe_acl_interfaces_program_service(self):
+def xe_acl_interfaces_program_service(self) -> None:
     """
     Program xe interfaces ingress and egress acls
     """

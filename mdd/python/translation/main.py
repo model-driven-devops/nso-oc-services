@@ -12,17 +12,18 @@ from translation.openconfig_xe.xe_system import xe_system_transform_vars
 from translation.openconfig_xe.xe_system import xe_system_initial_vars
 from translation.openconfig_xe.xe_system import xe_system_program_service
 
+regex_device = re.compile(r'device{(.*)}\/')
+
 
 class InterfaceCallback(Service):
     @Service.create
     def cb_create(self, tctx: _ncs.TransCtxRef, root: ncs.maagic.Root, service: ncs.maagic.ListElement, proplist: list):
-        self.log.info('Service create(service=', service._path, ')')
+        self.log.info(f'Service create(service={service._path})')
         self.service = service
         self.root = root
         self.proplist = proplist
         # Get device name from service path
-        p = re.compile("device{(.*)}\/")
-        r = p.search(service._path)
+        r = regex_device.search(service._path)
         self.device_name = r.group(1)
 
         # Each NED may have a template and will have python processing code
@@ -33,13 +34,12 @@ class InterfaceCallback(Service):
 class NetworkInstanceCallback(Service):
     @Service.create
     def cb_create(self, tctx: _ncs.TransCtxRef, root: ncs.maagic.Root, service: ncs.maagic.ListElement, proplist: list):
-        self.log.info('Service create(service=', service._path, ')')
+        self.log.info(f'Service create(service={service._path})')
         self.service = service
         self.root = root
         self.proplist = proplist
         # Get device name from service path
-        p = re.compile("device{(.*)}\/")
-        r = p.search(service._path)
+        r = regex_device.search(service._path)
         self.device_name = r.group(1)
 
         # Each NED may have a template and will have python processing code
@@ -50,13 +50,12 @@ class NetworkInstanceCallback(Service):
 class SystemCallback(Service):
     @Service.create
     def cb_create(self, tctx: _ncs.TransCtxRef, root: ncs.maagic.Root, service: ncs.maagic.ListElement, proplist: list):
-        self.log.info('Service create(service=', service._path, ')')
+        self.log.info('Service create(service={service._path})')
         self.service = service
         self.root = root
         self.proplist = proplist
         # Get device name from service path
-        p = re.compile("device{(.*)}\/")
-        r = p.search(service._path)
+        r = regex_device.search(service._path)
         self.device_name = r.group(1)
 
         # Each NED may have a template and will have python processing code
@@ -77,13 +76,12 @@ class SystemCallback(Service):
 class AclCallback(Service):
     @Service.create
     def cb_create(self, tctx: _ncs.TransCtxRef, root: ncs.maagic.Root, service: ncs.maagic.ListElement, proplist: list):
-        self.log.info('Service create(service=', service._path, ')')
+        self.log.info('Service create(service={service._path})')
         self.service = service
         self.root = root
         self.proplist = proplist
         # Get device name from service path
-        p = re.compile("device{(.*)}\/")
-        r = p.search(service._path)
+        r = regex_device.search(service._path)
         self.device_name = r.group(1)
 
         # Each NED may have a template and will have python processing code
@@ -94,13 +92,12 @@ class AclCallback(Service):
 class AclInterfacesCallback(Service):
     @Service.create
     def cb_create(self, tctx: _ncs.TransCtxRef, root: ncs.maagic.Root, service: ncs.maagic.ListElement, proplist: list):
-        self.log.info('Service create(service=', service._path, ')')
+        self.log.info('Service create(service={service._path})')
         self.service = service
         self.root = root
         self.proplist = proplist
         # Get device name from service path
-        p = re.compile("device{(.*)}\/")
-        r = p.search(service._path)
+        r = regex_device.search(service._path)
         self.device_name = r.group(1)
 
         # Each NED may have a template and will have python processing code
