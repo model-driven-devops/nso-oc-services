@@ -199,7 +199,6 @@
             <HundredGigE when="{$XE_NTP_SOURCE_INF_TYPE='HundredGigE'}">{$XE_NTP_SOURCE_INF_NUMBER}</HundredGigE>
             <Loopback when="{$XE_NTP_SOURCE_INF_TYPE='Loopback'}">{$XE_NTP_SOURCE_INF_NUMBER}</Loopback>
             <Tunnel when="{$XE_NTP_SOURCE_INF_TYPE='Tunnel'}">{$XE_NTP_SOURCE_INF_NUMBER}</Tunnel>
-            <Port_channel when="{$XE_NTP_SOURCE_INF_TYPE='Port_channel'}">{$XE_NTP_SOURCE_INF_NUMBER}</Port_channel>
             <Vlan when="{$XE_NTP_SOURCE_INF_TYPE='Vlan'}">{$XE_NTP_SOURCE_INF_NUMBER}</Vlan>
           </source>
           <?end?> <!-- if {$XE_NTP_SOURCE_INF_TYPE} -->
@@ -297,7 +296,6 @@
               <HundredGigE when="{$XE_SSH_SOURCE_INF_TYPE='HundredGigE'}">{$XE_SSH_SOURCE_INF_NUMBER}</HundredGigE>
               <Loopback when="{$XE_SSH_SOURCE_INF_TYPE='Loopback'}">{$XE_SSH_SOURCE_INF_NUMBER}</Loopback>
               <Tunnel when="{$XE_SSH_SOURCE_INF_TYPE='Tunnel'}">{$XE_SSH_SOURCE_INF_NUMBER}</Tunnel>
-              <Port_channel when="{$XE_SSH_SOURCE_INF_TYPE='Port_channel'}">{$XE_SSH_SOURCE_INF_NUMBER}</Port_channel>
               <Vlan when="{$XE_SSH_SOURCE_INF_TYPE='Vlan'}">{$XE_SSH_SOURCE_INF_NUMBER}</Vlan>
             </source-interface>
             <?end?>  <!-- if {mdd:openconfig/oc-sys:system/ssh-server/config/ssh-source-interface} -->
