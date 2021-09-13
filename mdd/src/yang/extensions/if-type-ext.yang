@@ -1,0 +1,23 @@
+module if-type-ext{
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/if-type-ext";
+
+  prefix "iftext";
+
+  import ietf-interfaces {
+    prefix if;
+  }
+  identity interface-type-ext {
+    base if:interface-type;
+    description
+      "This identity is used as a base for all additional interfaces";
+  }
+  identity vasi {
+    base interface-type-ext;
+    description
+      "Configure VRF-Aware Software Infrastructure (VASI) interface on Cisco IOS-XE";
+  }
+}

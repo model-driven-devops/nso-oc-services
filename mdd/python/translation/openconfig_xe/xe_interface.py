@@ -141,7 +141,7 @@ def xe_process_interface(self) -> None:
                 xe_configure_ipv4(self, physical_interface, subinterface_service.ipv4)
 
     # Loopback interfaces
-    if (self.service.config.type == 'ianaift:softwareLoopback') and ('loopback' in self.service.config.name.lower()):
+    if self.service.config.type == 'ianaift:softwareLoopback':
         interface_type, interface_number = xe_get_interface_type_and_number(self.service.config.name)
         if not self.root.devices.device[self.device_name].config.ios__interface.Loopback.exists(interface_number):
             self.root.devices.device[self.device_name].config.ios__interface.Loopback.create(interface_number)
@@ -149,23 +149,17 @@ def xe_process_interface(self) -> None:
         xe_interface_config(self.service, loopback)
         xe_configure_ipv4(self, loopback, self.service.subinterfaces.subinterface[0].ipv4)
 
-    # VASI Right interfaces
-    if (self.service.config.type == 'ianaift:softwareLoopback') and ('vasiright' in self.service.config.name.lower()):
+    # VASI interfaces
+    if self.service.config.type == 'iftext:vasi':
         interface_type, interface_number = xe_get_interface_type_and_number(self.service.config.name)
-        if not self.root.devices.device[self.device_name].config.ios__interface.vasiright.exists(interface_number):
-            self.root.devices.device[self.device_name].config.ios__interface.vasiright.create(interface_number)
-        vasiright = self.root.devices.device[self.device_name].config.ios__interface.vasiright[interface_number]
-        xe_interface_config(self.service, vasiright)
-        xe_configure_ipv4(self, vasiright, self.service.subinterfaces.subinterface[0].ipv4)
+        class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+                                  interface_type)
+        if not class_attribute.exists(interface_number):
+            class_attribute.create(interface_number)
+        vasi_interface = class_attribute[interface_number]
+        xe_interface_config(self.service, vasi_interface)
+        xe_configure_ipv4(self, vasi_interface, self.service.subinterfaces.subinterface[0].ipv4)
 
-    # VASI Left interfaces
-    if (self.service.config.type == 'ianaift:softwareLoopback') and ('vasileft' in self.service.config.name.lower()):
-        interface_type, interface_number = xe_get_interface_type_and_number(self.service.config.name)
-        if not self.root.devices.device[self.device_name].config.ios__interface.vasileft.exists(interface_number):
-            self.root.devices.device[self.device_name].config.ios__interface.vasileft.create(interface_number)
-        vasileft = self.root.devices.device[self.device_name].config.ios__interface.vasileft[interface_number]
-        xe_interface_config(self.service, vasileft)
-        xe_configure_ipv4(self, vasileft, self.service.subinterfaces.subinterface[0].ipv4)
 
 def xe_get_subinterfaces(self) -> list:
     """
