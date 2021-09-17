@@ -1,0 +1,29 @@
+mdd:openconfig:
+  openconfig-bgp:bgp:
+    global:
+      config:
+        as: 1  # router bgp X
+        router-id: 10.10.0.1  # router-id
+      default-route-distance:
+        config:
+          external-route-distance: '20'  # distance bgp ERD IRD LOCAL(200)
+          internal-route-distance: '200'  # distance bgp ERD IRD LOCAL(200)
+      graceful-restart:
+        config:
+          enabled: False  # bgp graceful-restart
+          restart-time: '12'  # bgp graceful-restart restart-time
+          stale-routes-time: '360'  # bgp graceful-restart stalepath-time
+      route-selection-options:
+        config:
+          always-compare-med: False  # bgp always-compare-med
+          external-compare-router-id: True  # bgp bestpath compare-routerid
+      use-multiple-paths:
+        config:
+          enabled: False
+        ebgp:
+          config:
+            allow-multiple-as: False  # bgp bestpath as-path multipath-relax
+            maximum-paths: '1'  # maximum-paths
+        ibgp:
+          config:
+            maximum-paths: '1'  # maximum-paths ibgp

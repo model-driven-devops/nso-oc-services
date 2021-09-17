@@ -11,6 +11,9 @@ from translation.openconfig_xe.xe_network_instance import xe_network_instance_pr
 from translation.openconfig_xe.xe_system import xe_system_transform_vars
 from translation.openconfig_xe.xe_system import xe_system_initial_vars
 from translation.openconfig_xe.xe_system import xe_system_program_service
+from translation.openconfig_xe.xe_bgp import xe_bgp_global_program_service
+from translation.openconfig_xe.xe_bgp import xe_bgp_neighbor_program_service
+from translation.openconfig_xe.xe_bgp import xe_bgp_peergroup_program_service
 
 regex_device = re.compile(r'device{(.*)}\/')
 
@@ -105,6 +108,54 @@ class AclInterfacesCallback(Service):
             xe_acl_interfaces_program_service(self)
 
 
+class BGPGlobalCallback(Service):
+    @Service.create
+    def cb_create(self, tctx: _ncs.TransCtxRef, root: ncs.maagic.Root, service: ncs.maagic.ListElement, proplist: list):
+        self.log.info(f'Service create(service={service._path})')
+        self.service = service
+        self.root = root
+        self.proplist = proplist
+        # Get device name from service path
+        r = regex_device.search(service._path)
+        self.device_name = r.group(1)
+
+        # Each NED may have a template and will have python processing code
+        if 'cisco-ios-cli' in self.root.devices.device[self.device_name].device_type.cli.ned_id:
+            xe_bgp_global_program_service(self)
+
+
+class BGPNeighborCallback(Service):
+    @Service.create
+    def cb_create(self, tctx: _ncs.TransCtxRef, root: ncs.maagic.Root, service: ncs.maagic.ListElement, proplist: list):
+        self.log.info(f'Service create(service={service._path})')
+        self.service = service
+        self.root = root
+        self.proplist = proplist
+        # Get device name from service path
+        r = regex_device.search(service._path)
+        self.device_name = r.group(1)
+
+        # Each NED may have a template and will have python processing code
+        if 'cisco-ios-cli' in self.root.devices.device[self.device_name].device_type.cli.ned_id:
+            xe_bgp_neighbor_program_service(self)
+
+
+class BGPPeerGroup(Service):
+    @Service.create
+    def cb_create(self, tctx: _ncs.TransCtxRef, root: ncs.maagic.Root, service: ncs.maagic.ListElement, proplist: list):
+        self.log.info(f'Service create(service={service._path})')
+        self.service = service
+        self.root = root
+        self.proplist = proplist
+        # Get device name from service path
+        r = regex_device.search(service._path)
+        self.device_name = r.group(1)
+
+        # Each NED may have a template and will have python processing code
+        if 'cisco-ios-cli' in self.root.devices.device[self.device_name].device_type.cli.ned_id:
+            xe_bgp_peergroup_program_service(self)
+
+
 def update_vars(initial_vars: dict, proplist: list) -> dict:
     """
     Updates initial vars with transformed vars
@@ -127,6 +178,9 @@ class Main(ncs.application.Application):
         self.register_service('oc-system-servicepoint', SystemCallback)
         self.register_service('oc-acl-servicepoint', AclCallback)
         self.register_service('oc-acl-interfaces-servicepoint', AclInterfacesCallback)
+        self.register_service('oc-bgp-global-servicepoint', BGPGlobalCallback)
+        self.register_service('oc-bgp-neighbor-servicepoint', BGPNeighborCallback)
+        self.register_service('oc-bgp-peergroup-servicepoint', BGPPeerGroup)
 
     def teardown(self):
         self.log.info('Main FINISHED')
