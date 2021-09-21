@@ -1,0 +1,668 @@
+---
+# ansible-playbook xe_bgp_router_process.yml --extra-vars "nso_ip=X.X.X.X device=xe1" --tags=all
+# Test BGP process
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - process
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - process
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-bgp:bgp:
+          global:
+            config:
+              as: 1
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: Create BGP Process
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PATCH
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - process
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+router bgp 1:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - process
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+
+# BGP router-id
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - router-id
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - router-id
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-bgp:bgp:
+          global:
+            config:
+              as: 1
+              router-id: 1.1.1.1
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: Create BGP router-id
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PATCH
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - router-id
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ bgp router-id 1.1.1.1:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - router-id
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+
+# BGP distance external internal
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - distance_bgp
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - distance_bgp
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-bgp:bgp:
+          global:
+            config:
+              as: 1
+            default-route-distance:
+              config:
+                external-route-distance: '21'
+                internal-route-distance: '201'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: BGP external and internal distance
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PATCH
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - distance_bgp
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ distance bgp 21 201 200:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - distance_bgp
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+
+
+# BGP Graceful restart
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - graceful_restart
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - graceful_restart
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-bgp:bgp:
+          global:
+            config:
+              as: 1
+            graceful-restart:
+              config:
+                enabled: True
+                restart-time: '121'
+                stale-routes-time: '250'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: BGP Graceful-restart
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PATCH
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - graceful_restart
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ bgp graceful-restart:' in changes"
+          - "'+ bgp graceful-restart restart-time 121:' in changes"
+          - "'+ bgp graceful-restart stalepath-time 250:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - process
+    - graceful_restart
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+
+# BGP route selection
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - route_selection
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - route_selection
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-bgp:bgp:
+          global:
+            config:
+              as: 1
+            route-selection-options:
+              config:
+                always-compare-med: True
+                external-compare-router-id: True
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: BGP Route-Selection
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PATCH
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - route_selection
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ bgp always-compare-med:' in changes"
+          - "'+ bgp bestpath compare-routerid:' in changes"
+      ignore_errors: yes
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - route_selection
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+
+# BGP Multi-Path
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - multipath
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - multipath
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-bgp:bgp:
+          global:
+            config:
+              as: 1
+            use-multiple-paths:
+              config:
+                enabled: True
+              ebgp:
+                config:
+                  allow-multiple-as: True
+                  maximum-paths: '4'
+              ibgp:
+                config:
+                  maximum-paths: '4'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: BGP Multi-Path
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PATCH
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - multipath
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ maximum-paths 4:' in changes"
+          - "'+ maximum-paths ibgp 4:' in changes"
+      ignore_errors: yes
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - multipath
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>

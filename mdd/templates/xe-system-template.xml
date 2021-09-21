@@ -60,6 +60,21 @@
             <secret>{current()/config/password}</secret>
           </password>
         </username>
+<!--        <?if {current()/config/ssh-key}?>-->
+<!--        <ip xmlns="urn:ios">-->
+<!--          <ssh>-->
+<!--            <pubkey-chain>-->
+<!--              <username>-->
+<!--                <name>{current()/username}</name>-->
+<!--                <key-hash>-->
+<!--                  <key-type>ssh-rsa</key-type>-->
+<!--                  <key-name>{current()/config/ssh-key}</key-name>-->
+<!--                </key-hash>-->
+<!--              </username>-->
+<!--            </pubkey-chain>-->
+<!--          </ssh>-->
+<!--        </ip>-->
+<!--        <?end?> &lt;!&ndash; end if {current()/config/ssh-key} &ndash;&gt;-->
         <?end?> <!-- end foreach {mdd:openconfig/oc-sys:system/aaa/authentication/users/user} -->
         <?end?> <!-- end if {mdd:openconfig/oc-sys:system/aaa/authentication/users/user} -->
 
