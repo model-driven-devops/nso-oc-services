@@ -340,7 +340,7 @@
             <?end?>  <!-- if {mdd:openconfig/oc-sys:system/ssh-server/config/absolute-timeout-minutes} -->
 
             <?if {mdd:openconfig/oc-sys:system/ssh-server/config/enable='true'}?>
-            <transport>
+            <transport tags="replace">
               <input>ssh</input>
             </transport>
             <?end?> <!-- if {mdd:openconfig/oc-sys:system/ssh-server/config/enable='true'} -->
