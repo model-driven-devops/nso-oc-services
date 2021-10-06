@@ -1,0 +1,29 @@
+mdd:openconfig:
+  openconfig-bgp:bgp:
+    peer-groups:
+      peer-group:
+        - peer-group-name: ''
+          config:
+            peer-group-name: ''  # neighbor {ip-address | ipv6-address% | peer-group-name}remote-as autonomous-system-number [alternate-as autonomous-system-number ...]
+            peer-as: ''  # same as above
+            auth-password: ''  # neighbor {ip-address | peer-group-name} password string
+            description: ''  # neighbor {ip-address | peer-group-name} description text
+            local-as: ''  # neighbor {ip-address | ipv6-address | peer-group-name} local-as [autonomous-system-number [no-prepend [replace-as [dual-as]]]]
+            remove-private-as: ''  # neighbor {ip-address | peer-group-name} remove-private-as [all [replace-as]]  PRIVATE_AS_REMOVE_ALL, PRIVATE_AS_REPLACE_ALL
+            send-community: NONE  # neighbor {ip-address | ipv6-address | peer-group-name} send-community [both | standard | extended]  STANDARD, EXTENDED, BOTH, NONE
+          ebgp-multihop:  # neighbor {ip-address | ipv6-address | peer-group-name} ebgp-multihop [ttl]
+            config:
+              enabled: False
+              multihop-ttl: ''
+          route-reflector:
+            config:
+              route-reflector-client: False  # neighbor {ip-address | ipv6-address | peer-group-name} route-reflector-client
+              route-reflector-cluster-id: ''  # neighbor {ip-address | ipv6-address} cluster-id cluster-id
+          timers:  # neighbor [ip-address | peer-group-name] timers keepalive holdtime [min-holdtime]
+            config:
+              hold-time: '90'  # holdtime
+              keepalive-interval: '30'  # keepalive
+          transport:  # neighbor {ip-address | peer-group-name} transport {connection-mode {active | passive} | path-mtu-discovery [disable] | multi-session}
+            config:
+              mtu-discovery: True
+              passive-mode: False

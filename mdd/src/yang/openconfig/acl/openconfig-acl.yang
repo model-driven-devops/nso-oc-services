@@ -499,8 +499,6 @@ module openconfig-acl {
 
       list acl-set {
         key "name type";
-        uses ncs:service-data;
-        ncs:servicepoint oc-acl-servicepoint;
         description
           "List of ACL sets, each comprising of a list of ACL
           entries";
@@ -791,8 +789,6 @@ module openconfig-acl {
 
       list interface {
         key "id";
-        uses ncs:service-data;
-        ncs:servicepoint oc-acl-interfaces-servicepoint;
         description
           "List of interfaces on which ACLs are set";
 

@@ -6,12 +6,12 @@ import ncs
 from translation.openconfig_xe.common import xe_get_interface_type_and_number
 
 
-def xe_interface_program_service(self) -> None:
+def xe_interfaces_program_service(self) -> None:
     """
     Program service for xe NED features too complex for XML template.
     """
     xe_update_vlan_db(self)
-    xe_process_interface(self)
+    xe_process_interfaces(self)
 
 
 def xe_update_vlan_db(self) -> None:
@@ -23,27 +23,28 @@ def xe_update_vlan_db(self) -> None:
     vlans_device_db = list()
     for v in self.root.devices.device[self.device_name].config.ios__vlan.vlan_list:
         vlans_device_db.append(v.id)
-    self.log.info(f'{self.device_name} {self.service.name} VLANs in device DB: {vlans_device_db}')
+    self.log.info(f'{self.device_name} VLANs in device DB: {vlans_device_db}')
 
     # Get VLANs from incoming config
     vlans_in_model_configs = list()
-    if self.service.aggregation.switched_vlan.config.access_vlan:
-        vlans_in_model_configs.append(self.service.aggregation.switched_vlan.config.access_vlan)
-    for x in self.service.aggregation.switched_vlan.config.trunk_vlans:
-        if x:
-            vlans_in_model_configs.append(x)
-    for x in self.service.ethernet.switched_vlan.config.trunk_vlans:
-        if x:
-            vlans_in_model_configs.append(x)
-    if self.service.ethernet.switched_vlan.config.native_vlan:
-        vlans_in_model_configs.append(self.service.ethernet.switched_vlan.config.native_vlan)
-    if self.service.routed_vlan.config.vlan:
-        vlans_in_model_configs.append(self.service.routed_vlan.config.vlan)
-    self.log.info(f'{self.device_name} {self.service.name} VLANs from configs: {vlans_in_model_configs}')
+    for interface in self.service.oc_if__interfaces.interface:
+        if interface.aggregation.switched_vlan.config.access_vlan:
+            vlans_in_model_configs.append(interface.aggregation.switched_vlan.config.access_vlan)
+        for x in interface.aggregation.switched_vlan.config.trunk_vlans:
+            if x:
+                vlans_in_model_configs.append(x)
+        for x in interface.ethernet.switched_vlan.config.trunk_vlans:
+            if x:
+                vlans_in_model_configs.append(x)
+        if interface.ethernet.switched_vlan.config.native_vlan:
+            vlans_in_model_configs.append(interface.ethernet.switched_vlan.config.native_vlan)
+        if interface.routed_vlan.config.vlan:
+            vlans_in_model_configs.append(interface.routed_vlan.config.vlan)
+    self.log.info(f'{self.device_name} VLANs from configs: {vlans_in_model_configs}')
 
     # Find VLANs to create in device VLAN DB
     vlans_to_create_in_db = [v for v in vlans_in_model_configs if v not in set(vlans_device_db)]
-    self.log.info(f'{self.device_name} {self.service.name} vlans_to_create_in_db: {vlans_to_create_in_db}')
+    self.log.info(f'{self.device_name} vlans_to_create_in_db: {vlans_to_create_in_db}')
 
     # Create VLANs in device VLAN DB
     for v in vlans_to_create_in_db:
@@ -53,112 +54,113 @@ def xe_update_vlan_db(self) -> None:
             vlan.shutdown.delete()
 
 
-def xe_process_interface(self) -> None:
+def xe_process_interfaces(self) -> None:
     """
     Programs device interfaces as defined in model
     """
-    # Layer 3 VLAN interfaces
-    if self.service.config.type == 'ianaift:l3ipvlan':
-        if not self.root.devices.device[self.device_name].config.ios__interface.Vlan.exists(
-                self.service.routed_vlan.config.vlan):
-            self.root.devices.device[self.device_name].config.ios__interface.Vlan.create(
-                self.service.routed_vlan.config.vlan)
+    for interface in self.service.oc_if__interfaces.interface:
+        # Layer 3 VLAN interfaces
+        if interface.config.type == 'ianaift:l3ipvlan':
+            if not self.root.devices.device[self.device_name].config.ios__interface.Vlan.exists(
+                    interface.routed_vlan.config.vlan):
+                self.root.devices.device[self.device_name].config.ios__interface.Vlan.create(
+                    interface.routed_vlan.config.vlan)
 
-        vlan = self.root.devices.device[self.device_name].config.ios__interface.Vlan[
-            self.service.routed_vlan.config.vlan]
-        if self.service.config.description:
-            vlan.description = self.service.config.description
-        if self.service.config.enabled:
-            if vlan.shutdown.exists():
-                vlan.shutdown.delete()
-        else:
-            if not vlan.shutdown.exists():
-                vlan.shutdown.create()
-        if self.service.config.mtu:
-            vlan.mtu = self.service.config.mtu
-        xe_configure_ipv4(self, vlan, self.service.routed_vlan.ipv4)
+            vlan = self.root.devices.device[self.device_name].config.ios__interface.Vlan[
+                interface.routed_vlan.config.vlan]
+            if interface.config.description:
+                vlan.description = interface.config.description
+            if interface.config.enabled:
+                if vlan.shutdown.exists():
+                    vlan.shutdown.delete()
+            else:
+                if not vlan.shutdown.exists():
+                    vlan.shutdown.create()
+            if interface.config.mtu:
+                vlan.mtu = interface.config.mtu
+            xe_configure_ipv4(self, vlan, interface.routed_vlan.ipv4)
 
-    # Layer 2 interfaces
-    if self.service.config.type == 'ianaift:l2vlan' or (
-            self.service.config.type == 'ianaift:ethernetCsmacd' and self.service.ethernet.config.aggregate_id):
-        interface_type, interface_number = xe_get_interface_type_and_number(self.service.config.name)
-        class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
-                                  interface_type)
-        l2_interface = class_attribute[interface_number]
-        xe_interface_config(self.service, l2_interface)
-        xe_interface_hold_time(self.service, l2_interface)
-        xe_interface_ethernet(self.service, l2_interface)
+        # Layer 2 interfaces
+        if interface.config.type == 'ianaift:l2vlan' or (
+                interface.config.type == 'ianaift:ethernetCsmacd' and interface.ethernet.config.aggregate_id):
+            interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
+            class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+                                      interface_type)
+            l2_interface = class_attribute[interface_number]
+            xe_interface_config(interface, l2_interface)
+            xe_interface_hold_time(interface, l2_interface)
+            xe_interface_ethernet(interface, l2_interface)
 
-    # Port channels
-    if self.service.config.type == 'ianaift:ieee8023adLag':
-        port_channel_number = xe_get_port_channel_number(self.service.name)
-        if not self.root.devices.device[self.device_name].config.ios__interface.Port_channel.exists(
-                port_channel_number):
-            self.root.devices.device[self.device_name].config.ios__interface.Port_channel.create(
-                port_channel_number)
-        port_channel = self.root.devices.device[self.device_name].config.ios__interface.Port_channel[
-            port_channel_number]
-        xe_interface_config(self.service, port_channel)
-        xe_interface_hold_time(self.service, port_channel)
-        xe_interface_aggregation(self, self.service, port_channel)
+        # Port channels
+        if interface.config.type == 'ianaift:ieee8023adLag':
+            port_channel_number = xe_get_port_channel_number(interface.name)
+            if not self.root.devices.device[self.device_name].config.ios__interface.Port_channel.exists(
+                    port_channel_number):
+                self.root.devices.device[self.device_name].config.ios__interface.Port_channel.create(
+                    port_channel_number)
+            port_channel = self.root.devices.device[self.device_name].config.ios__interface.Port_channel[
+                port_channel_number]
+            xe_interface_config(interface, port_channel)
+            xe_interface_hold_time(interface, port_channel)
+            xe_interface_aggregation(self, interface, port_channel)
 
-    # Physical and Sub-interfaces
-    if self.service.config.type == 'ianaift:ethernetCsmacd' and self.service.subinterfaces.subinterface:
-        interface_type, interface_number = xe_get_interface_type_and_number(self.service.config.name)
-        class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
-                                  interface_type)
-        physical_interface = class_attribute[interface_number]
-        xe_interface_config(self.service, physical_interface)
-        xe_interface_hold_time(self.service, physical_interface)
-        xe_interface_ethernet(self.service, physical_interface)
-        for subinterface_service in self.service.subinterfaces.subinterface:
-            if subinterface_service.index != 0:
-                if not class_attribute.exists(f'{interface_number}.{subinterface_service.index}'):
-                    class_attribute.create(f'{interface_number}.{subinterface_service.index}')
-                subinterface_cdb = class_attribute[f'{interface_number}.{subinterface_service.index}']
-                # If switchport tag, then remove
-                if subinterface_cdb.switchport.exists():
-                    subinterface_cdb.switchport.delete()
-                # description
-                if subinterface_service.config.description:
-                    subinterface_cdb.description = subinterface_service.config.description
-                # Remove switchport
-                if subinterface_cdb.switchport.exists():
-                    subinterface_cdb.switchport.delete()
-                # enabled
-                if subinterface_service.config.enabled:
-                    if subinterface_cdb.shutdown.exists():
-                        subinterface_cdb.shutdown.delete()
-                else:
-                    if not subinterface_cdb.shutdown.exists():
-                        subinterface_cdb.shutdown.create()
-                subinterface_cdb.encapsulation.dot1Q.vlan_id = subinterface_service.vlan.config.vlan_id
-                xe_configure_ipv4(self, subinterface_cdb, subinterface_service.ipv4)
-            else:  # IPv4 for main interface
-                # Remove switchport
-                if physical_interface.switchport.exists():
-                    physical_interface.switchport.delete()
-                xe_configure_ipv4(self, physical_interface, subinterface_service.ipv4)
+        # Physical and Sub-interfaces
+        if interface.config.type == 'ianaift:ethernetCsmacd' and interface.subinterfaces.subinterface:
+            interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
+            class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+                                      interface_type)
+            physical_interface = class_attribute[interface_number]
+            xe_interface_config(interface, physical_interface)
+            xe_interface_hold_time(interface, physical_interface)
+            xe_interface_ethernet(interface, physical_interface)
+            for subinterface_service in interface.subinterfaces.subinterface:
+                if subinterface_service.index != 0:
+                    if not class_attribute.exists(f'{interface_number}.{subinterface_service.index}'):
+                        class_attribute.create(f'{interface_number}.{subinterface_service.index}')
+                    subinterface_cdb = class_attribute[f'{interface_number}.{subinterface_service.index}']
+                    # If switchport tag, then remove
+                    if subinterface_cdb.switchport.exists():
+                        subinterface_cdb.switchport.delete()
+                    # description
+                    if subinterface_service.config.description:
+                        subinterface_cdb.description = subinterface_service.config.description
+                    # Remove switchport
+                    if subinterface_cdb.switchport.exists():
+                        subinterface_cdb.switchport.delete()
+                    # enabled
+                    if subinterface_service.config.enabled:
+                        if subinterface_cdb.shutdown.exists():
+                            subinterface_cdb.shutdown.delete()
+                    else:
+                        if not subinterface_cdb.shutdown.exists():
+                            subinterface_cdb.shutdown.create()
+                    subinterface_cdb.encapsulation.dot1Q.vlan_id = subinterface_service.vlan.config.vlan_id
+                    xe_configure_ipv4(self, subinterface_cdb, subinterface_service.ipv4)
+                else:  # IPv4 for main interface
+                    # Remove switchport
+                    if physical_interface.switchport.exists():
+                        physical_interface.switchport.delete()
+                    xe_configure_ipv4(self, physical_interface, subinterface_service.ipv4)
 
-    # Loopback interfaces
-    if self.service.config.type == 'ianaift:softwareLoopback':
-        interface_type, interface_number = xe_get_interface_type_and_number(self.service.config.name)
-        if not self.root.devices.device[self.device_name].config.ios__interface.Loopback.exists(interface_number):
-            self.root.devices.device[self.device_name].config.ios__interface.Loopback.create(interface_number)
-        loopback = self.root.devices.device[self.device_name].config.ios__interface.Loopback[interface_number]
-        xe_interface_config(self.service, loopback)
-        xe_configure_ipv4(self, loopback, self.service.subinterfaces.subinterface[0].ipv4)
+        # Loopback interfaces
+        if interface.config.type == 'ianaift:softwareLoopback':
+            interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
+            if not self.root.devices.device[self.device_name].config.ios__interface.Loopback.exists(interface_number):
+                self.root.devices.device[self.device_name].config.ios__interface.Loopback.create(interface_number)
+            loopback = self.root.devices.device[self.device_name].config.ios__interface.Loopback[interface_number]
+            xe_interface_config(interface, loopback)
+            xe_configure_ipv4(self, loopback, interface.subinterfaces.subinterface[0].ipv4)
 
-    # VASI interfaces
-    if self.service.config.type == 'iftext:vasi':
-        interface_type, interface_number = xe_get_interface_type_and_number(self.service.config.name)
-        class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
-                                  interface_type)
-        if not class_attribute.exists(interface_number):
-            class_attribute.create(interface_number)
-        vasi_interface = class_attribute[interface_number]
-        xe_interface_config(self.service, vasi_interface)
-        xe_configure_ipv4(self, vasi_interface, self.service.subinterfaces.subinterface[0].ipv4)
+        # VASI interfaces
+        if interface.config.type == 'iftext:vasi':
+            interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
+            class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+                                      interface_type)
+            if not class_attribute.exists(interface_number):
+                class_attribute.create(interface_number)
+            vasi_interface = class_attribute[interface_number]
+            xe_interface_config(interface, vasi_interface)
+            xe_configure_ipv4(self, vasi_interface, interface.subinterfaces.subinterface[0].ipv4)
 
 
 def xe_get_subinterfaces(self) -> list:

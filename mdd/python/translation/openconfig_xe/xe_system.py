@@ -53,11 +53,11 @@ def xe_system_program_service(self) -> None:
     # aaa accounting
     aaa_accounting_accounting_methods = list()
     aaa_accounting_events = list()
-    if self.service.aaa.accounting.config.accounting_method:
-        for i in self.service.aaa.accounting.config.accounting_method:
+    if self.service.oc_sys__system.aaa.accounting.config.accounting_method:
+        for i in self.service.oc_sys__system.aaa.accounting.config.accounting_method:
             aaa_accounting_accounting_methods.append(i)
-    if self.service.aaa.accounting.events.event:
-        for i in self.service.aaa.accounting.events.event:
+    if self.service.oc_sys__system.aaa.accounting.events.event:
+        for i in self.service.oc_sys__system.aaa.accounting.events.event:
             aaa_accounting_events.append(
                 {'config': {'event-type': i['config']['event-type'], 'record': i['config']['record']},
                  'event-type': i['event-type']})
@@ -94,9 +94,9 @@ def xe_system_program_service(self) -> None:
                 populate_accounting_events()
 
     # aaa server-groups
-    if self.service.aaa.server_groups.server_group:
+    if self.service.oc_sys__system.aaa.server_groups.server_group:
         server_groups = list()
-        for group in self.service.aaa.server_groups.server_group:
+        for group in self.service.oc_sys__system.aaa.server_groups.server_group:
             server_group = dict(name=group.name, type=group.config.type, servers=[])
             for server in group.servers.server:
                 server_info = dict(address=server.address,
@@ -152,8 +152,8 @@ def xe_system_transform_vars(self) -> None:
     Transforms values into appropriate format IOS XE template values.
     """
 
-    if self.service.clock.config.timezone_name:
-        tz = self.service.clock.config.timezone_name.split()
+    if self.service.oc_sys__system.clock.config.timezone_name:
+        tz = self.service.oc_sys__system.clock.config.timezone_name.split()
         if len(tz) != 3:
             raise ValueError
         else:
@@ -166,38 +166,38 @@ def xe_system_transform_vars(self) -> None:
             raise ValueError
         else:
             self.proplist.append(('XE_TIMEZONE_OFFSET_MINUTES', tz[2]))
-    if self.service.config.console_exec_timeout_seconds:
-        seconds_all = int(self.service.config.console_exec_timeout_seconds)
+    if self.service.oc_sys__system.config.console_exec_timeout_seconds:
+        seconds_all = int(self.service.oc_sys__system.config.console_exec_timeout_seconds)
         self.proplist.append(('XE_CONSOLE_EXEC_TIMEOUT_MINUTES', str(seconds_all // 60)))
         self.proplist.append(('XE_CONSOLE_EXEC_TIMEOUT_SECONDS', str(seconds_all % 60)))
-    if self.service.ntp.config.ntp_source_address:
+    if self.service.oc_sys__system.ntp.config.ntp_source_address:
         ip_name_dict = xe_system_get_interface_ip_address(self)
-        if ip_name_dict[self.service.ntp.config.ntp_source_address]:
+        if ip_name_dict[self.service.oc_sys__system.ntp.config.ntp_source_address]:
             interface_name, interface_number = xe_system_get_interface_type_and_number(
-                ip_name_dict.get(self.service.ntp.config.ntp_source_address))
+                ip_name_dict.get(self.service.oc_sys__system.ntp.config.ntp_source_address))
             self.proplist.append(('XE_NTP_SOURCE_INF_TYPE', interface_name))
             self.proplist.append(('XE_NTP_SOURCE_INF_NUMBER', interface_number))
 
-    if self.service.ssh_server.config.ssh_source_interface:
+    if self.service.oc_sys__system.ssh_server.config.ssh_source_interface:
         interface_name, interface_number = xe_system_get_interface_type_and_number(
-            self.service.ssh_server.config.ssh_source_interface)
+            self.service.oc_sys__system.ssh_server.config.ssh_source_interface)
         self.proplist.append(('XE_SSH_SOURCE_INF_TYPE', interface_name))
         self.proplist.append(('XE_SSH_SOURCE_INF_NUMBER', interface_number))
 
-    if self.service.ssh_server.config.timeout:
-        seconds_all = int(self.service.ssh_server.config.timeout)
+    if self.service.oc_sys__system.ssh_server.config.timeout:
+        seconds_all = int(self.service.oc_sys__system.ssh_server.config.timeout)
         self.proplist.append(('XE_EXEC_TIMEOUT_MINUTES', str(seconds_all // 60)))
         self.proplist.append(('XE_EXEC_TIMEOUT_SECONDS', str(seconds_all % 60)))
-    if self.service.logging.console.selectors.selector:
-        for i in self.service.logging.console.selectors.selector:
+    if self.service.oc_sys__system.logging.console.selectors.selector:
+        for i in self.service.oc_sys__system.logging.console.selectors.selector:
             self.proplist.append(('XE_CONSOLE_FACILITY', str(i.facility).lower().replace('oc-log:', '')))
             self.proplist.append(('XE_CONSOLE_SEVERITY', str(i.severity).lower()))
             break
-    if self.service.logging.remote_servers.remote_server:
+    if self.service.oc_sys__system.logging.remote_servers.remote_server:
         need_remote_facility = True
         need_remote_severity = True
         need_source_address = True
-        for n in self.service.logging.remote_servers.remote_server:
+        for n in self.service.oc_sys__system.logging.remote_servers.remote_server:
             for i in n.selectors.selector:
                 if need_remote_facility:
                     self.proplist.append(('XE_REMOTE_FACILITY', str(i.facility).lower().replace('oc-log:', '')))
@@ -212,25 +212,25 @@ def xe_system_transform_vars(self) -> None:
                         ip_name_dict.get(n.config.source_address))
                     self.proplist.append(('XE_LOGGING_SOURCE_INF_NAME', f'{interface_type}{interface_number}'))
                     need_source_address = False
-    if self.service.aaa.authentication.config.authentication_method:
-        for i in self.service.aaa.authentication.config.authentication_method:
+    if self.service.oc_sys__system.aaa.authentication.config.authentication_method:
+        for i in self.service.oc_sys__system.aaa.authentication.config.authentication_method:
             if i == 'TACACS_ALL':
                 self.proplist.append(('XE_AUTHENTICATION_TACACS', 'True'))
             elif i == 'LOCAL':
                 self.proplist.append(('XE_AUTHENTICATION_LOCAL', 'True'))
-    if self.service.aaa.authorization.config.authorization_method:
-        for i in self.service.aaa.authorization.config.authorization_method:
+    if self.service.oc_sys__system.aaa.authorization.config.authorization_method:
+        for i in self.service.oc_sys__system.aaa.authorization.config.authorization_method:
             if i == 'TACACS_ALL':
                 self.proplist.append(('XE_AUTHORIZATION_TACACS', 'True'))
             elif i == 'LOCAL':
                 self.proplist.append(('XE_AUTHORIZATION_LOCAL', 'True'))
-    if self.service.aaa.authorization.events.event:
-        for i in self.service.aaa.authorization.events.event:
+    if self.service.oc_sys__system.aaa.authorization.events.event:
+        for i in self.service.oc_sys__system.aaa.authorization.events.event:
             if i.event_type == 'oc-aaa-types:AAA_AUTHORIZATION_EVENT_CONFIG':
                 self.proplist.append(('XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_CONFIG', 'True'))
             if i.event_type == 'oc-aaa-types:AAA_AUTHORIZATION_EVENT_COMMAND':
                 self.proplist.append(('XE_AUTHORIZATION_AAA_AUTHORIZATION_EVENT_COMMAND', 'True'))
-    for i in self.service.aaa.server_groups.server_group:
+    for i in self.service.oc_sys__system.aaa.server_groups.server_group:
         for n in i.servers.server:
             if n.tacacs.config.source_address:
                 ip_name_dict = xe_system_get_interface_ip_address(self)

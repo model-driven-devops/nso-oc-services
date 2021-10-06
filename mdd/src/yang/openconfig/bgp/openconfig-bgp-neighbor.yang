@@ -3,7 +3,6 @@ submodule openconfig-bgp-neighbor {
   belongs-to openconfig-bgp {
     prefix "oc-bgp";
   }
-  import tailf-ncs { prefix ncs; }
   import openconfig-extensions { prefix oc-ext; }
   import openconfig-routing-policy { prefix oc-rpol; }
   import openconfig-types { prefix oc-types; }
@@ -741,8 +740,6 @@ submodule openconfig-bgp-neighbor {
 
     list neighbor {
       key "neighbor-address";
-      uses ncs:service-data;
-      ncs:servicepoint oc-bgp-neighbor-servicepoint;
       description
         "List of BGP neighbors configured on the local system,
         uniquely identified by peer IPv[46] address";

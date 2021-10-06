@@ -170,9 +170,6 @@ module openconfig-bgp {
         "Top-level configuration and state for the BGP router";
 
       container global {
-        presence global;
-        uses ncs:service-data;
-        ncs:servicepoint oc-bgp-global-servicepoint;
         description
           "Global configuration for the BGP router";
           uses bgp-global-base;

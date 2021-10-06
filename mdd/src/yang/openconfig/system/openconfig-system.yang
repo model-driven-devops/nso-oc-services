@@ -984,9 +984,6 @@ module openconfig-system {
       "Top level system data containers";
 
     container system {
-      presence system;
-      uses ncs:service-data;
-      ncs:servicepoint oc-system-servicepoint;
       description
         "Enclosing container for system-related configuration and
         operational state data";

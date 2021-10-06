@@ -1058,8 +1058,6 @@ module openconfig-interfaces {
 
       list interface {
         key "name";
-        uses ncs:service-data;
-        ncs:servicepoint oc-interface-servicepoint;
         description
           "The list of named interfaces on the device.";
 

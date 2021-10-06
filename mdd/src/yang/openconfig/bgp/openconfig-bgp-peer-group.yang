@@ -3,7 +3,6 @@ submodule openconfig-bgp-peer-group {
   belongs-to openconfig-bgp {
     prefix "oc-bgp";
   }
-  import tailf-ncs { prefix ncs; }
   import openconfig-extensions { prefix oc-ext; }
   import openconfig-routing-policy { prefix oc-rpol; }
   import openconfig-bfd { prefix oc-bfd; }
@@ -27,7 +26,7 @@ submodule openconfig-bgp-peer-group {
 
   oc-ext:openconfig-version "6.1.0";
 
-
+  
   revision "2021-03-17" {
     description
       "Add bfd support without augmentation.";
@@ -278,8 +277,6 @@ submodule openconfig-bgp-peer-group {
 
     list peer-group {
       key "peer-group-name";
-      uses ncs:service-data;
-      ncs:servicepoint oc-bgp-peergroup-servicepoint;
       description
         "List of BGP peer-groups configured on the local system -
         uniquely identified by peer-group name";
