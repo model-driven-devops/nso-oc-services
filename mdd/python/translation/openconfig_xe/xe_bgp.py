@@ -1,4 +1,5 @@
 # -*- mode: python; python-indent: 4 -*-
+from translation.openconfig_xe.common import xe_get_interface_type_and_number
 
 
 def xe_bgp_global_program_service(self) -> None:
@@ -113,6 +114,9 @@ def xe_bgp_neighbors_program_service(self) -> None:
                         neighbor.transport.path_mtu_discovery.create()
                     if service_bgp_neighbor.transport.config.passive_mode:
                         neighbor.transport.connection_mode = 'passive'
+                    if service_bgp_neighbor.transport.config.local_address:  # TODO add check and translation from IP
+                        interface_type, interface_number = xe_get_interface_type_and_number(service_bgp_neighbor.transport.config.local_address)
+                        neighbor.update_source[interface_type] = interface_number
 
 
 def xe_bgp_peergroups_program_service(self) -> None:
@@ -180,3 +184,6 @@ def xe_bgp_peergroups_program_service(self) -> None:
                         peer_group.transport.path_mtu_discovery.create()
                     if service_bgp_peergroup.transport.config.passive_mode:
                         peer_group.transport.connection_mode = 'passive'
+                    if service_bgp_peergroup.transport.config.local_address:  # TODO add check and translation from IP
+                        interface_type, interface_number = xe_get_interface_type_and_number(service_bgp_peergroup.transport.config.local_address)
+                        peer_group.update_source[interface_type] = interface_number
