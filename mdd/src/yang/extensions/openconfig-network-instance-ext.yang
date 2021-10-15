@@ -1,0 +1,45 @@
+module openconfig-network-instance-ext{
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/openconfig-network-instance-ext";
+
+  prefix "oc-network-instance-ext";
+
+  import openconfig-network-instance-types { prefix "oc-ni-types"; }
+  import tailf-ncs { prefix ncs; }
+  import mdd { prefix mdd; }
+  import openconfig-extensions { prefix oc-ext; }
+  import openconfig-network-instance { prefix "oc-netinst"; }
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Augmentation to openconfig network instance model.";
+
+  revision "2021-10-13" {
+    description
+      "Initial revision";
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:config {
+      leaf-list route-targets-import {
+      type oc-ni-types:route-distinguisher;
+      ordered-by system;
+        description
+          "List of route targets to be imported by network instance";
+
+     }
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:config {
+      leaf-list route-targets-export {
+      type oc-ni-types:route-distinguisher;
+      ordered-by system;
+        description
+          "List of route targets to be exported by network instance";
+     }
+  }
+}

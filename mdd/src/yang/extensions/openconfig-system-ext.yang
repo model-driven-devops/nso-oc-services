@@ -10,6 +10,7 @@ module openconfig-system-ext{
   import openconfig-system { prefix oc-sys; }
   import openconfig-interfaces { prefix oc-if; }
   import tailf-ncs { prefix ncs; }
+  import tailf-common { prefix tailf; }
   import mdd { prefix mdd; }
   import openconfig-network-instance { prefix "oc-netinst"; }
   import openconfig-extensions { prefix oc-ext; }
@@ -27,6 +28,14 @@ module openconfig-system-ext{
   revision "2021-08-08" {
     description
       "Initial revision";
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:config {
+    leaf ip-http-max-connections {
+      type uint16;
+      tailf:info "ios: ip http max connections";
+      description
+        "Sets the maximum number of concurrent connections allowed for the HTTP server.";
+    }
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:config {
     leaf enable-secret {

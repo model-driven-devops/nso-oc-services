@@ -5,19 +5,22 @@ from typing import Tuple
 
 from translation.openconfig_xe.common import xe_get_interface_type_and_number
 from translation.openconfig_xe.common import xe_system_get_interface_ip_address
+from translation.openconfig_xe.xe_bgp import xe_bgp_global_program_service
+from translation.openconfig_xe.xe_bgp import xe_bgp_neighbors_program_service
+from translation.openconfig_xe.xe_bgp import xe_bgp_peergroups_program_service
 
 
 def xe_network_instances_program_service(self) -> None:
     """
     Program service for xe NED features
     """
-    xe_ensure_present_vrf_with_address_families(self)
+    xe_configure_vrfs(self)
     xe_reconcile_vrf_interfaces(self)
     xe_configure_mpls(self)
     xe_configure_protocols(self)
 
 
-def xe_ensure_present_vrf_with_address_families(self) -> None:
+def xe_configure_vrfs(self) -> None:
     """
     Ensure VRF with correct address families is on the device
     """
@@ -56,6 +59,36 @@ def xe_ensure_present_vrf_with_address_families(self) -> None:
             elif 'IPV6' in vrf_address_families_in_model_configs:
                 self.root.devices.device[self.device_name].config.ios__vrf.definition[
                     network_instance.name].address_family.ipv6.create()
+
+            # Add route distinguisher
+            if network_instance.config.route_distinguisher:
+                self.root.devices.device[self.device_name].config.ios__vrf.definition[
+                    network_instance.name].rd = network_instance.config.route_distinguisher
+
+            # Add route targets
+            # Get import route-targets from configs
+            rt_import_config = [rt for rt in network_instance.config.route_targets_import]
+            # Get export route-targets from configs
+            rt_export_config = [rt for rt in network_instance.config.route_targets_export]
+
+            # Get import route-targets from the CDB
+            rt_import_cdb = [rt for rt in self.root.devices.device[self.device_name].config.ios__vrf.definition[
+                network_instance.name].route_target.ios__import]
+            # Get export route-targets from the CDB
+            rt_export_cdb = [rt for rt in self.root.devices.device[self.device_name].config.ios__vrf.definition[
+                network_instance.name].route_target.export]
+
+            # Find route targets to create in CDB
+            rt_import_to_cdb = [rt for rt in rt_import_config if rt not in set(rt_import_cdb)]
+            rt_export_to_cdb = [rt for rt in rt_export_config if rt not in set(rt_export_cdb)]
+
+            # Add Route Targets to CDB
+            for rt in rt_import_to_cdb:
+                self.root.devices.device[self.device_name].config.ios__vrf.definition[
+                    network_instance.name].route_target.ios__import.create(rt)
+            for rt in rt_export_to_cdb:
+                self.root.devices.device[self.device_name].config.ios__vrf.definition[
+                    network_instance.name].route_target.export.create(rt)
 
 
 def xe_reconcile_vrf_interfaces(self) -> None:
@@ -123,7 +156,8 @@ def xe_configure_mpls(self) -> None:
                     if interface.interface_ref.config.subinterface == 0:
                         interface_cdb = class_attribute[interface_number]
                     else:
-                        interface_cdb = class_attribute[f'{interface_number}.{interface.interface_ref.config.subinterface}']
+                        interface_cdb = class_attribute[
+                            f'{interface_number}.{interface.interface_ref.config.subinterface}']
                     if not interface_cdb.mpls.ip.exists():
                         interface_cdb.mpls.ip.create()
         if network_instance.mpls.signaling_protocols:
@@ -155,6 +189,7 @@ def xe_configure_protocols(self) -> None:
     """
     Configures the protocols section of openconfig-network-instance
     """
+    instance_bgp_list = []
     for network_instance in self.service.oc_netinst__network_instances.network_instance:
         if network_instance.protocols.protocol:
             for p in network_instance.protocols.protocol:
@@ -184,6 +219,23 @@ def xe_configure_protocols(self) -> None:
                                                                                       nh.config.next_hop)
                                     if nh.config.metric:
                                         route.metric = nh.config.metric
+
+                # oc-ni-types:DEFAULT_INSTANCE must be processed before VRFs
+                # Incoming order doesn't matter
+                # Collect needed BGP instance information below
+                if p.identifier == 'oc-pol-types:BGP':
+                    instance_bgp_list.append((p, network_instance.config.type, network_instance.config.name))
+    # Sort BGP instance information so oc-ni-types:DEFAULT_INSTANCE is first and process
+    if instance_bgp_list:
+        instance_bgp_list.sort(key=lambda x: x[1])
+        self.log.info(f'{self.device_name} instance_bgp_list {instance_bgp_list}')
+        for bgp_instance in instance_bgp_list:
+            # bgp_instance = (service_bgp, network_instance.config.type, network_instance.config.name)
+            xe_bgp_global_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
+            if len(p.bgp.peer_groups.peer_group) > 0:
+                xe_bgp_peergroups_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
+            if len(p.bgp.neighbors.neighbor) > 0:
+                xe_bgp_neighbors_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
 
 
 def xe_get_interface_type_number_and_subinterface(interface: str) -> Tuple[str, str]:

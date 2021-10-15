@@ -99,6 +99,14 @@
         <?end?> <!-- if {mdd:openconfig/oc-sys:system/clock/config/timezone-name} -->
 
         <?if {mdd:openconfig/oc-sys:system/config}?>
+        <?if {mdd:openconfig/oc-sys:system/config/ip-http-max-connections}?>
+        <ip xmlns="urn:ios">
+          <http>
+            <max-connections>{mdd:openconfig/oc-sys:system/config/ip-http-max-connections}</max-connections>
+          </http>
+        </ip>
+        <?end?> <!-- if {mdd:openconfig/oc-sys:system/config/ip-http-max-connections} -->
+
         <?if {mdd:openconfig/oc-sys:system/config/hostname}?>
         <hostname xmlns="urn:ios">{mdd:openconfig/oc-sys:system/config/hostname}</hostname>
         <?end?> <!-- if {mdd:openconfig/oc-sys:system/config/hostname} -->

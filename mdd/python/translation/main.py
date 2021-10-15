@@ -11,9 +11,6 @@ from translation.openconfig_xe.xe_network_instances import xe_network_instances_
 from translation.openconfig_xe.xe_system import xe_system_transform_vars
 from translation.openconfig_xe.xe_system import xe_system_initial_vars
 from translation.openconfig_xe.xe_system import xe_system_program_service
-from translation.openconfig_xe.xe_bgp import xe_bgp_global_program_service
-from translation.openconfig_xe.xe_bgp import xe_bgp_neighbors_program_service
-from translation.openconfig_xe.xe_bgp import xe_bgp_peergroups_program_service
 
 regex_device = re.compile(r'device{(.*)}\/')
 
@@ -44,14 +41,6 @@ class OCCallback(Service):
             # OpenConfig Network Instances
             if len(service.oc_netinst__network_instances.network_instance) > 0:
                 xe_network_instances_program_service(self)
-
-            # OpenConfig BGP
-            if service.oc_bgp__bgp.oc_bgp__global.config.oc_bgp__as:
-                xe_bgp_global_program_service(self)
-            if len(service.oc_bgp__bgp.peer_groups.peer_group) > 0:
-                xe_bgp_peergroups_program_service(self)
-            if len(service.oc_bgp__bgp.neighbors.neighbor) > 0:
-                xe_bgp_neighbors_program_service(self)
 
             # OpenConfig System
             xe_system_transform_vars(self)
