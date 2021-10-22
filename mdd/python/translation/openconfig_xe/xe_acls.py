@@ -1,20 +1,10 @@
 # -*- mode: python; python-indent: 4 -*-
-import ipaddress
 import re
 
+from translation.openconfig_xe.common import prefix_to_network_and_mask
 from translation.openconfig_xe.common import xe_get_interface_type_and_number
 
 regex_ports = re.compile(r'(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})\.\.(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})')
-
-
-def prefix_to_network_and_mask(prefix: str) -> str:
-    """
-    Turns a network prefix into a network_id and wildcard-mask
-    :param prefix: str
-    :return: 'network_id wildcard_mask': str
-    """
-    network = ipaddress.ip_network(prefix)
-    return f'{str(network.network_address)} {str(network.hostmask)}'
 
 
 def xe_acls_program_service(self) -> None:

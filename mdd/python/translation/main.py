@@ -6,6 +6,7 @@ import _ncs
 from ncs.application import Service
 from translation.openconfig_xe.xe_acls import xe_acls_program_service
 from translation.openconfig_xe.xe_acls import xe_acls_interfaces_program_service
+from translation.openconfig_xe.xe_routing_policy import xe_routing_policy_program_service
 from translation.openconfig_xe.xe_interfaces import xe_interfaces_program_service
 from translation.openconfig_xe.xe_network_instances import xe_network_instances_program_service
 from translation.openconfig_xe.xe_system import xe_system_transform_vars
@@ -37,6 +38,10 @@ class OCCallback(Service):
                 xe_acls_program_service(self)
             if len(service.oc_acl__acl.interfaces.interface) > 0:
                 xe_acls_interfaces_program_service(self)
+
+            # OpenConfig routing-policy
+            if service.oc_rpol__routing_policy:
+                xe_routing_policy_program_service(self)
 
             # OpenConfig Network Instances
             if len(service.oc_netinst__network_instances.network_instance) > 0:

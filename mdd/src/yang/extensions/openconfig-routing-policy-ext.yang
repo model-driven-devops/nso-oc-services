@@ -1,0 +1,38 @@
+module openconfig-routing-policy-ext{
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/openconfig-routing-policy-ext";
+
+  prefix "oc-routing-policy-ext";
+
+  import tailf-ncs { prefix ncs; }
+  import tailf-common { prefix tailf; }
+  import mdd { prefix mdd; }
+  import openconfig-routing-policy { prefix oc-rpol; }
+  import openconfig-extensions { prefix oc-ext; }
+
+
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Augmentation to openconfig routing-policy model.";
+
+  revision "2021-10-15" {
+    description
+      "Initial revision";
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-rpol:routing-policy/oc-rpol:defined-sets/oc-rpol:prefix-sets/oc-rpol:prefix-set/oc-rpol:prefixes/oc-rpol:prefix/oc-rpol:config {
+    leaf seq {
+      type uint16;
+      tailf:info "ios: prefix-list statement sequence number";
+      description
+        "Sets a sequence number for prefix-list statements.";
+    }
+  }
+}

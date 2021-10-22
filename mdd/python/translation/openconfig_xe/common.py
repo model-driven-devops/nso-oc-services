@@ -1,3 +1,4 @@
+import ipaddress
 from typing import Tuple
 import re
 
@@ -33,3 +34,13 @@ def xe_system_get_interface_ip_address(s) -> dict:
                     pass
     s.log.info(f'Device: {s.device_name} ip_name_dict: {ip_name_dict}')
     return ip_name_dict
+
+
+def prefix_to_network_and_mask(prefix: str) -> str:
+    """
+    Turns a network prefix into a network_id and wildcard-mask
+    :param prefix: str
+    :return: 'network_id wildcard_mask': str
+    """
+    network = ipaddress.ip_network(prefix)
+    return f'{str(network.network_address)} {str(network.hostmask)}'

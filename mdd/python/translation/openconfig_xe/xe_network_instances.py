@@ -225,17 +225,21 @@ def xe_configure_protocols(self) -> None:
                 # Collect needed BGP instance information below
                 if p.identifier == 'oc-pol-types:BGP':
                     instance_bgp_list.append((p, network_instance.config.type, network_instance.config.name))
+
     # Sort BGP instance information so oc-ni-types:DEFAULT_INSTANCE is first and process
     if instance_bgp_list:
         instance_bgp_list.sort(key=lambda x: x[1])
         self.log.info(f'{self.device_name} instance_bgp_list {instance_bgp_list}')
+
+        # Always use 'ip bgp-community new-format'
+        if not self.root.devices.device[self.device_name].config.ios__ip.bgp_community.new_format.exists():
+            self.root.devices.device[self.device_name].config.ios__ip.bgp_community.new_format.create()
+
         for bgp_instance in instance_bgp_list:
             # bgp_instance = (service_bgp, network_instance.config.type, network_instance.config.name)
             xe_bgp_global_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
-            if len(p.bgp.peer_groups.peer_group) > 0:
-                xe_bgp_peergroups_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
-            if len(p.bgp.neighbors.neighbor) > 0:
-                xe_bgp_neighbors_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
+            xe_bgp_peergroups_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
+            xe_bgp_neighbors_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
 
 
 def xe_get_interface_type_number_and_subinterface(interface: str) -> Tuple[str, str]:
