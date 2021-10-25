@@ -1,0 +1,120 @@
+openconfig-routing-policy:routing-policy:
+  defined-sets:
+    neighbor-sets:
+      neighbor-set:
+      - config:
+          address:
+          - '['
+          - ']'
+          name: ''
+        name: ''
+        state:
+          address:
+          - '['
+          - ']'
+          name: ''
+    prefix-sets:
+      prefix-set:
+      - config:
+          mode: ''
+          name: ''
+        name: ''
+        prefixes:
+          prefix:
+          - config:
+              ip-prefix: ''
+              masklength-range: ''
+            ip-prefix: ''
+            masklength-range: ''
+            state:
+              ip-prefix: ''
+              masklength-range: ''
+        state:
+          mode: ''
+          name: ''
+    tag-sets:
+      tag-set:
+      - config:
+          name: ''
+          tag-value:
+          - '['
+          - ']'
+        name: ''
+        state:
+          name: ''
+          tag-value:
+          - '['
+          - ']'
+  policy-definitions:
+    policy-definition:
+    - config:
+        name: ''
+      name: ''
+      state:
+        name: ''
+      statements:
+        statement:
+        - actions:
+            config:
+              policy-result: ''
+            set-tag:
+              config:
+                mode: ''
+              inline:
+                config:
+                  tag:
+                  - '['
+                  - ']'
+                state:
+                  tag:
+                  - '['
+                  - ']'
+              reference:
+                config:
+                  tag-set: ''
+                state:
+                  tag-set: ''
+              state:
+                mode: ''
+            state:
+              policy-result: ''
+          conditions:
+            config:
+              call-policy: ''
+              install-protocol-eq: ''
+            match-interface:
+              config:
+                interface: ''
+                subinterface: ''
+              state:
+                interface: ''
+                subinterface: ''
+            match-neighbor-set:
+              config:
+                match-set-options: ANY
+                neighbor-set: ''
+              state:
+                match-set-options: ANY
+                neighbor-set: ''
+            match-prefix-set:
+              config:
+                match-set-options: ANY
+                prefix-set: ''
+              state:
+                match-set-options: ANY
+                prefix-set: ''
+            match-tag-set:
+              config:
+                match-set-options: ANY
+                tag-set: ''
+              state:
+                match-set-options: ANY
+                tag-set: ''
+            state:
+              call-policy: ''
+              install-protocol-eq: ''
+          config:
+            name: ''
+          name: ''
+          state:
+            name: ''

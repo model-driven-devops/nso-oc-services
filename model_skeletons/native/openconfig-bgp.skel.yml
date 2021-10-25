@@ -1,0 +1,1666 @@
+openconfig-bgp:bgp:
+  global:
+    afi-safis:
+      afi-safi:
+      - add-paths:
+          config:
+            eligible-prefix-policy: ''
+            receive: 'False'
+            send: 'False'
+            send-max: ''
+          state:
+            eligible-prefix-policy: ''
+            receive: 'False'
+            send: 'False'
+            send-max: ''
+        afi-safi-name: ''
+        config:
+          afi-safi-name: ''
+          enabled: 'False'
+        graceful-restart:
+          config:
+            enabled: 'False'
+          state:
+            enabled: 'False'
+        ipv4-labeled-unicast:
+          prefix-limit:
+            config:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+            state:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+        ipv4-unicast:
+          config:
+            send-default-route: 'False'
+          prefix-limit:
+            config:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+            state:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+          state:
+            send-default-route: 'False'
+        ipv6-labeled-unicast:
+          prefix-limit:
+            config:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+            state:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+        ipv6-unicast:
+          config:
+            send-default-route: 'False'
+          prefix-limit:
+            config:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+            state:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+          state:
+            send-default-route: 'False'
+        l2vpn-evpn:
+          prefix-limit:
+            config:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+            state:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+        l2vpn-vpls:
+          prefix-limit:
+            config:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+            state:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+        l3vpn-ipv4-multicast:
+          prefix-limit:
+            config:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+            state:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+        l3vpn-ipv4-unicast:
+          prefix-limit:
+            config:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+            state:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+        l3vpn-ipv6-multicast:
+          prefix-limit:
+            config:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+            state:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+        l3vpn-ipv6-unicast:
+          prefix-limit:
+            config:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+            state:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+        route-selection-options:
+          config:
+            advertise-inactive-routes: 'False'
+            always-compare-med: 'False'
+            enable-aigp: 'False'
+            external-compare-router-id: 'True'
+            ignore-as-path-length: 'False'
+            ignore-next-hop-igp-metric: 'False'
+          state:
+            advertise-inactive-routes: 'False'
+            always-compare-med: 'False'
+            enable-aigp: 'False'
+            external-compare-router-id: 'True'
+            ignore-as-path-length: 'False'
+            ignore-next-hop-igp-metric: 'False'
+        srte-policy-ipv4:
+          prefix-limit:
+            config:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+            state:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+        srte-policy-ipv6:
+          prefix-limit:
+            config:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+            state:
+              max-prefixes: ''
+              prevent-teardown: 'False'
+              restart-timer: ''
+              warning-threshold-pct: ''
+        state:
+          afi-safi-name: ''
+          enabled: 'False'
+          total-paths: ''
+          total-prefixes: ''
+        use-multiple-paths:
+          config:
+            enabled: 'False'
+          ebgp:
+            config:
+              allow-multiple-as: 'False'
+              maximum-paths: '1'
+            state:
+              allow-multiple-as: 'False'
+              maximum-paths: '1'
+          ibgp:
+            config:
+              maximum-paths: '1'
+            state:
+              maximum-paths: '1'
+          state:
+            enabled: 'False'
+    confederation:
+      config:
+        identifier: ''
+        member-as:
+        - '['
+        - ']'
+      state:
+        identifier: ''
+        member-as:
+        - '['
+        - ']'
+    config:
+      as: ''
+      router-id: ''
+    default-route-distance:
+      config:
+        external-route-distance: ''
+        internal-route-distance: ''
+      state:
+        external-route-distance: ''
+        internal-route-distance: ''
+    dynamic-neighbor-prefixes:
+      dynamic-neighbor-prefix:
+      - config:
+          peer-group: ''
+          prefix: ''
+        prefix: ''
+        state:
+          peer-group: ''
+          prefix: ''
+    graceful-restart:
+      config:
+        enabled: ''
+        helper-only: ''
+        restart-time: ''
+        stale-routes-time: ''
+      state:
+        enabled: ''
+        helper-only: ''
+        restart-time: ''
+        stale-routes-time: ''
+    route-selection-options:
+      config:
+        advertise-inactive-routes: 'False'
+        always-compare-med: 'False'
+        enable-aigp: 'False'
+        external-compare-router-id: 'True'
+        ignore-as-path-length: 'False'
+        ignore-next-hop-igp-metric: 'False'
+      state:
+        advertise-inactive-routes: 'False'
+        always-compare-med: 'False'
+        enable-aigp: 'False'
+        external-compare-router-id: 'True'
+        ignore-as-path-length: 'False'
+        ignore-next-hop-igp-metric: 'False'
+    state:
+      as: ''
+      router-id: ''
+      total-paths: ''
+      total-prefixes: ''
+    use-multiple-paths:
+      config:
+        enabled: 'False'
+      ebgp:
+        config:
+          allow-multiple-as: 'False'
+          maximum-paths: '1'
+        state:
+          allow-multiple-as: 'False'
+          maximum-paths: '1'
+      ibgp:
+        config:
+          maximum-paths: '1'
+        state:
+          maximum-paths: '1'
+      state:
+        enabled: 'False'
+  neighbors:
+    neighbor:
+    - afi-safis:
+        afi-safi:
+        - add-paths:
+            config:
+              eligible-prefix-policy: ''
+              receive: 'False'
+              send: 'False'
+              send-max: ''
+            state:
+              eligible-prefix-policy: ''
+              receive: 'False'
+              send: 'False'
+              send-max: ''
+          afi-safi-name: ''
+          apply-policy:
+            config:
+              default-export-policy: REJECT_ROUTE
+              default-import-policy: REJECT_ROUTE
+              export-policy:
+              - '['
+              - ']'
+              import-policy:
+              - '['
+              - ']'
+            state:
+              default-export-policy: REJECT_ROUTE
+              default-import-policy: REJECT_ROUTE
+              export-policy:
+              - '['
+              - ']'
+              import-policy:
+              - '['
+              - ']'
+          config:
+            afi-safi-name: ''
+            enabled: 'False'
+          graceful-restart:
+            config:
+              enabled: 'False'
+            state:
+              advertised: ''
+              enabled: 'False'
+              received: ''
+          ipv4-labeled-unicast:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          ipv4-unicast:
+            config:
+              send-default-route: 'False'
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+            state:
+              send-default-route: 'False'
+          ipv6-labeled-unicast:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          ipv6-unicast:
+            config:
+              send-default-route: 'False'
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+            state:
+              send-default-route: 'False'
+          l2vpn-evpn:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          l2vpn-vpls:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          l3vpn-ipv4-multicast:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          l3vpn-ipv4-unicast:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          l3vpn-ipv6-multicast:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          l3vpn-ipv6-unicast:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          srte-policy-ipv4:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          srte-policy-ipv6:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          state:
+            active: ''
+            afi-safi-name: ''
+            enabled: 'False'
+            prefixes:
+              installed: ''
+              received: ''
+              received-pre-policy: ''
+              sent: ''
+          use-multiple-paths:
+            config:
+              enabled: 'False'
+            ebgp:
+              config:
+                allow-multiple-as: 'False'
+              state:
+                allow-multiple-as: 'False'
+            state:
+              enabled: 'False'
+      apply-policy:
+        config:
+          default-export-policy: REJECT_ROUTE
+          default-import-policy: REJECT_ROUTE
+          export-policy:
+          - '['
+          - ']'
+          import-policy:
+          - '['
+          - ']'
+        state:
+          default-export-policy: REJECT_ROUTE
+          default-import-policy: REJECT_ROUTE
+          export-policy:
+          - '['
+          - ']'
+          import-policy:
+          - '['
+          - ']'
+      as-path-options:
+        config:
+          allow-own-as: '0'
+          disable-peer-as-filter: 'False'
+          replace-peer-as: 'False'
+        state:
+          allow-own-as: '0'
+          disable-peer-as-filter: 'False'
+          replace-peer-as: 'False'
+      config:
+        auth-password: ''
+        description: ''
+        enabled: 'True'
+        local-as: ''
+        neighbor-address: ''
+        peer-as: ''
+        peer-group: ''
+        peer-type: ''
+        remove-private-as: ''
+        route-flap-damping: 'False'
+        send-community: NONE
+      ebgp-multihop:
+        config:
+          enabled: 'False'
+          multihop-ttl: ''
+        state:
+          enabled: 'False'
+          multihop-ttl: ''
+      enable-bfd:
+        config:
+          enabled: ''
+        state:
+          enabled: ''
+      error-handling:
+        config:
+          treat-as-withdraw: 'False'
+        state:
+          erroneous-update-messages: ''
+          treat-as-withdraw: 'False'
+      graceful-restart:
+        config:
+          enabled: ''
+          helper-only: ''
+          restart-time: ''
+          stale-routes-time: ''
+        state:
+          enabled: ''
+          helper-only: ''
+          local-restarting: ''
+          mode: ''
+          peer-restart-time: ''
+          peer-restarting: ''
+          restart-time: ''
+          stale-routes-time: ''
+      logging-options:
+        config:
+          log-neighbor-state-changes: 'True'
+        state:
+          log-neighbor-state-changes: 'True'
+      neighbor-address: ''
+      route-reflector:
+        config:
+          route-reflector-client: 'False'
+          route-reflector-cluster-id: ''
+        state:
+          route-reflector-client: 'False'
+          route-reflector-cluster-id: ''
+      state:
+        auth-password: ''
+        description: ''
+        dynamically-configured: 'False'
+        enabled: 'True'
+        established-transitions: ''
+        last-established: ''
+        local-as: ''
+        messages:
+          received:
+            NOTIFICATION: ''
+            UPDATE: ''
+            last-notification-error-code: ''
+            last-notification-error-subcode: ''
+            last-notification-time: ''
+          sent:
+            NOTIFICATION: ''
+            UPDATE: ''
+            last-notification-error-code: ''
+            last-notification-error-subcode: ''
+            last-notification-time: ''
+        neighbor-address: ''
+        peer-as: ''
+        peer-group: ''
+        peer-type: ''
+        queues:
+          input: ''
+          output: ''
+        remove-private-as: ''
+        route-flap-damping: 'False'
+        send-community: NONE
+        session-state: ''
+        supported-capabilities:
+        - '['
+        - ']'
+      timers:
+        config:
+          connect-retry: '30'
+          hold-time: '90'
+          keepalive-interval: '30'
+          minimum-advertisement-interval: '30'
+        state:
+          connect-retry: '30'
+          hold-time: '90'
+          keepalive-interval: '30'
+          minimum-advertisement-interval: '30'
+          negotiated-hold-time: ''
+      transport:
+        config:
+          local-address: ''
+          mtu-discovery: 'False'
+          passive-mode: 'False'
+          tcp-mss: ''
+        state:
+          local-address: ''
+          local-port: ''
+          mtu-discovery: 'False'
+          passive-mode: 'False'
+          remote-address: ''
+          remote-port: ''
+          tcp-mss: ''
+      use-multiple-paths:
+        config:
+          enabled: 'False'
+        ebgp:
+          config:
+            allow-multiple-as: 'False'
+          state:
+            allow-multiple-as: 'False'
+        state:
+          enabled: 'False'
+  peer-groups:
+    peer-group:
+    - afi-safis:
+        afi-safi:
+        - add-paths:
+            config:
+              eligible-prefix-policy: ''
+              receive: 'False'
+              send: 'False'
+              send-max: ''
+            state:
+              eligible-prefix-policy: ''
+              receive: 'False'
+              send: 'False'
+              send-max: ''
+          afi-safi-name: ''
+          apply-policy:
+            config:
+              default-export-policy: REJECT_ROUTE
+              default-import-policy: REJECT_ROUTE
+              export-policy:
+              - '['
+              - ']'
+              import-policy:
+              - '['
+              - ']'
+            state:
+              default-export-policy: REJECT_ROUTE
+              default-import-policy: REJECT_ROUTE
+              export-policy:
+              - '['
+              - ']'
+              import-policy:
+              - '['
+              - ']'
+          config:
+            afi-safi-name: ''
+            enabled: 'False'
+          graceful-restart:
+            config:
+              enabled: 'False'
+            state:
+              enabled: 'False'
+          ipv4-labeled-unicast:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          ipv4-unicast:
+            config:
+              send-default-route: 'False'
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+            state:
+              send-default-route: 'False'
+          ipv6-labeled-unicast:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          ipv6-unicast:
+            config:
+              send-default-route: 'False'
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+            state:
+              send-default-route: 'False'
+          l2vpn-evpn:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          l2vpn-vpls:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          l3vpn-ipv4-multicast:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          l3vpn-ipv4-unicast:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          l3vpn-ipv6-multicast:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          l3vpn-ipv6-unicast:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          srte-policy-ipv4:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          srte-policy-ipv6:
+            prefix-limit:
+              config:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+              state:
+                max-prefixes: ''
+                prevent-teardown: 'False'
+                restart-timer: ''
+                warning-threshold-pct: ''
+          state:
+            afi-safi-name: ''
+            enabled: 'False'
+          use-multiple-paths:
+            config:
+              enabled: 'False'
+            ebgp:
+              config:
+                allow-multiple-as: 'False'
+                maximum-paths: '1'
+              state:
+                allow-multiple-as: 'False'
+                maximum-paths: '1'
+            ibgp:
+              config:
+                maximum-paths: '1'
+              state:
+                maximum-paths: '1'
+            state:
+              enabled: 'False'
+      apply-policy:
+        config:
+          default-export-policy: REJECT_ROUTE
+          default-import-policy: REJECT_ROUTE
+          export-policy:
+          - '['
+          - ']'
+          import-policy:
+          - '['
+          - ']'
+        state:
+          default-export-policy: REJECT_ROUTE
+          default-import-policy: REJECT_ROUTE
+          export-policy:
+          - '['
+          - ']'
+          import-policy:
+          - '['
+          - ']'
+      as-path-options:
+        config:
+          allow-own-as: '0'
+          disable-peer-as-filter: 'False'
+          replace-peer-as: 'False'
+        state:
+          allow-own-as: '0'
+          disable-peer-as-filter: 'False'
+          replace-peer-as: 'False'
+      config:
+        auth-password: ''
+        description: ''
+        local-as: ''
+        peer-as: ''
+        peer-group-name: ''
+        peer-type: ''
+        remove-private-as: ''
+        route-flap-damping: 'False'
+        send-community: NONE
+      ebgp-multihop:
+        config:
+          enabled: 'False'
+          multihop-ttl: ''
+        state:
+          enabled: 'False'
+          multihop-ttl: ''
+      enable-bfd:
+        config:
+          enabled: ''
+        state:
+          enabled: ''
+      error-handling:
+        config:
+          treat-as-withdraw: 'False'
+        state:
+          treat-as-withdraw: 'False'
+      graceful-restart:
+        config:
+          enabled: ''
+          helper-only: ''
+          restart-time: ''
+          stale-routes-time: ''
+        state:
+          enabled: ''
+          helper-only: ''
+          restart-time: ''
+          stale-routes-time: ''
+      logging-options:
+        config:
+          log-neighbor-state-changes: 'True'
+        state:
+          log-neighbor-state-changes: 'True'
+      peer-group-name: ''
+      route-reflector:
+        config:
+          route-reflector-client: 'False'
+          route-reflector-cluster-id: ''
+        state:
+          route-reflector-client: 'False'
+          route-reflector-cluster-id: ''
+      state:
+        auth-password: ''
+        description: ''
+        local-as: ''
+        peer-as: ''
+        peer-group-name: ''
+        peer-type: ''
+        remove-private-as: ''
+        route-flap-damping: 'False'
+        send-community: NONE
+        total-paths: ''
+        total-prefixes: ''
+      timers:
+        config:
+          connect-retry: '30'
+          hold-time: '90'
+          keepalive-interval: '30'
+          minimum-advertisement-interval: '30'
+        state:
+          connect-retry: '30'
+          hold-time: '90'
+          keepalive-interval: '30'
+          minimum-advertisement-interval: '30'
+      transport:
+        config:
+          local-address: ''
+          mtu-discovery: 'False'
+          passive-mode: 'False'
+          tcp-mss: ''
+        state:
+          local-address: ''
+          mtu-discovery: 'False'
+          passive-mode: 'False'
+          tcp-mss: ''
+      use-multiple-paths:
+        config:
+          enabled: 'False'
+        ebgp:
+          config:
+            allow-multiple-as: 'False'
+            maximum-paths: '1'
+          state:
+            allow-multiple-as: 'False'
+            maximum-paths: '1'
+        ibgp:
+          config:
+            maximum-paths: '1'
+          state:
+            maximum-paths: '1'
+        state:
+          enabled: 'False'
+  rib:
+    afi-safis:
+      afi-safi:
+      - afi-safi-name: ''
+        ipv4-srte-policy:
+          loc-rib:
+            routes:
+              route:
+              - color: ''
+                endpoint: ''
+                path-id: ''
+                state:
+                  attr-index: ''
+                  color: ''
+                  community-index: ''
+                  endpoint: ''
+                  ext-community-index: ''
+                  invalid-reason: ''
+                  last-modified: ''
+                  path-id: '0'
+                  valid-route: ''
+                unknown-attributes:
+                  unknown-attribute:
+                  - attr-type: ''
+                    state:
+                      attr-len: ''
+                      attr-type: ''
+                      attr-value: ''
+                      extended: ''
+                      optional: ''
+                      partial: ''
+                      transitive: ''
+          neighbors:
+            neighbor:
+            - adj-rib-in-post:
+                routes:
+                  route:
+                  - color: ''
+                    endpoint: ''
+                    path-id: ''
+                    state:
+                      attr-index: ''
+                      best-path: ''
+                      color: ''
+                      community-index: ''
+                      endpoint: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: '0'
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+              adj-rib-in-pre:
+                routes:
+                  route:
+                  - color: ''
+                    endpoint: ''
+                    path-id: ''
+                    state:
+                      attr-index: ''
+                      color: ''
+                      community-index: ''
+                      endpoint: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: '0'
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+              adj-rib-out-post:
+                routes:
+                  route:
+                  - color: ''
+                    endpoint: ''
+                    path-id: ''
+                    state:
+                      attr-index: ''
+                      color: ''
+                      community-index: ''
+                      endpoint: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: '0'
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+              adj-rib-out-pre:
+                routes:
+                  route:
+                  - color: ''
+                    endpoint: ''
+                    path-id: ''
+                    state:
+                      attr-index: ''
+                      color: ''
+                      community-index: ''
+                      endpoint: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: '0'
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+              neighbor-address: ''
+              state:
+                neighbor-address: ''
+        ipv4-unicast:
+          loc-rib:
+            routes:
+              route:
+              - origin: ''
+                path-id: ''
+                prefix: ''
+                state:
+                  attr-index: ''
+                  community-index: ''
+                  ext-community-index: ''
+                  invalid-reason: ''
+                  last-modified: ''
+                  origin: ''
+                  path-id: '0'
+                  prefix: ''
+                  valid-route: ''
+                unknown-attributes:
+                  unknown-attribute:
+                  - attr-type: ''
+                    state:
+                      attr-len: ''
+                      attr-type: ''
+                      attr-value: ''
+                      extended: ''
+                      optional: ''
+                      partial: ''
+                      transitive: ''
+            state: {}
+          neighbors:
+            neighbor:
+            - adj-rib-in-post:
+                routes:
+                  route:
+                  - path-id: ''
+                    prefix: ''
+                    state:
+                      attr-index: ''
+                      best-path: ''
+                      community-index: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: ''
+                      prefix: ''
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+                state: {}
+              adj-rib-in-pre:
+                routes:
+                  route:
+                  - path-id: ''
+                    prefix: ''
+                    state:
+                      attr-index: ''
+                      community-index: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: ''
+                      prefix: ''
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+                state: {}
+              adj-rib-out-post:
+                routes:
+                  route:
+                  - path-id: ''
+                    prefix: ''
+                    state:
+                      attr-index: ''
+                      community-index: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: ''
+                      prefix: ''
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+                state: {}
+              adj-rib-out-pre:
+                routes:
+                  route:
+                  - path-id: ''
+                    prefix: ''
+                    state:
+                      attr-index: ''
+                      community-index: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: ''
+                      prefix: ''
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+                state: {}
+              neighbor-address: ''
+              state:
+                neighbor-address: ''
+        ipv6-srte-policy:
+          loc-rib:
+            routes:
+              route:
+              - color: ''
+                endpoint: ''
+                path-id: ''
+                state:
+                  attr-index: ''
+                  color: ''
+                  community-index: ''
+                  endpoint: ''
+                  ext-community-index: ''
+                  invalid-reason: ''
+                  last-modified: ''
+                  path-id: '0'
+                  valid-route: ''
+                unknown-attributes:
+                  unknown-attribute:
+                  - attr-type: ''
+                    state:
+                      attr-len: ''
+                      attr-type: ''
+                      attr-value: ''
+                      extended: ''
+                      optional: ''
+                      partial: ''
+                      transitive: ''
+          neighbors:
+            neighbor:
+            - adj-rib-in-post:
+                routes:
+                  route:
+                  - color: ''
+                    endpoint: ''
+                    path-id: ''
+                    state:
+                      attr-index: ''
+                      best-path: ''
+                      color: ''
+                      community-index: ''
+                      endpoint: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: '0'
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+              adj-rib-in-pre:
+                routes:
+                  route:
+                  - color: ''
+                    endpoint: ''
+                    path-id: ''
+                    state:
+                      attr-index: ''
+                      color: ''
+                      community-index: ''
+                      endpoint: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: '0'
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+              adj-rib-out-post:
+                routes:
+                  route:
+                  - color: ''
+                    endpoint: ''
+                    path-id: ''
+                    state:
+                      attr-index: ''
+                      color: ''
+                      community-index: ''
+                      endpoint: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: '0'
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+              adj-rib-out-pre:
+                routes:
+                  route:
+                  - color: ''
+                    endpoint: ''
+                    path-id: ''
+                    state:
+                      attr-index: ''
+                      color: ''
+                      community-index: ''
+                      endpoint: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: '0'
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+              neighbor-address: ''
+              state:
+                neighbor-address: ''
+        ipv6-unicast:
+          loc-rib:
+            routes:
+              route:
+              - origin: ''
+                path-id: ''
+                prefix: ''
+                state:
+                  attr-index: ''
+                  community-index: ''
+                  ext-community-index: ''
+                  invalid-reason: ''
+                  last-modified: ''
+                  origin: ''
+                  path-id: '0'
+                  prefix: ''
+                  valid-route: ''
+                unknown-attributes:
+                  unknown-attribute:
+                  - attr-type: ''
+                    state:
+                      attr-len: ''
+                      attr-type: ''
+                      attr-value: ''
+                      extended: ''
+                      optional: ''
+                      partial: ''
+                      transitive: ''
+            state: {}
+          neighbors:
+            neighbor:
+            - adj-rib-in-post:
+                routes:
+                  route:
+                  - path-id: ''
+                    prefix: ''
+                    state:
+                      attr-index: ''
+                      best-path: ''
+                      community-index: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: ''
+                      prefix: ''
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+              adj-rib-in-pre:
+                routes:
+                  route:
+                  - path-id: ''
+                    prefix: ''
+                    state:
+                      attr-index: ''
+                      community-index: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: ''
+                      prefix: ''
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+              adj-rib-out-post:
+                routes:
+                  route:
+                  - path-id: ''
+                    prefix: ''
+                    state:
+                      attr-index: ''
+                      community-index: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: ''
+                      prefix: ''
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+              adj-rib-out-pre:
+                routes:
+                  route:
+                  - path-id: ''
+                    prefix: ''
+                    state:
+                      attr-index: ''
+                      community-index: ''
+                      ext-community-index: ''
+                      invalid-reason: ''
+                      last-modified: ''
+                      path-id: ''
+                      prefix: ''
+                      valid-route: ''
+                    unknown-attributes:
+                      unknown-attribute:
+                      - attr-type: ''
+                        state:
+                          attr-len: ''
+                          attr-type: ''
+                          attr-value: ''
+                          extended: ''
+                          optional: ''
+                          partial: ''
+                          transitive: ''
+              neighbor-address: ''
+              state:
+                neighbor-address: ''
+        state:
+          afi-safi-name: ''
+    attr-sets:
+      attr-set:
+      - aggregator:
+          state:
+            address: ''
+            as: ''
+            as4: ''
+        as-path:
+          as-segment:
+          - state:
+              member:
+              - '['
+              - ']'
+              type: ''
+        as4-path:
+          as4-segment:
+          - state:
+              member:
+              - '['
+              - ']'
+              type: ''
+        index: ''
+        state:
+          aigp: ''
+          atomic-aggregate: ''
+          cluster-list:
+          - '['
+          - ']'
+          index: ''
+          local-pref: ''
+          med: ''
+          next-hop: ''
+          origin: ''
+          originator-id: ''
+        tunnel-encapsulation:
+          tunnels:
+            tunnel:
+            - state:
+                type: ''
+              subtlvs:
+                subtlv:
+                - remote-endpoints:
+                    remote-endpoint:
+                    - endpoint: ''
+                      state:
+                        as: ''
+                        endpoint: ''
+                  segment-lists:
+                    segment-list:
+                    - instance-id: ''
+                      segments:
+                        segment:
+                        - index: ''
+                          state:
+                            index: ''
+                            local-interface-id: ''
+                            local-ipv4-address: ''
+                            local-ipv6-address: ''
+                            mpls-bos: ''
+                            mpls-tc: ''
+                            mpls-ttl: ''
+                            remote-ipv4-address: ''
+                            remote-ipv6-address: ''
+                            sid: ''
+                            type: ''
+                      state:
+                        instance-id: ''
+                        weight: ''
+                  state:
+                    binding-sid: ''
+                    colors:
+                    - '['
+                    - ']'
+                    preference: '100'
+                    type: ''
+                  type: ''
+              type: ''
+    communities:
+      community:
+      - index: ''
+        state:
+          community:
+          - '['
+          - ']'
+          index: ''
+    ext-communities:
+      ext-community:
+      - index: ''
+        state:
+          ext-community:
+          - '['
+          - ']'
+          index: ''

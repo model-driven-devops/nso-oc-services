@@ -1,0 +1,171 @@
+openconfig-acl:acl:
+  acl-sets:
+    acl-set:
+    - acl-entries:
+        acl-entry:
+        - actions:
+            config:
+              forwarding-action: ''
+              log-action: identity LOG_NONE
+            state:
+              forwarding-action: ''
+              log-action: identity LOG_NONE
+          config:
+            description: ''
+            sequence-id: ''
+          input-interface:
+            config: {}
+            interface-ref:
+              config:
+                interface: ''
+                subinterface: ''
+              state:
+                interface: ''
+                subinterface: ''
+            state: {}
+          ipv4:
+            config:
+              destination-address: ''
+              dscp: ''
+              dscp-set:
+              - '['
+              - ']'
+              hop-limit: ''
+              protocol: ''
+              source-address: ''
+            state:
+              destination-address: ''
+              dscp: ''
+              dscp-set:
+              - '['
+              - ']'
+              hop-limit: ''
+              protocol: ''
+              source-address: ''
+          ipv6:
+            config:
+              destination-address: ''
+              destination-flow-label: ''
+              dscp: ''
+              dscp-set:
+              - '['
+              - ']'
+              hop-limit: ''
+              protocol: ''
+              source-address: ''
+              source-flow-label: ''
+            state:
+              destination-address: ''
+              destination-flow-label: ''
+              dscp: ''
+              dscp-set:
+              - '['
+              - ']'
+              hop-limit: ''
+              protocol: ''
+              source-address: ''
+              source-flow-label: ''
+          l2:
+            config:
+              destination-mac: ''
+              destination-mac-mask: ''
+              ethertype: ''
+              source-mac: ''
+              source-mac-mask: ''
+            state:
+              destination-mac: ''
+              destination-mac-mask: ''
+              ethertype: ''
+              source-mac: ''
+              source-mac-mask: ''
+          mpls:
+            config:
+              end-label-value: ''
+              start-label-value: ''
+              traffic-class: ''
+              ttl-value: ''
+            state:
+              end-label-value: ''
+              start-label-value: ''
+              traffic-class: ''
+              ttl-value: ''
+          sequence-id: ''
+          state:
+            description: ''
+            matched-octets: ''
+            matched-packets: ''
+            sequence-id: ''
+          transport:
+            config:
+              destination-port: ''
+              source-port: ''
+              tcp-flags:
+              - '['
+              - ']'
+            state:
+              destination-port: ''
+              source-port: ''
+              tcp-flags:
+              - '['
+              - ']'
+      config:
+        description: ''
+        name: ''
+        type: ''
+      name: ''
+      state:
+        description: ''
+        name: ''
+        type: ''
+      type: ''
+  config: {}
+  interfaces:
+    interface:
+    - config:
+        id: ''
+      egress-acl-sets:
+        egress-acl-set:
+        - acl-entries:
+            acl-entry:
+            - sequence-id: ''
+              state:
+                matched-octets: ''
+                matched-packets: ''
+                sequence-id: ''
+          config:
+            set-name: ''
+            type: ''
+          set-name: ''
+          state:
+            set-name: ''
+            type: ''
+          type: ''
+      id: ''
+      ingress-acl-sets:
+        ingress-acl-set:
+        - acl-entries:
+            acl-entry:
+            - sequence-id: ''
+              state:
+                matched-octets: ''
+                matched-packets: ''
+                sequence-id: ''
+          config:
+            set-name: ''
+            type: ''
+          set-name: ''
+          state:
+            set-name: ''
+            type: ''
+          type: ''
+      interface-ref:
+        config:
+          interface: ''
+          subinterface: ''
+        state:
+          interface: ''
+          subinterface: ''
+      state:
+        id: ''
+  state:
+    counter-capability: ''
