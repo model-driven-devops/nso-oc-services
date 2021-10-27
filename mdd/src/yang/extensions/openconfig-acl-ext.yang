@@ -1,0 +1,109 @@
+module openconfig-acl-ext{
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/openconfig-acl-ext";
+
+  prefix "oc-acl-ext";
+
+  import tailf-ncs { prefix ncs; }
+  import tailf-common { prefix tailf; }
+  import mdd { prefix mdd; }
+  import openconfig-acl { prefix oc-acl; }
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Augmentation to openconfig acl model.";
+
+  revision "2021-10-26" {
+    description
+      "Initial revision";
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-acl:acl {
+    container lines {
+      description
+        "Enclosing container for the list of device lines on which
+        ACLs are set";
+
+      list line {
+        key "id";
+        description
+          "List of interfaces on which ACLs are set";
+
+        leaf id {
+          type leafref {
+            path "../config/id";
+          }
+          description
+            "Name of line, e.g. 'vty 0 4'";
+        }
+        container config {
+          description
+            "Configuration for ACL per-line data";
+
+          leaf id {
+            type string;
+            tailf:info "ios example: 'vty 0 4'";
+            description
+              "Name of line, e.g. 'vty 0 4'";
+          }
+        }
+        container ingress-acl-sets {
+              description
+        "Top level container for ingress-acl-sets";
+
+          list ingress-acl-set {
+            key "ingress-acl-set-name";
+            description
+              "List of ingress ACLs on the line";
+            leaf ingress-acl-set-name {
+              type leafref {
+                path "../config/ingress-acl-set-name";
+              }
+              description
+                "Name of line ingress ACL on the line";
+            }
+            container config {
+              description
+                "Configuration for ACL per-line data";
+
+              leaf vrf {
+                type string;
+                default global;
+                tailf:info "ios example: 'access-class XX in vrfname abc'";
+                description
+                  "Name of vrf, e.g. 'access-class XX in vrfname abc'";
+              }
+              leaf vrf-also {
+                type boolean;
+                default false;
+                tailf:info "ios example: 'access-class xxx in vrf-also '";
+                description
+                  "Allows access from VRFs as allowed in ACL";
+              }
+              leaf ingress-acl-set-name {
+                type leafref {
+                  path "../../../../../../oc-acl:acl-sets/oc-acl:acl-set/oc-acl:config/oc-acl:name";
+                }
+                description
+                  "Name of line ingress ACL on the line";
+              }
+            }
+          }
+        }
+        leaf egress-acl-set {
+          type leafref {
+            path "../../../oc-acl:acl-sets/oc-acl:acl-set/oc-acl:config/oc-acl:name";
+          }
+          description
+            "Name of line egress ACL on the line";
+        }
+      }
+    }
+  }
+}
