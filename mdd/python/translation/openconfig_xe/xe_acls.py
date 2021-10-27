@@ -130,3 +130,35 @@ def xe_acls_interfaces_program_service(self) -> None:
                         interface_cdb.ip.access_group.create('out')
                     interface_cdb.ip.access_group['out'].access_list = acl.set_name
                     self.log.info(f'{self.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} egress')
+
+
+def xe_acls_lines_program_service(self) -> None:
+    """
+    Program xe lines ingress and egress acls
+    """
+    device = self.root.devices.device[self.device_name].config
+    for service_line in self.service.oc_acl__acl.oc_acl_ext__lines.line:
+        if 'vty ' in service_line.id.lower():
+            matches = re.findall(r'[0-9]+', service_line.id)
+            if len(matches) == 2:
+                line_start = int(matches[0])
+                line_end = int(matches[1])
+                if service_line.egress_acl_set:
+                    config_obj = device.ios__line.vty.create(line_start, line_end)
+                    acl_object = config_obj.access_class.access_list.create('out')
+                    acl_object.access_list = service_line.egress_acl_set
+                if service_line.ingress_acl_sets.ingress_acl_set:
+                    for service_ingress in service_line.ingress_acl_sets.ingress_acl_set:
+                        if service_ingress.config.vrf == 'global':
+                            config_obj = device.ios__line.vty.create(line_start, line_end)
+                            acl_object = config_obj.access_class.access_list.create('in')
+                            acl_object.access_list = service_ingress.config.ingress_acl_set_name
+                            if service_ingress.config.vrf_also:
+                                acl_object.vrf_also.create()
+                        else:
+                            config_obj = device.ios__line.vty.create(line_start, line_end)
+                            acl_object = config_obj.access_class.access_list.create('in')
+                            acl_object.access_list = service_ingress.config.ingress_acl_set_name
+                            acl_object.vrfname = service_ingress.config.vrf
+            else:
+                raise ValueError('line vty takes a start and an end line number range')
