@@ -1,0 +1,211 @@
+---
+# ansible-playbook xe_system.yml --extra-vars "nso_ip=X.X.X.X device=xe1" --tags=all
+# enable finger
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - finger_enable
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - finger_enable
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-system:system:
+          openconfig-system-ext:services:
+            finger: true
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: Create Openconfig DNS
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - finger_enable
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ip finger:' in changes"
+
+#- hosts: localhost
+#  gather_facts: no
+#  tags:
+#    - all
+#    - finger_enable
+#    - rollback
+#  tasks:
+#    - name: Rollback
+#      uri:
+#        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+#        url_username: admin
+#        url_password: admin
+#        force_basic_auth: yes
+#        validate_certs: no
+#        status_code: [ 204 ]
+#        method: POST
+#        headers: "{
+#          'Content-Type': 'application/yang-data+xml'}"
+#        body: |
+#          <input xmlns="http://tail-f.com/ns/rollback">
+#            <id>0</id>
+#          </input>
+
+# disable finger
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - finger_disable
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - finger_disable
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-system:system:
+          openconfig-system-ext:services:
+            finger: false
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: Create Openconfig DNS
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - finger_disable
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'-ip finger:' in changes"
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - finger_disable
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
