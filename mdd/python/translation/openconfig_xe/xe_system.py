@@ -50,6 +50,15 @@ def xe_system_program_service(self) -> None:
             elif counter == 2:
                 event['group3']['group'] = method
 
+    # Services
+    # finger
+    if self.service.oc_sys__system.services.finger:
+        if not self.root.devices.device[self.device_name].config.ios__ip.finger.exists():
+            self.root.devices.device[self.device_name].config.ios__ip.finger.create()
+    elif not self.service.oc_sys__system.services.finger:
+        if self.root.devices.device[self.device_name].config.ios__ip.finger.exists():
+            self.root.devices.device[self.device_name].config.ios__ip.finger.delete()
+
     # aaa accounting
     aaa_accounting_accounting_methods = list()
     aaa_accounting_events = list()
