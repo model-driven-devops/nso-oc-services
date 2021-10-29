@@ -11,6 +11,7 @@ module openconfig-acl-ext{
   import tailf-common { prefix tailf; }
   import mdd { prefix mdd; }
   import openconfig-acl { prefix oc-acl; }
+  import openconfig-inet-types { prefix oc-inet; }
   // meta
   organization "Cisco";
 
@@ -23,6 +24,22 @@ module openconfig-acl-ext{
   revision "2021-10-26" {
     description
       "Initial revision";
+  }
+  identity ACL_IPV4_STANDARD {
+    base oc-acl:ACL_TYPE;
+    description
+      "Standard IP-layer ACLs with IPv4 addresses";
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-acl:acl/oc-acl:acl-sets/oc-acl:acl-set/oc-acl:acl-entries/oc-acl:acl-entry {
+    container ipv4 {
+      leaf source-address {
+        type oc-inet:ipv4-prefix;
+        description
+          "Source IPv4 address prefix.";
+        when "../../../../oc-acl:config/oc-acl:type='oc-acl-ext:ACL_IPV4_STANDARD'" ;
+        }
+      when "../../../oc-acl:config/oc-acl:type='oc-acl-ext:ACL_IPV4_STANDARD'" ;
+     }
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-acl:acl {
     container lines {
