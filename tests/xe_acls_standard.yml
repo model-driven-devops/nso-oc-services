@@ -1,0 +1,667 @@
+---
+# ansible-playbook xe_acls.yml --extra-vars "nso_ip=X.X.X.X device=xe1" --tags=all
+# Test ACL_IPV4_STANDARD Type in
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - acl_type_standard_in
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - acl_type_standard_in
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-interfaces:interfaces:
+          interface:
+            - config:
+                enabled: true
+                name: GigabitEthernet10
+                type: 'ethernetCsmacd'
+              openconfig-if-ethernet:ethernet:
+                config:
+                  auto-negotiate: true
+                  enable-flow-control: false
+              hold-time:
+                config:
+                  down: '10'
+              name: GigabitEthernet10
+              subinterfaces:
+                subinterface:
+                  - config:
+                      index: '0'
+                    index: '0'
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: 172.27.1.2
+                              prefix-length: 30
+                            ip: 172.27.1.2
+                      config:
+                        dhcp-client: false
+        openconfig-acl:acl:
+          acl-sets:
+            acl-set:
+              - config:
+                  name: '11'
+                  type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                name: '11'
+                type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                acl-entries:
+                  acl-entry:
+                    - actions:
+                        config:
+                          forwarding-action: 'ACCEPT'
+                          log-action: 'LOG_NONE'
+                      config:
+                        sequence-id: '10'
+                      openconfig-acl-ext:ipv4:
+                        source-address: '10.0.0.0/8'
+                      sequence-id: '10'
+                    - actions:
+                        config:
+                          forwarding-action: 'REJECT'
+                          log-action: 'LOG_NONE'
+                      config:
+                        sequence-id: '20'
+                      openconfig-acl-ext:ipv4:
+                        source-address: '0.0.0.0/0'
+                      sequence-id: '20'
+          interfaces:
+            interface:
+              - config:
+                  id: 'GigabitEthernet10'
+                id: 'GigabitEthernet10'
+                ingress-acl-sets:
+                  ingress-acl-set:
+                    - config:
+                        set-name: '11'
+                        type: 'ACL_IPV4_STANDARD'
+                      set-name: '11'
+                      type: 'ACL_IPV4_STANDARD'
+                interface-ref:
+                  config:
+                    interface: 'GigabitEthernet10'
+                    subinterface: '0'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: Create ACL Standard Type
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - acl_type_standard_in
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ ip access-group 11 in:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - acl_type_standard_in
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+
+# Test ACL_IPV4_STANDARD Type out
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - acl_type_standard_out
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - acl_type_standard_out
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-interfaces:interfaces:
+          interface:
+            - config:
+                enabled: true
+                name: GigabitEthernet10
+                type: 'ethernetCsmacd'
+              openconfig-if-ethernet:ethernet:
+                config:
+                  auto-negotiate: true
+                  enable-flow-control: false
+              hold-time:
+                config:
+                  down: '10'
+              name: GigabitEthernet10
+              subinterfaces:
+                subinterface:
+                  - config:
+                      index: '0'
+                    index: '0'
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: 172.27.1.2
+                              prefix-length: 30
+                            ip: 172.27.1.2
+                      config:
+                        dhcp-client: false
+        openconfig-acl:acl:
+          acl-sets:
+            acl-set:
+              - config:
+                  name: '11'
+                  type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                name: '11'
+                type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                acl-entries:
+                  acl-entry:
+                    - actions:
+                        config:
+                          forwarding-action: 'ACCEPT'
+                          log-action: 'LOG_NONE'
+                      config:
+                        sequence-id: '10'
+                      openconfig-acl-ext:ipv4:
+                        source-address: '10.0.0.0/8'
+                      sequence-id: '10'
+                    - actions:
+                        config:
+                          forwarding-action: 'REJECT'
+                          log-action: 'LOG_NONE'
+                      config:
+                        sequence-id: '20'
+                      openconfig-acl-ext:ipv4:
+                        source-address: '0.0.0.0/0'
+                      sequence-id: '20'
+          interfaces:
+            interface:
+              - config:
+                  id: 'GigabitEthernet10'
+                id: 'GigabitEthernet10'
+                egress-acl-sets:
+                  egress-acl-set:
+                    - config:
+                        set-name: '11'
+                        type: 'ACL_IPV4_STANDARD'
+                      set-name: '11'
+                      type: 'ACL_IPV4_STANDARD'
+                interface-ref:
+                  config:
+                    interface: 'GigabitEthernet10'
+                    subinterface: '0'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: Create ACL Standard Type
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - acl_type_standard_out
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ ip access-group 11 out:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - acl_type_standard_out
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+
+# Test ACL_IPV4_STANDARD Type line in
+# This will lock NSO out
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - acl_type_standard_line_in
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - acl_type_standard_line_in
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-interfaces:interfaces:
+          interface:
+            - config:
+                enabled: true
+                name: GigabitEthernet10
+                type: 'ethernetCsmacd'
+              openconfig-if-ethernet:ethernet:
+                config:
+                  auto-negotiate: true
+                  enable-flow-control: false
+              hold-time:
+                config:
+                  down: '10'
+              name: GigabitEthernet10
+              subinterfaces:
+                subinterface:
+                  - config:
+                      index: '0'
+                    index: '0'
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: 172.27.1.2
+                              prefix-length: 30
+                            ip: 172.27.1.2
+                      config:
+                        dhcp-client: false
+        openconfig-acl:acl:
+          acl-sets:
+            acl-set:
+              - config:
+                  name: '11'
+                  type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                name: '11'
+                type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                acl-entries:
+                  acl-entry:
+                    - actions:
+                        config:
+                          forwarding-action: 'ACCEPT'
+                          log-action: 'LOG_NONE'
+                      config:
+                        sequence-id: '10'
+                      openconfig-acl-ext:ipv4:
+                        source-address: '0.0.0.0/0'
+                      sequence-id: '10'
+          openconfig-acl-ext:lines:
+            line:
+              - config:
+                  id: 'vty 0 4'
+                id: 'vty 0 4'
+                ingress-acl-sets:
+                  ingress-acl-set:
+                    - ingress-acl-set-name: '11'
+                      config:
+                          vrf: global
+                          vrf-also: false
+                          ingress-acl-set-name: '11'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: Create ACL Standard Type
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+#- hosts: "{{ device }}"
+#  connection: network_cli
+#  gather_facts: no
+#  tags:
+#    - all
+#    - acl_type_standard_line_in
+#  vars:
+#    ansible_network_os: 'cisco.ios.ios'
+#    exclude_list:
+#      - (^Using.*)
+#      - (Building.*)
+#      - (Current.*)
+#      - (crypto pki certificate chain.*)
+#  roles:
+#    - ansible-pyats
+#  tasks:
+#    - name: collect config (after)
+#      ios_command:
+#        commands:
+#          - show run
+#      register: result_after
+#    - set_fact:
+#        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+#    - name: debug changes
+#      debug:
+#        msg: "{{ changes }}"
+#    - assert:
+#        that:
+#          - "'+ ip access-group 11 out:' in changes"
+#      ignore_errors: yes
+#- hosts: localhost
+#  gather_facts: no
+#  tags:
+#    - all
+#    - acl_type_standard_line_in
+#    - rollback
+#  tasks:
+#    - name: Rollback
+#      uri:
+#        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+#        url_username: admin
+#        url_password: admin
+#        force_basic_auth: yes
+#        validate_certs: no
+#        status_code: [ 204 ]
+#        method: POST
+#        headers: "{
+#          'Content-Type': 'application/yang-data+xml'}"
+#        body: |
+#          <input xmlns="http://tail-f.com/ns/rollback">
+#            <id>0</id>
+#          </input>
+
+# Test ACL_IPV4_STANDARD Type line out
+# This will lock NSO out
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - acl_type_standard_line_out
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - acl_type_standard_line_out
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-interfaces:interfaces:
+          interface:
+            - config:
+                enabled: true
+                name: GigabitEthernet10
+                type: 'ethernetCsmacd'
+              openconfig-if-ethernet:ethernet:
+                config:
+                  auto-negotiate: true
+                  enable-flow-control: false
+              hold-time:
+                config:
+                  down: '10'
+              name: GigabitEthernet10
+              subinterfaces:
+                subinterface:
+                  - config:
+                      index: '0'
+                    index: '0'
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: 172.27.1.2
+                              prefix-length: 30
+                            ip: 172.27.1.2
+                      config:
+                        dhcp-client: false
+        openconfig-acl:acl:
+          acl-sets:
+            acl-set:
+              - config:
+                  name: '11'
+                  type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                name: '11'
+                type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                acl-entries:
+                  acl-entry:
+                    - actions:
+                        config:
+                          forwarding-action: 'ACCEPT'
+                          log-action: 'LOG_NONE'
+                      config:
+                        sequence-id: '10'
+                      openconfig-acl-ext:ipv4:
+                        source-address: '0.0.0.0/0'
+                      sequence-id: '10'
+          openconfig-acl-ext:lines:
+            line:
+              - config:
+                  id: 'vty 0 4'
+                id: 'vty 0 4'
+                egress-acl-set: '11'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: Create ACL Standard Type
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - acl_type_standard_line_out
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ access-class 11 out:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - acl_type_standard_line_out
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>

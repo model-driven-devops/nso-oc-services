@@ -138,17 +138,27 @@ def xe_acls_interfaces_program_service(self) -> None:
         if service_acl_interface.egress_acl_sets:
             for acl in service_acl_interface.egress_acl_sets.egress_acl_set:
                 if acl.type == 'oc-acl:ACL_IPV4':
-                    if not interface_cdb.ip.access_group.exists('in'):
-                        interface_cdb.ip.access_group.create('in')
-                    interface_cdb.ip.access_group['in'].access_list = acl.set_name
-                    self.log.info(f'{self.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} ingress')
-        if service_acl_interface.ingress_acl_sets:
-            for acl in service_acl_interface.ingress_acl_sets.ingress_acl_set:
-                if acl.type == 'oc-acl:ACL_IPV4':
                     if not interface_cdb.ip.access_group.exists('out'):
                         interface_cdb.ip.access_group.create('out')
                     interface_cdb.ip.access_group['out'].access_list = acl.set_name
                     self.log.info(f'{self.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} egress')
+                if acl.type == 'oc-acl-ext:ACL_IPV4_STANDARD':
+                    if not interface_cdb.ip.access_group.exists('out'):
+                        interface_cdb.ip.access_group.create('out')
+                    interface_cdb.ip.access_group['out'].access_list = acl.set_name
+                    self.log.info(f'{self.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} egress')
+        if service_acl_interface.ingress_acl_sets:
+            for acl in service_acl_interface.ingress_acl_sets.ingress_acl_set:
+                if acl.type == 'oc-acl:ACL_IPV4':
+                    if not interface_cdb.ip.access_group.exists('in'):
+                        interface_cdb.ip.access_group.create('in')
+                    interface_cdb.ip.access_group['in'].access_list = acl.set_name
+                    self.log.info(f'{self.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} ingress')
+                if acl.type == 'oc-acl-ext:ACL_IPV4_STANDARD':
+                    if not interface_cdb.ip.access_group.exists('in'):
+                        interface_cdb.ip.access_group.create('in')
+                    interface_cdb.ip.access_group['in'].access_list = acl.set_name
+                    self.log.info(f'{self.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} ingress')
 
 
 def xe_acls_lines_program_service(self) -> None:
