@@ -29,6 +29,18 @@ module openconfig-system-ext{
     description
       "Initial revision";
   }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system {
+    container services {
+      description
+        "Minor network device services";
+        leaf finger {
+            type boolean;
+            default false;
+            description
+              "Configure a system to accept Finger protocol requests.";
+        }
+    }
+  }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:config {
     leaf ip-http-max-connections {
       type uint16;
