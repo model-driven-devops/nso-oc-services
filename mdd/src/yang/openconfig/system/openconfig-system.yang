@@ -302,7 +302,7 @@ module openconfig-system {
 
     leaf port {
       type oc-inet:port-number;
-      default 53;
+      //default 53;
       description
         "The port number of the DNS server.";
     }
@@ -497,7 +497,7 @@ module openconfig-system {
 
     leaf port {
       type oc-inet:port-number;
-      default 123;
+      //default 123;
       description
         "The port number of the NTP server.";
     }
@@ -506,7 +506,7 @@ module openconfig-system {
       type uint8 {
         range 1..4;
       }
-      default 4;
+      //default 4;
       description
         "Version number to put in outgoing NTP packets";
     }
@@ -534,20 +534,20 @@ module openconfig-system {
              provide synchronization to the servers.";
         }
       }
-      default SERVER;
+      //default SERVER;
       description
         "The desired association type for this NTP server.";
     }
     leaf iburst {
       type boolean;
-      default false;
+      //default false;
       description
         "Indicates whether this server should enable burst
         synchronization or not.";
     }
     leaf prefer {
       type boolean;
-      default false;
+      //default false;
       description
         "Indicates whether this server should be preferred
         or not.";
@@ -748,7 +748,7 @@ module openconfig-system {
 
     leaf enabled {
       type boolean;
-      default false;
+      //default false;
       description
         "Enables the NTP protocol and indicates that the system should
         attempt to synchronize the system clock with an NTP server
@@ -763,7 +763,7 @@ module openconfig-system {
 
     leaf enable-ntp-auth {
       type boolean;
-      default false;
+      //default false;
       description
         "Enable or disable NTP authentication -- when enabled, the
         system will only use packets containing a trusted

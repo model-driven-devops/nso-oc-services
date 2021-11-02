@@ -694,7 +694,7 @@ submodule openconfig-rib-bgp-attributes {
           attribute.";
       }
       type uint32;
-      default 100;
+      //default 100;
       description
         "The preference of the SR-TE policy described by the tunnel
         encapsulation attribute. If unspecified, the preference

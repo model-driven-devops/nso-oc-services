@@ -48,7 +48,7 @@ module openconfig-if-poe {
 
      leaf enabled {
       type boolean;
-      default "true";
+      //default "true";
       description
         "Enable or disable PoE in the ethernet interface.";
     }

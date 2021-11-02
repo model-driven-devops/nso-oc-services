@@ -140,14 +140,14 @@ module openconfig-openflow {
 
     leaf port {
       type oc-inet:port-number;
-      default 6653;
+      //default 6653;
       description
         "Controller port to use.";
     }
 
     leaf transport {
       type of-types:transport;
-      default TCP;
+      //default TCP;
       description
         "Controller transport protocol used.";
     }

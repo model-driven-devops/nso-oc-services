@@ -155,7 +155,7 @@ module openconfig-isis {
     // multi-instance
     leaf instance {
       type string;
-      default 0;
+      //default 0;
       description
         "ISIS Instance.";
     }
@@ -174,14 +174,14 @@ module openconfig-isis {
 
     leaf maximum-area-addresses {
       type uint8;
-      default 3;
+      //default 3;
       description
         "Maximum areas supported.";
     }
 
     leaf level-capability {
       type oc-isis-types:level-type;
-      default "LEVEL_1_2";
+      //default "LEVEL_1_2";
       description
         "ISIS level capability(level-1, level-2, level-1-2).";
     }
@@ -194,7 +194,7 @@ module openconfig-isis {
 
     leaf poi-tlv {
       type boolean;
-      default false;
+      //default false;
       description
         "ISIS purge TLV. When set to true, a TLV is added to purges to record
          the system ID  of the IS generating the purge.";
@@ -203,7 +203,7 @@ module openconfig-isis {
 
     leaf iid-tlv {
       type boolean;
-      default false;
+      //default false;
       description
         "ISIS Instance Identifier TLV. When set to trues, the IID-TLV identifies
         the unique instance as well as the topology/topologies to which the
@@ -213,7 +213,7 @@ module openconfig-isis {
 
     leaf fast-flooding {
       type boolean;
-      default true;
+      //default true;
       description
         "When set to true, IS will always flood the LSP that triggered an SPF
      before the router actually runs the SPF computation.";
@@ -226,7 +226,7 @@ module openconfig-isis {
 
     leaf enabled {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true, the functionality within which this leaf is
         defined is enabled, when set to false it is explicitly disabled.";
@@ -239,7 +239,7 @@ module openconfig-isis {
 
     leaf authentication-check {
       type boolean;
-      default true;
+      //default true;
       description
         "When set to true, reject all ISIS protocol PDUs that either have a mismatch
         in authentication-type or authentication-key.";
@@ -297,21 +297,21 @@ module openconfig-isis {
 
     leaf csnp-authentication {
       type boolean;
-      default false;
+      //default false;
       description
         "Enable or disable for IS-IS CSNPs.";
     }
 
     leaf psnp-authentication {
       type boolean;
-      default false;
+      //default false;
       description
         "Enable or disable authentication for IS-IS PSNPs.";
     }
 
     leaf lsp-authentication {
       type boolean;
-      default false;
+      //default false;
       description
         "Enable or disable authentication for IS-IS LSPs.";
     }
@@ -376,7 +376,7 @@ module openconfig-isis {
 
     leaf hello-authentication {
       type boolean;
-      default false;
+      //default false;
       description
         "Enabled or disable ISIS Hello authentication.";
     }
@@ -449,7 +449,7 @@ module openconfig-isis {
 
     leaf enabled {
       type boolean;
-      default true;
+      //default true;
       description
         "When set to true, rely on IGP/LDP synchronization. IGP cost for
      link is maintained at max until LDP adjacencies are established ";
@@ -500,21 +500,21 @@ module openconfig-isis {
 
     leaf set-bit {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true, IS-IS overload bit is set.";
     }
 
     leaf set-bit-on-boot {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true, the IS-IS overload bit is set on system boot.";
     }
 
     leaf advertise-high-metric {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true, the local IS advertises links with the highest
         available metric regardless of their configured metric. The metric
@@ -554,7 +554,7 @@ module openconfig-isis {
 
     leaf ignore-bit {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true, if the attached bit is set on an incoming Level 1
         IS-IS, the local system ignores it. In this case the local system
@@ -564,7 +564,7 @@ module openconfig-isis {
 
     leaf suppress-bit {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true, if the local IS acts as a L1L2 router, then the
         attached bit is not advertised in locally generated PDUs.";
@@ -652,7 +652,7 @@ module openconfig-isis {
 
     leaf passive {
       type boolean;
-      default false;
+      //default false;
       description
         "ISIS passive interface admin enable/disable function.";
     }
@@ -695,7 +695,7 @@ module openconfig-isis {
 
     leaf passive {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true, the referenced interface is a passive interface
         such that it is not eligible to establish adjacencies with other
@@ -762,7 +762,7 @@ module openconfig-isis {
     leaf lsp-lifetime-interval {
       type uint16;
       units seconds;
-      default 1200;
+      //default 1200;
       description
         "Time interval in seconds that specifies how long an LSP remains in
         LSDB without being refreshed.";
@@ -784,7 +784,7 @@ module openconfig-isis {
     leaf spf-hold-interval {
       type uint64;
       units milliseconds;
-      default 5000;
+      //default 5000;
       description
         "SPF Hold Down time interval in milliseconds.";
     }

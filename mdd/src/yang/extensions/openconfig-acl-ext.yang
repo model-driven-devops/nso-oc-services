@@ -91,14 +91,14 @@ module openconfig-acl-ext{
 
               leaf vrf {
                 type string;
-                default global;
+                //default global;
                 tailf:info "ios example: 'access-class XX in vrfname abc'";
                 description
                   "Name of vrf, e.g. 'access-class XX in vrfname abc'";
               }
               leaf vrf-also {
                 type boolean;
-                default false;
+                //default false;
                 tailf:info "ios example: 'access-class xxx in vrf-also '";
                 description
                   "Allows access from VRFs as allowed in ACL";

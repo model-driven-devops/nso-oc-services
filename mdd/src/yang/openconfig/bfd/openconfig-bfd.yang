@@ -239,7 +239,7 @@ module openconfig-bfd {
 
     leaf enable-per-member-link {
       type boolean;
-      default false;
+      //default false;
       description
         "When this leaf is set to true - BFD will be enabled on
         each member interface of the aggregated Ethernet bundle.";

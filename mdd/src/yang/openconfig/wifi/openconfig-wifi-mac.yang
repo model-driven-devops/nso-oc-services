@@ -73,14 +73,14 @@ module openconfig-wifi-mac {
 
     leaf enabled {
       type boolean;
-      default "true";
+      //default "true";
       description
         "The desired operational state (up/down) of this SSID.";
     }
 
     leaf hidden {
       type boolean;
-      default "false";
+      //default "false";
       description
         "Whether this SSID IE is hidden within Beacons.";
     }
@@ -108,10 +108,10 @@ module openconfig-wifi-mac {
       type identityref {
         base oc-wifi-types:OPERATING_FREQUENCY;
       }
-      default "oc-wifi-types:FREQ_2_5_GHZ";
+      //default "oc-wifi-types:FREQ_2_5_GHZ";
       description
         "Operating frequency of this SSID. When none specified, the
-        default is dual-band.";
+        //default is dual-band.";
     }
 
     leaf-list basic-data-rates-2g {
@@ -203,7 +203,7 @@ module openconfig-wifi-mac {
             "WPA2-Enterprise with 802.1X authentication.";
         }
       }
-      default "OPEN";
+      //default "OPEN";
       description
         "The type of Layer2 authentication in use.";
     }
@@ -258,7 +258,7 @@ module openconfig-wifi-mac {
 
     leaf csa {
       type boolean;
-      default "true";
+      //default "true";
       description
         "Enable/Disable 802.11h channel-switch-announcement.";
     }
@@ -349,7 +349,7 @@ module openconfig-wifi-mac {
           "802.11r Over-the-DS.";
         }
       }
-      default "OVA";
+      //default "OVA";
       description
         "The type of 802.11r FT in use.";
     }
@@ -389,7 +389,7 @@ module openconfig-wifi-mac {
 
     leaf trust-dscp {
       type boolean;
-      default "true";
+      //default "true";
       description
         "The AP should trust DSCP on 802.11 frames received
         in this BSS.";

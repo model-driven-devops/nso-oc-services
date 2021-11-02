@@ -174,7 +174,7 @@ module openconfig-if-ip {
 
     leaf dhcp-client {
       type boolean;
-      default false;
+      //default false;
       description
         "Enables a DHCP client on the interface in order to request
         an address";
@@ -350,7 +350,7 @@ module openconfig-if-ip {
 
     leaf enabled {
      type boolean;
-     default true;
+     //default true;
      description
        "Controls whether IPv4 is enabled or disabled on this
         interface.  When IPv4 is enabled, this interface is
@@ -451,7 +451,7 @@ module openconfig-if-ip {
 
     leaf enabled {
       type boolean;
-      default true;
+      //default true;
       description
         "Controls whether IPv6 is enabled or disabled on this
         interface.  When IPv6 is enabled, this interface is
@@ -480,7 +480,7 @@ module openconfig-if-ip {
 
     leaf dup-addr-detect-transmits {
       type uint32;
-      default 1;
+      //default 1;
       description
         "The number of consecutive Neighbor Solicitation messages
         sent while performing Duplicate Address Detection on a
@@ -705,7 +705,7 @@ module openconfig-if-ip {
       type uint8 {
         range 0..254;
       }
-      default 0;
+      //default 0;
       description "Set the value to subtract from priority when
       the tracked interface goes down";
     }
@@ -770,7 +770,7 @@ module openconfig-if-ip {
       type uint8 {
         range 1..254;
       }
-      default 100;
+      //default 100;
       description
         "Specifies the sending VRRP interface's priority
         for the virtual router.  Higher values equal higher
@@ -779,7 +779,7 @@ module openconfig-if-ip {
 
     leaf preempt {
       type boolean;
-      default true;
+      //default true;
       description
         "When set to true, enables preemption by a higher
         priority backup router of a lower priority master router";
@@ -789,7 +789,7 @@ module openconfig-if-ip {
       type uint16 {
         range 0..3600;
       }
-      default 0;
+      //default 0;
       description
         "Set the delay the higher priority router waits
         before preempting";
@@ -799,7 +799,7 @@ module openconfig-if-ip {
       type boolean;
       // TODO: should we adopt the RFC default given the common
       // operational practice of setting to true?
-      default false;
+      //default false;
       description
         "Configure whether packets destined for
         virtual addresses are accepted even when the virtual
@@ -813,7 +813,7 @@ module openconfig-if-ip {
       // TODO this range is theoretical -- needs to be validated
       // against major implementations.
       units "centiseconds";
-      default 100;
+      //default 100;
       description
         "Sets the interval between successive VRRP
         advertisements -- RFC 5798 defines this as a 12-bit
@@ -906,7 +906,7 @@ module openconfig-if-ip {
 
     leaf suppress {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true, router advertisement neighbor discovery
         messages are not transmitted on this interface.";
@@ -938,7 +938,7 @@ module openconfig-if-ip {
             as those where they are in the same subnet.";
         }
       }
-      default "DISABLE";
+      //default "DISABLE";
       description
         "When set to a value other than DISABLE, the local system should
         respond to ARP requests that are for target addresses other than

@@ -38,7 +38,7 @@ module openconfig-if-sdn-ext {
 
     leaf forwarding-viable {
       type boolean;
-      default true;
+      //default true;
       description
         "This value indicates whether the interface may be used
         to route traffic or not.  If set to false, the

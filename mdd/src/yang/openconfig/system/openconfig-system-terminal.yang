@@ -128,7 +128,7 @@ module openconfig-system-terminal {
 
     leaf enable {
       type boolean;
-      default true;
+      //default true;
       description
         "Enables the ssh server.  The ssh server is enabled by
         default.";
@@ -149,7 +149,7 @@ module openconfig-system-terminal {
             "Use either SSH v1 or v2";
         }
       }
-      default V2;
+      //default V2;
       description
         "Set the protocol version for SSH connections to the system";
     }
@@ -196,7 +196,7 @@ module openconfig-system-terminal {
 
       leaf enable {
         type boolean;
-        default false;
+        //default false;
         description
           "Enables the telnet server.  Telnet is disabled by
           default";

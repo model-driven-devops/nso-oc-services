@@ -61,7 +61,7 @@ module openconfig-platform-psu {
 
     leaf enabled {
       type boolean;
-      default true;
+      //default true;
       description
         "Adminsitrative control on the on/off state of the power
         supply unit.";

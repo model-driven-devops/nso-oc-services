@@ -190,7 +190,7 @@ submodule openconfig-pf-forwarding-policies {
             network instances.";
         }
       }
-      default PBR_POLICY;
+      //default PBR_POLICY;
       description
         "The type of the policy. By default policies are generally usable for policy-based
         routing, and have no restrictions on their implementation. Where there are alternate
@@ -233,7 +233,7 @@ submodule openconfig-pf-forwarding-policies {
 
     leaf discard {
       type boolean;
-      default false;
+      //default false;
       description
         "When this leaf is set to true, the local system should drop
         packets that match the rule.";
@@ -241,7 +241,7 @@ submodule openconfig-pf-forwarding-policies {
 
     leaf decapsulate-gre {
       type boolean;
-      default false;
+      //default false;
       description
         "When this leaf is set to true, the local system should remove
         the GRE header from the packet matching the rule. Following

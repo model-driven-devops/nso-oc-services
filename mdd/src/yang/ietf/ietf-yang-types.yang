@@ -89,7 +89,7 @@ module ietf-yang-types {
 
   typedef zero-based-counter32 {
     type yang:counter32;
-    default "0";
+    //default "0";
     description
      "The zero-based-counter32 type represents a counter32
       that has the defined 'initial' value zero.
@@ -146,7 +146,7 @@ module ietf-yang-types {
 
   typedef zero-based-counter64 {
     type yang:counter64;
-    default "0";
+    //default "0";
     description
      "The zero-based-counter64 type represents a counter64 that
       has the defined 'initial' value zero.

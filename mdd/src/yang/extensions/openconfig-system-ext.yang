@@ -35,7 +35,7 @@ module openconfig-system-ext{
         "Minor network device services";
         leaf finger {
             type boolean;
-            default false;
+            //default false;
             description
               "Configure a system to accept Finger protocol requests.";
         }

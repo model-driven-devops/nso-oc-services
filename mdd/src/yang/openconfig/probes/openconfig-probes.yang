@@ -408,7 +408,7 @@ module openconfig-probes {
 
     leaf enabled {
       type boolean;
-      default true;
+      //default true;
       description
         "Whether the test is enabled.";
     }
@@ -498,7 +498,7 @@ module openconfig-probes {
 
     leaf enabled {
       type boolean;
-      default true;
+      //default true;
       description
         "Whether the probe is enabled.";
     }

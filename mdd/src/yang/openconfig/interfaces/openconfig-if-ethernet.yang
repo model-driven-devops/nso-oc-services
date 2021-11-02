@@ -239,7 +239,7 @@ module openconfig-if-ethernet {
 
     leaf auto-negotiate {
       type boolean;
-      default true;
+      //default true;
       description
         "Set to TRUE to request the interface to auto-negotiate
         transmission parameters with its peer interface.  When
@@ -251,7 +251,7 @@ module openconfig-if-ethernet {
 
     leaf standalone-link-training {
       type boolean;
-      default false;
+      //default false;
       description
         "Link training is automatic tuning of the SerDes transmit and 
         receive parameters to ensure an optimal connection over copper
@@ -300,7 +300,7 @@ module openconfig-if-ethernet {
 
     leaf enable-flow-control {
       type boolean;
-      default false;
+      //default false;
       description
         "Enable or disable flow control for this interface.
         Ethernet flow control is a mechanism by which a receiver

@@ -230,7 +230,7 @@ module openconfig-fw-high-availability {
     
     leaf ha-enabled {
       type boolean;
-      default false;
+      //default false;
       description
         "This must be set to 'true' to initiate firewall participation 
         in a HA cluster. Once set to 'true', this boolean can be 
@@ -275,7 +275,7 @@ module openconfig-fw-high-availability {
     
     leaf ha-msg-encryption {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true all traffic between firewall units in a HA 
         cluster are encrypted. If operator provided encryption key is 
@@ -301,7 +301,7 @@ module openconfig-fw-high-availability {
     
     leaf preempt {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true the firewall forces reelection of the active
          role after joining the cluster";
@@ -345,7 +345,7 @@ module openconfig-fw-high-availability {
             description
               "This state represents a firewall which will not join
                the cluster due to 'ha-enable' set to, or left at it's 
-               default of, 'false'";
+               //default of, 'false'";
           }
         }
         description

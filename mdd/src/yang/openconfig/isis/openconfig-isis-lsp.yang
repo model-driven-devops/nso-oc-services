@@ -2233,14 +2233,14 @@ submodule openconfig-isis-lsp {
 
       leaf version {
         type uint8;
-        default 1;
+        //default 1;
         description
           "PDU version. This is set to 1.";
       }
 
       leaf version2 {
         type uint8;
-        default 1;
+        //default 1;
         description
           "PDU version2. This is set to 1";
       }
@@ -3411,7 +3411,7 @@ submodule openconfig-isis-lsp {
                       description
                         "When set, node is attached to another area
                         using the referred metric and can be used as
-                        default gateway.";
+                        //default gateway.";
                     }
                   }
                   description

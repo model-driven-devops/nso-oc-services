@@ -93,7 +93,7 @@ module openconfig-wifi-phy {
 
     leaf enabled {
       type boolean;
-      default "true";
+      //default "true";
       description
         "The configured state (enabled/disabled) of this radio
         interface.";
@@ -102,7 +102,7 @@ module openconfig-wifi-phy {
     leaf transmit-power {
       type int8;
       units dBm;
-      default 9;
+      //default 9;
       description
         "Transmit power of the radio, in dBm.";
     }
@@ -127,14 +127,14 @@ module openconfig-wifi-phy {
     leaf channel-width {
       type uint8;
       units MHz;
-      default 20;
+      //default 20;
       description
         "Operating channel-width of this radio.";
     }
 
     leaf dca {
       type boolean;
-      default "true";
+      //default "true";
       description
         "Utilize Dynamic Channel Assignment on this Radio.";
     }
@@ -147,7 +147,7 @@ module openconfig-wifi-phy {
 
     leaf dtp {
       type boolean;
-      default "true";
+      //default "true";
       description
         "Utilize dynamic transmit-power on this Radio.";
     }
@@ -156,7 +156,7 @@ module openconfig-wifi-phy {
       when "../dtp = 'true'";
       type int8;
       units dBm;
-      default '3';
+      //default '3';
       description
         "Minimum allowed transmit-power on this radio, if utilizing
         dtp. Expressed in dBm.";
@@ -166,7 +166,7 @@ module openconfig-wifi-phy {
       when "../dtp = 'true'";
       type int8;
       units dBm;
-      default '15';
+      //default '15';
       description
         "Maximum allowed transmit-power on this radio, if utilizing
         dtp. Expressed in dBm.";
@@ -181,7 +181,7 @@ module openconfig-wifi-phy {
 
     leaf scanning {
       type boolean;
-      default "true";
+      //default "true";
       description
         "Whether the radio will perform off-channel scanning, to
         collect neighboring RF information.";

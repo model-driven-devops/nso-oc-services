@@ -198,7 +198,7 @@ module openconfig-evpn {
         to the preference method";
       }
       type boolean;
-      default true;
+      //default true;
       description 
         "The 'preempt' or 'revertive' behavior. This option will allow a 
         non-revertive behavior in the DF election.";
@@ -263,7 +263,7 @@ module openconfig-evpn {
 
     leaf esi-type {
       type oc-evpn-types:esi-type;
-      default "TYPE_0_OPERATOR_CONFIGURED";
+      //default "TYPE_0_OPERATOR_CONFIGURED";
       description
         "ESI Type is a 1-octet field (most significant octet) that
         specifies the format of the remaining 9 octets (ESI Value).";
@@ -370,7 +370,7 @@ module openconfig-evpn {
 
     leaf arp-proxy {
       type boolean;
-      default false;
+      //default false;
       description 
         "Enable (TRUE) or disable (FALSE) ARP proxy. If true 
         a proxy server on the network answers the 
@@ -380,7 +380,7 @@ module openconfig-evpn {
 
     leaf arp-suppression {
       type boolean;
-      default false;
+      //default false;
       description 
         "Enable (TRUE) or disable (FALSE) ARP suppression. If true 
         the  Address Resolution Protocol (ARP) queries for an 
@@ -396,7 +396,7 @@ module openconfig-evpn {
 
     leaf nd-proxy {
       type boolean;
-      default false;
+      //default false;
       description 
         "Enable (TRUE) or disable (FALSE) Neighbor Discovery (ND) 
         proxy. If true a proxy server on the network answers the 
@@ -408,7 +408,7 @@ module openconfig-evpn {
     
     leaf nd-suppression {
       type boolean;
-      default false;
+      //default false;
       description 
         "Enable (TRUE) or disable (FALSE) Neighbor Discovery suppression. 
         If true the NDP queries for an IP address that is not on that 
@@ -420,7 +420,7 @@ module openconfig-evpn {
     
     leaf flood-unknown-unicast-supression {
       type boolean;
-      default false;
+      //default false;
       description 
         "Enable (TRUE) or disable (FALSE) the Unknown Unicast Flooding 
         Suppression. If the Unknown Unicast Flooding Suppression is on, 
@@ -446,7 +446,7 @@ module openconfig-evpn {
       type uint16 {
         range "0..600";
       } 
-      default 180;
+      //default 180;
       description 
         "The time interval used in detecting a duplicate MAC address.  
         The value can be from 5 through 600 seconds. 
@@ -459,7 +459,7 @@ module openconfig-evpn {
       type uint8 {
         range "0..50";
       }
-      default 5;
+      //default 5;
       description 
         "The number of MAC mobility events that are detected for a 
         given MAC address within the detection-window before it is identified 

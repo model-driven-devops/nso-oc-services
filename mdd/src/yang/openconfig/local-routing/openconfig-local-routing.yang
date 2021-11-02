@@ -207,7 +207,7 @@ module openconfig-local-routing {
 
     leaf recurse {
       type boolean;
-      default false;
+      //default false;
       description
         "Determines whether the next-hop should be allowed to
         be looked up recursively - i.e., via a RIB entry which has
@@ -330,7 +330,7 @@ module openconfig-local-routing {
 
     leaf discard {
       type boolean;
-      default false;
+      //default false;
       description
         "When true, install the aggregate route with a discard
         next-hop -- traffic destined to the aggregate will be

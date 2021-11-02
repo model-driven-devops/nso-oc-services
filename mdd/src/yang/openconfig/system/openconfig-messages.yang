@@ -147,7 +147,7 @@ module openconfig-messages {
 
     leaf enabled {
       type boolean;
-      default false;
+      //default false;
       description
         "Enable and disable debugging.";
     }

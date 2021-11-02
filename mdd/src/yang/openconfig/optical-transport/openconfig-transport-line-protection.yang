@@ -150,7 +150,7 @@ module openconfig-transport-line-protection {
 
     leaf enabled {
       type boolean;
-      default "true";
+      //default "true";
       description
         "This leaf contains the configured, desired state of the
         port. Disabling the port turns off alarm reporting for
@@ -457,7 +457,7 @@ module openconfig-transport-line-protection {
         fraction-digits 2;
       }
       units dB;
-      default 0;
+      //default 0;
       description
         "The delta in dB between the primary-switch-threshold
         and the signal received on the primary APS_PATH before
@@ -488,7 +488,7 @@ module openconfig-transport-line-protection {
         fraction-digits 2;
       }
       units dB;
-      default 0;
+      //default 0;
       description
         "The delta threshold in dB at which the current line port
         will switch to the opposite line port. It can be set to
@@ -503,7 +503,7 @@ module openconfig-transport-line-protection {
         fraction-digits 2;
       }
       units dB;
-      default 0;
+      //default 0;
       description
         "The offset of the relative switch threshold that compensates
         the normal difference of receiving power between the primary
@@ -530,7 +530,7 @@ module openconfig-transport-line-protection {
             "Force the switch to stay on the secondary line port";
         }
       }
-      default NONE;
+      //default NONE;
       description
         "Explicitly set the switch to stay on a port regardless of
         its operational condition";

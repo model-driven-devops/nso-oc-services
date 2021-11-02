@@ -219,7 +219,7 @@ module openconfig-alarms {
 
     leaf equipment-failure {
       type boolean;
-      default "false";
+      //default "false";
       description
         "If true, the hardware indicates that the component's physical equipment
         has failed";
@@ -227,7 +227,7 @@ module openconfig-alarms {
 
     leaf equipment-mismatch {
       type boolean;
-      default "false";
+      //default "false";
       description
         "If true, the hardware indicates that the component inserted into the
         affected component's physical location is of a different type than what

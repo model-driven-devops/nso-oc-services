@@ -142,9 +142,12 @@ def xe_configure_mpls(self) -> None:
     """
     for network_instance in self.service.oc_netinst__network_instances.network_instance:
         if network_instance.mpls.oc_netinst__global.config:
-            if not network_instance.mpls.oc_netinst__global.config.ttl_propagation:
+            if network_instance.mpls.oc_netinst__global.config.ttl_propagation is False:
                 self.root.devices.device[
                     self.device_name].config.ios__mpls.mpls_ip_conf.ip.propagate_ttl_conf.propagate_ttl = 'false'
+            elif network_instance.mpls.oc_netinst__global.config.ttl_propagation:
+                self.root.devices.device[
+                    self.device_name].config.ios__mpls.mpls_ip_conf.ip.propagate_ttl_conf.propagate_ttl = 'true'
         if network_instance.mpls.oc_netinst__global.interface_attributes.interface:
             self.root.devices.device[self.device_name].config.ios__mpls.ip = 'true'
             for interface in network_instance.mpls.oc_netinst__global.interface_attributes.interface:
@@ -160,6 +163,14 @@ def xe_configure_mpls(self) -> None:
                             f'{interface_number}.{interface.interface_ref.config.subinterface}']
                     if not interface_cdb.mpls.ip.exists():
                         interface_cdb.mpls.ip.create()
+                elif interface.config.mpls_enabled is False:
+                    interface_type, interface_number = xe_get_interface_type_and_number(
+                        interface.interface_ref.config.interface)
+                    class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+                                              interface_type)
+                    if interface.interface_ref.config.subinterface == 0:
+                        interface_cdb = class_attribute[interface_number]
+                    interface_cdb.mpls.ip.delete()
         if network_instance.mpls.signaling_protocols:
             if network_instance.mpls.signaling_protocols.ldp:
                 xe_configure_mpls_signaling_protocols_ldp(self, network_instance)

@@ -299,7 +299,7 @@ module openconfig-interfaces {
 
     leaf enabled {
       type boolean;
-      default "true";
+      //default "true";
       description
         "This leaf contains the configured, desired state of the
         interface.
@@ -393,7 +393,7 @@ module openconfig-interfaces {
 
     leaf loopback-mode {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true, the interface is logically looped back,
         such that packets that are forwarded via the interface
@@ -411,7 +411,7 @@ module openconfig-interfaces {
     leaf up {
       type uint32;
       units milliseconds;
-      default 0;
+      //default 0;
       description
         "Dampens advertisement when the interface
         transitions from down to up.  A zero value means dampening
@@ -421,7 +421,7 @@ module openconfig-interfaces {
     leaf down {
       type uint32;
       units milliseconds;
-      default 0;
+      //default 0;
       description
         "Dampens advertisement when the interface transitions from
         up to down.  A zero value means dampening is turned off,
@@ -914,7 +914,7 @@ module openconfig-interfaces {
 
     leaf enabled {
       type boolean;
-      default false;
+      //default false;
       description
         "Indicates that the subinterface is unnumbered.  By default
         the subinterface is numbered, i.e., expected to have an
@@ -966,12 +966,12 @@ module openconfig-interfaces {
 
     leaf index {
       type uint32;
-      default 0;
+      //default 0;
       description
         "The index of the subinterface, or logical interface number.
         On systems with no support for subinterfaces, or not using
         subinterfaces, this value should default to 0, i.e., the
-        default subinterface.";
+        //default subinterface.";
     }
 
     uses interface-common-config;
