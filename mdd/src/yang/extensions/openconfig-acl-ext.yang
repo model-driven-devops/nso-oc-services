@@ -42,6 +42,28 @@ module openconfig-acl-ext{
      }
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-acl:acl {
+    container ntp {
+      description
+        "Container for NTP ACL application.";
+      container peer {
+        leaf peer-acl-set {
+          type leafref {
+            path "../../../oc-acl:acl-sets/oc-acl:acl-set/oc-acl:config/oc-acl:name";
+          }
+          description
+            "Name of standard ACL to apply to peer.";
+        }
+      }
+      container serve {
+        leaf serve-acl-set {
+          type leafref {
+            path "../../../oc-acl:acl-sets/oc-acl:acl-set/oc-acl:config/oc-acl:name";
+          }
+          description
+            "Name of standard ACL to apply to serve.";
+        }
+      }
+    }
     container lines {
       description
         "Enclosing container for the list of device lines on which
