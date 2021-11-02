@@ -630,7 +630,7 @@ module openconfig-segment-routing {
 
     leaf protection-eligible {
       type boolean;
-      default true;
+      //default true;
       description
         "Whether the Adj-SID should be considered to be eligible for protection
         using IP or MPLS FRR during a network failure. When this value is set to
@@ -642,7 +642,7 @@ module openconfig-segment-routing {
 
     leaf group {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true, the Adj-SID is indicated to be part of a group, and
         the G flag is set to 1 in the corresponding advertisement in the IGP.";

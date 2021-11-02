@@ -140,7 +140,7 @@ module openconfig-rsvp-sr-ext {
       type decimal64 {
         fraction-digits 4;
       }
-      default 1.0000;
+      //default 1.0000;
       description
         "A multiplier applied to the sampled bandwidth which
         determines the value that is propagated to the IGP TED.

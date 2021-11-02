@@ -428,7 +428,7 @@ module openconfig-system-logging {
 
     leaf remote-port {
       type oc-inet:port-number;
-      default 514;
+      //default 514;
       description
         "Sets the destination port number for syslog UDP messages to
         the server.  The default for syslog is 514.";

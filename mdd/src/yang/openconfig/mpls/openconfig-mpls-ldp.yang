@@ -889,7 +889,7 @@ module openconfig-mpls-ldp {
 
     leaf enable {
       type boolean;
-      default false;
+      //default false;
       description
         "Enables LDP authentication on the node.";
     }
@@ -911,7 +911,7 @@ module openconfig-mpls-ldp {
 
     leaf enabled {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true, the functionality within which this leaf is
         defined is enabled, when set to false it is explicitly disabled.";

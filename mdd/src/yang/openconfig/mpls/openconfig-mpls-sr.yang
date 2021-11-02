@@ -121,7 +121,7 @@ module openconfig-mpls-sr {
             to the LSP";
         }
       }
-      default MIXED_MODE;
+      //default MIXED_MODE;
       description
         "The restrictions placed on the SIDs to be selected by the
         calculation method for the explicit path when it is
@@ -130,7 +130,7 @@ module openconfig-mpls-sr {
 
     leaf sid-protection-required {
       type boolean;
-      default "false";
+      //default "false";
       description
         "When this value is set to true, only SIDs that are
         protected are to be selected by the calculating method

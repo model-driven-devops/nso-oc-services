@@ -413,7 +413,7 @@ module openconfig-platform {
 
     leaf empty {
       type boolean;
-      default false;
+      //default false;
       description
         "The empty leaf may be used by the device to indicate that a
         component position exists but is not populated.  Using this

@@ -63,7 +63,7 @@ module openconfig-routing-policy {
     conditions are satisfied, then evaluation of the current policy
     definition stops, and the next policy definition in the chain is
     evaluated.  When the end of the policy chain is reached, the
-    default route disposition action is performed (i.e., reject-route
+    //default route disposition action is performed (i.e., reject-route
     unless an an alternate default action is specified for the
     chain).
 
@@ -759,7 +759,7 @@ module openconfig-routing-policy {
           implementation limitations). This is intended to
           provide a policy 'subroutine' capability.  The
           called policy should contain an explicit or a
-          default route disposition that returns an
+          //default route disposition that returns an
           effective true (accept-route) or false
           (reject-route), otherwise the behavior may be
           ambiguous and implementation dependent";
@@ -1176,7 +1176,7 @@ module openconfig-routing-policy {
 
     leaf default-import-policy {
       type default-policy-type;
-      default REJECT_ROUTE;
+      //default REJECT_ROUTE;
       description
         "explicitly set a default policy if no policy definition
         in the import policy chain is satisfied.";
@@ -1206,7 +1206,7 @@ module openconfig-routing-policy {
 
     leaf default-export-policy {
       type default-policy-type;
-      default REJECT_ROUTE;
+      //default REJECT_ROUTE;
       description
         "explicitly set a default policy if no policy definition
         in the export policy chain is satisfied.";

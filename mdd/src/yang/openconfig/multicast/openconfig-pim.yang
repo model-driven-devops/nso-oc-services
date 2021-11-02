@@ -84,7 +84,7 @@ module openconfig-pim {
 
     leaf enabled {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true, the functionality within which this
         leaf is defined is enabled, when set to false it is
@@ -141,7 +141,7 @@ module openconfig-pim {
 
     leaf bsr-border {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true the device will not send bootstrap router
         messages over this interface. By default these are transmitted
@@ -150,7 +150,7 @@ module openconfig-pim {
 
     leaf border-router {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true the interface is set as MBR (multicast border
         router) and allows multicast traffic from sources that are

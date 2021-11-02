@@ -104,7 +104,7 @@ module openconfig-vlan {
           description "VLAN is inactive / suspended";
         }
       }
-      default ACTIVE;
+      //default ACTIVE;
       description "Admin state of the VLAN";
     }
 
@@ -125,7 +125,7 @@ module openconfig-vlan {
       type identityref {
         base oc-vlan-types:TPID_TYPES;
       }
-      default oc-vlan-types:TPID_0X8100;
+      //default oc-vlan-types:TPID_0X8100;
       description
         "Optionally set the tag protocol identifier field (TPID) that
         is accepted on the VLAN";

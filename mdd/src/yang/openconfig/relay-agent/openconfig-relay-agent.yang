@@ -54,7 +54,7 @@ module openconfig-relay-agent {
 
     leaf enable {
       type boolean;
-      default false;
+      //default false;
       description
         "Enable sending the DHCP option for Relay Agent information
         -- option 82.";
@@ -184,7 +184,7 @@ module openconfig-relay-agent {
 
     leaf enable-interface-id {
       type boolean;
-      default false;
+      //default false;
       description
         "Enables DHCPv6 OPTION_INTERFACE_ID (18) to identify the
         interface on which the client message was received.";
@@ -195,7 +195,7 @@ module openconfig-relay-agent {
 
     leaf enable-remote-id {
       type boolean;
-      default false;
+      //default false;
       description
         "Sets DHCPv6 OPTION_REMOTE_ID (37).  This option is the
         DHCPv6 equivalent for the IPv4 (DHCPv4) Relay Agent Option's
@@ -334,7 +334,7 @@ module openconfig-relay-agent {
 
       leaf enable-relay-agent {
         type boolean;
-        default false;
+        //default false;
         description
           "Enables DHCP/BOOTP relay agent on all interfaces";
       }

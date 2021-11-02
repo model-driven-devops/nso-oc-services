@@ -96,10 +96,10 @@ module openconfig-policy-types {
         member of the defined set";
       }
     }
-    default ANY;
+    //default ANY;
     description
       "Options that govern the behavior of a match statement.  The
-      default behavior is ANY, i.e., the given value matches any
+      //default behavior is ANY, i.e., the given value matches any
       of the members of the defined set";
   }
 
@@ -114,10 +114,10 @@ module openconfig-policy-types {
         member of the defined set";
       }
     }
-    default ANY;
+    //default ANY;
     description
       "Options that govern the behavior of a match statement.  The
-      default behavior is ANY, i.e., the given value matches any
+      //default behavior is ANY, i.e., the given value matches any
       of the members of the defined set.  Note this type is a
       restricted version of the match-set-options-type.";
       //TODO: restriction on enumerated types is only allowed in

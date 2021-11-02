@@ -282,7 +282,7 @@ def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: nc
     else:
         if service_ipv4.config.dhcp_client:
             interface_cdb.ip.address.dhcp.create()
-    if not service_ipv4.config.dhcp_client:
+    if service_ipv4.config.dhcp_client is False:
         interface_cdb.ip.address.dhcp.delete()
 
     # proxy-arp

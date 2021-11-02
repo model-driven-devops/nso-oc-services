@@ -512,14 +512,14 @@ module openconfig-mpls {
       type identityref {
         base oc-mplst:NULL_LABEL_TYPE;
       }
-      default oc-mplst:IMPLICIT;
+      //default oc-mplst:IMPLICIT;
       description
         "The null-label type used, implicit or explicit";
     }
 
     leaf ttl-propagation {
       type boolean;
-      default true;
+      //default true;
       description
         "Enables TTL propagation across the MPLS domain.
         When ttl-propagation is set to true, the IP TTL
@@ -608,7 +608,7 @@ module openconfig-mpls {
 
     leaf mpls-enabled {
       type boolean;
-      default false;
+      //default false;
       description
         "Enable MPLS forwarding on this interface";
     }

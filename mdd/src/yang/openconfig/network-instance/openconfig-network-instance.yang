@@ -1094,7 +1094,7 @@ module openconfig-network-instance {
 
     leaf disable-metric-propagation {
       type boolean;
-      default false;
+      //default false;
       description
         "By default a system may reflect the metric specified in
         the destination protocol according to that which is set in

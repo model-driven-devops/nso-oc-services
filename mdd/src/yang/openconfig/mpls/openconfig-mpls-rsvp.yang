@@ -121,7 +121,7 @@ module openconfig-mpls-rsvp {
       "Configuration for MPLS soft preemption";
     leaf enable {
       type boolean;
-      default false;
+      //default false;
       description
         "Enables soft preemption on a node.";
     }
@@ -130,7 +130,7 @@ module openconfig-mpls-rsvp {
       type uint16 {
         range 0..max;
       }
-      default 30;
+      //default 30;
       description
         "Timeout value for soft preemption to revert
          to hard preemption. The default timeout for
@@ -172,7 +172,7 @@ module openconfig-mpls-rsvp {
         range 1000..60000;
       }
       units milliseconds;
-      default 9000;
+      //default 9000;
       description
         "set the interval in ms between RSVP hello
          messages";
@@ -186,7 +186,7 @@ module openconfig-mpls-rsvp {
 
     leaf refresh-reduction {
       type boolean;
-      default true;
+      //default true;
       description
         "enables all RSVP refresh reduction message
          bundling, RSVP message ID, reliable message delivery
@@ -284,7 +284,7 @@ module openconfig-mpls-rsvp {
 
     leaf enable {
       type boolean;
-      default false;
+      //default false;
       description
         "Enables graceful restart on the node.";
     }
@@ -338,7 +338,7 @@ module openconfig-mpls-rsvp {
 
     leaf enable {
       type boolean;
-      default false;
+      //default false;
       description
         "Enables RSVP authentication on the node.";
     }
@@ -392,7 +392,7 @@ module openconfig-mpls-rsvp {
       type identityref {
         base oc-mplst:PROTECTION_TYPE;
       }
-      default oc-mplst:LINK_NODE_PROTECTION_REQUESTED;
+      //default oc-mplst:LINK_NODE_PROTECTION_REQUESTED;
       description
         "Style of mpls frr protection desired:
         link, link-node, or unprotected";
@@ -589,7 +589,7 @@ module openconfig-mpls-rsvp {
           "When the signaling protocol is RSVP-TE ";
       }
       type boolean;
-      default false;
+      //default false;
       description
         "Enables RSVP soft-preemption on this LSP";
     }
@@ -610,7 +610,7 @@ module openconfig-mpls-rsvp {
       type uint8 {
         range 0..7;
       }
-      default 7;
+      //default 7;
       description
         "RSVP-TE preemption priority during LSP setup, lower is
          higher priority; default 7 indicates that LSP will not
@@ -627,7 +627,7 @@ module openconfig-mpls-rsvp {
       type uint8 {
         range 0..7;
       }
-      default 0;
+      //default 0;
       description
         "preemption priority once the LSP is established,
          lower is higher priority; default 0 indicates other LSPs
@@ -651,7 +651,7 @@ module openconfig-mpls-rsvp {
       type uint8 {
         range 0..7;
       }
-      default 7;
+      //default 7;
       description
         "RSVP-TE preemption priority during LSP setup, lower is
          higher priority; default 7 indicates that LSP will not
@@ -669,7 +669,7 @@ module openconfig-mpls-rsvp {
       type uint8 {
         range 0..7;
       }
-      default 0;
+      //default 0;
       description
         "preemption priority once the LSP is established,
          lower is higher priority; default 0 indicates other LSPs

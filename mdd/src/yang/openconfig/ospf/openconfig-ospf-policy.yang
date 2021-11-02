@@ -118,7 +118,7 @@ module openconfig-ospf-policy {
             "Set the external type 2 metric";
         }
       }
-      default "EXTERNAL_TYPE_2";
+      //default "EXTERNAL_TYPE_2";
       description
         "Specify the type of metric which is to be set by the policy";
     }

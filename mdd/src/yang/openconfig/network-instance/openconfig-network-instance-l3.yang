@@ -209,7 +209,7 @@ module openconfig-network-instance-l3 {
 
     leaf warning-only {
       type boolean;
-      default false;
+      //default false;
       description
         "When specified, the route limit specified is considered only as
         a warning - and routes should continue to be installed into the

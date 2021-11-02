@@ -101,7 +101,7 @@ submodule openconfig-ospfv2-global {
             behaviour specified in RFC2328";
         }
       }
-      default "RFC2328_COMPATIBLE";
+      //default "RFC2328_COMPATIBLE";
       description
         "Specify how costs for the summary routes should be specified
         as per the behaviour in the original OSPF specification

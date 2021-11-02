@@ -85,7 +85,7 @@ submodule openconfig-aaa-tacacs {
 
     leaf port {
       type oc-inet:port-number;
-      default 49;
+      //default 49;
       description
         "The port number on which to contact the TACACS server";
     }

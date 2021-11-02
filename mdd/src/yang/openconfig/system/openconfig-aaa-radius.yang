@@ -85,14 +85,14 @@ submodule openconfig-aaa-radius {
 
     leaf auth-port {
       type oc-inet:port-number;
-      default 1812;
+      //default 1812;
       description
         "Port number for authentication requests";
     }
 
     leaf acct-port {
       type oc-inet:port-number;
-      default 1813;
+      //default 1813;
       description
         "Port number for accounting requests";
     }

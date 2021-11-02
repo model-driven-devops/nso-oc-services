@@ -150,8 +150,10 @@ def xe_bgp_configure_neighbor(self, service_bgp_neighbor, neighbor) -> None:
             neighbor.password.text = service_bgp_neighbor.config.auth_password
         if service_bgp_neighbor.config.description:
             neighbor.description = service_bgp_neighbor.config.description
-        if not service_bgp_neighbor.config.enabled:
+        if service_bgp_neighbor.config.enabled is False:
             neighbor.shutdown.create()
+        elif service_bgp_neighbor.config.enabled:
+            neighbor.shutdown.delete()
         if service_bgp_neighbor.config.local_as:
             neighbor.local_as.create()
             neighbor.local_as.as_no = service_bgp_neighbor.config.local_as
@@ -188,10 +190,10 @@ def xe_bgp_configure_neighbor(self, service_bgp_neighbor, neighbor) -> None:
             neighbor.timers.keepalive_interval = int(
                 float(service_bgp_neighbor.timers.config.keepalive_interval))
     if service_bgp_neighbor.transport:
-        if not service_bgp_neighbor.transport.config.mtu_discovery:
+        if service_bgp_neighbor.transport.config.mtu_discovery is False:
             neighbor.transport.path_mtu_discovery.create()
             neighbor.transport.path_mtu_discovery.disable.create()
-        else:
+        elif service_bgp_neighbor.transport.config.mtu_discovery:
             neighbor.transport.path_mtu_discovery.create()
         if service_bgp_neighbor.transport.config.passive_mode:
             neighbor.transport.connection_mode = 'passive'
@@ -262,10 +264,10 @@ def xe_bgp_peergroups_program_service(self, service_protocol, network_instance_t
                         peer_group.timers.keepalive_interval = int(
                             float(service_bgp_peergroup.timers.config.keepalive_interval))
                 if service_bgp_peergroup.transport:
-                    if not service_bgp_peergroup.transport.config.mtu_discovery:
+                    if service_bgp_peergroup.transport.config.mtu_discovery is False:
                         peer_group.transport.path_mtu_discovery.create()
                         peer_group.transport.path_mtu_discovery.disable.create()
-                    else:
+                    elif service_bgp_peergroup.transport.config.mtu_discovery:
                         peer_group.transport.path_mtu_discovery.create()
                     if service_bgp_peergroup.transport.config.passive_mode:
                         peer_group.transport.connection_mode = 'passive'

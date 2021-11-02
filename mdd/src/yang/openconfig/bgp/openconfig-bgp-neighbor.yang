@@ -133,7 +133,7 @@ submodule openconfig-bgp-neighbor {
 
     leaf enabled {
         type boolean;
-        default true;
+        //default true;
         description
           "Whether the BGP peer is enabled. In cases where the
           enabled leaf is set to false, the local system should not
@@ -286,7 +286,7 @@ submodule openconfig-bgp-neighbor {
 
     leaf dynamically-configured {
       type boolean;
-      default false;
+      //default false;
       description
         "When this leaf is set to true, the peer was configured dynamically
         due to an inbound connection request from a specified source prefix

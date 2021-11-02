@@ -206,7 +206,7 @@ module ietf-interfaces {
 
       leaf enabled {
         type boolean;
-        default "true";
+        //default "true";
         description
           "This leaf contains the configured, desired state of the
            interface.

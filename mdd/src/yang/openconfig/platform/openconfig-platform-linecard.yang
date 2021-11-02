@@ -65,7 +65,7 @@ module openconfig-platform-linecard {
 
     leaf power-admin-state {
       type oc-platform-types:component-power-type;
-      default POWER_ENABLED;
+      //default POWER_ENABLED;
       description
         "Enable or disable power to the linecard";
     }

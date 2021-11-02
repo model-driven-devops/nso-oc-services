@@ -107,7 +107,7 @@ submodule openconfig-bgp-common-multiprotocol {
 
     leaf enabled {
       type boolean;
-      default false;
+      //default false;
       description
         "This leaf indicates whether graceful-restart is enabled for
         this AFI-SAFI";
@@ -127,7 +127,7 @@ submodule openconfig-bgp-common-multiprotocol {
 
     leaf enabled {
       type boolean;
-      default false;
+      //default false;
       description
         "This leaf indicates whether the AFI-SAFI is
         enabled for the neighbour or group";
@@ -498,7 +498,7 @@ submodule openconfig-bgp-common-multiprotocol {
 
     leaf prevent-teardown {
       type boolean;
-      default false;
+      //default false;
       description
         "Do not tear down the BGP session when the maximum
         prefix limit is exceeded, but rather only log a
@@ -535,7 +535,7 @@ submodule openconfig-bgp-common-multiprotocol {
 
     leaf send-default-route {
       type boolean;
-      default "false";
+      //default "false";
       description
         "If set to true, send the default-route to the neighbour(s)";
     }

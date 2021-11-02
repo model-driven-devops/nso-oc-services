@@ -648,7 +648,7 @@ module openconfig-srte-policy {
 
     leaf mpls-ttl {
       type uint8;
-      default 0;
+      //default 0;
       description
         "The TTL to be set if the type of the SID is an MPLS label. If the
         value of the TTL is set to be 0, the value is picked by the local
@@ -659,7 +659,7 @@ module openconfig-srte-policy {
       type uint8 {
         range "0..7";
       }
-      default 0;
+      //default 0;
       description
         "The value of the MPLS Traffic Class (TC) bits to be used if the
         value of the SID is an MPLS label. In the case that the value is

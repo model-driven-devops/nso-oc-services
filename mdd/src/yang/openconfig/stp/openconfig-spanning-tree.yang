@@ -397,7 +397,7 @@ module openconfig-spanning-tree {
       type uint8 {
         range 1..10;
       }
-      default 6;
+      //default 6;
       description
         "the maximum number of BPDUs per second that the
          switch can send from an interface";

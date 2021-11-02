@@ -132,7 +132,7 @@ module openconfig-system-grpc {
 
     leaf transport-security {
       type boolean;
-      default true;
+      //default true;
       description
         "Use gRPC transport security (e.g., SSL or TLS). Enabled by default.
         This leaf allows transport security to be disabled for use cases that

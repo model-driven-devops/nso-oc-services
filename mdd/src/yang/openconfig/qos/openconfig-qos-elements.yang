@@ -393,7 +393,7 @@ submodule openconfig-qos-elements {
 
     leaf enable-ecn {
       type boolean;
-      default false;
+      //default false;
       description
         "When set to true, the device should mark packets that are
         ECN-capable rather than dropping them.  The receiver is

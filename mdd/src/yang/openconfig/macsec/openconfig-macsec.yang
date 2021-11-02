@@ -76,7 +76,7 @@ module openconfig-macsec {
           }
         }
       }
-      default VALID_IMMEDIATELY;
+      //default VALID_IMMEDIATELY;
       description
         "Date and time the key starts being valid according to local date and
          time configuration.";
@@ -91,7 +91,7 @@ module openconfig-macsec {
           }
         }
       }
-      default NO_EXPIRATION;
+      //default NO_EXPIRATION;
       description
         "Key date and time expiration according to local date and time
          configuration.";
@@ -303,14 +303,14 @@ module openconfig-macsec {
 
     leaf enable {
       type boolean;
-      default "false";
+      //default "false";
       description
         "Enable MACsec on an interface";
     }
 
     leaf replay-protection {
       type uint16;
-      default "0";
+      //default "0";
       description
         "MACsec window size, as defined by the number of out-of-order frames
         that are accepted. A value of 0 means that frames are accepted only in
@@ -607,7 +607,7 @@ module openconfig-macsec {
 
     leaf key-server-priority {
       type uint8;
-      default "16";
+      //default "16";
       description
         "Specifies the key server priority used by the MACsec Key Agreement
         (MKA) protocol to select the key server when MACsec is enabled using
@@ -626,7 +626,7 @@ module openconfig-macsec {
 
     leaf confidentiality-offset {
       type macsec-types:confidentiality-offset;
-      default "0_BYTES";
+      //default "0_BYTES";
       description
         "The confidentiality offset specifies a number of octets in an Ethernet
          frame that are sent in unencrypted plain-text";
@@ -634,7 +634,7 @@ module openconfig-macsec {
 
     leaf delay-protection {
       type boolean;
-      default "false";
+      //default "false";
       description
         "Traffic delayed longer than 2 seconds is rejected by the interfaces
          enabled with delay protection.";
@@ -642,7 +642,7 @@ module openconfig-macsec {
 
     leaf include-icv-indicator {
       type boolean;
-      default "true";
+      //default "true";
       description
         "Generate and include an Integrity Check Value (ICV) field in the MKPDU.
          For compatibility with previous MACsec implementation that do not
@@ -653,7 +653,7 @@ module openconfig-macsec {
       type uint32 {
         range "0 | 30..65535";
       }
-      default "0";
+      //default "0";
       description
         "SAK Rekey interval in seconds. The default value is 0 where no rekey is
          performed.";
@@ -661,14 +661,14 @@ module openconfig-macsec {
 
     leaf sak-rekey-on-live-peer-loss {
       type boolean;
-      default "false";
+      //default "false";
       description
         "Rekey on peer loss";
     }
 
     leaf use-updated-eth-header {
       type boolean;
-      default "false";
+      //default "false";
       description
         "Use updated ethernet header for ICV calculation. In case the Ethernet
          frame headers change, use the updated headers to calculate the ICV.";

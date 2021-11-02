@@ -201,7 +201,7 @@ submodule openconfig-isis-routing {
 
     leaf metric {
       type uint32;
-      default 10;
+      //default 10;
       description "ISIS metric value(default=10).";
     }
   }

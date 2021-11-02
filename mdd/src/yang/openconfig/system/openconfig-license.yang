@@ -62,7 +62,7 @@ module openconfig-license {
 
     leaf active {
       type boolean;
-      default false;
+      //default false;
       description
         "The activation state of the license.";
     }
