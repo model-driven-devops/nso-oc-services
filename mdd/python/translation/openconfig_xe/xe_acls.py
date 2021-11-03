@@ -191,3 +191,20 @@ def xe_acls_lines_program_service(self) -> None:
                             acl_object.vrfname = service_ingress.config.vrf
             else:
                 raise ValueError('line vty takes a start and an end line number range')
+
+
+def xe_acls_ntp_program_service(self) -> None:
+    """
+    Apply NTP ACLs
+    """
+    device = self.root.devices.device[self.device_name].config
+    # Serve
+    if self.service.oc_acl__acl.oc_acl_ext__ntp.serve.serve_acl_set:
+        device.ios__ntp.access_group.serve.access_list = self.service.oc_acl__acl.oc_acl_ext__ntp.serve.serve_acl_set
+    else:
+        device.ios__ntp.access_group.serve.access_list = None
+    # Peer
+    if self.service.oc_acl__acl.oc_acl_ext__ntp.peer.peer_acl_set:
+        device.ios__ntp.access_group.peer.access_list = self.service.oc_acl__acl.oc_acl_ext__ntp.peer.peer_acl_set
+    else:
+        device.ios__ntp.access_group.peer.access_list = None
