@@ -152,7 +152,7 @@ def xe_bgp_configure_neighbor(self, service_bgp_neighbor, neighbor) -> None:
             neighbor.description = service_bgp_neighbor.config.description
         if service_bgp_neighbor.config.enabled is False:
             neighbor.shutdown.create()
-        elif service_bgp_neighbor.config.enabled:
+        elif service_bgp_neighbor.config.enabled and neighbor.shutdown.exists():
             neighbor.shutdown.delete()
         if service_bgp_neighbor.config.local_as:
             neighbor.local_as.create()
