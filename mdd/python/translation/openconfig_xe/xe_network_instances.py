@@ -170,7 +170,8 @@ def xe_configure_mpls(self) -> None:
                                               interface_type)
                     if interface.interface_ref.config.subinterface == 0:
                         interface_cdb = class_attribute[interface_number]
-                    interface_cdb.mpls.ip.delete()
+                    if interface_cdb.mpls.ip.exists():
+                        interface_cdb.mpls.ip.delete()
         if network_instance.mpls.signaling_protocols:
             if network_instance.mpls.signaling_protocols.ldp:
                 xe_configure_mpls_signaling_protocols_ldp(self, network_instance)

@@ -258,7 +258,8 @@ def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: nc
     # Create service config address mask list
     ips_and_masks = list()
     if service_ipv4.addresses.address:
-        interface_cdb.ip.address.dhcp.delete()
+        if interface_cdb.ip.address.dhcp.exists():
+            interface_cdb.ip.address.dhcp.delete()
         for a in service_ipv4.addresses.address:
             ip = ipaddress.ip_network(f'10.0.0.0/{a.config.prefix_length}')
             ips_and_masks.append((a.config.ip, str(ip.netmask)))
@@ -283,7 +284,8 @@ def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: nc
         if service_ipv4.config.dhcp_client:
             interface_cdb.ip.address.dhcp.create()
     if service_ipv4.config.dhcp_client is False:
-        interface_cdb.ip.address.dhcp.delete()
+        if interface_cdb.ip.address.dhcp.exists():
+            interface_cdb.ip.address.dhcp.delete()
 
     # proxy-arp
     if service_ipv4.proxy_arp.config.mode == 'DISABLE' or not service_ipv4.proxy_arp.config.mode:
