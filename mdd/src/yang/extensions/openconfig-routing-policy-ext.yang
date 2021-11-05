@@ -12,6 +12,7 @@ module openconfig-routing-policy-ext{
   import mdd { prefix mdd; }
   import openconfig-routing-policy { prefix oc-rpol; }
   import openconfig-extensions { prefix oc-ext; }
+  import openconfig-acl { prefix oc-acl; }
 
 
   // meta
@@ -33,6 +34,17 @@ module openconfig-routing-policy-ext{
       tailf:info "ios: prefix-list statement sequence number";
       description
         "Sets a sequence number for prefix-list statements.";
+    }
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-rpol:routing-policy/oc-rpol:policy-definitions/oc-rpol:policy-definition/oc-rpol:statements/oc-rpol:statement/oc-rpol:conditions {
+    container match-acl-ipv4-set {
+      container config {
+        leaf acl-set {
+          type leafref {
+            path "../../../../../../../../../oc-acl:acl/oc-acl:acl-sets/oc-acl:acl-set/oc-acl:config/oc-acl:name";
+          }
+        }
+      }
     }
   }
 }

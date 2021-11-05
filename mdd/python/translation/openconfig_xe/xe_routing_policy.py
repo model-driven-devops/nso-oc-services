@@ -13,6 +13,87 @@ def xe_routing_policy_program_service(self) -> None:
         as_path_sets_configure(self)
     if len(self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.community_sets.community_set) > 0:
         community_sets_configure(self)
+    if len(self.service.oc_rpol__routing_policy.policy_definitions.policy_definition) > 0:
+        policy_definitions_configure(self)
+
+
+def policy_definitions_configure(self) -> None:
+    device = self.root.devices.device[self.device_name].config
+    for service_policy_definition in self.service.oc_rpol__routing_policy.policy_definitions.policy_definition:
+        if len(service_policy_definition.statements.statement) > 0:
+            for service_policy_statement in service_policy_definition.statements.statement:
+                route_map_statement = device.ios__route_map.create(service_policy_definition.name, service_policy_statement.name)
+                if service_policy_statement.actions:
+                    if service_policy_statement.actions.config.policy_result == 'ACCEPT_ROUTE':
+                        route_map_statement.operation = 'permit'
+                    elif service_policy_statement.actions.config.policy_result == 'REJECT_ROUTE':
+                        route_map_statement.operation = 'deny'
+                    if service_policy_statement.actions.set_tag:
+                        if service_policy_statement.actions.set_tag.config.mode == 'INLINE':
+                            route_map_statement.set.tag = service_policy_statement.actions.set_tag.inline.config.tag.as_list()[0]
+                    if service_policy_statement.actions.oc_bgp_pol__bgp_actions:
+                        if service_policy_statement.actions.oc_bgp_pol__bgp_actions.config:
+                            if service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_route_origin:
+                                if service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_route_origin == 'IGP' or service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_route_origin == 'INCOMPLETE':
+                                    route_map_statement.set.origin.origin_value = str(service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_route_origin).lower()
+                                elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_route_origin == 'EGP':  # TODO find way to add ASN and allow EGP
+                                    raise ValueError(
+                                        'OpenConfig model does not allow for ASN which is needed for an EGP originated route')
+                            if service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_local_pref:
+                                lp = route_map_statement.set.local_preference.create()
+                                lp.value = service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_local_pref
+                            if service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_next_hop:
+                                if service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_next_hop == 'SELF':
+                                    route_map_statement.set.ip.next_hop.self.create()
+                                else:
+                                    if route_map_statement.set.ip.next_hop.self.exists():
+                                        route_map_statement.set.ip.next_hop.self.delete()
+                                    route_map_statement.set.ip.next_hop.address.create(service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_next_hop)
+                            if service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_med:
+                                route_map_statement.set.metric = [service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_med]
+                            if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_as_path_prepend:
+                                if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_as_path_prepend.config.repeat_n:
+                                    as_path = ((str(service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_as_path_prepend.config.asn) + ' ') * service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_as_path_prepend.config.repeat_n).strip()
+                                    route_map_statement.set.as_path.prepend.as_list = as_path
+                                else:
+                                    route_map_statement.set.as_path.prepend.as_list = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_as_path_prepend.config.asn
+                            if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community:
+                                if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.options == 'ADD':
+                                    if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.method == 'INLINE':
+                                        for community in service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.inline.config.communities:
+                                            route_map_statement.set.community.community_number.create(community)
+                                        route_map_statement.set.community.community_number.create('additive')
+                                elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.options == 'REPLACE':
+                                    if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.method == 'INLINE':
+                                        route_map_statement.set.community.community_number = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.inline.config.communities.as_list()
+                                # elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.options == 'REMOVE':
+                                #     if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.method == 'REFERENCE':
+                                #         route_map_statement.set.comm_list.name = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.reference.config.community_set_ref
+                                #         route_map_statement.set.comm_list.delete.create()
+                                #         # TODO Look into this
+                                #         """
+                                #         In [10]: type(root.devices.device['xe1'].config.ios__route_map['test123', 10].set.comm_list.delete)
+                                #         Out[10]: method
+                                #         delete - should be ncs.maagic.EmptyLeaf
+                                #         """
+
+                if service_policy_statement.conditions:
+                    if service_policy_statement.conditions.match_prefix_set.config.prefix_set:
+                        route_map_statement.match.ip.address.prefix_list.create(service_policy_statement.conditions.match_prefix_set.config.prefix_set)
+                    if service_policy_statement.conditions.match_tag_set.config.tag_set:
+                        tag_list_name = service_policy_statement.conditions.match_tag_set.config.tag_set
+                        tag_list_element = self.service.oc_rpol__routing_policy.defined_sets.tag_sets.tag_set[tag_list_name]
+                        if len(tag_list_element.config.tag_value.as_list()) == 1:
+                            route_map_statement.match.tag = [tag_list_element.config.tag_value.as_list()[0]]
+                        else:
+                            raise ValueError('XE route map match statements can only match a tag-set consisting of one value')
+                    if service_policy_statement.conditions.oc_bgp_pol__bgp_conditions:
+                        if service_policy_statement.conditions.oc_bgp_pol__bgp_conditions.match_as_path_set.config.as_path_set:
+                            route_map_statement.match.as_path = [service_policy_statement.conditions.oc_bgp_pol__bgp_conditions.match_as_path_set.config.as_path_set]
+                        if service_policy_statement.conditions.oc_bgp_pol__bgp_conditions.config.community_set:
+                            route_map_statement.match.community = [service_policy_statement.conditions.oc_bgp_pol__bgp_conditions.config.community_set]
+                    if service_policy_statement.conditions.oc_routing_policy_ext__match_acl_ipv4_set.config.acl_set:
+                        route_map_statement.match.ip.address.access_list = [service_policy_statement.conditions.oc_routing_policy_ext__match_acl_ipv4_set.config.acl_set]
 
 
 def prefix_sets_configure(self) -> None:
