@@ -133,10 +133,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ content }}"
-    - name: Create ACL
+    - name: Create create_line_acl_ingress
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -179,7 +176,7 @@
         msg: "{{ changes }}"
     - assert:
         that:
-          - "'+ access-class ingress-acl-set in:' in changes"
+          - "'+ access-class external-ingress in:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
@@ -331,10 +328,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ content }}"
-    - name: Create ACL
+    - name: Create create_line_acl_egress
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -402,7 +396,7 @@
             <id>0</id>
           </input>
 
-## Test create_line_acl_vrfs
+## Test create_line_acl_vrfs  WARNING LOSS OF CONNECTIVITY WITH TEST
 #- hosts: "{{ device }}"
 #  connection: network_cli
 #  gather_facts: no
@@ -565,7 +559,7 @@
 #    - name: JSON configs
 #      debug:
 #        msg: "{{ content }}"
-#    - name: Create ACL
+#    - name: Create create_line_acl_vrfs
 #      uri:
 #        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
 #        url_username: admin
@@ -766,10 +760,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ content }}"
-    - name: Create ACL
+    - name: Create create_line_vrf_also
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin

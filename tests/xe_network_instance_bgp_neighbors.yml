@@ -59,7 +59,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor remote-as
+    - name: BGP neighbor_remote_as_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -186,7 +186,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor auth-password
+    - name: BGP neighbor_remote_auth_password
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -313,7 +313,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor description
+    - name: BGP BGP neighbor_description
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -440,7 +440,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor shutdown
+    - name: BGP neighbor_shutdown_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -568,7 +568,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor local-as
+    - name: BGP neighbor_local_as_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -696,7 +696,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor remove private as all
+    - name: BGP neighbor_remove_private_as_all_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -824,7 +824,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor remove private as replace all
+    - name: BGP neighbor_remove_private_as_replace_as_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -952,7 +952,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor send community standard
+    - name: BGP neighbor_send_community_standard_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -1080,7 +1080,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor send community extended
+    - name: BGP neighbor_send_community_extended_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -1208,7 +1208,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor send community both
+    - name: BGP neighbor_send_community_both_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -1338,7 +1338,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor ebgp-multihop
+    - name: BGP neighbor_ebgp_multihop_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -1467,7 +1467,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor route-reflector-client
+    - name: BGP neighbor_route_reflector_client_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -1596,7 +1596,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor route-reflector cluster-id
+    - name: BGP neighbor_route_reflector_cluster_id_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -1726,7 +1726,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor timers
+    - name: BGP neighbor_timers_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -1855,7 +1855,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor transport mtu-discovery disable
+    - name: BGP neighbor_transport_mtud_disable_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -1984,7 +1984,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor transport passive-mode
+    - name: BGP neighbor_transport_passive_mode_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -2077,6 +2077,28 @@
     device_name: "{{ device }}"
     content: |
       mdd:openconfig:
+        openconfig-interfaces:interfaces:
+          interface:
+            - config:
+                enabled: true
+                name: Loopback10
+                type: softwareLoopback
+                description: TEST123
+              name: Loopback10
+              subinterfaces:
+                subinterface:
+                  - config:
+                      index: '0'
+                    index: '0'
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: 172.27.1.2
+                              prefix-length: 32
+                            ip: 172.27.1.2
+                      config:
+                        dhcp-client: false
         openconfig-network-instance:network-instances:
           network-instance:
             - name: 'default'
@@ -2113,7 +2135,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Neighbor transport local-address
+    - name: BGP neighbor_transport_local_address_test
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -2250,7 +2272,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create ad-ipv4-activate
+    - name: BGP ad-ipv4-activate
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -2389,7 +2411,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create ad-vpnv4-activate
+    - name: BGP ad-vpnv4-activate
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -2560,7 +2582,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create ad-ipv4-activate-vrf
+    - name: BGP ad-ipv4-activate-vrf
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -2630,5 +2652,1538 @@
             <id>0</id>
           </input>
 
+# Test neighbor address-family ipv4 unicast vrf ABC route-map in
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-activate-vrf-route-map-in
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-activate-vrf-route-map-in
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-routing-policy:routing-policy:
+          defined-sets:
+            openconfig-bgp-policy:bgp-defined-sets:
+              as-path-sets:
+                as-path-set:
+                  - as-path-set-name: 1
+                    config:
+                      as-path-set-name: 1
+                      as-path-set-member:
+                        - "^$"
+          policy-definitions:
+            policy-definition:
+              - name: 'test'
+                config:
+                  name: 'test'
+                statements:
+                  openconfig-routing-policy:statement:
+                    - name: '10'
+                      config:
+                        name: '10'
+                      conditions:
+                        openconfig-bgp-policy:bgp-conditions:
+                          openconfig-bgp-policy:match-as-path-set:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:as-path-set: '1'
+                              openconfig-bgp-policy:match-set-options: 'ANY'
+                      openconfig-routing-policy:actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        openconfig-bgp-policy:bgp-actions:
+                          openconfig-bgp-policy:set-community:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                              openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                            openconfig-bgp-policy:inline:
+                              openconfig-bgp-policy:config:
+                                openconfig-bgp-policy:communities:
+                                  - '100:100'
+                    - name: '20'
+                      config:
+                        name: '20'
+                      actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: BGP
+                    identifier: BGP
+                    config:
+                      enabled: True
+                      identifier: BGP
+                      name: BGP
+                    bgp:
+                      global:
+                        config:
+                          as: 1
+                        afi-safis:
+                          afi-safi:
+                            - afi-safi-name: 'IPV4_UNICAST'
+                              config:
+                                afi-safi-name: 'IPV4_UNICAST'
+                                enabled: true
+            - name: 'abc'
+              config:
+                name: 'abc'
+                type: 'L3VRF'
+                enabled: true
+                enabled-address-families:
+                  - 'IPV4'
+                route-distinguisher: '1:1'
+                openconfig-network-instance-ext:route-targets-import:
+                  - '100:100'
+                  - '101:101'
+                openconfig-network-instance-ext:route-targets-export:
+                  - '200:200'
+                  - '202:202'
+              openconfig-network-instance:protocols:
+                protocol:
+                  - name: BGP
+                    identifier: BGP
+                    config:
+                      enabled: True
+                      identifier: BGP
+                      name: BGP
+                    bgp:
+                      global:
+                        config:
+                          as: 1
+                        afi-safis:
+                          afi-safi:
+                            - afi-safi-name: 'IPV4_UNICAST'
+                              config:
+                                afi-safi-name: 'IPV4_UNICAST'
+                                enabled: true
+                      neighbors:
+                        neighbor:
+                          config:
+                            neighbor-address: 10.11.11.2
+                            peer-as: 2
+                          neighbor-address: 10.11.11.2
+                          afi-safis:
+                            afi-safi:
+                              - afi-safi-name: 'IPV4_UNICAST'
+                                config:
+                                  afi-safi-name: 'IPV4_UNICAST'
+                                  enabled: true
+                                apply-policy:
+                                  config:
+                                    import-policy:
+                                    - 'test'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: BGP ad-ipv4-activate-vrf-route-map-in
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-activate-vrf-route-map-in
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ address-family ipv4 vrf abc:' in changes"
+          - "'+  neighbor 10.11.11.2 route-map test in:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-activate-vrf-route-map-in
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+
+# Test neighbor address-family ipv4 unicast vrf ABC route-map out
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-activate-vrf-route-map-out
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-activate-vrf-route-map-out
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-routing-policy:routing-policy:
+          defined-sets:
+            openconfig-bgp-policy:bgp-defined-sets:
+              as-path-sets:
+                as-path-set:
+                  - as-path-set-name: 1
+                    config:
+                      as-path-set-name: 1
+                      as-path-set-member:
+                        - "^$"
+          policy-definitions:
+            policy-definition:
+              - name: 'test'
+                config:
+                  name: 'test'
+                statements:
+                  openconfig-routing-policy:statement:
+                    - name: '10'
+                      config:
+                        name: '10'
+                      conditions:
+                        openconfig-bgp-policy:bgp-conditions:
+                          openconfig-bgp-policy:match-as-path-set:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:as-path-set: '1'
+                              openconfig-bgp-policy:match-set-options: 'ANY'
+                      openconfig-routing-policy:actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        openconfig-bgp-policy:bgp-actions:
+                          openconfig-bgp-policy:set-community:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                              openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                            openconfig-bgp-policy:inline:
+                              openconfig-bgp-policy:config:
+                                openconfig-bgp-policy:communities:
+                                  - '100:100'
+                    - name: '20'
+                      config:
+                        name: '20'
+                      actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: BGP
+                    identifier: BGP
+                    config:
+                      enabled: True
+                      identifier: BGP
+                      name: BGP
+                    bgp:
+                      global:
+                        config:
+                          as: 1
+                        afi-safis:
+                          afi-safi:
+                            - afi-safi-name: 'IPV4_UNICAST'
+                              config:
+                                afi-safi-name: 'IPV4_UNICAST'
+                                enabled: true
+            - name: 'abc'
+              config:
+                name: 'abc'
+                type: 'L3VRF'
+                enabled: true
+                enabled-address-families:
+                  - 'IPV4'
+                route-distinguisher: '1:1'
+                openconfig-network-instance-ext:route-targets-import:
+                  - '100:100'
+                  - '101:101'
+                openconfig-network-instance-ext:route-targets-export:
+                  - '200:200'
+                  - '202:202'
+              openconfig-network-instance:protocols:
+                protocol:
+                  - name: BGP
+                    identifier: BGP
+                    config:
+                      enabled: True
+                      identifier: BGP
+                      name: BGP
+                    bgp:
+                      global:
+                        config:
+                          as: 1
+                        afi-safis:
+                          afi-safi:
+                            - afi-safi-name: 'IPV4_UNICAST'
+                              config:
+                                afi-safi-name: 'IPV4_UNICAST'
+                                enabled: true
+                      neighbors:
+                        neighbor:
+                          config:
+                            neighbor-address: 10.11.11.2
+                            peer-as: 2
+                          neighbor-address: 10.11.11.2
+                          afi-safis:
+                            afi-safi:
+                              - afi-safi-name: 'IPV4_UNICAST'
+                                config:
+                                  afi-safi-name: 'IPV4_UNICAST'
+                                  enabled: true
+                                apply-policy:
+                                  config:
+                                    export-policy:
+                                    - 'test'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: BGP ad-ipv4-activate-vrf-route-map-out
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-activate-vrf-route-map-out
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ address-family ipv4 vrf abc:' in changes"
+          - "'+  neighbor 10.11.11.2 route-map test out:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-activate-vrf-route-map-out
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+# Test neighbor address-family vpnv4 unicast route map in
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - ad-vpnv4-activate-route-map-in
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - ad-vpnv4-activate-route-map-in
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-routing-policy:routing-policy:
+          defined-sets:
+            openconfig-bgp-policy:bgp-defined-sets:
+              as-path-sets:
+                as-path-set:
+                  - as-path-set-name: 1
+                    config:
+                      as-path-set-name: 1
+                      as-path-set-member:
+                        - "^$"
+          policy-definitions:
+            policy-definition:
+              - name: 'test'
+                config:
+                  name: 'test'
+                statements:
+                  openconfig-routing-policy:statement:
+                    - name: '10'
+                      config:
+                        name: '10'
+                      conditions:
+                        openconfig-bgp-policy:bgp-conditions:
+                          openconfig-bgp-policy:match-as-path-set:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:as-path-set: '1'
+                              openconfig-bgp-policy:match-set-options: 'ANY'
+                      openconfig-routing-policy:actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        openconfig-bgp-policy:bgp-actions:
+                          openconfig-bgp-policy:set-community:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                              openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                            openconfig-bgp-policy:inline:
+                              openconfig-bgp-policy:config:
+                                openconfig-bgp-policy:communities:
+                                  - '100:100'
+                    - name: '20'
+                      config:
+                        name: '20'
+                      actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: BGP
+                    identifier: BGP
+                    config:
+                      enabled: True
+                      identifier: BGP
+                      name: BGP
+                    bgp:
+                      global:
+                        config:
+                          as: 1
+                        afi-safis:
+                          afi-safi:
+                            - afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                              config:
+                                afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                enabled: true
+                      neighbors:
+                        neighbor:
+                          config:
+                            neighbor-address: 10.11.11.2
+                            peer-as: 2
+                          neighbor-address: 10.11.11.2
+                          afi-safis:
+                            afi-safi:
+                              - afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                config:
+                                  afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                  enabled: true
+                                apply-policy:
+                                  config:
+                                    import-policy:
+                                    - 'test'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: BGP ad-vpnv4-activate-route-map-in
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - ad-vpnv4-activate-route-map-in
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ address-family vpnv4:' in changes"
+          - "'+  neighbor 10.11.11.2 route-map test in:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - ad-vpnv4-activate-route-map-in
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+# Test neighbor address-family vpnv4 unicast route map out
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - ad-vpnv4-activate-route-map-out
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - ad-vpnv4-activate-route-map-out
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-routing-policy:routing-policy:
+          defined-sets:
+            openconfig-bgp-policy:bgp-defined-sets:
+              as-path-sets:
+                as-path-set:
+                  - as-path-set-name: 1
+                    config:
+                      as-path-set-name: 1
+                      as-path-set-member:
+                        - "^$"
+          policy-definitions:
+            policy-definition:
+              - name: 'test'
+                config:
+                  name: 'test'
+                statements:
+                  openconfig-routing-policy:statement:
+                    - name: '10'
+                      config:
+                        name: '10'
+                      conditions:
+                        openconfig-bgp-policy:bgp-conditions:
+                          openconfig-bgp-policy:match-as-path-set:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:as-path-set: '1'
+                              openconfig-bgp-policy:match-set-options: 'ANY'
+                      openconfig-routing-policy:actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        openconfig-bgp-policy:bgp-actions:
+                          openconfig-bgp-policy:set-community:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                              openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                            openconfig-bgp-policy:inline:
+                              openconfig-bgp-policy:config:
+                                openconfig-bgp-policy:communities:
+                                  - '100:100'
+                    - name: '20'
+                      config:
+                        name: '20'
+                      actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: BGP
+                    identifier: BGP
+                    config:
+                      enabled: True
+                      identifier: BGP
+                      name: BGP
+                    bgp:
+                      global:
+                        config:
+                          as: 1
+                        afi-safis:
+                          afi-safi:
+                            - afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                              config:
+                                afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                enabled: true
+                      neighbors:
+                        neighbor:
+                          config:
+                            neighbor-address: 10.11.11.2
+                            peer-as: 2
+                          neighbor-address: 10.11.11.2
+                          afi-safis:
+                            afi-safi:
+                              - afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                config:
+                                  afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                  enabled: true
+                                apply-policy:
+                                  config:
+                                    export-policy:
+                                    - 'test'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: BGP ad-vpnv4-activate-route-map-out
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - ad-vpnv4-activate-route-map-out
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ address-family vpnv4:' in changes"
+          - "'+  neighbor 10.11.11.2 route-map test out:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - ad-vpnv4-activate-route-map-out
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+# Test neighbor address-family ipv4 unicast route-map in
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-route-map-in
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-route-map-in
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-routing-policy:routing-policy:
+          defined-sets:
+            openconfig-bgp-policy:bgp-defined-sets:
+              as-path-sets:
+                as-path-set:
+                  - as-path-set-name: 1
+                    config:
+                      as-path-set-name: 1
+                      as-path-set-member:
+                        - "^$"
+          policy-definitions:
+            policy-definition:
+              - name: 'test'
+                config:
+                  name: 'test'
+                statements:
+                  openconfig-routing-policy:statement:
+                    - name: '10'
+                      config:
+                        name: '10'
+                      conditions:
+                        openconfig-bgp-policy:bgp-conditions:
+                          openconfig-bgp-policy:match-as-path-set:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:as-path-set: '1'
+                              openconfig-bgp-policy:match-set-options: 'ANY'
+                      openconfig-routing-policy:actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        openconfig-bgp-policy:bgp-actions:
+                          openconfig-bgp-policy:set-community:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                              openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                            openconfig-bgp-policy:inline:
+                              openconfig-bgp-policy:config:
+                                openconfig-bgp-policy:communities:
+                                  - '100:100'
+                    - name: '20'
+                      config:
+                        name: '20'
+                      actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: BGP
+                    identifier: BGP
+                    config:
+                      enabled: True
+                      identifier: BGP
+                      name: BGP
+                    bgp:
+                      global:
+                        config:
+                          as: 1
+                        afi-safis:
+                          afi-safi:
+                            - afi-safi-name: 'IPV4_UNICAST'
+                              config:
+                                afi-safi-name: 'IPV4_UNICAST'
+                                enabled: true
+                      neighbors:
+                        neighbor:
+                          config:
+                            neighbor-address: 10.11.11.2
+                            peer-as: 2
+                          neighbor-address: 10.11.11.2
+                          afi-safis:
+                            afi-safi:
+                              - afi-safi-name: 'IPV4_UNICAST'
+                                config:
+                                  afi-safi-name: 'IPV4_UNICAST'
+                                  enabled: true
+                                apply-policy:
+                                  config:
+                                    import-policy:
+                                    - 'test'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: BGP ad-ipv4-route-map-in
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-route-map-in
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ address-family ipv4:' in changes"
+          - "'+  neighbor 10.11.11.2 route-map test in:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-route-map-in
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+# Test neighbor address-family ipv4 unicast route-map out
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-route-map-out
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-route-map-out
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-routing-policy:routing-policy:
+          defined-sets:
+            openconfig-bgp-policy:bgp-defined-sets:
+              as-path-sets:
+                as-path-set:
+                  - as-path-set-name: 1
+                    config:
+                      as-path-set-name: 1
+                      as-path-set-member:
+                        - "^$"
+          policy-definitions:
+            policy-definition:
+              - name: 'test'
+                config:
+                  name: 'test'
+                statements:
+                  openconfig-routing-policy:statement:
+                    - name: '10'
+                      config:
+                        name: '10'
+                      conditions:
+                        openconfig-bgp-policy:bgp-conditions:
+                          openconfig-bgp-policy:match-as-path-set:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:as-path-set: '1'
+                              openconfig-bgp-policy:match-set-options: 'ANY'
+                      openconfig-routing-policy:actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        openconfig-bgp-policy:bgp-actions:
+                          openconfig-bgp-policy:set-community:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                              openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                            openconfig-bgp-policy:inline:
+                              openconfig-bgp-policy:config:
+                                openconfig-bgp-policy:communities:
+                                  - '100:100'
+                    - name: '20'
+                      config:
+                        name: '20'
+                      actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: BGP
+                    identifier: BGP
+                    config:
+                      enabled: True
+                      identifier: BGP
+                      name: BGP
+                    bgp:
+                      global:
+                        config:
+                          as: 1
+                        afi-safis:
+                          afi-safi:
+                            - afi-safi-name: 'IPV4_UNICAST'
+                              config:
+                                afi-safi-name: 'IPV4_UNICAST'
+                                enabled: true
+                      neighbors:
+                        neighbor:
+                          config:
+                            neighbor-address: 10.11.11.2
+                            peer-as: 2
+                          neighbor-address: 10.11.11.2
+                          afi-safis:
+                            afi-safi:
+                              - afi-safi-name: 'IPV4_UNICAST'
+                                config:
+                                  afi-safi-name: 'IPV4_UNICAST'
+                                  enabled: true
+                                apply-policy:
+                                  config:
+                                    export-policy:
+                                    - 'test'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: BGP ad-ipv4-route-map-out
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-route-map-out
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ address-family ipv4:' in changes"
+          - "'+  neighbor 10.11.11.2 route-map test out:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - ad-ipv4-route-map-out
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+# Neighbor route-map in
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - neighbor_route_map_in
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - neighbor_route_map_in
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-routing-policy:routing-policy:
+          defined-sets:
+            openconfig-bgp-policy:bgp-defined-sets:
+              as-path-sets:
+                as-path-set:
+                  - as-path-set-name: 1
+                    config:
+                      as-path-set-name: 1
+                      as-path-set-member:
+                        - "^$"
+          policy-definitions:
+            policy-definition:
+              - name: 'test'
+                config:
+                  name: 'test'
+                statements:
+                  openconfig-routing-policy:statement:
+                    - name: '10'
+                      config:
+                        name: '10'
+                      conditions:
+                        openconfig-bgp-policy:bgp-conditions:
+                          openconfig-bgp-policy:match-as-path-set:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:as-path-set: '1'
+                              openconfig-bgp-policy:match-set-options: 'ANY'
+                      openconfig-routing-policy:actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        openconfig-bgp-policy:bgp-actions:
+                          openconfig-bgp-policy:set-community:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                              openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                            openconfig-bgp-policy:inline:
+                              openconfig-bgp-policy:config:
+                                openconfig-bgp-policy:communities:
+                                  - '100:100'
+                    - name: '20'
+                      config:
+                        name: '20'
+                      actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: BGP
+                    identifier: BGP
+                    config:
+                      enabled: True
+                      identifier: BGP
+                      name: BGP
+                    bgp:
+                      global:
+                        config:
+                          as: 1
+                      neighbors:
+                        neighbor:
+                          config:
+                            neighbor-address: 10.11.11.2
+                            peer-as: 2
+                          neighbor-address: 10.11.11.2
+                          apply-policy:
+                            config:
+                              import-policy:
+                              - 'test'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: BGP neighbor_route_map_in
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - neighbor_route_map_in
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ neighbor 10.11.11.2 route-map test in:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - neighbor_route_map_in
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+# Neighbor route-map out
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - neighbor_route_map_out
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - neighbor_route_map_out
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-routing-policy:routing-policy:
+          defined-sets:
+            openconfig-bgp-policy:bgp-defined-sets:
+              as-path-sets:
+                as-path-set:
+                  - as-path-set-name: 1
+                    config:
+                      as-path-set-name: 1
+                      as-path-set-member:
+                        - "^$"
+          policy-definitions:
+            policy-definition:
+              - name: 'test'
+                config:
+                  name: 'test'
+                statements:
+                  openconfig-routing-policy:statement:
+                    - name: '10'
+                      config:
+                        name: '10'
+                      conditions:
+                        openconfig-bgp-policy:bgp-conditions:
+                          openconfig-bgp-policy:match-as-path-set:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:as-path-set: '1'
+                              openconfig-bgp-policy:match-set-options: 'ANY'
+                      openconfig-routing-policy:actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        openconfig-bgp-policy:bgp-actions:
+                          openconfig-bgp-policy:set-community:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                              openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                            openconfig-bgp-policy:inline:
+                              openconfig-bgp-policy:config:
+                                openconfig-bgp-policy:communities:
+                                  - '100:100'
+                    - name: '20'
+                      config:
+                        name: '20'
+                      actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: BGP
+                    identifier: BGP
+                    config:
+                      enabled: True
+                      identifier: BGP
+                      name: BGP
+                    bgp:
+                      global:
+                        config:
+                          as: 1
+                      neighbors:
+                        neighbor:
+                          config:
+                            neighbor-address: 10.11.11.2
+                            peer-as: 2
+                          neighbor-address: 10.11.11.2
+                          apply-policy:
+                            config:
+                              export-policy:
+                              - 'test'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: BGP neighbor_route_map_out
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - neighbor_route_map_out
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ neighbor 10.11.11.2 route-map test out:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - neighbor_route_map_out
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
 # TODO add all neighbor tests from default rt ipv4 to address-family ipv4 unicast vrf XXX
 

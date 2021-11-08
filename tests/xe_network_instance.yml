@@ -85,7 +85,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Process
+    - name: TEST route_target
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin

@@ -37,7 +37,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create Openconfig DNS
+    - name: System finger_enable
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -142,7 +142,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create Openconfig DNS
+    - name: System finger_disable
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
