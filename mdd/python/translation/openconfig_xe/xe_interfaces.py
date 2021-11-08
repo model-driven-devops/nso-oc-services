@@ -288,7 +288,7 @@ def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: nc
             interface_cdb.ip.address.dhcp.delete()
 
     # proxy-arp
-    if service_ipv4.proxy_arp.config.mode == 'DISABLE' or not service_ipv4.proxy_arp.config.mode:
+    if service_ipv4.proxy_arp.config.mode == 'DISABLE':
         interface_cdb.ip.proxy_arp = False
     if service_ipv4.proxy_arp.config.mode == 'REMOTE_ONLY':
         interface_cdb.ip.proxy_arp = True
