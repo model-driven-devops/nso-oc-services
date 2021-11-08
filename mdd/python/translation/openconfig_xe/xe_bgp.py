@@ -55,26 +55,115 @@ def xe_bgp_global_program_service(self, service_protocol, network_instance_type,
         service_bgp_global.config.oc_netinst__as]
     if service_bgp_global.afi_safis.afi_safi:
         device_bgp_cbd.bgp.default.ipv4_unicast = False  # If using AFI_SAFI turn off BGP ipv4 default
-        for afi_safi in service_bgp_global.afi_safis.afi_safi:
-            if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE' and afi_safi.config.enabled:
-                if afi_safi.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
+        for afi_safi_service in service_bgp_global.afi_safis.afi_safi:
+            if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE' and afi_safi_service.config.enabled:
+                if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
                     if not device_bgp_cbd.address_family.ipv4.exists('unicast'):
                         device_bgp_cbd.address_family.ipv4.create('unicast')
-                elif afi_safi.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV4_UNICAST':
+                elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV4_UNICAST':
                     if not device_bgp_cbd.address_family.vpnv4.exists('unicast'):
                         device_bgp_cbd.address_family.vpnv4.create('unicast')
-                elif afi_safi.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
+                elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
                     pass
-                elif afi_safi.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
+                elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
                     pass
-            elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi.config.enabled:
-                if afi_safi.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
+            elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi_service.config.enabled:
+                if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
                     if not device_bgp_cbd.address_family.with_vrf.ipv4.exists('unicast'):
                         device_bgp_cbd.address_family.with_vrf.ipv4.create('unicast')
                     if not device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.exists(vrf_name):
                         device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.create(vrf_name)
-                elif afi_safi.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
+                elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
                     pass
+
+
+def apply_policy(neighbor_object_cdb, afi_safi_service) -> None:
+    """
+    Applies route-maps to neighbors and peer-groups
+    """
+    if afi_safi_service.apply_policy.config.export_policy:
+        if len(afi_safi_service.apply_policy.config.export_policy) == 1:
+            rm = neighbor_object_cdb.route_map.create('out')
+            rm.route_map_name = afi_safi_service.apply_policy.config.export_policy.as_list()[0]
+        else:
+            raise ValueError('XE BGP neighbors and peer groups support one outbound policy')
+    if afi_safi_service.apply_policy.config.import_policy:
+        if len(afi_safi_service.apply_policy.config.import_policy) == 1:
+            rm = neighbor_object_cdb.route_map.create('in')
+            rm.route_map_name = afi_safi_service.apply_policy.config.import_policy.as_list()[0]
+        else:
+            raise ValueError('XE BGP neighbors and peer groups support one inbound policy')
+
+
+def remove_private_as(neighbor_object_cdb, object_service) -> None:
+    """
+    Configure remote private-as options
+    """
+    neighbor_object_cdb.remove_private_as.create()
+    if object_service.config.remove_private_as == 'oc-bgp-types:PRIVATE_AS_REMOVE_ALL':
+        neighbor_object_cdb.remove_private_as.all.create()
+    elif object_service.config.remove_private_as == 'oc-bgp-types:PRIVATE_AS_REPLACE_ALL':
+        neighbor_object_cdb.remove_private_as.all.create()
+        neighbor_object_cdb.remove_private_as.replace_as.create()
+
+
+def send_community(neighbor_object_cdb, object_service) -> None:
+    """
+    Configure remote private-as options
+    """
+    neighbor_object_cdb.send_community.create()
+    if object_service.config.send_community == 'STANDARD':
+        neighbor_object_cdb.send_community.send_community_where = 'standard'
+    elif object_service.config.send_community == 'EXTENDED':
+        neighbor_object_cdb.send_community.send_community_where = 'extended'
+    elif object_service.config.send_community == 'BOTH':
+        neighbor_object_cdb.send_community.send_community_where = 'both'
+
+
+def ebgp_multihop(neighbor_object_cdb, object_service) -> None:
+    """
+    Configure ebgp_multihop
+    """
+    if object_service.ebgp_multihop.config.enabled and object_service.ebgp_multihop.config.multihop_ttl:
+        neighbor_object_cdb.ebgp_multihop.create()
+        neighbor_object_cdb.ebgp_multihop.max_hop = object_service.ebgp_multihop.config.multihop_ttl
+
+
+def route_reflector(neighbor_object_cdb, object_service) -> None:
+    """
+    Configure route_reflector
+    """
+    if object_service.route_reflector.config.route_reflector_client:
+        neighbor_object_cdb.route_reflector_client.create()
+    if object_service.route_reflector.config.route_reflector_cluster_id:
+        neighbor_object_cdb.cluster_id = object_service.route_reflector.config.route_reflector_cluster_id
+
+
+def timers(neighbor_object_cdb, object_service) -> None:
+    """
+    Configure timers
+    """
+    if object_service.timers.config.hold_time and object_service.timers.config.keepalive_interval:
+        neighbor_object_cdb.timers.holdtime = int(float(object_service.timers.config.hold_time))
+        neighbor_object_cdb.timers.keepalive_interval = int(
+            float(object_service.timers.config.keepalive_interval))
+
+
+def transport(neighbor_object_cdb, object_service) -> None:
+    """
+    Configure transport
+    """
+    if object_service.transport.config.mtu_discovery is False:
+        neighbor_object_cdb.transport.path_mtu_discovery.create()
+        neighbor_object_cdb.transport.path_mtu_discovery.disable.create()
+    elif object_service.transport.config.mtu_discovery:
+        neighbor_object_cdb.transport.path_mtu_discovery.create()
+    if object_service.transport.config.passive_mode:
+        neighbor_object_cdb.transport.connection_mode = 'passive'
+    if object_service.transport.config.local_address:  # TODO add check and translation from IP
+        interface_type, interface_number = xe_get_interface_type_and_number(
+            object_service.transport.config.local_address)
+        neighbor_object_cdb.update_source[interface_type] = interface_number
 
 
 def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_type, vrf_name) -> None:
@@ -95,54 +184,64 @@ def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_ty
                 neighbor = self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor[
                     service_bgp_neighbor.neighbor_address]
 
-                xe_bgp_configure_neighbor(self, service_bgp_neighbor, neighbor)
+                xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor)
 
                 if service_bgp_neighbor.afi_safis.afi_safi:
                     device_bgp_cbd = self.root.devices.device[self.device_name].config.ios__router.bgp[asn]
-                    for afi_safi in service_bgp_neighbor.afi_safis.afi_safi:
-                        if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE' and afi_safi.config.enabled:
-                            if afi_safi.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
+                    for afi_safi_service in service_bgp_neighbor.afi_safis.afi_safi:
+                        if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE' and afi_safi_service.config.enabled:
+                            if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
                                 if not device_bgp_cbd.address_family.ipv4['unicast'].neighbor.exists(service_bgp_neighbor.neighbor_address):
                                     device_bgp_cbd.address_family.ipv4['unicast'].neighbor.create(
                                         service_bgp_neighbor.neighbor_address)
-                                family_neighbor_ipv4_unicast = device_bgp_cbd.address_family.ipv4['unicast'].neighbor[service_bgp_neighbor.neighbor_address]
-                                if not family_neighbor_ipv4_unicast.activate.exists():
-                                    family_neighbor_ipv4_unicast.activate.create()
-# TODO add policies
-                            elif afi_safi.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV4_UNICAST':
+                                neighbor_object_cdb = device_bgp_cbd.address_family.ipv4['unicast'].neighbor[service_bgp_neighbor.neighbor_address]
+                                if not neighbor_object_cdb.activate.exists():
+                                    neighbor_object_cdb.activate.create()
+                                apply_policy(neighbor_object_cdb, afi_safi_service)
+                            elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV4_UNICAST':
                                 if not device_bgp_cbd.address_family.vpnv4['unicast'].neighbor.exists(
                                         service_bgp_neighbor.neighbor_address):
                                     device_bgp_cbd.address_family.vpnv4['unicast'].neighbor.create(
                                         service_bgp_neighbor.neighbor_address)
-                                family_neighbor_vpnv4_unicast = device_bgp_cbd.address_family.vpnv4['unicast'].neighbor[
+                                neighbor_object_cdb = device_bgp_cbd.address_family.vpnv4['unicast'].neighbor[
                                     service_bgp_neighbor.neighbor_address]
-                                if not family_neighbor_vpnv4_unicast.activate.exists():
-                                    family_neighbor_vpnv4_unicast.activate.create()
-# TODO add policies
-                            elif afi_safi.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
+                                if not neighbor_object_cdb.activate.exists():
+                                    neighbor_object_cdb.activate.create()
+                                apply_policy(neighbor_object_cdb, afi_safi_service)
+                            elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
                                 pass
-                            elif afi_safi.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
+                            elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
                                 pass
-                        elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi.config.enabled:  # TODO VRF peers
-                            self.log.info(f"Under elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi.config.enabled: network_instance_type {network_instance_type}")
-                            if afi_safi.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
+                        elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi_service.config.enabled:
+                            if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
                                 if not device_bgp_cbd.address_family.with_vrf.ipv4.exists('unicast'):
                                     device_bgp_cbd.address_family.with_vrf.ipv4.create('unicast')
                                 if not device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.exists(vrf_name):
                                     device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.create(vrf_name)
                                 family_ipv4_unicast_vrf = device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name]
-                                self.log.info(f'service_bgp_neighbor.neighbor_address  {service_bgp_neighbor.neighbor_address}')
                                 if not family_ipv4_unicast_vrf.neighbor.exists(service_bgp_neighbor.neighbor_address):
                                     family_ipv4_unicast_vrf.neighbor.create(service_bgp_neighbor.neighbor_address)
-                                neighbor = family_ipv4_unicast_vrf.neighbor[service_bgp_neighbor.neighbor_address]
-                                xe_bgp_configure_neighbor(self, service_bgp_neighbor, neighbor)
-                                # neighbor.remote_as = service_bgp_neighbor.config.peer_as
-                                if not neighbor.activate.exists():
-                                    neighbor.activate.create()
+                                neighbor_object_cdb = family_ipv4_unicast_vrf.neighbor[service_bgp_neighbor.neighbor_address]
+                                xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor_object_cdb)
+                                if not neighbor_object_cdb.activate.exists():
+                                    neighbor_object_cdb.activate.create()
+                                apply_policy(neighbor_object_cdb, afi_safi_service)
 
 
-def xe_bgp_configure_neighbor(self, service_bgp_neighbor, neighbor) -> None:
-    self.log.info(f'def xe_bgp_configure_neighbor service_bgp_neighbor.config.peer_as  {service_bgp_neighbor.config.peer_as}')
+def xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor) -> None:
+    if service_bgp_neighbor.apply_policy:
+        if service_bgp_neighbor.apply_policy.config.export_policy:
+            if len(service_bgp_neighbor.apply_policy.config.export_policy) == 1:
+                rm = neighbor.route_map.create('out')
+                rm.route_map_name = service_bgp_neighbor.apply_policy.config.export_policy.as_list()[0]
+            else:
+                raise ValueError('XE BGP neighbors support one outbound policy')
+        if service_bgp_neighbor.apply_policy.config.import_policy:
+            if len(service_bgp_neighbor.apply_policy.config.import_policy) == 1:
+                rm = neighbor.route_map.create('in')
+                rm.route_map_name = service_bgp_neighbor.apply_policy.config.import_policy.as_list()[0]
+            else:
+                raise ValueError('XE BGP neighbors support one inbound policy')
     if service_bgp_neighbor.config:
         if service_bgp_neighbor.config.peer_as:
             neighbor.remote_as = service_bgp_neighbor.config.peer_as
@@ -160,118 +259,118 @@ def xe_bgp_configure_neighbor(self, service_bgp_neighbor, neighbor) -> None:
         if service_bgp_neighbor.config.peer_group:
             neighbor.peer_group = service_bgp_neighbor.config.peer_group
         if service_bgp_neighbor.config.remove_private_as:
-            neighbor.remove_private_as.create()
-            if service_bgp_neighbor.config.remove_private_as == 'oc-bgp-types:PRIVATE_AS_REMOVE_ALL':
-                neighbor.remove_private_as.all.create()
-            elif service_bgp_neighbor.config.remove_private_as == 'oc-bgp-types:PRIVATE_AS_REPLACE_ALL':
-                neighbor.remove_private_as.all.create()
-                neighbor.remove_private_as.replace_as.create()
+            remove_private_as(neighbor, service_bgp_neighbor)
         if service_bgp_neighbor.config.send_community and service_bgp_neighbor.config.send_community != 'NONE':
-            neighbor.send_community.create()
-            if service_bgp_neighbor.config.send_community == 'STANDARD':
-                neighbor.send_community.send_community_where = 'standard'
-            elif service_bgp_neighbor.config.send_community == 'EXTENDED':
-                neighbor.send_community.send_community_where = 'extended'
-            elif service_bgp_neighbor.config.send_community == 'BOTH':
-                neighbor.send_community.send_community_where = 'both'
-
+            send_community(neighbor, service_bgp_neighbor)
     if service_bgp_neighbor.ebgp_multihop:
-        if service_bgp_neighbor.ebgp_multihop.config.enabled and service_bgp_neighbor.ebgp_multihop.config.multihop_ttl:
-            neighbor.ebgp_multihop.create()
-            neighbor.ebgp_multihop.max_hop = service_bgp_neighbor.ebgp_multihop.config.multihop_ttl
+        ebgp_multihop(neighbor, service_bgp_neighbor)
     if service_bgp_neighbor.route_reflector:
-        if service_bgp_neighbor.route_reflector.config.route_reflector_client:
-            neighbor.route_reflector_client.create()
-        if service_bgp_neighbor.route_reflector.config.route_reflector_cluster_id:
-            neighbor.cluster_id = service_bgp_neighbor.route_reflector.config.route_reflector_cluster_id
+        route_reflector(neighbor, service_bgp_neighbor)
     if service_bgp_neighbor.timers and not service_bgp_neighbor.config.peer_group:
-        if service_bgp_neighbor.timers.config.hold_time and service_bgp_neighbor.timers.config.keepalive_interval:
-            neighbor.timers.holdtime = int(float(service_bgp_neighbor.timers.config.hold_time))
-            neighbor.timers.keepalive_interval = int(
-                float(service_bgp_neighbor.timers.config.keepalive_interval))
+        timers(neighbor, service_bgp_neighbor)
     if service_bgp_neighbor.transport:
-        if service_bgp_neighbor.transport.config.mtu_discovery is False:
-            neighbor.transport.path_mtu_discovery.create()
-            neighbor.transport.path_mtu_discovery.disable.create()
-        elif service_bgp_neighbor.transport.config.mtu_discovery:
-            neighbor.transport.path_mtu_discovery.create()
-        if service_bgp_neighbor.transport.config.passive_mode:
-            neighbor.transport.connection_mode = 'passive'
-        if service_bgp_neighbor.transport.config.local_address:  # TODO add check and translation from IP
-            interface_type, interface_number = xe_get_interface_type_and_number(
-                service_bgp_neighbor.transport.config.local_address)
-            neighbor.update_source[interface_type] = interface_number
+        transport(neighbor, service_bgp_neighbor)
 
 
-def xe_bgp_peergroups_program_service(self, service_protocol, network_instance_type, vrf_name) -> None:
+def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_type, vrf_name) -> None:
     """
     Program service for xe NED features
     """
-    self.log.info(f'{self.device_name} BGP peer groups')
+    # helper functions
+    def configure_global_peer_group() -> None:
+        if service_bgp_peergroup.peer_group_name:
+            if not self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor.exists(service_bgp_peergroup.peer_group_name):
+                self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor.create(service_bgp_peergroup.peer_group_name)
+            peer_group = \
+                self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor[
+                    service_bgp_peergroup.peer_group_name]
+            if not peer_group.peer_group.exists():
+                peer_group.peer_group.create()
+
+            xe_bgp_configure_peer_group(service_bgp_peergroup, peer_group)
+
+    # If not afi then do below, else create the peer-groups in the appropriate afis
+    self.log.info(f'{self.device_name} BGP peer-groups')
     asn = service_protocol.bgp.oc_netinst__global.config.oc_netinst__as
     if asn:
         for service_bgp_peergroup in service_protocol.bgp.peer_groups.peer_group:
-            if service_bgp_peergroup.peer_group_name:
-                if not self.root.devices.device[self.device_name].config.ios__router.bgp[
-                    asn].neighbor_tag.neighbor.exists(
-                        service_bgp_peergroup.peer_group_name):
-                    self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor.create(
-                        service_bgp_peergroup.peer_group_name)
+                flag_configure_global_peer_group = True
+                if service_bgp_peergroup.afi_safis.afi_safi:
+                    device_bgp_cbd = self.root.devices.device[self.device_name].config.ios__router.bgp[asn]
+                    for afi_safi_service in service_bgp_peergroup.afi_safis.afi_safi:
+                        if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE' and afi_safi_service.config.enabled:
+                            if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
+                                configure_global_peer_group()
+                                if not device_bgp_cbd.address_family.ipv4['unicast'].neighbor_tag.neighbor.exists(service_bgp_peergroup.peer_group_name):
+                                    device_bgp_cbd.address_family.ipv4['unicast'].neighbor_tag.neighbor.create(
+                                        service_bgp_peergroup.peer_group_name)
+                                neighbor_object_cdb = device_bgp_cbd.address_family.ipv4['unicast'].neighbor_tag.neighbor[service_bgp_peergroup.peer_group_name]
+                                apply_policy(neighbor_object_cdb, afi_safi_service)
+                            elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV4_UNICAST':
+                                configure_global_peer_group()
+                                if not device_bgp_cbd.address_family.vpnv4['unicast'].neighbor_tag.neighbor.exists(
+                                        service_bgp_peergroup.peer_group_name):
+                                    device_bgp_cbd.address_family.vpnv4['unicast'].neighbor_tag.neighbor.create(
+                                        service_bgp_peergroup.peer_group_name)
+                                neighbor_object_cdb = device_bgp_cbd.address_family.vpnv4['unicast'].neighbor_tag.neighbor[
+                                    service_bgp_peergroup.peer_group_name]
+                                apply_policy(neighbor_object_cdb, afi_safi_service)
+                            elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
+                                pass
+                            elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
+                                pass
+                        elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi_service.config.enabled:
+                            if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
+                                flag_configure_global_peer_group = False  # PEER GROUPS can not be used in multiple VRFs
+                                if not device_bgp_cbd.address_family.with_vrf.ipv4.exists('unicast'):
+                                    device_bgp_cbd.address_family.with_vrf.ipv4.create('unicast')
+                                if not device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.exists(vrf_name):
+                                    device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.create(vrf_name)
+                                family_ipv4_unicast_vrf = device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name]
+                                if not family_ipv4_unicast_vrf.neighbor_tag.neighbor.exists(service_bgp_peergroup.peer_group_name):
+                                    family_ipv4_unicast_vrf.neighbor_tag.neighbor.create(service_bgp_peergroup.peer_group_name)
+                                neighbor_object_cdb = family_ipv4_unicast_vrf.neighbor_tag.neighbor[service_bgp_peergroup.peer_group_name]
+                                if not neighbor_object_cdb.peer_group.exists():
+                                    neighbor_object_cdb.peer_group.create()
+                                xe_bgp_configure_peer_group(service_bgp_peergroup, neighbor_object_cdb)
+                                apply_policy(neighbor_object_cdb, afi_safi_service)
+                if flag_configure_global_peer_group:  # Flag will be False if peer group used in a VRF
+                    configure_global_peer_group()
 
-                peer_group = \
-                self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor[
-                    service_bgp_peergroup.peer_group_name]
-                if not peer_group.peer_group.exists():
-                    peer_group.peer_group.create()
 
-                if service_bgp_peergroup.config:
-                    if service_bgp_peergroup.config.peer_as:
-                        peer_group.remote_as = service_bgp_peergroup.config.peer_as
-                    if service_bgp_peergroup.config.auth_password:
-                        peer_group.password.text = service_bgp_peergroup.config.auth_password
-                    if service_bgp_peergroup.config.description:
-                        peer_group.description = service_bgp_peergroup.config.description
-                    if service_bgp_peergroup.config.local_as:
-                        peer_group.local_as.create()
-                        peer_group.local_as.as_no = service_bgp_peergroup.config.local_as
-                    if service_bgp_peergroup.config.remove_private_as:
-                        peer_group.remove_private_as.create()
-                        if service_bgp_peergroup.config.remove_private_as == 'oc-bgp-types:PRIVATE_AS_REMOVE_ALL':
-                            peer_group.remove_private_as.all.create()
-                        elif service_bgp_peergroup.config.remove_private_as == 'oc-bgp-types:PRIVATE_AS_REPLACE_ALL':
-                            peer_group.remove_private_as.all.create()
-                            peer_group.remove_private_as.replace_as.create()
-                    if service_bgp_peergroup.config.send_community and service_bgp_peergroup.config.send_community != 'NONE':
-                        peer_group.send_community.create()
-                        if service_bgp_peergroup.config.send_community == 'STANDARD':
-                            peer_group.send_community.send_community_where = 'standard'
-                        elif service_bgp_peergroup.config.send_community == 'EXTENDED':
-                            peer_group.send_community.send_community_where = 'extended'
-                        elif service_bgp_peergroup.config.send_community == 'BOTH':
-                            peer_group.send_community.send_community_where = 'both'
-                if service_bgp_peergroup.ebgp_multihop:
-                    if service_bgp_peergroup.ebgp_multihop.config.enabled and service_bgp_peergroup.ebgp_multihop.config.multihop_ttl:
-                        peer_group.ebgp_multihop.create()
-                        peer_group.ebgp_multihop.max_hop = service_bgp_peergroup.ebgp_multihop.config.multihop_ttl
-                if service_bgp_peergroup.route_reflector:
-                    if service_bgp_peergroup.route_reflector.config.route_reflector_client:
-                        peer_group.route_reflector_client.create()
-                    if service_bgp_peergroup.route_reflector.config.route_reflector_cluster_id:
-                        peer_group.cluster_id = service_bgp_peergroup.route_reflector.config.route_reflector_cluster_id
-                if service_bgp_peergroup.timers:
-                    if service_bgp_peergroup.timers.config.hold_time and service_bgp_peergroup.timers.config.keepalive_interval:
-                        peer_group.timers.holdtime = int(float(service_bgp_peergroup.timers.config.hold_time))
-                        peer_group.timers.keepalive_interval = int(
-                            float(service_bgp_peergroup.timers.config.keepalive_interval))
-                if service_bgp_peergroup.transport:
-                    if service_bgp_peergroup.transport.config.mtu_discovery is False:
-                        peer_group.transport.path_mtu_discovery.create()
-                        peer_group.transport.path_mtu_discovery.disable.create()
-                    elif service_bgp_peergroup.transport.config.mtu_discovery:
-                        peer_group.transport.path_mtu_discovery.create()
-                    if service_bgp_peergroup.transport.config.passive_mode:
-                        peer_group.transport.connection_mode = 'passive'
-                    if service_bgp_peergroup.transport.config.local_address:  # TODO add check and translation from IP
-                        interface_type, interface_number = xe_get_interface_type_and_number(
-                            service_bgp_peergroup.transport.config.local_address)
-                        peer_group.update_source[interface_type] = interface_number
+def xe_bgp_configure_peer_group(service_bgp_peer_group, peer_group) -> None:
+    if service_bgp_peer_group.apply_policy:
+        if service_bgp_peer_group.apply_policy.config.export_policy:
+            if len(service_bgp_peer_group.apply_policy.config.export_policy) == 1:
+                rm = peer_group.route_map.create('out')
+                rm.route_map_name = service_bgp_peer_group.apply_policy.config.export_policy.as_list()[0]
+            else:
+                raise ValueError('XE BGP peer groups support one outbound policy')
+        if service_bgp_peer_group.apply_policy.config.import_policy:
+            if len(service_bgp_peer_group.apply_policy.config.import_policy) == 1:
+                rm = peer_group.route_map.create('in')
+                rm.route_map_name = service_bgp_peer_group.apply_policy.config.import_policy.as_list()[0]
+            else:
+                raise ValueError('XE BGP peer groups support one inbound policy')
+        if service_bgp_peer_group.config:
+            if service_bgp_peer_group.config.peer_as:
+                peer_group.remote_as = service_bgp_peer_group.config.peer_as
+            if service_bgp_peer_group.config.auth_password:
+                peer_group.password.text = service_bgp_peer_group.config.auth_password
+            if service_bgp_peer_group.config.description:
+                peer_group.description = service_bgp_peer_group.config.description
+            if service_bgp_peer_group.config.local_as:
+                peer_group.local_as.create()
+                peer_group.local_as.as_no = service_bgp_peer_group.config.local_as
+            if service_bgp_peer_group.config.remove_private_as:
+                remove_private_as(peer_group, service_bgp_peer_group)
+            if service_bgp_peer_group.config.send_community and service_bgp_peer_group.config.send_community != 'NONE':
+                send_community(peer_group, service_bgp_peer_group)
+        if service_bgp_peer_group.ebgp_multihop:
+            ebgp_multihop(peer_group, service_bgp_peer_group)
+        if service_bgp_peer_group.route_reflector:
+            route_reflector(peer_group, service_bgp_peer_group)
+        if service_bgp_peer_group.timers:
+            timers(peer_group, service_bgp_peer_group)
+        if service_bgp_peer_group.transport:
+            transport(peer_group, service_bgp_peer_group)

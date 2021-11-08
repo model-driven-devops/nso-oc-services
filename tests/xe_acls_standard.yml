@@ -1,5 +1,5 @@
 ---
-# ansible-playbook xe_acls.yml --extra-vars "nso_ip=X.X.X.X device=xe1" --tags=all
+# ansible-playbook xe_acls_standard.yml --extra-vars "nso_ip=X.X.X.X device=xe1" --tags=all
 # Test ACL_IPV4_STANDARD Type in
 - hosts: "{{ device }}"
   connection: network_cli
@@ -106,7 +106,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create ACL Standard Type
+    - name: ACL acl_type_standard_in
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -280,7 +280,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create ACL Standard Type
+    - name: ACL acl_type_standard_out
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -349,7 +349,7 @@
           </input>
 
 # Test ACL_IPV4_STANDARD Type line in
-# This will lock NSO out
+# WARNING This will lock NSO out
 - hosts: "{{ device }}"
   connection: network_cli
   gather_facts: no
@@ -442,7 +442,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create ACL Standard Type
+    - name: ACL acl_type_standard_line_in
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -511,7 +511,6 @@
 #          </input>
 
 # Test ACL_IPV4_STANDARD Type line out
-# This will lock NSO out
 - hosts: "{{ device }}"
   connection: network_cli
   gather_facts: no
@@ -598,7 +597,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create ACL Standard Type
+    - name: ACL acl_type_standard_line_out
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin

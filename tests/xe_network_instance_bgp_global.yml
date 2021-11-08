@@ -53,7 +53,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP Process
+    - name: BGP process
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -175,7 +175,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: Create BGP router-id
+    - name: BGP router-id
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -300,7 +300,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: BGP external and internal distance
+    - name: BGP distance_bgp
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -427,7 +427,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: BGP Graceful-restart
+    - name: BGP graceful_restart
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -554,7 +554,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: BGP Route-Selection
+    - name: BGP route_selection
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -687,7 +687,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: BGP Multi-Path
+    - name: BGP multipath
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -816,7 +816,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: BGP Multi-Path
+    - name: BGP no_bgp_ipv4_default
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -944,7 +944,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: BGP Multi-Path
+    - name: BGP ipv4_unicast
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -1071,7 +1071,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: BGP Multi-Path
+    - name: BGP vpnv4_unicast
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -1219,7 +1219,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: BGP Multi-Path
+    - name: BGP vrf_ipv4_unicast
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin

@@ -57,10 +57,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ content }}"
-    - name: Create ACL
+    - name: ACL apply_ntp_serve_acl
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
@@ -185,10 +182,7 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ content }}"
-    - name: Create ACL
+    - name: ACL apply_ntp_peer_acl
       uri:
         url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
         url_username: admin
