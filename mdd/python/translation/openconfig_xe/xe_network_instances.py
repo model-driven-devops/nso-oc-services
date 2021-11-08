@@ -7,7 +7,7 @@ from translation.openconfig_xe.common import xe_get_interface_type_and_number
 from translation.openconfig_xe.common import xe_system_get_interface_ip_address
 from translation.openconfig_xe.xe_bgp import xe_bgp_global_program_service
 from translation.openconfig_xe.xe_bgp import xe_bgp_neighbors_program_service
-from translation.openconfig_xe.xe_bgp import xe_bgp_peergroups_program_service
+from translation.openconfig_xe.xe_bgp import xe_bgp_peer_groups_program_service
 
 
 def xe_network_instances_program_service(self) -> None:
@@ -250,7 +250,7 @@ def xe_configure_protocols(self) -> None:
         for bgp_instance in instance_bgp_list:
             # bgp_instance = (service_bgp, network_instance.config.type, network_instance.config.name)
             xe_bgp_global_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
-            xe_bgp_peergroups_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
+            xe_bgp_peer_groups_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
             xe_bgp_neighbors_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
 
 
