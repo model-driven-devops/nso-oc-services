@@ -77,6 +77,59 @@ def xe_bgp_global_program_service(self, service_protocol, network_instance_type,
                     pass
 
 
+def xe_bgp_redistribution_program_service(self, service_protocol, network_instance_type, vrf_name,
+                                          table_connections) -> None:
+    """
+    Program service for xe NED features
+    """
+    self.log.info(f'{self.device_name} BGP redistribution')
+    if table_connections.get(vrf_name):
+        if table_connections[vrf_name]['destination_protocols']['BGP']:
+            device_bgp_cbd = self.root.devices.device[self.device_name].config.ios__router.bgp[
+                service_protocol.bgp.oc_netinst__global.config.oc_netinst__as]
+            for protocol in table_connections[vrf_name]['destination_protocols']['BGP']:
+                if protocol['src-protocol'] == 'oc-pol-types:OSPF' and protocol['address-family'] == 'oc-types:IPV4':
+                    pass
+                elif protocol['src-protocol'] == 'oc-pol-types:OSPF3' and protocol['address-family'] == 'oc-types:IPV4':
+                    pass
+                elif protocol['src-protocol'] == 'oc-pol-types:STATIC' and protocol['address-family'] == 'oc-types:IPV4':
+                    if service_protocol.bgp.oc_netinst__global.afi_safis.afi_safi:
+                        if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE':  # address-family ipv4 unicast
+                            device_bgp_cbd.address_family.ipv4['unicast'].redistribute.static.create()
+                            if protocol['import-policy']:
+                                device_bgp_cbd.address_family.ipv4['unicast'].redistribute.static.route_map = protocol[
+                                    'import-policy']
+                        elif network_instance_type == 'oc-ni-types:L3VRF':  # address-family ipv4 unicast vrf
+                            device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
+                                vrf_name].redistribute.static.create()
+                            if protocol['import-policy']:
+                                device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
+                                    vrf_name].redistribute.static.route_map = protocol['import-policy']
+                    else:  # router bgp X
+                        device_bgp_cbd.redistribute.static.create()
+                        if protocol['import-policy']:
+                            device_bgp_cbd.redistribute.static.route_map = protocol['import-policy']
+                elif protocol['src-protocol'] == 'oc-pol-types:DIRECTLY_CONNECTED' and protocol['address-family'] == 'oc-types:IPV4':
+                    if service_protocol.bgp.oc_netinst__global.afi_safis.afi_safi:
+                        if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE':  # address-family ipv4 unicast
+                            device_bgp_cbd.address_family.ipv4['unicast'].redistribute.connected.create()
+                            if protocol['import-policy']:
+                                device_bgp_cbd.address_family.ipv4['unicast'].redistribute.connected.route_map = \
+                                protocol['import-policy']
+                        elif network_instance_type == 'oc-ni-types:L3VRF':  # address-family ipv4 unicast vrf
+                            device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
+                                vrf_name].redistribute.connected.create()
+                            if protocol['import-policy']:
+                                device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
+                                    vrf_name].redistribute.connected.route_map = protocol['import-policy']
+                    else:  # router bgp X
+                        device_bgp_cbd.redistribute.connected.create()
+                        if protocol['import-policy']:
+                            device_bgp_cbd.redistribute.connected.route_map = protocol['import-policy']
+                elif protocol['src-protocol'] == 'oc-pol-types:ISIS' and protocol['address-family'] == 'oc-types:IPV4':
+                    pass
+
+
 def apply_policy(neighbor_object_cdb, afi_safi_service) -> None:
     """
     Applies route-maps to neighbors and peer-groups
@@ -191,10 +244,12 @@ def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_ty
                     for afi_safi_service in service_bgp_neighbor.afi_safis.afi_safi:
                         if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE' and afi_safi_service.config.enabled:
                             if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
-                                if not device_bgp_cbd.address_family.ipv4['unicast'].neighbor.exists(service_bgp_neighbor.neighbor_address):
+                                if not device_bgp_cbd.address_family.ipv4['unicast'].neighbor.exists(
+                                        service_bgp_neighbor.neighbor_address):
                                     device_bgp_cbd.address_family.ipv4['unicast'].neighbor.create(
                                         service_bgp_neighbor.neighbor_address)
-                                neighbor_object_cdb = device_bgp_cbd.address_family.ipv4['unicast'].neighbor[service_bgp_neighbor.neighbor_address]
+                                neighbor_object_cdb = device_bgp_cbd.address_family.ipv4['unicast'].neighbor[
+                                    service_bgp_neighbor.neighbor_address]
                                 if not neighbor_object_cdb.activate.exists():
                                     neighbor_object_cdb.activate.create()
                                 apply_policy(neighbor_object_cdb, afi_safi_service)
@@ -218,10 +273,12 @@ def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_ty
                                     device_bgp_cbd.address_family.with_vrf.ipv4.create('unicast')
                                 if not device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.exists(vrf_name):
                                     device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.create(vrf_name)
-                                family_ipv4_unicast_vrf = device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name]
+                                family_ipv4_unicast_vrf = device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
+                                    vrf_name]
                                 if not family_ipv4_unicast_vrf.neighbor.exists(service_bgp_neighbor.neighbor_address):
                                     family_ipv4_unicast_vrf.neighbor.create(service_bgp_neighbor.neighbor_address)
-                                neighbor_object_cdb = family_ipv4_unicast_vrf.neighbor[service_bgp_neighbor.neighbor_address]
+                                neighbor_object_cdb = family_ipv4_unicast_vrf.neighbor[
+                                    service_bgp_neighbor.neighbor_address]
                                 xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor_object_cdb)
                                 if not neighbor_object_cdb.activate.exists():
                                     neighbor_object_cdb.activate.create()
@@ -276,11 +333,14 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
     """
     Program service for xe NED features
     """
+
     # helper functions
     def configure_global_peer_group() -> None:
         if service_bgp_peergroup.peer_group_name:
-            if not self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor.exists(service_bgp_peergroup.peer_group_name):
-                self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor.create(service_bgp_peergroup.peer_group_name)
+            if not self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor.exists(
+                    service_bgp_peergroup.peer_group_name):
+                self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor.create(
+                    service_bgp_peergroup.peer_group_name)
             peer_group = \
                 self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor[
                     service_bgp_peergroup.peer_group_name]
@@ -294,48 +354,54 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
     asn = service_protocol.bgp.oc_netinst__global.config.oc_netinst__as
     if asn:
         for service_bgp_peergroup in service_protocol.bgp.peer_groups.peer_group:
-                flag_configure_global_peer_group = True
-                if service_bgp_peergroup.afi_safis.afi_safi:
-                    device_bgp_cbd = self.root.devices.device[self.device_name].config.ios__router.bgp[asn]
-                    for afi_safi_service in service_bgp_peergroup.afi_safis.afi_safi:
-                        if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE' and afi_safi_service.config.enabled:
-                            if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
-                                configure_global_peer_group()
-                                if not device_bgp_cbd.address_family.ipv4['unicast'].neighbor_tag.neighbor.exists(service_bgp_peergroup.peer_group_name):
-                                    device_bgp_cbd.address_family.ipv4['unicast'].neighbor_tag.neighbor.create(
-                                        service_bgp_peergroup.peer_group_name)
-                                neighbor_object_cdb = device_bgp_cbd.address_family.ipv4['unicast'].neighbor_tag.neighbor[service_bgp_peergroup.peer_group_name]
-                                apply_policy(neighbor_object_cdb, afi_safi_service)
-                            elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV4_UNICAST':
-                                configure_global_peer_group()
-                                if not device_bgp_cbd.address_family.vpnv4['unicast'].neighbor_tag.neighbor.exists(
-                                        service_bgp_peergroup.peer_group_name):
-                                    device_bgp_cbd.address_family.vpnv4['unicast'].neighbor_tag.neighbor.create(
-                                        service_bgp_peergroup.peer_group_name)
-                                neighbor_object_cdb = device_bgp_cbd.address_family.vpnv4['unicast'].neighbor_tag.neighbor[
-                                    service_bgp_peergroup.peer_group_name]
-                                apply_policy(neighbor_object_cdb, afi_safi_service)
-                            elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
-                                pass
-                            elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
-                                pass
-                        elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi_service.config.enabled:
-                            if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
-                                flag_configure_global_peer_group = False  # PEER GROUPS can not be used in multiple VRFs
-                                if not device_bgp_cbd.address_family.with_vrf.ipv4.exists('unicast'):
-                                    device_bgp_cbd.address_family.with_vrf.ipv4.create('unicast')
-                                if not device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.exists(vrf_name):
-                                    device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.create(vrf_name)
-                                family_ipv4_unicast_vrf = device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name]
-                                if not family_ipv4_unicast_vrf.neighbor_tag.neighbor.exists(service_bgp_peergroup.peer_group_name):
-                                    family_ipv4_unicast_vrf.neighbor_tag.neighbor.create(service_bgp_peergroup.peer_group_name)
-                                neighbor_object_cdb = family_ipv4_unicast_vrf.neighbor_tag.neighbor[service_bgp_peergroup.peer_group_name]
-                                if not neighbor_object_cdb.peer_group.exists():
-                                    neighbor_object_cdb.peer_group.create()
-                                xe_bgp_configure_peer_group(service_bgp_peergroup, neighbor_object_cdb)
-                                apply_policy(neighbor_object_cdb, afi_safi_service)
-                if flag_configure_global_peer_group:  # Flag will be False if peer group used in a VRF
-                    configure_global_peer_group()
+            flag_configure_global_peer_group = True
+            if service_bgp_peergroup.afi_safis.afi_safi:
+                device_bgp_cbd = self.root.devices.device[self.device_name].config.ios__router.bgp[asn]
+                for afi_safi_service in service_bgp_peergroup.afi_safis.afi_safi:
+                    if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE' and afi_safi_service.config.enabled:
+                        if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
+                            configure_global_peer_group()
+                            if not device_bgp_cbd.address_family.ipv4['unicast'].neighbor_tag.neighbor.exists(
+                                    service_bgp_peergroup.peer_group_name):
+                                device_bgp_cbd.address_family.ipv4['unicast'].neighbor_tag.neighbor.create(
+                                    service_bgp_peergroup.peer_group_name)
+                            neighbor_object_cdb = device_bgp_cbd.address_family.ipv4['unicast'].neighbor_tag.neighbor[
+                                service_bgp_peergroup.peer_group_name]
+                            apply_policy(neighbor_object_cdb, afi_safi_service)
+                        elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV4_UNICAST':
+                            configure_global_peer_group()
+                            if not device_bgp_cbd.address_family.vpnv4['unicast'].neighbor_tag.neighbor.exists(
+                                    service_bgp_peergroup.peer_group_name):
+                                device_bgp_cbd.address_family.vpnv4['unicast'].neighbor_tag.neighbor.create(
+                                    service_bgp_peergroup.peer_group_name)
+                            neighbor_object_cdb = device_bgp_cbd.address_family.vpnv4['unicast'].neighbor_tag.neighbor[
+                                service_bgp_peergroup.peer_group_name]
+                            apply_policy(neighbor_object_cdb, afi_safi_service)
+                        elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
+                            pass
+                        elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
+                            pass
+                    elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi_service.config.enabled:
+                        if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
+                            flag_configure_global_peer_group = False  # PEER GROUPS can not be used in multiple VRFs
+                            if not device_bgp_cbd.address_family.with_vrf.ipv4.exists('unicast'):
+                                device_bgp_cbd.address_family.with_vrf.ipv4.create('unicast')
+                            if not device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.exists(vrf_name):
+                                device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.create(vrf_name)
+                            family_ipv4_unicast_vrf = device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
+                                vrf_name]
+                            if not family_ipv4_unicast_vrf.neighbor_tag.neighbor.exists(
+                                    service_bgp_peergroup.peer_group_name):
+                                family_ipv4_unicast_vrf.neighbor_tag.neighbor.create(
+                                    service_bgp_peergroup.peer_group_name)
+                            neighbor_object_cdb = family_ipv4_unicast_vrf.neighbor_tag.neighbor[
+                                service_bgp_peergroup.peer_group_name]
+                            if not neighbor_object_cdb.peer_group.exists():
+                                neighbor_object_cdb.peer_group.create()
+                            xe_bgp_configure_peer_group(service_bgp_peergroup, neighbor_object_cdb)
+                            apply_policy(neighbor_object_cdb, afi_safi_service)
+            if flag_configure_global_peer_group:  # Flag will be False if peer group used in a VRF
+                configure_global_peer_group()
 
 
 def xe_bgp_configure_peer_group(service_bgp_peer_group, peer_group) -> None:

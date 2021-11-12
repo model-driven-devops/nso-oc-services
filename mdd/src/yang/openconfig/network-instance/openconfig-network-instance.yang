@@ -1062,21 +1062,27 @@ module openconfig-network-instance {
       instance";
 
     leaf src-protocol {
-      type leafref {
-        // we are at table-connections/table-connection/config/.
-        path "../../../../tables/table/config/protocol";
+      type identityref {
+        base oc-pol-types:INSTALL_PROTOCOL_TYPE;
       }
+      //type leafref {
+        //// we are at table-connections/table-connection/config/.
+        //path "../../../../tables/table/config/protocol";
+      //}
       description
         "The source protocol for the table connection";
     }
 
     leaf address-family {
-      type leafref {
-        // we are at table-connections/table-connection/config/.
-        path "../../../../tables/" +
-          "table[protocol=current()/../src-protocol]/" +
-          "config/address-family";
+      type identityref {
+        base oc-types:ADDRESS_FAMILY;
       }
+      //type leafref {
+        //// we are at table-connections/table-connection/config/.
+        //path "../../../../tables/" +
+          //"table[protocol=current()/../src-protocol]/" +
+          //"config/address-family";
+      //}
       description
         "The address family associated with the connection. This
         must be defined for the source protocol. The target
@@ -1085,9 +1091,12 @@ module openconfig-network-instance {
     }
 
     leaf dst-protocol {
-      type leafref {
-        path "../../../../tables/table/config/protocol";
+      type identityref {
+        base oc-pol-types:INSTALL_PROTOCOL_TYPE;
       }
+      //type leafref {
+        //path "../../../../tables/table/config/protocol";
+      //}
       description
         "The destination protocol for the table connection";
     }

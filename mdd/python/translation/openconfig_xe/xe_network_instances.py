@@ -1,4 +1,5 @@
 # -*- mode: python; python-indent: 4 -*-
+import copy
 import ipaddress
 import re
 from typing import Tuple
@@ -8,6 +9,7 @@ from translation.openconfig_xe.common import xe_system_get_interface_ip_address
 from translation.openconfig_xe.xe_bgp import xe_bgp_global_program_service
 from translation.openconfig_xe.xe_bgp import xe_bgp_neighbors_program_service
 from translation.openconfig_xe.xe_bgp import xe_bgp_peer_groups_program_service
+from translation.openconfig_xe.xe_bgp import xe_bgp_redistribution_program_service
 
 
 def xe_network_instances_program_service(self) -> None:
@@ -17,7 +19,8 @@ def xe_network_instances_program_service(self) -> None:
     xe_configure_vrfs(self)
     xe_reconcile_vrf_interfaces(self)
     xe_configure_mpls(self)
-    xe_configure_protocols(self)
+    table_connections = xe_get_table_connections(self)
+    xe_configure_protocols(self, table_connections)
 
 
 def xe_configure_vrfs(self) -> None:
@@ -197,10 +200,66 @@ def xe_configure_mpls_signaling_protocols_ldp(self, service_network_instance) ->
             self.device_name].config.ios__mpls.ldp.discovery.hello.interval = service_network_instance.mpls.signaling_protocols.ldp.interface_attributes.config.hello_interval
 
 
-def xe_configure_protocols(self) -> None:
+def xe_get_table_connections(self) -> dict:
+    """
+    Build dictionary of network instances their protocols and desired redistribution.
+    :param self:
+    :return: dictionary
+    """
+    service_table_connection_dict = {}
+    for network_instance in self.service.oc_netinst__network_instances.network_instance:
+        if network_instance.table_connections.table_connection:
+            network_instance_table_connections = {
+                network_instance.config.name: {
+                    'type': network_instance.config.type,
+                    'destination_protocols': {
+                        'BGP': [],
+                        'OSPF': [],
+                        'OSPF3': [],
+                        'ISIS': []
+                    }
+                }
+            }
+            for service_table_connection in network_instance.table_connections.table_connection:
+                import_policy = None
+                if service_table_connection.config.import_policy:
+                    if len(service_table_connection.config.import_policy) == 1:
+                        import_policy = service_table_connection.config.import_policy.as_list()[0]
+                    else:
+                        raise ValueError('XE supports one route-map per redistribution statement.')
+                if service_table_connection.config.src_protocol_process_number:
+                    process_number = service_table_connection.config.src_protocol_process_number
+                else:
+                    process_number = None
+                table_connection = {
+                    'src-protocol': service_table_connection.src_protocol,
+                    'src-protocol-process-number': process_number,
+                    'disable-metric-propagation': service_table_connection.config.disable_metric_propagation,
+                    'address-family': service_table_connection.config.address_family,
+                    'import-policy': import_policy
+                }
+                if service_table_connection.dst_protocol == 'oc-pol-types:BGP':
+                    network_instance_table_connections[network_instance.config.name]['destination_protocols'][
+                        'BGP'].append(copy.deepcopy(table_connection))
+                elif service_table_connection.dst_protocol == 'oc-pol-types:OSPF':
+                    network_instance_table_connections[network_instance.config.name]['destination_protocols'][
+                        'OSPF'].append(copy.deepcopy(table_connection))
+                elif service_table_connection.dst_protocol == 'oc-pol-types:OSPF3':
+                    network_instance_table_connections[network_instance.config.name]['destination_protocols'][
+                        'OSPF3'].append(copy.deepcopy(table_connection))
+                elif service_table_connection.dst_protocol == 'oc-pol-types:ISIS':
+                    network_instance_table_connections[network_instance.config.name]['destination_protocols'][
+                        'ISIS'].append(copy.deepcopy(table_connection))
+            if network_instance_table_connections:
+                service_table_connection_dict.update(copy.deepcopy(network_instance_table_connections))
+    return service_table_connection_dict
+
+
+def xe_configure_protocols(self, table_connections: dict) -> None:
     """
     Configures the protocols section of openconfig-network-instance
     """
+    self.log.info(f'table_connections {table_connections}')
     instance_bgp_list = []
     for network_instance in self.service.oc_netinst__network_instances.network_instance:
         if network_instance.protocols.protocol:
@@ -252,6 +311,7 @@ def xe_configure_protocols(self) -> None:
             xe_bgp_global_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
             xe_bgp_peer_groups_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
             xe_bgp_neighbors_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
+            xe_bgp_redistribution_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2], table_connections)
 
 
 def xe_get_interface_type_number_and_subinterface(interface: str) -> Tuple[str, str]:
