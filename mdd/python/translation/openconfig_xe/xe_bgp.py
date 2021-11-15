@@ -285,6 +285,8 @@ def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_ty
                                 if not neighbor_object_cdb.activate.exists():
                                     neighbor_object_cdb.activate.create()
                                 apply_policy(neighbor_object_cdb, afi_safi_service)
+                                if service_bgp_neighbor.as_path_options.config.replace_peer_as:
+                                    neighbor_object_cdb.as_override.create()
                                 if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
                                     neighbor_object_cdb.send_label.create()
 
@@ -405,6 +407,8 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                                 neighbor_object_cdb.peer_group.create()
                             xe_bgp_configure_peer_group(service_bgp_peergroup, neighbor_object_cdb)
                             apply_policy(neighbor_object_cdb, afi_safi_service)
+                            if service_bgp_peergroup.as_path_options.config.replace_peer_as:
+                                neighbor_object_cdb.as_override.create()
                             if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
                                 neighbor_object_cdb.send_label.create()
             if flag_configure_global_peer_group:  # Flag will be False if peer group used in a VRF
