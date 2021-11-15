@@ -68,7 +68,8 @@ def xe_bgp_global_program_service(self, service_protocol, network_instance_type,
                 elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
                     pass
             elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi_service.config.enabled:
-                if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
+                if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST' or \
+                        afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
                     if not device_bgp_cbd.address_family.with_vrf.ipv4.exists('unicast'):
                         device_bgp_cbd.address_family.with_vrf.ipv4.create('unicast')
                     if not device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.exists(vrf_name):
@@ -268,7 +269,8 @@ def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_ty
                             elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
                                 pass
                         elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi_service.config.enabled:
-                            if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
+                            if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST' or \
+                                    afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
                                 if not device_bgp_cbd.address_family.with_vrf.ipv4.exists('unicast'):
                                     device_bgp_cbd.address_family.with_vrf.ipv4.create('unicast')
                                 if not device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.exists(vrf_name):
@@ -283,6 +285,8 @@ def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_ty
                                 if not neighbor_object_cdb.activate.exists():
                                     neighbor_object_cdb.activate.create()
                                 apply_policy(neighbor_object_cdb, afi_safi_service)
+                                if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
+                                    neighbor_object_cdb.send_label.create()
 
 
 def xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor) -> None:
@@ -382,7 +386,8 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                         elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
                             pass
                     elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi_service.config.enabled:
-                        if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
+                        if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST' or \
+                                afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
                             flag_configure_global_peer_group = False  # PEER GROUPS can not be used in multiple VRFs
                             if not device_bgp_cbd.address_family.with_vrf.ipv4.exists('unicast'):
                                 device_bgp_cbd.address_family.with_vrf.ipv4.create('unicast')
@@ -400,6 +405,8 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                                 neighbor_object_cdb.peer_group.create()
                             xe_bgp_configure_peer_group(service_bgp_peergroup, neighbor_object_cdb)
                             apply_policy(neighbor_object_cdb, afi_safi_service)
+                            if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
+                                neighbor_object_cdb.send_label.create()
             if flag_configure_global_peer_group:  # Flag will be False if peer group used in a VRF
                 configure_global_peer_group()
 
