@@ -397,7 +397,7 @@ openconfig-ospfv2:ospfv2:
             retranmission-queue-length: ''
             state-changes: ''
   global:
-    config:  # need to add a process id
+    config:
       hide-transit-only-networks: ''  # prefix-suppression
       igp-shortcuts: ''
       log-adjacency-changes: ''  # log-adjacency-changes
@@ -406,7 +406,7 @@ openconfig-ospfv2:ospfv2:
     graceful-restart:  # nsf ietf [restart-interval seconds | helper [disable | strict-lsa-checking]]
       config:
         enabled: ''
-        helper-only: ''
+        helper-only: ''  # not supported
       state:
         enabled: ''
         helper-only: ''
@@ -420,17 +420,17 @@ openconfig-ospfv2:ospfv2:
           - ']'
           src-area: ''
         dst-area: ''
-        src-area: ''
+        src-area: ''  # not supported
         state:
           default-import-policy: REJECT_ROUTE
           dst-area: ''
           import-policy:
           - '['
           - ']'
-          src-area: ''
+          src-area: ''  # not supported
     mpls:
       config:
-        traffic-engineering-extensions: ''  # mpls traffic-eng area number
+        traffic-engineering-extensions: ''  # mpls traffic-eng area number  # in XE configured under areas
       igp-ldp-sync:  # mpls ldp sync
         config:
           enabled: ''
