@@ -3,19 +3,19 @@ openconfig-ospfv2:ospfv2:
     area:
     - config:
         identifier: ''
-      identifier: ''
+      identifier: ''  # network ip-address wildcard-mask area area-id
       interfaces:
-        interface:
+        interface:  # network ip-address wildcard-mask area area-id
         - config:
             authentication-type: ''
             hide-network: ''
             id: ''
-            metric: ''
+            metric: ''  # ip ospf cost cost
             multi-area-adjacency-primary: 'True'
-            network-type: ''
-            passive: ''
-            priority: ''
-          enable-bfd:
+            network-type: ''  # ip ospf network point-to-multipoint or whatever
+            passive: ''  # passive-interface interface_type interface_number
+            priority: ''  # ip ospf priority 1
+          enable-bfd:  # ip ospf bfd [disable]
             config:
               enabled: ''
             state:
@@ -28,7 +28,7 @@ openconfig-ospfv2:ospfv2:
             state:
               interface: ''
               subinterface: ''
-          lsa-filter:
+          lsa-filter:  # Can augment this with filtering options
             config:
               all: ''
             state:
@@ -48,7 +48,7 @@ openconfig-ospfv2:ospfv2:
               traffic-engineering-metric: ''
           neighbors:
             neighbor:
-            - config:
+            - config:  # neighbor ip-address [cost number]
                 metric: ''
                 router-id: ''
               router-id: ''
@@ -75,9 +75,9 @@ openconfig-ospfv2:ospfv2:
             priority: ''
           timers:
             config:
-              dead-interval: ''
-              hello-interval: ''
-              retransmission-interval: ''
+              dead-interval: ''  # ip ospf dead-interval seconds
+              hello-interval: ''  # ip ospf hello-interval seconds
+              retransmission-interval: ''  # ip ospf retransmit-interval seconds
             state:
               dead-interval: ''
               hello-interval: ''
@@ -375,12 +375,12 @@ openconfig-ospfv2:ospfv2:
           identifier: ''
       mpls:
         config:
-          traffic-engineering-enabled: ''
+          traffic-engineering-enabled: ''  # mpls traffic-eng area number
         state:
           traffic-engineering-enabled: ''
       state:
         identifier: ''
-      virtual-links:
+      virtual-links:  # area area-id virtual-link router-id [authentication [message-digest | null]] [hello-interval seconds] [retransmit-interval seconds] [transmit-delay seconds] [dead-interval seconds] [authentication-key key | message-digest-key key-id md5 key]
         virtual-link:
         - config:
             remote-router-id: ''
