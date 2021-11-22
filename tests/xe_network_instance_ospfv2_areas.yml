@@ -228,10 +228,16 @@
           interface:
             - config:
                 enabled: true
-                name: Loopback10
-                type: softwareLoopback
-                description: TEST123
-              name: Loopback10
+                name: GigabitEthernet10
+                type: 'ethernetCsmacd'
+              openconfig-if-ethernet:ethernet:
+                config:
+                  auto-negotiate: true
+                  enable-flow-control: false
+              hold-time:
+                config:
+                  down: '10'
+              name: GigabitEthernet10
               subinterfaces:
                 subinterface:
                   - config:
@@ -241,9 +247,9 @@
                       addresses:
                         address:
                           - config:
-                              ip: 172.16.1.2
-                              prefix-length: 32
-                            ip: 172.16.1.2
+                              ip: 172.17.0.1
+                              prefix-length: 24
+                            ip: 172.17.0.1
                       config:
                         dhcp-client: false
         openconfig-network-instance:network-instances:
@@ -265,21 +271,22 @@
                       areas:
                         area:
                         - config:
-                            identifier: 1
-                          identifier: 1
+                            identifier: 0
+                          identifier: 0
                           interfaces:
                             interface:
                             - config:
-                                id: Loopback10
-                                network-type: 'BROADCAST_NETWORK'
-                              id: Loopback10
+                                id: GigabitEthernet10
+                                network-type: 'NON_BROADCAST_NETWORK'
+                              id: GigabitEthernet10
               interfaces:
                 interface:
-                  - id: 'Loopback10'
+                  - id: 'GigabitEthernet10'
                     config:
-                      id: 'Loopback10'
-                      interface: 'Loopback10'
+                      id: 'GigabitEthernet10'
+                      interface: 'GigabitEthernet10'
                       subinterface: '0'
+
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -330,7 +337,7 @@
         msg: "{{ changes }}"
     - assert:
         that:
-          - "'+ ip ospf network broadcast:' in changes"
+          - "'+ ip ospf network non-broadcast:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
@@ -1153,7 +1160,7 @@
     - assert:
         that:
           - "'+router ospf 1:' in changes"
-          - "'+ neighbor 1.1.1.1 cost 100:' in changes"
+          - "'+ neighbor 10.10.10.10 cost 100:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
@@ -1585,8 +1592,8 @@
                       areas:
                         area:
                         - config:
-                            identifier: 0
-                          identifier: 0
+                            identifier: 200
+                          identifier: 200
                           interfaces:
                             interface:
                             - config:
@@ -1654,7 +1661,7 @@
         msg: "{{ changes }}"
     - assert:
         that:
-          - "'+ area 0 virtual-link 10.200.200.200:' in changes"
+          - "'+ area 200 virtual-link 10.200.200.200:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no

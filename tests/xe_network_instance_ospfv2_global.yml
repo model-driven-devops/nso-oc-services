@@ -29,19 +29,19 @@
       mdd:openconfig:
         openconfig-network-instance:network-instances:
           network-instance:
-            - name: 'default'  # All interfaces are in default unless listed under other VRF
+            - name: 'default'
               config:
                 name: 'default'
-                type: 'DEFAULT_INSTANCE'  # oc-ni-types:DEFAULT_INSTANCE
+                type: 'DEFAULT_INSTANCE'
                 enabled: true
               protocols:
                 protocol:
-                  - name: 1  # this is the process ID
+                  - name: 1
                     identifier: OSPF
                     config:
                       enabled: True
                       identifier: OSPF
-                      name: 1  # this is the process ID
+                      name: 1
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -146,10 +146,10 @@
       mdd:openconfig:
         openconfig-network-instance:network-instances:
           network-instance:
-            - name: 'default'  # All interfaces are in default unless listed under other VRF
+            - name: 'default'
               config:
                 name: 'default'
-                type: 'DEFAULT_INSTANCE'  # oc-ni-types:DEFAULT_INSTANCE
+                type: 'DEFAULT_INSTANCE'
                 enabled: true
               protocols:
                 protocol:
@@ -267,19 +267,19 @@
       mdd:openconfig:
         openconfig-network-instance:network-instances:
           network-instance:
-            - name: 'default'  # All interfaces are in default unless listed under other VRF
+            - name: 'default'
               config:
                 name: 'default'
-                type: 'DEFAULT_INSTANCE'  # oc-ni-types:DEFAULT_INSTANCE
+                type: 'DEFAULT_INSTANCE'
                 enabled: true
               protocols:
                 protocol:
-                  - name: 1  # this is the process ID
+                  - name: 1
                     identifier: OSPF
                     config:
                       enabled: True
                       identifier: OSPF
-                      name: 1  # this is the process ID
+                      name: 1
                     ospfv2:
                       global:
                         config:
@@ -329,7 +329,7 @@
       register: result_after
     - set_fact:
         changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
+    - name: debug changes NOTE default does not show up in assertion This will fail
       debug:
         msg: "{{ changes }}"
     - assert:
@@ -387,19 +387,19 @@
       mdd:openconfig:
         openconfig-network-instance:network-instances:
           network-instance:
-            - name: 'default'  # All interfaces are in default unless listed under other VRF
+            - name: 'default'
               config:
                 name: 'default'
-                type: 'DEFAULT_INSTANCE'  # oc-ni-types:DEFAULT_INSTANCE
+                type: 'DEFAULT_INSTANCE'
                 enabled: true
               protocols:
                 protocol:
-                  - name: 1  # this is the process ID
+                  - name: 1
                     identifier: OSPF
                     config:
                       enabled: True
                       identifier: OSPF
-                      name: 1  # this is the process ID
+                      name: 1
                     ospfv2:
                       global:
                         config:
@@ -507,19 +507,19 @@
       mdd:openconfig:
         openconfig-network-instance:network-instances:
           network-instance:
-            - name: 'default'  # All interfaces are in default unless listed under other VRF
+            - name: 'default'
               config:
                 name: 'default'
-                type: 'DEFAULT_INSTANCE'  # oc-ni-types:DEFAULT_INSTANCE
+                type: 'DEFAULT_INSTANCE'
                 enabled: true
               protocols:
                 protocol:
-                  - name: 1  # this is the process ID
+                  - name: 1
                     identifier: OSPF
                     config:
                       enabled: True
                       identifier: OSPF
-                      name: 1  # this is the process ID
+                      name: 1
                     ospfv2:
                       global:
                         config:
@@ -627,19 +627,19 @@
       mdd:openconfig:
         openconfig-network-instance:network-instances:
           network-instance:
-            - name: 'default'  # All interfaces are in default unless listed under other VRF
+            - name: 'default'
               config:
                 name: 'default'
-                type: 'DEFAULT_INSTANCE'  # oc-ni-types:DEFAULT_INSTANCE
+                type: 'DEFAULT_INSTANCE'
                 enabled: true
               protocols:
                 protocol:
-                  - name: 1  # this is the process ID
+                  - name: 1
                     identifier: OSPF
                     config:
                       enabled: True
                       identifier: OSPF
-                      name: 1  # this is the process ID
+                      name: 1
                     ospfv2:
                       global:
                         graceful-restart:
@@ -695,7 +695,7 @@
         msg: "{{ changes }}"
     - assert:
         that:
-          - "'+nsf ietf:' in changes"
+          - "'+ nsf ietf:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
@@ -741,18 +741,66 @@
   gather_facts: no
   tags:
     - all
-    - inter_area_propagation_policy  # TODO add areas references by src and dst
+    - inter_area_propagation_policy
   vars:
     device_name: "{{ device }}"
     content: |
       mdd:openconfig:
+        openconfig-interfaces:interfaces:
+          interface:
+            - config:
+                enabled: true
+                name: Loopback10
+                type: softwareLoopback
+                description: TEST123
+              name: Loopback10
+              subinterfaces:
+                subinterface:
+                  - config:
+                      index: '0'
+                    index: '0'
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: 172.16.1.2
+                              prefix-length: 32
+                            ip: 172.16.1.2
+                      config:
+                        dhcp-client: false
+            - config:
+                enabled: true
+                name: GigabitEthernet10
+                type: 'ethernetCsmacd'
+              openconfig-if-ethernet:ethernet:
+                config:
+                  auto-negotiate: true
+                  enable-flow-control: false
+              hold-time:
+                config:
+                  down: '10'
+              name: GigabitEthernet10
+              subinterfaces:
+                subinterface:
+                  - config:
+                      index: '0'
+                    index: '0'
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: 172.17.0.1
+                              prefix-length: 24
+                            ip: 172.17.0.1
+                      config:
+                        dhcp-client: false
         openconfig-routing-policy:routing-policy:
           defined-sets:
             prefix-sets:
               prefix-set:
-                - name: test
+                - name: prefix_test
                   config:
-                    name: test
+                    name: prefix_test
                     mode: IPV4
                   prefixes:
                     prefix:
@@ -762,28 +810,64 @@
                           ip-prefix: '10.0.0.0/24'
                           masklength-range: exact
                           openconfig-routing-policy-ext:seq: 10
-                      - ip-prefix: '10.10.10.0/24'
+                      - ip-prefix: '10.10.10.0/23'
                         masklength-range: '24..30'
                         config:
-                          ip-prefix: '10.10.10.0/24'
+                          ip-prefix: '10.10.10.0/23'
                           masklength-range: '24..30'
                           openconfig-routing-policy-ext:seq: 20
+          policy-definitions:
+            policy-definition:
+              - name: 'test'
+                config:
+                  name: 'test'
+                statements:
+                  openconfig-routing-policy:statement:
+                    - name: '10'
+                      config:
+                        name: '10'
+                      conditions:
+                        match-prefix-set:
+                          config:
+                            prefix-set: 'prefix_test'
+                            match-set-options: 'ANY'
+                      actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
         openconfig-network-instance:network-instances:
           network-instance:
-            - name: 'default'  # All interfaces are in default unless listed under other VRF
+            - name: 'default'
               config:
                 name: 'default'
-                type: 'DEFAULT_INSTANCE'  # oc-ni-types:DEFAULT_INSTANCE
+                type: 'DEFAULT_INSTANCE'
                 enabled: true
               protocols:
                 protocol:
-                  - name: 1  # this is the process ID
+                  - name: 1
                     identifier: OSPF
                     config:
                       enabled: True
                       identifier: OSPF
-                      name: 1  # this is the process ID
+                      name: 1
                     ospfv2:
+                      areas:
+                        area:
+                        - config:
+                            identifier: 3
+                          identifier: 3
+                          interfaces:
+                            interface:
+                            - config:
+                                id: Loopback10
+                              id: Loopback10
+                        - config:
+                            identifier: 0
+                          identifier: 0
+                          interfaces:
+                            interface:
+                            - config:
+                                id: GigabitEthernet10
+                              id: GigabitEthernet10
                       global:
                         inter-area-propagation-policies:
                           inter-area-propagation-policy:
@@ -846,28 +930,28 @@
         that:
           - "'+ area 3 filter-list prefix test in:' in changes"
       ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - inter_area_propagation_policy
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
+#- hosts: localhost
+#  gather_facts: no
+#  tags:
+#    - all
+#    - inter_area_propagation_policy
+#    - rollback
+#  tasks:
+#    - name: Rollback
+#      uri:
+#        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+#        url_username: admin
+#        url_password: admin
+#        force_basic_auth: yes
+#        validate_certs: no
+#        status_code: [ 204 ]
+#        method: POST
+#        headers: "{
+#          'Content-Type': 'application/yang-data+xml'}"
+#        body: |
+#          <input xmlns="http://tail-f.com/ns/rollback">
+#            <id>0</id>
+#          </input>
 # Test OSPF mpls igp-ldp-sync
 - hosts: "{{ device }}"
   connection: network_cli
@@ -897,19 +981,19 @@
       mdd:openconfig:
         openconfig-network-instance:network-instances:
           network-instance:
-            - name: 'default'  # All interfaces are in default unless listed under other VRF
+            - name: 'default'
               config:
                 name: 'default'
-                type: 'DEFAULT_INSTANCE'  # oc-ni-types:DEFAULT_INSTANCE
+                type: 'DEFAULT_INSTANCE'
                 enabled: true
               protocols:
                 protocol:
-                  - name: 1  # this is the process ID
+                  - name: 1
                     identifier: OSPF
                     config:
                       enabled: True
                       identifier: OSPF
-                      name: 1  # this is the process ID
+                      name: 1
                     ospfv2:
                       global:
                         mpls:
@@ -966,7 +1050,7 @@
         msg: "{{ changes }}"
     - assert:
         that:
-          - "'+ mpls ldp igp sync:' in changes"
+          - "'+ mpls ldp sync:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
@@ -1019,19 +1103,19 @@
       mdd:openconfig:
         openconfig-network-instance:network-instances:
           network-instance:
-            - name: 'default'  # All interfaces are in default unless listed under other VRF
+            - name: 'default'
               config:
                 name: 'default'
-                type: 'DEFAULT_INSTANCE'  # oc-ni-types:DEFAULT_INSTANCE
+                type: 'DEFAULT_INSTANCE'
                 enabled: true
               protocols:
                 protocol:
-                  - name: 1  # this is the process ID
+                  - name: 1
                     identifier: OSPF
                     config:
                       enabled: True
                       identifier: OSPF
-                      name: 1  # this is the process ID
+                      name: 1
                     ospfv2:
                       global:
                         timers:
@@ -1090,7 +1174,7 @@
         msg: "{{ changes }}"
     - assert:
         that:
-          - "'+ timers throttle lsa all 1000 5000 10000:' in changes"
+          - "'+ timers throttle lsa 1000 5000 10000:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
@@ -1143,23 +1227,23 @@
       mdd:openconfig:
         openconfig-network-instance:network-instances:
           network-instance:
-            - name: 'default'  # All interfaces are in default unless listed under other VRF
+            - name: 'default'
               config:
                 name: 'default'
-                type: 'DEFAULT_INSTANCE'  # oc-ni-types:DEFAULT_INSTANCE
+                type: 'DEFAULT_INSTANCE'
                 enabled: true
               protocols:
                 protocol:
-                  - name: 1  # this is the process ID
+                  - name: 1
                     identifier: OSPF
                     config:
                       enabled: True
                       identifier: OSPF
-                      name: 1  # this is the process ID
+                      name: 1
                     ospfv2:
                       global:
                         timers:
-                          lsa-generation:
+                          spf:
                             config:
                               initial-delay: 10000
                               maximum-delay: 20000
@@ -1214,7 +1298,7 @@
         msg: "{{ changes }}"
     - assert:
         that:
-          - "'+ timers throttle lsa all 10000 20000 20000:' in changes"
+          - "'+ timers throttle spf 10000 20000 20000:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
@@ -1267,10 +1351,10 @@
       mdd:openconfig:
         openconfig-network-instance:network-instances:
           network-instance:
-            - name: 'default'  # All interfaces are in default unless listed under other VRF
+            - name: 'default'
               config:
                 name: 'default'
-                type: 'DEFAULT_INSTANCE'  # oc-ni-types:DEFAULT_INSTANCE
+                type: 'DEFAULT_INSTANCE'
                 enabled: true
             - name: 'abc'
               config:
@@ -1282,12 +1366,12 @@
                 route-distinguisher: '1:1'
               protocols:
                 protocol:
-                  - name: 1  # this is the process ID
+                  - name: 1
                     identifier: OSPF
                     config:
                       enabled: True
                       identifier: OSPF
-                      name: 1  # this is the process ID
+                      name: 1
   tasks:
     - name: Convert string to JSON
       set_fact:
