@@ -3,6 +3,7 @@ import re
 from typing import Tuple
 
 from translation.openconfig_xe.common import xe_system_get_interface_ip_address
+from translation.openconfig_xe.common import xe_get_interface_type_and_number
 
 xe_system_initial_vars = dict(XE_TIMEZONE='',
                               XE_TIMEZONE_OFFSET_HOURS='',
@@ -151,7 +152,7 @@ def xe_system_program_service(self) -> None:
             if source_address:
                 ip_name_dict = xe_system_get_interface_ip_address(self)
                 if ip_name_dict[source_address]:
-                    interface_name, interface_number = xe_system_get_interface_type_and_number(
+                    interface_name, interface_number = xe_get_interface_type_and_number(
                         ip_name_dict.get(source_address))
                     setattr(group.ip.tacacs.source_interface, interface_name, interface_number)
 
@@ -182,13 +183,13 @@ def xe_system_transform_vars(self) -> None:
     if self.service.oc_sys__system.ntp.config.ntp_source_address:
         ip_name_dict = xe_system_get_interface_ip_address(self)
         if ip_name_dict[self.service.oc_sys__system.ntp.config.ntp_source_address]:
-            interface_name, interface_number = xe_system_get_interface_type_and_number(
+            interface_name, interface_number = xe_get_interface_type_and_number(
                 ip_name_dict.get(self.service.oc_sys__system.ntp.config.ntp_source_address))
             self.proplist.append(('XE_NTP_SOURCE_INF_TYPE', interface_name))
             self.proplist.append(('XE_NTP_SOURCE_INF_NUMBER', interface_number))
 
     if self.service.oc_sys__system.ssh_server.config.ssh_source_interface:
-        interface_name, interface_number = xe_system_get_interface_type_and_number(
+        interface_name, interface_number = xe_get_interface_type_and_number(
             self.service.oc_sys__system.ssh_server.config.ssh_source_interface)
         self.proplist.append(('XE_SSH_SOURCE_INF_TYPE', interface_name))
         self.proplist.append(('XE_SSH_SOURCE_INF_NUMBER', interface_number))
@@ -217,7 +218,7 @@ def xe_system_transform_vars(self) -> None:
             if need_source_address and n.config.source_address:
                 ip_name_dict = xe_system_get_interface_ip_address(self)
                 if ip_name_dict[n.config.source_address]:
-                    interface_type, interface_number = xe_system_get_interface_type_and_number(
+                    interface_type, interface_number = xe_get_interface_type_and_number(
                         ip_name_dict.get(n.config.source_address))
                     self.proplist.append(('XE_LOGGING_SOURCE_INF_NAME', f'{interface_type}{interface_number}'))
                     need_source_address = False
@@ -244,20 +245,7 @@ def xe_system_transform_vars(self) -> None:
             if n.tacacs.config.source_address:
                 ip_name_dict = xe_system_get_interface_ip_address(self)
                 if ip_name_dict[n.tacacs.config.source_address]:
-                    interface_type, interface_number = xe_system_get_interface_type_and_number(
+                    interface_type, interface_number = xe_get_interface_type_and_number(
                         ip_name_dict.get(n.tacacs.config.source_address))
                     self.proplist.append(('XE_TACACS_SOURCE_INF_TYPE', interface_type))
                     self.proplist.append(('XE_TACACS_SOURCE_INF_NUMBER', interface_number))
-
-
-def xe_system_get_interface_type_and_number(interface: str) -> Tuple[str, str]:
-    """
-    Receive full interface name. Returns interface type and number.
-    :param interface: full interface name
-    :return: tuple of interface type, interface number
-    """
-    rt = re.search(r'\D+', interface)
-    interface_name = rt.group(0)
-    rn = re.search(r'[0-9]+(\/[0-9]+)*', interface)
-    interface_number = rn.group(0)
-    return interface_name, interface_number

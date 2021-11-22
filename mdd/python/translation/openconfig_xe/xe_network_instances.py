@@ -5,11 +5,13 @@ import re
 from typing import Tuple
 
 from translation.openconfig_xe.common import xe_get_interface_type_and_number
+from translation.openconfig_xe.common import xe_get_interface_type_number_and_subinterface
 from translation.openconfig_xe.common import xe_system_get_interface_ip_address
 from translation.openconfig_xe.xe_bgp import xe_bgp_global_program_service
 from translation.openconfig_xe.xe_bgp import xe_bgp_neighbors_program_service
 from translation.openconfig_xe.xe_bgp import xe_bgp_peer_groups_program_service
 from translation.openconfig_xe.xe_bgp import xe_bgp_redistribution_program_service
+from translation.openconfig_xe.xe_ospf import xe_ospf_program_service
 
 
 def xe_network_instances_program_service(self) -> None:
@@ -259,7 +261,6 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
     """
     Configures the protocols section of openconfig-network-instance
     """
-    self.log.info(f'table_connections {table_connections}')
     instance_bgp_list = []
     for network_instance in self.service.oc_netinst__network_instances.network_instance:
         if network_instance.protocols.protocol:
@@ -290,6 +291,8 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
                                                                                       nh.config.next_hop)
                                     if nh.config.metric:
                                         route.metric = nh.config.metric
+                if p.identifier == 'oc-pol-types:OSPF':
+                    xe_ospf_program_service(self, p, network_instance.config.type, network_instance.config.name)
 
                 # oc-ni-types:DEFAULT_INSTANCE must be processed before VRFs
                 # Incoming order doesn't matter
@@ -312,19 +315,6 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
             xe_bgp_peer_groups_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
             xe_bgp_neighbors_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2])
             xe_bgp_redistribution_program_service(self, bgp_instance[0], bgp_instance[1], bgp_instance[2], table_connections)
-
-
-def xe_get_interface_type_number_and_subinterface(interface: str) -> Tuple[str, str]:
-    """
-    Receive full interface name. Returns interface type and number.
-    :param interface: full interface name
-    :return: tuple of interface type, interface number.subinterface number
-    """
-    rt = re.search(r'\D+', interface)
-    interface_name = rt.group(0)
-    rn = re.search(r'[0-9]+(\/[0-9]+)*(\.[0-9]+)*', interface)
-    interface_number = rn.group(0)
-    return interface_name, interface_number
 
 
 def xe_get_all_interfaces(self) -> list:

@@ -1,0 +1,484 @@
+openconfig-ospfv2:ospfv2:
+  areas:
+    area:
+    - config:
+        identifier: ''
+      identifier: ''  # network ip-address wildcard-mask area area-id
+      interfaces:
+        interface:  # network ip-address wildcard-mask area area-id
+        - config:
+            authentication-type: ''
+            hide-network: ''
+            id: ''
+            metric: ''  # ip ospf cost cost
+            multi-area-adjacency-primary: 'True'
+            network-type: ''  # ip ospf network point-to-multipoint or whatever
+            passive: ''  # passive-interface interface_type interface_number
+            priority: ''  # ip ospf priority 1
+          enable-bfd:  # ip ospf bfd [disable]
+            config:
+              enabled: ''
+            state:
+              enabled: ''
+          id: ''
+          interface-ref:
+            config:
+              interface: ''
+              subinterface: ''
+            state:
+              interface: ''
+              subinterface: ''
+          lsa-filter:  # Can augment this with filtering options
+            config:
+              all: ''
+            state:
+              all: ''
+          mpls:
+            config:
+              traffic-engineering-metric: ''
+            igp-ldp-sync:
+              config:
+                enabled: ''
+                post-session-up-delay: ''
+              state:
+                enabled: ''
+                post-session-up-delay: ''
+                synchronized: ''
+            state:
+              traffic-engineering-metric: ''
+          neighbors:
+            neighbor:
+            - config:  # neighbor ip-address [cost number]
+                metric: ''
+                router-id: ''
+              router-id: ''
+              state:
+                adjacency-state: ''
+                backup-designated-router: ''
+                dead-time: ''
+                designated-router: ''
+                last-established-time: ''
+                metric: ''
+                optional-capabilities: ''
+                priority: ''
+                retranmission-queue-length: ''
+                router-id: ''
+                state-changes: ''
+          state:
+            authentication-type: ''
+            hide-network: ''
+            id: ''
+            metric: ''
+            multi-area-adjacency-primary: 'True'
+            network-type: ''
+            passive: ''
+            priority: ''
+          timers:
+            config:
+              dead-interval: ''  # ip ospf dead-interval seconds
+              hello-interval: ''  # ip ospf hello-interval seconds
+              retransmission-interval: ''  # ip ospf retransmit-interval seconds
+            state:
+              dead-interval: ''
+              hello-interval: ''
+              retransmission-interval: ''
+      lsdb:
+        lsa-types:
+          lsa-type:
+          - lsas:
+              lsa:
+              - as-external-lsa:
+                  state:
+                    external-route-tag: ''
+                    forwarding-address: ''
+                    mask: ''
+                    metric: ''
+                    metric-type: ''
+                  types-of-service:
+                    type-of-service:
+                    - state:
+                        external-route-tag: ''
+                        forwarding-address: ''
+                        metric: ''
+                        tos: ''
+                      tos: ''
+                link-state-id: ''
+                network-lsa:
+                  state:
+                    attached-router:
+                    - '['
+                    - ']'
+                    network-mask: ''
+                nssa-external-lsa:
+                  state:
+                    external-route-tag: ''
+                    forwarding-address: ''
+                    mask: ''
+                    metric: ''
+                    metric-type: ''
+                    propagate: ''
+                  types-of-service:
+                    type-of-service:
+                    - state:
+                        external-route-tag: ''
+                        forwarding-address: ''
+                        metric: ''
+                        tos: ''
+                      tos: ''
+                opaque-lsa:
+                  extended-link:
+                    state:
+                      link-data: ''
+                      link-id: ''
+                      link-type: ''
+                    tlvs:
+                      tlv:
+                      - adjacency-sid:
+                          state:
+                            backup: 'False'
+                            group: 'False'
+                            multi-topology-identifier: ''
+                            sid-type: ''
+                            sid-value: ''
+                            weight: ''
+                        state:
+                          type: ''
+                        unknown-tlv:
+                          state:
+                            length: ''
+                            type: ''
+                            value: ''
+                  extended-prefix:
+                    state:
+                      address-family: ''
+                      attached: 'False'
+                      node: 'False'
+                      prefix: ''
+                      prefix-length: ''
+                      route-type: ''
+                    tlvs:
+                      tlv:
+                      - extended-prefix-range:
+                          state:
+                            address-family: ''
+                            inter-area: 'False'
+                            prefix: ''
+                            prefix-length: ''
+                            range-size: ''
+                        prefix-sid:
+                          state:
+                            algorithm: ''
+                            explicit-null: 'False'
+                            mapping-server: 'False'
+                            multi-topology-identifier: ''
+                            no-php: 'False'
+                            sid-scope: ''
+                            sid-value: ''
+                            sid-value-type: ''
+                        sid-label-binding:
+                          state:
+                            mirroring: 'False'
+                            multi-topology-identifier: ''
+                            weight: ''
+                          tlvs:
+                            tlv:
+                            - ero-metric:
+                                state:
+                                  metric: ''
+                              ero-path:
+                                segments:
+                                  segment:
+                                  - ipv4-segment:
+                                      state:
+                                        address: ''
+                                    state:
+                                      loose: 'False'
+                                      type: ''
+                                    unnumbered-hop:
+                                      state:
+                                        interface-id: ''
+                                        router-id: ''
+                              sid-label-binding:
+                                state:
+                                  sid-type: ''
+                                  sid-value: ''
+                              state:
+                                type: ''
+                        state:
+                          type: ''
+                        unknown-tlv:
+                          state:
+                            length: ''
+                            type: ''
+                            value: ''
+                  grace-lsa:
+                    tlvs:
+                      tlv:
+                      - state:
+                          ip-interface-address: ''
+                          period: ''
+                          reason: ''
+                          type: ''
+                        unknown-tlv:
+                          state:
+                            length: ''
+                            type: ''
+                            value: ''
+                  router-information:
+                    tlvs:
+                      tlv:
+                      - informational-capabilities:
+                          state:
+                            experimental-te: 'False'
+                            graceful-restart-capable: 'False'
+                            graceful-restart-helper: 'False'
+                            point-to-point-over-lan: 'False'
+                            stub-router: 'False'
+                            traffic-engineering: 'False'
+                        node-administrative-tags:
+                          state:
+                            administrative-tags:
+                            - '['
+                            - ']'
+                        segment-routing-algorithm:
+                          state:
+                            supported-algorithms:
+                            - '['
+                            - ']'
+                        segment-routing-sid-label-range:
+                          tlvs:
+                            tlv:
+                            - sid-label:
+                                state:
+                                  entry-type: ''
+                                  first-value: ''
+                              state:
+                                range-size: ''
+                                type: ''
+                              unknown-tlv:
+                                state:
+                                  length: ''
+                                  type: ''
+                                  value: ''
+                        state:
+                          type: ''
+                        unknown-tlv:
+                          state:
+                            length: ''
+                            type: ''
+                            value: ''
+                  state:
+                    scope: ''
+                    type: ''
+                  traffic-engineering:
+                    tlvs:
+                      tlv:
+                      - link:
+                          sub-tlvs:
+                            sub-tlv:
+                            - administrative-groups:
+                                admin-group:
+                                - bit-index: ''
+                                  state:
+                                    bit-index: ''
+                                    set: 'False'
+                              state:
+                                link-id: ''
+                                link-type: ''
+                                local-ip-address:
+                                - '['
+                                - ']'
+                                maximum-bandwidth: ''
+                                maximum-reservable-bandwidth: ''
+                                metric: ''
+                                remote-ip-address:
+                                - '['
+                                - ']'
+                                type: ''
+                                unknown-type: ''
+                                unknown-value: ''
+                              unknown-subtlv:
+                                state:
+                                  length: ''
+                                  type: ''
+                                  value: ''
+                              unreserved-bandwidths:
+                                unreserved-bandwidth:
+                                - priority: ''
+                                  state:
+                                    priority: ''
+                                    unreserved-bandwidth: ''
+                        node-attribute:
+                          sub-tlvs:
+                            sub-tlv:
+                            - state:
+                                local-ipv4-addresses:
+                                - '['
+                                - ']'
+                                local-ipv6-addresses:
+                                - '['
+                                - ']'
+                                type: ''
+                              unknown-subtlv:
+                                state:
+                                  length: ''
+                                  type: ''
+                                  value: ''
+                        router-address:
+                          state:
+                            address: ''
+                        state:
+                          type: ''
+                        unknown-tlv:
+                          state:
+                            length: ''
+                            type: ''
+                            value: ''
+                  unknown-tlv:
+                    state:
+                      length: ''
+                      type: ''
+                      value: ''
+                router-lsa:
+                  state:
+                    link-data: ''
+                    link-id: ''
+                    metric: ''
+                    number-links: ''
+                    number-tos-metrics: ''
+                    type: ''
+                  types-of-service:
+                    type-of-service:
+                    - state:
+                        metric: ''
+                        tos: ''
+                      tos: ''
+                state:
+                  advertising-router: ''
+                  age: ''
+                  checksum: ''
+                  link-state-id: ''
+                  sequence-number: ''
+                summary-lsa:
+                  state:
+                    network-mask: ''
+                  types-of-service:
+                    type-of-service:
+                    - state:
+                        metric: ''
+                        tos: ''
+                      tos: ''
+            state:
+              type: ''
+            type: ''
+        state:
+          identifier: ''
+      mpls:
+        config:
+          traffic-engineering-enabled: ''  # mpls traffic-eng area number
+        state:
+          traffic-engineering-enabled: ''
+      state:
+        identifier: ''
+      virtual-links:  # area area-id virtual-link router-id [authentication [message-digest | null]] [hello-interval seconds] [retransmit-interval seconds] [transmit-delay seconds] [dead-interval seconds] [authentication-key key | message-digest-key key-id md5 key]
+        virtual-link:
+        - config:
+            remote-router-id: ''
+          remote-router-id: ''
+          state:
+            adjacency-state: ''
+            backup-designated-router: ''
+            dead-time: ''
+            designated-router: ''
+            last-established-time: ''
+            optional-capabilities: ''
+            priority: ''
+            remote-router-id: ''
+            retranmission-queue-length: ''
+            state-changes: ''
+  global:
+    config:
+      hide-transit-only-networks: ''  # prefix-suppression
+      igp-shortcuts: ''
+      log-adjacency-changes: ''  # log-adjacency-changes
+      router-id: ''  # router-id x.x.x.x
+      summary-route-cost-mode: RFC2328_COMPATIBLE  # no compatible rfc1583  of RFC1583_COMPATIBLE compatible rfc1583
+    graceful-restart:  # nsf ietf [restart-interval seconds | helper [disable | strict-lsa-checking]]
+      config:
+        enabled: ''
+        helper-only: ''  # not supported
+      state:
+        enabled: ''
+        helper-only: ''
+    inter-area-propagation-policies:
+      inter-area-propagation-policy:
+      - config:
+          default-import-policy: REJECT_ROUTE
+          dst-area: ''
+          import-policy:  # area area-id filter-list prefix prefix-list-name in
+          - '['
+          - ']'
+          src-area: ''
+        dst-area: ''
+        src-area: ''  # not supported
+        state:
+          default-import-policy: REJECT_ROUTE
+          dst-area: ''
+          import-policy:
+          - '['
+          - ']'
+          src-area: ''  # not supported
+    mpls:
+      config:
+        traffic-engineering-extensions: ''  # mpls traffic-eng area number  # in XE configured under areas
+      igp-ldp-sync:  # mpls ldp sync
+        config:
+          enabled: ''
+          post-session-up-delay: ''
+        state:
+          enabled: ''
+          post-session-up-delay: ''
+      state:
+        traffic-engineering-extensions: ''
+    state:
+      hide-transit-only-networks: ''
+      igp-shortcuts: ''
+      log-adjacency-changes: ''
+      router-id: ''
+      summary-route-cost-mode: RFC2328_COMPATIBLE
+    timers:
+      lsa-generation:
+        config:  # need to add a "holdtime
+          initial-delay: ''  # timers throttle lsa all "start-interval" hold-interval max-interval
+          maximum-delay: ''  # timers throttle lsa all start-interval hold-interval "max-interval"
+        state:
+          initial-delay: ''
+          maximum-delay: ''
+          timer-type: ''
+      max-metric:
+        config:  # max-metric router-lsa [external-lsa [max-metric-value] ] [include-stub] [on-startup {seconds | wait-for-bgp}] [summary-lsa [max-metric-value] ]
+          include:  # oc-ospft:MAX_METRIC_INCLUDE
+          - '['
+          - ']'
+          set: ''
+          timeout: ''  # "The delay, in seconds, after which the advertisement of entities with the maximum metric should be cleared, and the system reverts to the default, or configured, metrics."
+          trigger: # oc-ospft:MAX_METRIC_TRIGGER
+          - '['
+          - ']'
+        state:
+          include:
+          - '['
+          - ']'
+          set: ''
+          timeout: ''
+          trigger:
+          - '['
+          - ']'
+      spf:
+        config:  # need to add a "holdtime
+          initial-delay: ''  # timers throttle spf "spf-start" spf-hold spf-max-wait
+          maximum-delay: ''  # timers throttle spf spf-start spf-hold "spf-max-wait"
+        state:
+          initial-delay: ''
+          maximum-delay: ''
+          timer-type: ''
