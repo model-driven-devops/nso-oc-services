@@ -146,6 +146,64 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
                     device_ospf_cbd.area.create(service_area.identifier)
                 for v_link in service_area.virtual_links.virtual_link:
                     device_ospf_cbd.area[service_area.identifier].virtual_link.create(v_link.remote_router_id)
+            # stub areas - stub
+            if not device_ospf_cbd.area.exists(service_area.identifier):
+                device_ospf_cbd.area.create(service_area.identifier)
+            stub_counter = 0
+            if service_area.oc_ospfv2_ext__stub_options.stub.config.enabled and service_area.oc_ospfv2_ext__stub_options.stub.config.default_information_originate:
+                stub_counter += 1
+                device_ospf_cbd.area[service_area.identifier].stub.create()
+            elif service_area.oc_ospfv2_ext__stub_options.stub.config.enabled is False:
+                if device_ospf_cbd.area.exists(service_area.identifier):
+                    if device_ospf_cbd.area[service_area.identifier].stub.exists():
+                        if service_area.oc_ospfv2_ext__stub_options.totally_stubby.config.enabled is False and service_area.oc_ospfv2_ext__stub_options.nssa.config.enabled is False:
+                            device_ospf_cbd.area[service_area.identifier].stub.delete()
+                            # TODO Must check for dependent area features before removing area
+                            if len(service_protocol.ospfv2.oc_netinst__global.inter_area_propagation_policies.inter_area_propagation_policy) == 0:
+                                del device_ospf_cbd.area[service_area.identifier]
+            elif service_area.oc_ospfv2_ext__stub_options.stub.config.enabled and service_area.oc_ospfv2_ext__stub_options.stub.config.default_information_originate is False:
+                    raise ValueError('XE stub area ABRs must be configures to default_information_originate.')
+            # stub areas - totally-stubby
+            if service_area.oc_ospfv2_ext__stub_options.totally_stubby.config.enabled:
+                stub_counter += 1
+                device_ospf_cbd.area[service_area.identifier].stub.create()
+                device_ospf_cbd.area[service_area.identifier].stub.no_summary.create()
+            elif service_area.oc_ospfv2_ext__stub_options.totally_stubby.config.enabled is False:
+                if device_ospf_cbd.area.exists(service_area.identifier):
+                    if device_ospf_cbd.area[service_area.identifier].stub.exists():
+                        if device_ospf_cbd.area[service_area.identifier].stub.no_summary.exists():
+                            device_ospf_cbd.area[service_area.identifier].stub.no_summary.delete()
+                        if service_area.oc_ospfv2_ext__stub_options.stub.config.enabled is False and service_area.oc_ospfv2_ext__stub_options.nssa.config.enabled is False:
+                            device_ospf_cbd.area[service_area.identifier].stub.delete()
+                            # TODO Must check for dependent area features before removing area
+                            if len(service_protocol.ospfv2.oc_netinst__global.inter_area_propagation_policies.inter_area_propagation_policy) == 0:
+                                del device_ospf_cbd.area[service_area.identifier]
+            elif service_area.oc_ospfv2_ext__stub_options.totally_stubby.config.enabled and service_area.oc_ospfv2_ext__stub_options.totally_stubby.config.default_information_originate is False:
+                raise ValueError('XE totally stubby area ABRs must be configures to default_information_originate.')
+            # stub areas - nssa
+            if service_area.oc_ospfv2_ext__stub_options.nssa.config.enabled:
+                stub_counter += 1
+                device_ospf_cbd.area[service_area.identifier].nssa.create()
+                if service_area.oc_ospfv2_ext__stub_options.nssa.config.default_information_originate:
+                    device_ospf_cbd.area[service_area.identifier].nssa.default_information_originate.create()
+                elif service_area.oc_ospfv2_ext__stub_options.nssa.config.default_information_originate is False:
+                    if device_ospf_cbd.area[service_area.identifier].nssa.default_information_originate.exists():
+                        device_ospf_cbd.area[service_area.identifier].nssa.default_information_originate.delete()
+                if service_area.oc_ospfv2_ext__stub_options.nssa.config.no_summary:
+                    device_ospf_cbd.area[service_area.identifier].nssa.no_summary.create()
+                elif service_area.oc_ospfv2_ext__stub_options.nssa.config.no_summary is False:
+                    if device_ospf_cbd.area[service_area.identifier].nssa.no_summary.exists():
+                        device_ospf_cbd.area[service_area.identifier].nssa.no_summary.delete()
+            elif service_area.oc_ospfv2_ext__stub_options.nssa.config.enabled is False:
+                if device_ospf_cbd.area.exists(service_area.identifier):
+                    if device_ospf_cbd.area[service_area.identifier].nssa.exists():
+                        device_ospf_cbd.area[service_area.identifier].nssa.delete()
+                        if service_area.oc_ospfv2_ext__stub_options.stub.config.enabled is False and service_area.oc_ospfv2_ext__stub_options.totally_stubby.config.enabled is False:
+                            # TODO Must check for dependent area features before removing area
+                            if len(service_protocol.ospfv2.oc_netinst__global.inter_area_propagation_policies.inter_area_propagation_policy) == 0:
+                                del device_ospf_cbd.area[service_area.identifier]
+            if stub_counter > 1:
+                raise ValueError('OSPF stub areas can only be type stub, totally-stubby, or nssa: not more than one type.')
 
 
 def create_area_network_statement(self, service_interface, device_ospf_cbd, service_area) -> None:

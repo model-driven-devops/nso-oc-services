@@ -1685,3 +1685,1011 @@
           <input xmlns="http://tail-f.com/ns/rollback">
             <id>0</id>
           </input>
+# Test OSPF stub area
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - stub_area
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - stub_area
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-interfaces:interfaces:
+          interface:
+            - config:
+                enabled: true
+                name: GigabitEthernet10
+                type: 'ethernetCsmacd'
+              openconfig-if-ethernet:ethernet:
+                config:
+                  auto-negotiate: true
+                  enable-flow-control: false
+              hold-time:
+                config:
+                  down: '10'
+              name: GigabitEthernet10
+              subinterfaces:
+                subinterface:
+                  - config:
+                      index: '0'
+                    index: '0'
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: 172.17.0.1
+                              prefix-length: 24
+                            ip: 172.17.0.1
+                      config:
+                        dhcp-client: false
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: 1
+                    identifier: OSPF
+                    config:
+                      enabled: True
+                      identifier: OSPF
+                      name: 1
+                    ospfv2:
+                      areas:
+                        area:
+                        - config:
+                            identifier: 200
+                          identifier: 200
+                          interfaces:
+                            interface:
+                            - config:
+                                id: GigabitEthernet10
+                              id: GigabitEthernet10
+                          openconfig-ospfv2-ext:stub-options:
+                            stub:
+                              config:
+                                enabled: true
+                                default-information-originate: true
+                            totally-stubby:
+                              config:
+                                enabled: false
+                                default-information-originate: false
+                            nssa:
+                              config:
+                                enabled: false
+                                default-information-originate: false
+                                no-summary: false
+              interfaces:
+                interface:
+                  - id: 'GigabitEthernet10'
+                    config:
+                      id: 'GigabitEthernet10'
+                      interface: 'GigabitEthernet10'
+                      subinterface: '0'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: OSPF stub_area
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - stub_area
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ area 200 stub:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - stub_area
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+# Test OSPF totally-stubby area
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - totally_stubby_area
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - totally_stubby_area
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-interfaces:interfaces:
+          interface:
+            - config:
+                enabled: true
+                name: GigabitEthernet10
+                type: 'ethernetCsmacd'
+              openconfig-if-ethernet:ethernet:
+                config:
+                  auto-negotiate: true
+                  enable-flow-control: false
+              hold-time:
+                config:
+                  down: '10'
+              name: GigabitEthernet10
+              subinterfaces:
+                subinterface:
+                  - config:
+                      index: '0'
+                    index: '0'
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: 172.17.0.1
+                              prefix-length: 24
+                            ip: 172.17.0.1
+                      config:
+                        dhcp-client: false
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: 1
+                    identifier: OSPF
+                    config:
+                      enabled: True
+                      identifier: OSPF
+                      name: 1
+                    ospfv2:
+                      areas:
+                        area:
+                        - config:
+                            identifier: 200
+                          identifier: 200
+                          interfaces:
+                            interface:
+                            - config:
+                                id: GigabitEthernet10
+                              id: GigabitEthernet10
+                          openconfig-ospfv2-ext:stub-options:
+                            stub:
+                              config:
+                                enabled: false
+                                default-information-originate: false
+                            totally-stubby:
+                              config:
+                                enabled: true
+                                default-information-originate: true
+                            nssa:
+                              config:
+                                enabled: false
+                                default-information-originate: false
+                                no-summary: false
+              interfaces:
+                interface:
+                  - id: 'GigabitEthernet10'
+                    config:
+                      id: 'GigabitEthernet10'
+                      interface: 'GigabitEthernet10'
+                      subinterface: '0'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: OSPF totally_stubby_area
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - totally_stubby_area
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ area 200 stub no-summary:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - totally_stubby_area
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+# Test OSPF NSSA
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - nssa
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - nssa
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-interfaces:interfaces:
+          interface:
+            - config:
+                enabled: true
+                name: GigabitEthernet10
+                type: 'ethernetCsmacd'
+              openconfig-if-ethernet:ethernet:
+                config:
+                  auto-negotiate: true
+                  enable-flow-control: false
+              hold-time:
+                config:
+                  down: '10'
+              name: GigabitEthernet10
+              subinterfaces:
+                subinterface:
+                  - config:
+                      index: '0'
+                    index: '0'
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: 172.17.0.1
+                              prefix-length: 24
+                            ip: 172.17.0.1
+                      config:
+                        dhcp-client: false
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: 1
+                    identifier: OSPF
+                    config:
+                      enabled: True
+                      identifier: OSPF
+                      name: 1
+                    ospfv2:
+                      areas:
+                        area:
+                        - config:
+                            identifier: 200
+                          identifier: 200
+                          interfaces:
+                            interface:
+                            - config:
+                                id: GigabitEthernet10
+                              id: GigabitEthernet10
+                          openconfig-ospfv2-ext:stub-options:
+                            stub:
+                              config:
+                                enabled: false
+                                default-information-originate: false
+                            totally-stubby:
+                              config:
+                                enabled: false
+                                default-information-originate: false
+                            nssa:
+                              config:
+                                enabled: true
+                                default-information-originate: false
+                                no-summary: false
+              interfaces:
+                interface:
+                  - id: 'GigabitEthernet10'
+                    config:
+                      id: 'GigabitEthernet10'
+                      interface: 'GigabitEthernet10'
+                      subinterface: '0'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: OSPF nssa
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - nssa
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ area 200 nssa:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - nssa
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+# Test OSPF NSSA with default
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - nssa_default_originate
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - nssa_default_originate
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-interfaces:interfaces:
+          interface:
+            - config:
+                enabled: true
+                name: GigabitEthernet10
+                type: 'ethernetCsmacd'
+              openconfig-if-ethernet:ethernet:
+                config:
+                  auto-negotiate: true
+                  enable-flow-control: false
+              hold-time:
+                config:
+                  down: '10'
+              name: GigabitEthernet10
+              subinterfaces:
+                subinterface:
+                  - config:
+                      index: '0'
+                    index: '0'
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: 172.17.0.1
+                              prefix-length: 24
+                            ip: 172.17.0.1
+                      config:
+                        dhcp-client: false
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: 1
+                    identifier: OSPF
+                    config:
+                      enabled: True
+                      identifier: OSPF
+                      name: 1
+                    ospfv2:
+                      areas:
+                        area:
+                        - config:
+                            identifier: 200
+                          identifier: 200
+                          interfaces:
+                            interface:
+                            - config:
+                                id: GigabitEthernet10
+                              id: GigabitEthernet10
+                          openconfig-ospfv2-ext:stub-options:
+                            stub:
+                              config:
+                                enabled: false
+                                default-information-originate: false
+                            totally-stubby:
+                              config:
+                                enabled: false
+                                default-information-originate: false
+                            nssa:
+                              config:
+                                enabled: true
+                                default-information-originate: true
+                                no-summary: false
+              interfaces:
+                interface:
+                  - id: 'GigabitEthernet10'
+                    config:
+                      id: 'GigabitEthernet10'
+                      interface: 'GigabitEthernet10'
+                      subinterface: '0'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: OSPF nssa_default_originate
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - nssa_default_originate
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ area 200 nssa default-information-originate:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - nssa_default_originate
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+# Test OSPF NSSA with default no-summary
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - nssa_default_originate_no_summary
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - nssa_default_originate_no_summary
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-interfaces:interfaces:
+          interface:
+            - config:
+                enabled: true
+                name: GigabitEthernet10
+                type: 'ethernetCsmacd'
+              openconfig-if-ethernet:ethernet:
+                config:
+                  auto-negotiate: true
+                  enable-flow-control: false
+              hold-time:
+                config:
+                  down: '10'
+              name: GigabitEthernet10
+              subinterfaces:
+                subinterface:
+                  - config:
+                      index: '0'
+                    index: '0'
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: 172.17.0.1
+                              prefix-length: 24
+                            ip: 172.17.0.1
+                      config:
+                        dhcp-client: false
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: 1
+                    identifier: OSPF
+                    config:
+                      enabled: True
+                      identifier: OSPF
+                      name: 1
+                    ospfv2:
+                      areas:
+                        area:
+                        - config:
+                            identifier: 200
+                          identifier: 200
+                          interfaces:
+                            interface:
+                            - config:
+                                id: GigabitEthernet10
+                              id: GigabitEthernet10
+                          openconfig-ospfv2-ext:stub-options:
+                            stub:
+                              config:
+                                enabled: false
+                                default-information-originate: false
+                            totally-stubby:
+                              config:
+                                enabled: false
+                                default-information-originate: false
+                            nssa:
+                              config:
+                                enabled: true
+                                default-information-originate: false
+                                no-summary: true
+              interfaces:
+                interface:
+                  - id: 'GigabitEthernet10'
+                    config:
+                      id: 'GigabitEthernet10'
+                      interface: 'GigabitEthernet10'
+                      subinterface: '0'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: OSPF nssa_default_originate_no_summary
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - nssa_default_originate_no_summary
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ area 200 nssa no-summary:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - nssa_default_originate_no_summary
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+# Test OSPF error multiple stubs configured same area
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - error_nssa_and_stub
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - error_nssa_and_stub
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-interfaces:interfaces:
+          interface:
+            - config:
+                enabled: true
+                name: GigabitEthernet10
+                type: 'ethernetCsmacd'
+              openconfig-if-ethernet:ethernet:
+                config:
+                  auto-negotiate: true
+                  enable-flow-control: false
+              hold-time:
+                config:
+                  down: '10'
+              name: GigabitEthernet10
+              subinterfaces:
+                subinterface:
+                  - config:
+                      index: '0'
+                    index: '0'
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: 172.17.0.1
+                              prefix-length: 24
+                            ip: 172.17.0.1
+                      config:
+                        dhcp-client: false
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: 1
+                    identifier: OSPF
+                    config:
+                      enabled: True
+                      identifier: OSPF
+                      name: 1
+                    ospfv2:
+                      areas:
+                        area:
+                        - config:
+                            identifier: 200
+                          identifier: 200
+                          interfaces:
+                            interface:
+                            - config:
+                                id: GigabitEthernet10
+                              id: GigabitEthernet10
+                          openconfig-ospfv2-ext:stub-options:
+                            stub:
+                              config:
+                                enabled: true
+                                default-information-originate: true
+                            totally-stubby:
+                              config:
+                                enabled: false
+                                default-information-originate: false
+                            nssa:
+                              config:
+                                enabled: true
+                                default-information-originate: false
+                                no-summary: true
+              interfaces:
+                interface:
+                  - id: 'GigabitEthernet10'
+                    config:
+                      id: 'GigabitEthernet10'
+                      interface: 'GigabitEthernet10'
+                      subinterface: '0'
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: OSPF error_nssa_and_stub
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+      register: error_results
+      ignore_errors: yes
+    - assert:
+        that:
+          - error_results.json['ietf-restconf:errors']['error'][0]['error-message'] == "Python cb_create error. OSPF stub areas can only be type stub, totally-stubby, or nssa: not more than one type."
