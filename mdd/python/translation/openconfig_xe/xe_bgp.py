@@ -90,7 +90,23 @@ def xe_bgp_redistribution_program_service(self, service_protocol, network_instan
                 service_protocol.bgp.oc_netinst__global.config.oc_netinst__as]
             for protocol in table_connections[vrf_name]['destination_protocols']['BGP']:
                 if protocol['src-protocol'] == 'oc-pol-types:OSPF' and protocol['address-family'] == 'oc-types:IPV4':
-                    pass
+                    if service_protocol.bgp.oc_netinst__global.afi_safis.afi_safi:
+                        if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE':  # address-family ipv4 unicast
+                            device_bgp_cbd.address_family.ipv4['unicast'].redistribute.ospf.create(protocol['src-protocol-process-number'])
+                            if protocol['import-policy']:
+                                device_bgp_cbd.address_family.ipv4['unicast'].redistribute.ospf[protocol['src-protocol-process-number']].route_map = protocol[
+                                    'import-policy']
+                        elif network_instance_type == 'oc-ni-types:L3VRF':  # address-family ipv4 unicast vrf
+                            device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
+                                vrf_name].redistribute.ospf.create(protocol['src-protocol-process-number'])
+                            if protocol['import-policy']:
+                                device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
+                                    vrf_name].redistribute.ospf[protocol['src-protocol-process-number']].route_map = protocol['import-policy']
+                    else:  # router ospf X
+                        self.log.info(f" \n protocol['src-protocol-process-number'] \n {protocol['src-protocol-process-number']}")
+                        device_bgp_cbd.redistribute.ospf.create(protocol['src-protocol-process-number'])
+                        if protocol['import-policy']:
+                            device_bgp_cbd.redistribute.ospf[protocol['src-protocol-process-number']].route_map = protocol['import-policy']
                 elif protocol['src-protocol'] == 'oc-pol-types:OSPF3' and protocol['address-family'] == 'oc-types:IPV4':
                     pass
                 elif protocol['src-protocol'] == 'oc-pol-types:STATIC' and protocol['address-family'] == 'oc-types:IPV4':

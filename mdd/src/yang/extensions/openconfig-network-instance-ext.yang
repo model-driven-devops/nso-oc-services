@@ -34,6 +34,14 @@ module openconfig-network-instance-ext{
         "Sets configure the process number for the redistributed protocol.";
     }
   }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:table-connections/oc-netinst:table-connection/oc-netinst:config {
+    leaf dst-protocol-process-number {
+      type uint16;
+      tailf:info "ios: for example 2 in 'router ospf 2'";
+      description
+        "Sets configure the process number for the redistributed protocol.";
+    }
+  }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:config {
       leaf-list route-targets-import {
       type oc-ni-types:route-distinguisher;

@@ -1,7 +1,6 @@
 # -*- mode: python; python-indent: 4 -*-
 from translation.openconfig_xe.common import xe_get_interface_type_number_and_subinterface
 
-
 ospf_network_types = {
     'oc-ospf-types:BROADCAST_NETWORK': 'broadcast',
     'oc-ospf-types:POINT_TO_POINT_NETWORK': 'point-to-point',
@@ -73,7 +72,8 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
             device_ospf_cbd.timers.throttle.lsa.hold_interval = service_protocol.ospfv2.oc_netinst__global.timers.lsa_generation.config.oc_ospfv2_ext__hold_time
             device_ospf_cbd.timers.throttle.lsa.max_interval = service_protocol.ospfv2.oc_netinst__global.timers.lsa_generation.config.maximum_delay
         else:
-            raise ValueError('XE OSPF throttle timers lsa needs values for start-interval, hold-interval, and max-interval')
+            raise ValueError(
+                'XE OSPF throttle timers lsa needs values for start-interval, hold-interval, and max-interval')
     # timers_spf
     if service_protocol.ospfv2.oc_netinst__global.timers.spf.config.initial_delay or \
             service_protocol.ospfv2.oc_netinst__global.timers.spf.config.maximum_delay or \
@@ -92,7 +92,8 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
             if len(service_area.interfaces.interface) > 0:
                 for service_interface in service_area.interfaces.interface:
 
-                    interface_type, interface_number = xe_get_interface_type_number_and_subinterface(service_interface.id)
+                    interface_type, interface_number = xe_get_interface_type_number_and_subinterface(
+                        service_interface.id)
                     class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                               interface_type)
                     interface_cdb = class_attribute[interface_number]
@@ -124,7 +125,8 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
                         for service_neighbor in service_interface.neighbors.neighbor:
                             device_ospf_cbd.neighbor.create(service_neighbor.router_id)
                             if service_neighbor.config.metric:
-                                device_ospf_cbd.neighbor[service_neighbor.router_id].cost_database_filter_container.cost = service_neighbor.config.metric
+                                device_ospf_cbd.neighbor[
+                                    service_neighbor.router_id].cost_database_filter_container.cost = service_neighbor.config.metric
                     # timer hello-interval
                     if service_interface.timers.config.hello_interval:
                         interface_cdb.ip.ospf.hello_interval = service_interface.timers.config.hello_interval
@@ -162,7 +164,7 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
                             if len(service_protocol.ospfv2.oc_netinst__global.inter_area_propagation_policies.inter_area_propagation_policy) == 0:
                                 del device_ospf_cbd.area[service_area.identifier]
             elif service_area.oc_ospfv2_ext__stub_options.stub.config.enabled and service_area.oc_ospfv2_ext__stub_options.stub.config.default_information_originate is False:
-                    raise ValueError('XE stub area ABRs must be configures to default_information_originate.')
+                raise ValueError('XE stub area ABRs must be configures to default_information_originate.')
             # stub areas - totally-stubby
             if service_area.oc_ospfv2_ext__stub_options.totally_stubby.config.enabled:
                 stub_counter += 1
@@ -203,7 +205,8 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
                             if len(service_protocol.ospfv2.oc_netinst__global.inter_area_propagation_policies.inter_area_propagation_policy) == 0:
                                 del device_ospf_cbd.area[service_area.identifier]
             if stub_counter > 1:
-                raise ValueError('OSPF stub areas can only be type stub, totally-stubby, or nssa: not more than one type.')
+                raise ValueError(
+                    'OSPF stub areas can only be type stub, totally-stubby, or nssa: not more than one type.')
 
 
 def create_area_network_statement(self, service_interface, device_ospf_cbd, service_area) -> None:
@@ -223,3 +226,53 @@ def create_area_network_statement(self, service_interface, device_ospf_cbd, serv
         device_ospf_cbd.network.create(interface_ip, '0.0.0.0')
     if device_ospf_cbd.network[(interface_ip, '0.0.0.0')].area != service_area.identifier:
         device_ospf_cbd.network[(interface_ip, '0.0.0.0')].area = service_area.identifier
+
+
+def xe_ospf_redistribution_program_service(self, table_connections) -> None:
+    """
+    Program service for xe NED features
+    """
+    self.log.info(f'{self.device_name} OSPF redistribution')
+    for service_table_connection in table_connections:
+        for service_table_connection_ospf in table_connections[service_table_connection]['destination_protocols'][
+            'OSPF']:
+            if service_table_connection_ospf['src-protocol'] == 'oc-pol-types:STATIC' and \
+                    service_table_connection_ospf['address-family'] == 'oc-types:IPV4':
+                self.root.devices.device[self.device_name].config.ios__router.ospf[
+                    service_table_connection_ospf['dst-protocol-process-number']].redistribute.static.create()
+                if service_table_connection_ospf['import-policy']:
+                    self.root.devices.device[self.device_name].config.ios__router.ospf[
+                        service_table_connection_ospf['dst-protocol-process-number']].redistribute.static.route_map = \
+                        service_table_connection_ospf['import-policy']
+            elif service_table_connection_ospf['src-protocol'] == 'oc-pol-types:DIRECTLY_CONNECTED' and \
+                    service_table_connection_ospf['address-family'] == 'oc-types:IPV4':
+                self.root.devices.device[self.device_name].config.ios__router.ospf[
+                    service_table_connection_ospf['dst-protocol-process-number']].redistribute.connected.create()
+                if service_table_connection_ospf['import-policy']:
+                    self.root.devices.device[self.device_name].config.ios__router.ospf[
+                        service_table_connection_ospf['dst-protocol-process-number']].redistribute.connected.route_map = \
+                        service_table_connection_ospf['import-policy']
+
+            if service_table_connection_ospf['src-protocol'] == 'oc-pol-types:BGP' and service_table_connection_ospf[
+                'address-family'] == 'oc-types:IPV4':
+                self.root.devices.device[self.device_name].config.ios__router.ospf[
+                    service_table_connection_ospf['dst-protocol-process-number']].redistribute.bgp.as_no = \
+                        service_table_connection_ospf['src-protocol-process-number']
+                if service_table_connection_ospf['import-policy']:
+                    self.root.devices.device[self.device_name].config.ios__router.ospf[
+                        service_table_connection_ospf['dst-protocol-process-number']].redistribute.bgp.route_map = \
+                            service_table_connection_ospf['import-policy']
+
+            if service_table_connection_ospf['src-protocol'] == 'oc-pol-types:OSPF' and service_table_connection_ospf[
+                'address-family'] == 'oc-types:IPV4':
+                self.root.devices.device[self.device_name].config.ios__router.ospf[
+                    service_table_connection_ospf['dst-protocol-process-number']].redistribute.ospf.create(
+                    service_table_connection_ospf['src-protocol-process-number'])
+                if service_table_connection_ospf['import-policy']:
+                    self.root.devices.device[self.device_name].config.ios__router.ospf[
+                        service_table_connection_ospf['dst-protocol-process-number']].redistribute.ospf[
+                        service_table_connection_ospf['src-protocol-process-number']].route_map = \
+                        service_table_connection_ospf['import-policy']
+            elif service_table_connection_ospf['src-protocol'] == 'oc-pol-types:ISIS' and service_table_connection_ospf[
+                'address-family'] == 'oc-types:IPV4':
+                pass
