@@ -12,6 +12,7 @@ from translation.openconfig_xe.xe_bgp import xe_bgp_neighbors_program_service
 from translation.openconfig_xe.xe_bgp import xe_bgp_peer_groups_program_service
 from translation.openconfig_xe.xe_bgp import xe_bgp_redistribution_program_service
 from translation.openconfig_xe.xe_ospf import xe_ospf_program_service
+from translation.openconfig_xe.xe_ospf import xe_ospf_redistribution_program_service
 
 
 def xe_network_instances_program_service(self) -> None:
@@ -230,12 +231,18 @@ def xe_get_table_connections(self) -> dict:
                     else:
                         raise ValueError('XE supports one route-map per redistribution statement.')
                 if service_table_connection.config.src_protocol_process_number:
-                    process_number = service_table_connection.config.src_protocol_process_number
+                    src_process_number = service_table_connection.config.src_protocol_process_number
                 else:
-                    process_number = None
+                    src_process_number = None
+                if service_table_connection.config.dst_protocol_process_number:
+                    dst_process_number = service_table_connection.config.dst_protocol_process_number
+                else:
+                    dst_process_number = None
                 table_connection = {
                     'src-protocol': service_table_connection.src_protocol,
-                    'src-protocol-process-number': process_number,
+                    'src-protocol-process-number': src_process_number,
+                    'dst-protocol': service_table_connection.dst_protocol,
+                    'dst-protocol-process-number': dst_process_number,
                     'disable-metric-propagation': service_table_connection.config.disable_metric_propagation,
                     'address-family': service_table_connection.config.address_family,
                     'import-policy': import_policy
@@ -299,6 +306,10 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
                 # Collect needed BGP instance information below
                 if p.identifier == 'oc-pol-types:BGP':
                     instance_bgp_list.append((p, network_instance.config.type, network_instance.config.name))
+
+    # Configure redistribution into OSPF
+    xe_ospf_redistribution_program_service(self, table_connections)
+
 
     # Sort BGP instance information so oc-ni-types:DEFAULT_INSTANCE is first and process
     if instance_bgp_list:
