@@ -51,6 +51,8 @@ def policy_definitions_configure(self) -> None:
                                     route_map_statement.set.ip.next_hop.address.create(service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_next_hop)
                             if service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_med:
                                 route_map_statement.set.metric = [service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_med]
+                            if service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_weight:
+                                route_map_statement.set.weight = service_policy_statement.actions.oc_bgp_pol__bgp_actions.config.set_weight
                             if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_as_path_prepend:
                                 if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_as_path_prepend.config.repeat_n:
                                     as_path = ((str(service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_as_path_prepend.config.asn) + ' ') * service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_as_path_prepend.config.repeat_n).strip()

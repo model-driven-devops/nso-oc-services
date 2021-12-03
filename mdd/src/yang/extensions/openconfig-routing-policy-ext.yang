@@ -13,6 +13,7 @@ module openconfig-routing-policy-ext{
   import openconfig-routing-policy { prefix oc-rpol; }
   import openconfig-extensions { prefix oc-ext; }
   import openconfig-acl { prefix oc-acl; }
+  import openconfig-bgp-policy { prefix oc-bgp-pol; }
 
 
   // meta
@@ -45,6 +46,13 @@ module openconfig-routing-policy-ext{
           }
         }
       }
+    }
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-rpol:routing-policy/oc-rpol:policy-definitions/oc-rpol:policy-definition/oc-rpol:statements/oc-rpol:statement/oc-rpol:actions/oc-bgp-pol:bgp-actions/oc-bgp-pol:config {
+    leaf set-weight {
+          type uint16;
+          description
+            "The route with the highest weight will be chosen as the preferred route when multiple routes are available to a particular network.";
     }
   }
 }

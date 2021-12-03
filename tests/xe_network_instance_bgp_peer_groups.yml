@@ -48,9 +48,9 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
                             peer-group-name: test
-                          peer-group-name: test
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -179,9 +179,9 @@
                           neighbor-address: 10.11.11.2
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
                             peer-group-name: test
-                          peer-group-name: test
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -303,10 +303,10 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
+                              peer-as: 2
                             peer-group-name: test
-                            peer-as: 2
-                          peer-group-name: test
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -428,10 +428,10 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
+                              auth-password: 'super_secret'
                             peer-group-name: test
-                            auth-password: 'super_secret'
-                          peer-group-name: test
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -554,10 +554,10 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
+                              description: 'my_description'
                             peer-group-name: test
-                            description: 'my_description'
-                          peer-group-name: test
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -680,10 +680,10 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
+                              local-as: 100
                             peer-group-name: test
-                            local-as: 100
-                          peer-group-name: test
 
   tasks:
     - name: Convert string to JSON
@@ -807,10 +807,10 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
+                              remove-private-as: PRIVATE_AS_REMOVE_ALL
                             peer-group-name: test
-                            remove-private-as: PRIVATE_AS_REMOVE_ALL
-                          peer-group-name: test
 
   tasks:
     - name: Convert string to JSON
@@ -934,10 +934,10 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
+                              remove-private-as: PRIVATE_AS_REPLACE_ALL
                             peer-group-name: test
-                            remove-private-as: PRIVATE_AS_REPLACE_ALL
-                          peer-group-name: test
 
   tasks:
     - name: Convert string to JSON
@@ -1061,10 +1061,10 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
+                              send-community: STANDARD
                             peer-group-name: test
-                            send-community: STANDARD
-                          peer-group-name: test
 
   tasks:
     - name: Convert string to JSON
@@ -1188,10 +1188,10 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
+                              send-community: EXTENDED
                             peer-group-name: test
-                            send-community: EXTENDED
-                          peer-group-name: test
 
   tasks:
     - name: Convert string to JSON
@@ -1315,10 +1315,10 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
+                              send-community: BOTH
                             peer-group-name: test
-                            send-community: BOTH
-                          peer-group-name: test
 
   tasks:
     - name: Convert string to JSON
@@ -1441,13 +1441,13 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
+                            ebgp-multihop:
+                              config:
+                                enabled: True
+                                multihop-ttl: 2
                             peer-group-name: test
-                          ebgp-multihop:
-                            config:
-                              enabled: True
-                              multihop-ttl: 2
-                          peer-group-name: test
 
   tasks:
     - name: Convert string to JSON
@@ -1570,12 +1570,12 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          peer-group-name: test
-                          config:
-                            peer-group-name: test
-                          route-reflector:
+                          - peer-group-name: test
                             config:
-                              route-reflector-client: True
+                              peer-group-name: test
+                            route-reflector:
+                              config:
+                                route-reflector-client: True
 
   tasks:
     - name: Convert string to JSON
@@ -1698,13 +1698,13 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          peer-group-name: test
-                          config:
-                            peer-group-name: test
-                            peer-as: 1
-                          route-reflector:
+                          - peer-group-name: test
                             config:
-                              route-reflector-cluster-id: 1.1.1.1
+                              peer-group-name: test
+                              peer-as: 1
+                            route-reflector:
+                              config:
+                                route-reflector-cluster-id: 1.1.1.1
 
   tasks:
     - name: Convert string to JSON
@@ -1827,13 +1827,13 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          peer-group-name: test
-                          config:
-                            peer-group-name: test
-                          timers:
+                          - peer-group-name: test
                             config:
-                              hold-time: 90
-                              keepalive-interval: 30
+                              peer-group-name: test
+                            timers:
+                              config:
+                                hold-time: 90
+                                keepalive-interval: 30
 
   tasks:
     - name: Convert string to JSON
@@ -1956,12 +1956,12 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          peer-group-name: test
-                          config:
-                            peer-group-name: test
-                          transport:
+                          - peer-group-name: test
                             config:
-                              mtu-discovery: False
+                              peer-group-name: test
+                            transport:
+                              config:
+                                mtu-discovery: False
 
   tasks:
     - name: Convert string to JSON
@@ -2084,12 +2084,12 @@
 #                          as: 1
 #                      peer-groups:
 #                        peer-group:
-#                          peer-group-name: test
-#                          config:
-#                            peer-group-name: test
-#                          transport:
+#                          - peer-group-name: test
 #                            config:
-#                              mtu-discovery: True
+#                              peer-group-name: test
+#                            transport:
+#                              config:
+#                                mtu-discovery: True
 #
 #  tasks:
 #    - name: Convert string to JSON
@@ -2213,12 +2213,12 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          peer-group-name: test
-                          config:
-                            peer-group-name: test
-                          transport:
+                          - peer-group-name: test
                             config:
-                              passive-mode: True
+                              peer-group-name: test
+                            transport:
+                              config:
+                                passive-mode: True
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -2362,12 +2362,12 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          peer-group-name: test
-                          config:
-                            peer-group-name: test
-                          transport:
+                          - peer-group-name: test
                             config:
-                              local-address: Loopback10
+                              peer-group-name: test
+                            transport:
+                              config:
+                                local-address: Loopback10
 
   tasks:
     - name: Convert string to JSON
@@ -2534,13 +2534,13 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
                             peer-group-name: test
-                          peer-group-name: test
-                          apply-policy:
-                            config:
-                              import-policy:
-                              - 'test'
+                            apply-policy:
+                              config:
+                                import-policy:
+                                - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -2706,13 +2706,13 @@
                           as: 1
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
                             peer-group-name: test
-                          peer-group-name: test
-                          apply-policy:
-                            config:
-                              export-policy:
-                              - 'test'
+                            apply-policy:
+                              config:
+                                export-policy:
+                                - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -2884,19 +2884,19 @@
                                 enabled: true
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
                             peer-group-name: test
-                          peer-group-name: test
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'IPV4_UNICAST'
-                                  enabled: true
-                                apply-policy:
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
                                   config:
-                                    import-policy:
-                                    - 'test'
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                                  apply-policy:
+                                    config:
+                                      import-policy:
+                                      - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -3070,19 +3070,19 @@
                                 enabled: true
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
                             peer-group-name: test
-                          peer-group-name: test
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'IPV4_UNICAST'
-                                  enabled: true
-                                apply-policy:
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
                                   config:
-                                    export-policy:
-                                    - 'test'
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                                  apply-policy:
+                                    config:
+                                      export-policy:
+                                      - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -3256,19 +3256,19 @@
                                 enabled: true
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
                             peer-group-name: test
-                          peer-group-name: test
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                  enabled: true
-                                apply-policy:
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'L3VPN_IPV4_UNICAST'
                                   config:
-                                    import-policy:
-                                    - 'test'
+                                    afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                    enabled: true
+                                  apply-policy:
+                                    config:
+                                      import-policy:
+                                      - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -3442,19 +3442,19 @@
                                 enabled: true
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
                             peer-group-name: test
-                          peer-group-name: test
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                  enabled: true
-                                apply-policy:
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'L3VPN_IPV4_UNICAST'
                                   config:
-                                    export-policy:
-                                    - 'test'
+                                    afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                    enabled: true
+                                  apply-policy:
+                                    config:
+                                      export-policy:
+                                      - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -3660,19 +3660,19 @@
                                 enabled: true
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
                             peer-group-name: test
-                          peer-group-name: test
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'IPV4_UNICAST'
-                                  enabled: true
-                                apply-policy:
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
                                   config:
-                                    import-policy:
-                                    - 'test'
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                                  apply-policy:
+                                    config:
+                                      import-policy:
+                                      - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -3878,20 +3878,20 @@
                                 afi-safi-name: 'IPV4_UNICAST'
                                 enabled: true
                       peer-groups:
-                        peer-group:
-                          config:
+                        - peer-group:
+                            config:
+                              peer-group-name: test
                             peer-group-name: test
-                          peer-group-name: test
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'IPV4_UNICAST'
-                                  enabled: true
-                                apply-policy:
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
                                   config:
-                                    export-policy:
-                                    - 'test'
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                                  apply-policy:
+                                    config:
+                                      export-policy:
+                                      - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -4099,19 +4099,19 @@
                                 enabled: true
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
                             peer-group-name: test
-                          peer-group-name: test
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'IPV4_LABELED_UNICAST'
-                                config:
-                                  afi-safi-name: 'IPV4_LABELED_UNICAST'
-                                  enabled: true
-                                apply-policy:
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_LABELED_UNICAST'
                                   config:
-                                    export-policy:
-                                    - 'test'
+                                    afi-safi-name: 'IPV4_LABELED_UNICAST'
+                                    enabled: true
+                                  apply-policy:
+                                    config:
+                                      export-policy:
+                                      - 'test'
 
   tasks:
     - name: Convert string to JSON
@@ -4277,18 +4277,18 @@
                                 enabled: true
                       peer-groups:
                         peer-group:
-                          config:
+                          - config:
+                              peer-group-name: test
                             peer-group-name: test
-                          peer-group-name: test
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'IPV4_UNICAST'
-                                  enabled: true
-                          as-path-options:
-                            config:
-                              replace-peer-as: True
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                            as-path-options:
+                              config:
+                                replace-peer-as: True
 
   tasks:
     - name: Convert string to JSON

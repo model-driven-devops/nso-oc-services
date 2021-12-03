@@ -498,7 +498,15 @@
                             openconfig-bgp-policy:reference:
                               openconfig-bgp-policy:config:
                                 openconfig-bgp-policy:community-set-ref: 'test_standard'  # will remove 100:100
-
+                    - name: '120'
+                      config:
+                        name: '120'
+                      actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        openconfig-bgp-policy:bgp-actions:
+                          openconfig-bgp-policy:config:
+                            openconfig-routing-policy-ext::set-weight: '65000'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -569,24 +577,25 @@
           - "'+ set community 100:100 200:200 300:300 additive:' in changes"
           - "'+route-map test-set permit 100:' in changes"
           - "'+ set community 100:100 200:200 300:300:' in changes"
+          - "'+ set weight 65000:' in changes"
 
-#- hosts: localhost
-#  gather_facts: no
-#  tags:
-#    - rollback
-#  tasks:
-#    - name: Rollback
-#      uri:
-#        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-#        url_username: admin
-#        url_password: admin
-#        force_basic_auth: yes
-#        validate_certs: no
-#        status_code: [ 204 ]
-#        method: POST
-#        headers: "{
-#          'Content-Type': 'application/yang-data+xml'}"
-#        body: |
-#          <input xmlns="http://tail-f.com/ns/rollback">
-#            <id>0</id>
-#          </input>
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>

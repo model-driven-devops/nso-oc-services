@@ -48,10 +48,10 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          neighbor-address: 10.11.11.2
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -174,11 +174,11 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
+                              auth-password: 'super_secret'
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                            auth-password: 'super_secret'
-                          neighbor-address: 10.11.11.2
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -301,11 +301,11 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
+                              description: 'as_2_peer'
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                            description: 'as_2_peer'
-                          neighbor-address: 10.11.11.2
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -428,11 +428,11 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
+                              enabled: False
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                            enabled: False
-                          neighbor-address: 10.11.11.2
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -555,11 +555,11 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
+                              local-as: 100
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                            local-as: 100
-                          neighbor-address: 10.11.11.2
 
   tasks:
     - name: Convert string to JSON
@@ -683,11 +683,11 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
+                              remove-private-as: PRIVATE_AS_REMOVE_ALL
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                            remove-private-as: PRIVATE_AS_REMOVE_ALL
-                          neighbor-address: 10.11.11.2
 
   tasks:
     - name: Convert string to JSON
@@ -811,11 +811,11 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
+                              remove-private-as: PRIVATE_AS_REPLACE_ALL
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                            remove-private-as: PRIVATE_AS_REPLACE_ALL
-                          neighbor-address: 10.11.11.2
 
   tasks:
     - name: Convert string to JSON
@@ -939,11 +939,11 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
+                              send-community: STANDARD
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                            send-community: STANDARD
-                          neighbor-address: 10.11.11.2
 
   tasks:
     - name: Convert string to JSON
@@ -1067,11 +1067,11 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
+                              send-community: EXTENDED
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                            send-community: EXTENDED
-                          neighbor-address: 10.11.11.2
 
   tasks:
     - name: Convert string to JSON
@@ -1195,11 +1195,11 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
+                              send-community: BOTH
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                            send-community: BOTH
-                          neighbor-address: 10.11.11.2
 
   tasks:
     - name: Convert string to JSON
@@ -1322,14 +1322,14 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
+                            ebgp-multihop:
+                              config:
+                                enabled: True
+                                multihop-ttl: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          ebgp-multihop:
-                            config:
-                              enabled: True
-                              multihop-ttl: 2
-                          neighbor-address: 10.11.11.2
 
   tasks:
     - name: Convert string to JSON
@@ -1452,13 +1452,13 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 1
+                            route-reflector:
+                              config:
+                                route-reflector-client: True
                             neighbor-address: 10.11.11.2
-                            peer-as: 1
-                          route-reflector:
-                            config:
-                              route-reflector-client: True
-                          neighbor-address: 10.11.11.2
 
   tasks:
     - name: Convert string to JSON
@@ -1581,13 +1581,13 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 1
+                            route-reflector:
+                              config:
+                                route-reflector-cluster-id: 1.1.1.1
                             neighbor-address: 10.11.11.2
-                            peer-as: 1
-                          route-reflector:
-                            config:
-                              route-reflector-cluster-id: 1.1.1.1
-                          neighbor-address: 10.11.11.2
 
   tasks:
     - name: Convert string to JSON
@@ -1710,14 +1710,14 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
+                            timers:
+                              config:
+                                hold-time: 90
+                                keepalive-interval: 30
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          timers:
-                            config:
-                              hold-time: 90
-                              keepalive-interval: 30
-                          neighbor-address: 10.11.11.2
 
   tasks:
     - name: Convert string to JSON
@@ -1840,13 +1840,13 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
+                            transport:
+                              config:
+                                mtu-discovery: False
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          transport:
-                            config:
-                              mtu-discovery: False
-                          neighbor-address: 10.11.11.2
 
   tasks:
     - name: Convert string to JSON
@@ -1969,13 +1969,13 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
+                            transport:
+                              config:
+                                passive-mode: True
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          transport:
-                            config:
-                              passive-mode: True
-                          neighbor-address: 10.11.11.2
 
   tasks:
     - name: Convert string to JSON
@@ -2120,13 +2120,13 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
+                            transport:
+                              config:
+                                local-address: Loopback10
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          transport:
-                            config:
-                              local-address: Loopback10
-                          neighbor-address: 10.11.11.2
 
   tasks:
     - name: Convert string to JSON
@@ -2255,16 +2255,16 @@
                                 enabled: true
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          neighbor-address: 10.11.11.2
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'IPV4_UNICAST'
-                                  enabled: true
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -2394,16 +2394,16 @@
                                 enabled: true
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          neighbor-address: 10.11.11.2
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                  enabled: true
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                    enabled: true
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -2565,16 +2565,16 @@
                                 enabled: true
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          neighbor-address: 10.11.11.2
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'IPV4_UNICAST'
-                                  enabled: true
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -2782,20 +2782,20 @@
                                 enabled: true
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          neighbor-address: 10.11.11.2
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'IPV4_UNICAST'
-                                  enabled: true
-                                apply-policy:
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
                                   config:
-                                    import-policy:
-                                    - 'test'
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                                  apply-policy:
+                                    config:
+                                      import-policy:
+                                      - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -3002,20 +3002,20 @@
                                 enabled: true
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          neighbor-address: 10.11.11.2
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'IPV4_UNICAST'
-                                  enabled: true
-                                apply-policy:
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
                                   config:
-                                    export-policy:
-                                    - 'test'
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                                  apply-policy:
+                                    config:
+                                      export-policy:
+                                      - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -3189,20 +3189,20 @@
                                 enabled: true
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          neighbor-address: 10.11.11.2
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                  enabled: true
-                                apply-policy:
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'L3VPN_IPV4_UNICAST'
                                   config:
-                                    import-policy:
-                                    - 'test'
+                                    afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                    enabled: true
+                                  apply-policy:
+                                    config:
+                                      import-policy:
+                                      - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -3376,20 +3376,20 @@
                                 enabled: true
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          neighbor-address: 10.11.11.2
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                  enabled: true
-                                apply-policy:
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'L3VPN_IPV4_UNICAST'
                                   config:
-                                    export-policy:
-                                    - 'test'
+                                    afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                    enabled: true
+                                  apply-policy:
+                                    config:
+                                      export-policy:
+                                      - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -3563,20 +3563,20 @@
                                 enabled: true
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          neighbor-address: 10.11.11.2
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'IPV4_UNICAST'
-                                  enabled: true
-                                apply-policy:
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
                                   config:
-                                    import-policy:
-                                    - 'test'
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                                  apply-policy:
+                                    config:
+                                      import-policy:
+                                      - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -3750,20 +3750,20 @@
                                 enabled: true
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          neighbor-address: 10.11.11.2
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'IPV4_UNICAST'
-                                  enabled: true
-                                apply-policy:
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
                                   config:
-                                    export-policy:
-                                    - 'test'
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                                  apply-policy:
+                                    config:
+                                      export-policy:
+                                      - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -3931,14 +3931,14 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          neighbor-address: 10.11.11.2
-                          apply-policy:
-                            config:
-                              import-policy:
-                              - 'test'
+                            apply-policy:
+                              config:
+                                import-policy:
+                                - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -4104,14 +4104,14 @@
                           as: 1
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          neighbor-address: 10.11.11.2
-                          apply-policy:
-                            config:
-                              export-policy:
-                              - 'test'
+                            apply-policy:
+                              config:
+                                export-policy:
+                                - 'test'
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -4273,16 +4273,16 @@
                                 enabled: true
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          neighbor-address: 10.11.11.2
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'IPV4_LABELED_UNICAST'
-                                config:
-                                  afi-safi-name: 'IPV4_LABELED_UNICAST'
-                                  enabled: true
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_LABELED_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_LABELED_UNICAST'
+                                    enabled: true
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -4446,19 +4446,19 @@
                                 enabled: true
                       neighbors:
                         neighbor:
-                          config:
+                          - config:
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                             neighbor-address: 10.11.11.2
-                            peer-as: 2
-                          neighbor-address: 10.11.11.2
-                          afi-safis:
-                            afi-safi:
-                              - afi-safi-name: 'IPV4_UNICAST'
-                                config:
-                                  afi-safi-name: 'IPV4_UNICAST'
-                                  enabled: true
-                          as-path-options:
-                            config:
-                              replace-peer-as: True
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                            as-path-options:
+                              config:
+                                replace-peer-as: True
 
   tasks:
     - name: Convert string to JSON
