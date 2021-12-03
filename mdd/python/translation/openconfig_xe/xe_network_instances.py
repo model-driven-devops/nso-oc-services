@@ -280,11 +280,20 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
                             for static in p.static_routes.static:
                                 network = ipaddress.ip_network(static.prefix)
                                 for nh in static.next_hops.next_hop:
-                                    route = device_route.ip_route_forwarding_list.create(str(network.network_address),
-                                                                                         str(network.netmask),
-                                                                                         nh.config.next_hop)
-                                    if nh.config.metric:
-                                        route.metric = nh.config.metric
+                                    if nh.config.next_hop == 'oc-loc-rt:DROP':
+                                        route = device_route.ip_route_interface_list.create(
+                                            str(network.network_address),
+                                            str(network.netmask),
+                                            'Null0')
+                                        if nh.config.metric:
+                                            route.metric = nh.config.metric
+                                    else:
+                                        route = device_route.ip_route_forwarding_list.create(
+                                            str(network.network_address),
+                                            str(network.netmask),
+                                            nh.config.next_hop)
+                                        if nh.config.metric:
+                                            route.metric = nh.config.metric
                     elif network_instance.config.type == 'oc-ni-types:L3VRF':  # if VRF table
                         if not device_route.vrf.exists(network_instance.name):
                             device_route.vrf.create(network_instance.name)
@@ -293,11 +302,18 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
                                 route_vrf = device_route.vrf[network_instance.name]
                                 network = ipaddress.ip_network(static.prefix)
                                 for nh in static.next_hops.next_hop:
-                                    route = route_vrf.ip_route_forwarding_list.create(str(network.network_address),
-                                                                                      str(network.netmask),
-                                                                                      nh.config.next_hop)
-                                    if nh.config.metric:
-                                        route.metric = nh.config.metric
+                                    if nh.config.next_hop == 'oc-loc-rt:DROP':
+                                        route = route_vrf.ip_route_interface_list.create(str(network.network_address),
+                                                                                         str(network.netmask),
+                                                                                         'Null0')
+                                        if nh.config.metric:
+                                            route.metric = nh.config.metric
+                                    else:
+                                        route = route_vrf.ip_route_forwarding_list.create(str(network.network_address),
+                                                                                          str(network.netmask),
+                                                                                          nh.config.next_hop)
+                                        if nh.config.metric:
+                                            route.metric = nh.config.metric
                 if p.identifier == 'oc-pol-types:OSPF':
                     xe_ospf_program_service(self, p, network_instance.config.type, network_instance.config.name)
 
