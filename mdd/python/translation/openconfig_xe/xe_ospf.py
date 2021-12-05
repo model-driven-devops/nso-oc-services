@@ -149,10 +149,10 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
                 for v_link in service_area.virtual_links.virtual_link:
                     device_ospf_cbd.area[service_area.identifier].virtual_link.create(v_link.remote_router_id)
             # stub areas - stub
-            if not device_ospf_cbd.area.exists(service_area.identifier):
-                device_ospf_cbd.area.create(service_area.identifier)
             stub_counter = 0
             if service_area.oc_ospfv2_ext__stub_options.stub.config.enabled and service_area.oc_ospfv2_ext__stub_options.stub.config.default_information_originate:
+                if not device_ospf_cbd.area.exists(service_area.identifier):
+                    device_ospf_cbd.area.create(service_area.identifier)
                 stub_counter += 1
                 device_ospf_cbd.area[service_area.identifier].stub.create()
             elif service_area.oc_ospfv2_ext__stub_options.stub.config.enabled is False:
@@ -167,6 +167,8 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
                 raise ValueError('XE stub area ABRs must be configures to default_information_originate.')
             # stub areas - totally-stubby
             if service_area.oc_ospfv2_ext__stub_options.totally_stubby.config.enabled:
+                if not device_ospf_cbd.area.exists(service_area.identifier):
+                    device_ospf_cbd.area.create(service_area.identifier)
                 stub_counter += 1
                 device_ospf_cbd.area[service_area.identifier].stub.create()
                 device_ospf_cbd.area[service_area.identifier].stub.no_summary.create()
@@ -184,6 +186,8 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
                 raise ValueError('XE totally stubby area ABRs must be configures to default_information_originate.')
             # stub areas - nssa
             if service_area.oc_ospfv2_ext__stub_options.nssa.config.enabled:
+                if not device_ospf_cbd.area.exists(service_area.identifier):
+                    device_ospf_cbd.area.create(service_area.identifier)
                 stub_counter += 1
                 device_ospf_cbd.area[service_area.identifier].nssa.create()
                 if service_area.oc_ospfv2_ext__stub_options.nssa.config.default_information_originate:
