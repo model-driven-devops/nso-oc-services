@@ -334,7 +334,7 @@
         msg: "{{ changes }}"
     - assert:
         that:
-          - "'+router bgp 1:' in changes"
+          - "'+this is a default and will not show up here:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
@@ -930,28 +930,28 @@
         that:
           - "'+ area 3 filter-list prefix test in:' in changes"
       ignore_errors: yes
-#- hosts: localhost
-#  gather_facts: no
-#  tags:
-#    - all
-#    - inter_area_propagation_policy
-#    - rollback
-#  tasks:
-#    - name: Rollback
-#      uri:
-#        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-#        url_username: admin
-#        url_password: admin
-#        force_basic_auth: yes
-#        validate_certs: no
-#        status_code: [ 204 ]
-#        method: POST
-#        headers: "{
-#          'Content-Type': 'application/yang-data+xml'}"
-#        body: |
-#          <input xmlns="http://tail-f.com/ns/rollback">
-#            <id>0</id>
-#          </input>
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - inter_area_propagation_policy
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
 # Test OSPF mpls igp-ldp-sync
 - hosts: "{{ device }}"
   connection: network_cli
@@ -1423,7 +1423,6 @@
     - assert:
         that:
           - "'+router ospf 1 vrf abc:' in changes"
-          - "'+capability vrf-lite:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
