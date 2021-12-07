@@ -28,6 +28,15 @@ xe_system_initial_vars = dict(XE_TIMEZONE='',
                               XE_SSH_SOURCE_INF_TYPE='',
                               XE_SSH_SOURCE_INF_NUMBER='')
 
+severity_levels_oc_to_xe = {'EMERGENCY': 'emergencies',
+                            'ALERT': 'alerts',
+                            'CRITICAL': 'critical',
+                            'ERROR': 'errors',
+                            'WARNING': 'warnings',
+                            'NOTICE': 'notifications',
+                            'INFORMATIONAL': 'informational',
+                            'DEBUG': 'debugging'}
+
 
 def xe_system_program_service(self) -> None:
     """
@@ -201,7 +210,7 @@ def xe_system_transform_vars(self) -> None:
     if self.service.oc_sys__system.logging.console.selectors.selector:
         for i in self.service.oc_sys__system.logging.console.selectors.selector:
             self.proplist.append(('XE_CONSOLE_FACILITY', str(i.facility).lower().replace('oc-log:', '')))
-            self.proplist.append(('XE_CONSOLE_SEVERITY', str(i.severity).lower()))
+            self.proplist.append(('XE_CONSOLE_SEVERITY', severity_levels_oc_to_xe.get(str(i.severity))))
             break
     if self.service.oc_sys__system.logging.remote_servers.remote_server:
         need_remote_facility = True
@@ -213,7 +222,7 @@ def xe_system_transform_vars(self) -> None:
                     self.proplist.append(('XE_REMOTE_FACILITY', str(i.facility).lower().replace('oc-log:', '')))
                     need_remote_facility = False
                 if need_remote_severity:
-                    self.proplist.append(('XE_REMOTE_SEVERITY', str(i.severity).lower()))
+                    self.proplist.append(('XE_REMOTE_SEVERITY', severity_levels_oc_to_xe.get(str(i.severity))))
                     need_remote_severity = False
             if need_source_address and n.config.source_address:
                 ip_name_dict = xe_system_get_interface_ip_address(self)
