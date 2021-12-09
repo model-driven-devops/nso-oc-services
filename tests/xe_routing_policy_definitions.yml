@@ -643,16 +643,16 @@
           - "'+ set community 100:100 200:200 300:300 additive:' in changes"
           - "'+route-map test-set permit 100:' in changes"
           - "'+ set community 100:100 200:200 300:300:' in changes"
+          - "'+route-map test-set permit 110:' in changes"
+          - "'+ set comm-list test_standard delete:' in changes"
           - "'+route-map test-set permit 120:' in changes"
           - "'+ set weight 65000:' in changes"
           - "'+route-map test-set permit 130:' in changes"
           - "'+ set extcommunity rt 1:1 2:2 additive:' in changes"
           - "'+route-map test-set permit 140:' in changes"
           - "'+ set extcommunity rt 3:3 4:4:' in changes"
-#          - "'+route-map test-set permit 110:' in changes"
-#          - "'+ set comm-list test_standard delete:' in changes"
-#          - "'+route-map test-set permit 150:' in changes"
-#          - "'+ set extcomm-list 1 delete:' in changes"
+          - "'+route-map test-set permit 150:' in changes"
+          - "'+ set extcomm-list test_ext delete:' in changes"
 
 - hosts: localhost
   gather_facts: no

@@ -70,16 +70,23 @@ def policy_definitions_configure(self) -> None:
                                 elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.options == 'REPLACE':
                                     if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.method == 'INLINE':
                                         route_map_statement.set.community.community_number = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.inline.config.communities.as_list()
-                                # elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.options == 'REMOVE':
-                                #     if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.method == 'REFERENCE':
-                                #         route_map_statement.set.comm_list.name = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.reference.config.community_set_ref
-                                #         route_map_statement.set.comm_list.delete.create()
-                                #         # TODO Look into this
-                                #         """
-                                #         In [10]: type(root.devices.device['xe1'].config.ios__route_map['test123', 10].set.comm_list.delete)
-                                #         Out[10]: method
-                                #         delete - should be ncs.maagic.EmptyLeaf
-                                #         """
+                                elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.options == 'REMOVE':
+                                    if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.method == 'REFERENCE':
+                                        route_map_statement.set.comm_list.name = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.reference.config.community_set_ref
+                                        route_map_statement.set.comm_list['delete'].create()
+                            if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community:
+                                if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.config.options == 'ADD':
+                                    if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.config.method == 'INLINE':
+                                        for community in service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.inline.config.communities:
+                                            route_map_statement.set.extcommunity.rt.create(community)
+                                        route_map_statement.set.extcommunity.rt.create('additive')
+                                elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.config.options == 'REPLACE':
+                                    if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.config.method == 'INLINE':
+                                        route_map_statement.set.extcommunity.rt = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.inline.config.communities.as_list()
+                                elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.config.options == 'REMOVE':
+                                    if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.config.method == 'REFERENCE':
+                                        route_map_statement.set.extcomm_list.name = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.reference.config.ext_community_set_ref
+                                        route_map_statement.set.extcomm_list['delete'].create()
 
                 if service_policy_statement.conditions:
                     if service_policy_statement.conditions.match_prefix_set.config.prefix_set:
