@@ -96,6 +96,8 @@ def policy_definitions_configure(self) -> None:
                             route_map_statement.match.as_path = [service_policy_statement.conditions.oc_bgp_pol__bgp_conditions.match_as_path_set.config.as_path_set]
                         if service_policy_statement.conditions.oc_bgp_pol__bgp_conditions.config.community_set:
                             route_map_statement.match.community = [service_policy_statement.conditions.oc_bgp_pol__bgp_conditions.config.community_set]
+                        if service_policy_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set:
+                            route_map_statement.match.extcommunity = [service_policy_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set]
                     if service_policy_statement.conditions.oc_routing_policy_ext__match_acl_ipv4_set.config.acl_set:
                         route_map_statement.match.ip.address.access_list = [service_policy_statement.conditions.oc_routing_policy_ext__match_acl_ipv4_set.config.acl_set]
 
