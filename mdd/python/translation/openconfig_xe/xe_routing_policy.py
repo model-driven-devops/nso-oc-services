@@ -13,6 +13,8 @@ def xe_routing_policy_program_service(self) -> None:
         as_path_sets_configure(self)
     if len(self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.community_sets.community_set) > 0:
         community_sets_configure(self)
+    if len(self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set) > 0:
+        ext_community_sets_configure(self)
     if len(self.service.oc_rpol__routing_policy.policy_definitions.policy_definition) > 0:
         policy_definitions_configure(self)
 
@@ -174,3 +176,24 @@ def community_sets_configure(self) -> None:
             community_list_cdb = device.ios__ip.community_list.expanded[request['name']]
             for community_member in request['communities']:
                 community_list_cdb.entry.create(f'permit {community_member}')
+
+
+def ext_community_sets_configure(self) -> None:
+    device = self.root.devices.device[self.device_name].config
+    # Always use ip bgp-community new-format
+    if not device.ios__ip.bgp_community.new_format.exists():
+        device.ios__ip.bgp_community.new_format.create()
+
+    for service_ext_community_set in self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set:
+        ext_community_list = list()
+        for community in service_ext_community_set.config.ext_community_member:
+            ext_community_list.append(community)
+
+        if not device.ios__ip.extcommunity_list.standard.no_mode_list.exists(service_ext_community_set.config.ext_community_set_name):
+            device.ios__ip.extcommunity_list.standard.no_mode_list.create(service_ext_community_set.config.ext_community_set_name)
+        ext_community_list_cdb = device.ios__ip.extcommunity_list.standard.no_mode_list[service_ext_community_set.config.ext_community_set_name]
+
+        command = 'permit '
+        for cm in ext_community_list:
+            command += f'rt {cm} '
+        ext_community_list_cdb.entry.create(command.strip())
