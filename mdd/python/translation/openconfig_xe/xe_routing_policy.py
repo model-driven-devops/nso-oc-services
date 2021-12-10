@@ -13,6 +13,8 @@ def xe_routing_policy_program_service(self) -> None:
         as_path_sets_configure(self)
     if len(self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.community_sets.community_set) > 0:
         community_sets_configure(self)
+    if len(self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set) > 0:
+        ext_community_sets_configure(self)
     if len(self.service.oc_rpol__routing_policy.policy_definitions.policy_definition) > 0:
         policy_definitions_configure(self)
 
@@ -68,16 +70,23 @@ def policy_definitions_configure(self) -> None:
                                 elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.options == 'REPLACE':
                                     if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.method == 'INLINE':
                                         route_map_statement.set.community.community_number = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.inline.config.communities.as_list()
-                                # elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.options == 'REMOVE':
-                                #     if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.method == 'REFERENCE':
-                                #         route_map_statement.set.comm_list.name = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.reference.config.community_set_ref
-                                #         route_map_statement.set.comm_list.delete.create()
-                                #         # TODO Look into this
-                                #         """
-                                #         In [10]: type(root.devices.device['xe1'].config.ios__route_map['test123', 10].set.comm_list.delete)
-                                #         Out[10]: method
-                                #         delete - should be ncs.maagic.EmptyLeaf
-                                #         """
+                                elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.options == 'REMOVE':
+                                    if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.method == 'REFERENCE':
+                                        route_map_statement.set.comm_list.name = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.reference.config.community_set_ref
+                                        route_map_statement.set.comm_list['delete'].create()
+                            if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community:
+                                if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.config.options == 'ADD':
+                                    if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.config.method == 'INLINE':
+                                        for community in service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.inline.config.communities:
+                                            route_map_statement.set.extcommunity.rt.create(community)
+                                        route_map_statement.set.extcommunity.rt.create('additive')
+                                elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.config.options == 'REPLACE':
+                                    if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.config.method == 'INLINE':
+                                        route_map_statement.set.extcommunity.rt = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.inline.config.communities.as_list()
+                                elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.config.options == 'REMOVE':
+                                    if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.config.method == 'REFERENCE':
+                                        route_map_statement.set.extcomm_list.name = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_ext_community.reference.config.ext_community_set_ref
+                                        route_map_statement.set.extcomm_list['delete'].create()
 
                 if service_policy_statement.conditions:
                     if service_policy_statement.conditions.match_prefix_set.config.prefix_set:
@@ -94,6 +103,8 @@ def policy_definitions_configure(self) -> None:
                             route_map_statement.match.as_path = [service_policy_statement.conditions.oc_bgp_pol__bgp_conditions.match_as_path_set.config.as_path_set]
                         if service_policy_statement.conditions.oc_bgp_pol__bgp_conditions.config.community_set:
                             route_map_statement.match.community = [service_policy_statement.conditions.oc_bgp_pol__bgp_conditions.config.community_set]
+                        if service_policy_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set:
+                            route_map_statement.match.extcommunity = [service_policy_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set]
                     if service_policy_statement.conditions.oc_routing_policy_ext__match_acl_ipv4_set.config.acl_set:
                         route_map_statement.match.ip.address.access_list = [service_policy_statement.conditions.oc_routing_policy_ext__match_acl_ipv4_set.config.acl_set]
 
@@ -174,3 +185,24 @@ def community_sets_configure(self) -> None:
             community_list_cdb = device.ios__ip.community_list.expanded[request['name']]
             for community_member in request['communities']:
                 community_list_cdb.entry.create(f'permit {community_member}')
+
+
+def ext_community_sets_configure(self) -> None:
+    device = self.root.devices.device[self.device_name].config
+    # Always use ip bgp-community new-format
+    if not device.ios__ip.bgp_community.new_format.exists():
+        device.ios__ip.bgp_community.new_format.create()
+
+    for service_ext_community_set in self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set:
+        ext_community_list = list()
+        for community in service_ext_community_set.config.ext_community_member:
+            ext_community_list.append(community)
+
+        if not device.ios__ip.extcommunity_list.standard.no_mode_list.exists(service_ext_community_set.config.ext_community_set_name):
+            device.ios__ip.extcommunity_list.standard.no_mode_list.create(service_ext_community_set.config.ext_community_set_name)
+        ext_community_list_cdb = device.ios__ip.extcommunity_list.standard.no_mode_list[service_ext_community_set.config.ext_community_set_name]
+
+        command = 'permit '
+        for cm in ext_community_list:
+            command += f'rt {cm} '
+        ext_community_list_cdb.entry.create(command.strip())

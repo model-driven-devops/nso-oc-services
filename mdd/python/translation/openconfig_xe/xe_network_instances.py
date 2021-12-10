@@ -1,8 +1,6 @@
 # -*- mode: python; python-indent: 4 -*-
 import copy
 import ipaddress
-import re
-from typing import Tuple
 
 from translation.openconfig_xe.common import xe_get_interface_type_and_number
 from translation.openconfig_xe.common import xe_get_interface_type_number_and_subinterface
@@ -71,22 +69,66 @@ def xe_configure_vrfs(self) -> None:
                 self.root.devices.device[self.device_name].config.ios__vrf.definition[
                     network_instance.name].rd = network_instance.config.route_distinguisher
 
-            # Add route targets
-            # Get import route-targets from configs
-            rt_import_config = [rt for rt in network_instance.config.route_targets_import]
-            # Get export route-targets from configs
-            rt_export_config = [rt for rt in network_instance.config.route_targets_export]
+            # Add route targets and inter-instance-policies
+            # Configure inter-instance-policies
+            import_rts_policy = set()
+            if network_instance.inter_instance_policies.apply_policy.config.import_policy:
+                if len(network_instance.inter_instance_policies.apply_policy.config.import_policy) == 1:
+                    import_policy = \
+                    network_instance.inter_instance_policies.apply_policy.config.import_policy.as_list()[0]
+                    self.root.devices.device[self.device_name].config.ios__vrf.definition[
+                        network_instance.name].address_family.ipv4.ios__import.ipv4.unicast.map = import_policy
+
+                    # collect the route-targets to be used in 'route-target import X' statements
+                    import_policy_service = self.service.oc_rpol__routing_policy.policy_definitions.policy_definition[import_policy]
+                    extcommunity_lists = list()
+                    for service_statement in import_policy_service.statements.statement:
+                        if service_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set:
+                            extcommunity_lists.append(service_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set)
+                    for ext_community_list_name in extcommunity_lists:
+                        ext_list = self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set[ext_community_list_name]
+                        for community in ext_list.config.ext_community_member:
+                            import_rts_policy.add(community)
+                else:
+                    raise ValueError('XE supports one route-map for VRF import policy.')
+            export_rts_policy = set()
+            if network_instance.inter_instance_policies.apply_policy.config.export_policy:
+                if len(network_instance.inter_instance_policies.apply_policy.config.export_policy) == 1:
+                    export_policy = \
+                    network_instance.inter_instance_policies.apply_policy.config.export_policy.as_list()[0]
+                    self.root.devices.device[self.device_name].config.ios__vrf.definition[
+                        network_instance.name].address_family.ipv4.export.map = export_policy
+
+                    # collect the route-targets to be used in 'route-target import X' statements
+                    export_policy_service = self.service.oc_rpol__routing_policy.policy_definitions.policy_definition[export_policy]
+                    extcommunity_lists = list()
+                    for service_statement in export_policy_service.statements.statement:
+                        if service_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set:
+                            extcommunity_lists.append(service_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set)
+                    for ext_community_list_name in extcommunity_lists:
+                        ext_list = self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set[ext_community_list_name]
+                        for community in ext_list.config.ext_community_member:
+                            export_rts_policy.add(community)
+                else:
+                    raise ValueError('XE supports one route-map for VRF export policy.')
+
+            # Get import route-targets from configuration route-target import and import policy
+            rt_import_config = set([rt for rt in network_instance.config.route_targets_import])
+            rt_import_config.update(import_rts_policy)
+            # Get export route-targets from configuration route-target export and export policy
+            rt_export_config = set([rt for rt in network_instance.config.route_targets_export])
+            rt_export_config.update(export_rts_policy)
 
             # Get import route-targets from the CDB
-            rt_import_cdb = [rt for rt in self.root.devices.device[self.device_name].config.ios__vrf.definition[
-                network_instance.name].route_target.ios__import]
+            rt_import_cdb = set([rt for rt in self.root.devices.device[self.device_name].config.ios__vrf.definition[
+                network_instance.name].route_target.ios__import])
             # Get export route-targets from the CDB
-            rt_export_cdb = [rt for rt in self.root.devices.device[self.device_name].config.ios__vrf.definition[
-                network_instance.name].route_target.export]
+            rt_export_cdb = set([rt for rt in self.root.devices.device[self.device_name].config.ios__vrf.definition[
+                network_instance.name].route_target.export])
 
             # Find route targets to create in CDB
-            rt_import_to_cdb = [rt for rt in rt_import_config if rt not in set(rt_import_cdb)]
-            rt_export_to_cdb = [rt for rt in rt_export_config if rt not in set(rt_export_cdb)]
+            rt_import_to_cdb = rt_import_config.difference(rt_import_cdb)
+            rt_export_to_cdb = rt_export_config.difference(rt_export_cdb)
 
             # Add Route Targets to CDB
             for rt in rt_import_to_cdb:

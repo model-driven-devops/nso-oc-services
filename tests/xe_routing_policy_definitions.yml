@@ -90,6 +90,15 @@
                       match-set-options: ANY
                       community-member:
                         - "6500[0-9]:1000"
+              ext-community-sets:
+                ext-community-set:
+                  - ext-community-set-name: test_ext
+                    config:
+                      ext-community-set-name: test_ext
+                      match-set-options: ANY
+                      ext-community-member:
+                        - "1:1"
+                        - "2:2"
             prefix-sets:
               prefix-set:
                 - name: prefix_test
@@ -270,7 +279,16 @@
                       actions:
                         config:
                           policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-
+                    - name: '80'
+                      config:
+                        name: '80'
+                      conditions:
+                        openconfig-bgp-policy:bgp-conditions:
+                          openconfig-bgp-policy:config:
+                            openconfig-bgp-policy:ext-community-set: 'test_ext'
+                      openconfig-routing-policy:actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -335,6 +353,8 @@
           - "'+ match ip address 100:' in changes"
           - "'+route-map test-match permit 70:' in changes"
           - "'+ match tag 2000:' in changes"
+          - "'+route-map test-match permit 80:' in changes"
+          - "'+ match extcommunity test_ext:' in changes"
 
 # Add routing policy permit set
 - hosts: "{{ device }}"
@@ -507,6 +527,52 @@
                         openconfig-bgp-policy:bgp-actions:
                           openconfig-bgp-policy:config:
                             openconfig-routing-policy-ext::set-weight: '65000'
+                    - name: '130'
+                      config:
+                        name: '130'
+                      actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        openconfig-bgp-policy:bgp-actions:
+                          openconfig-bgp-policy:set-ext-community:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                              openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                            openconfig-bgp-policy:inline:
+                              openconfig-bgp-policy:config:
+                                openconfig-bgp-policy:communities:
+                                  - '1:1'
+                                  - '2:2'
+                    - name: '140'
+                      config:
+                        name: '140'
+                      actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        openconfig-bgp-policy:bgp-actions:
+                          openconfig-bgp-policy:set-ext-community:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                              openconfig-bgp-policy:options: 'REPLACE'  # ADD, REMOVE, REPLACE
+                            openconfig-bgp-policy:inline:
+                              openconfig-bgp-policy:config:
+                                openconfig-bgp-policy:communities:
+                                  - '3:3'
+                                  - '4:4'
+                    - name: '150'
+                      config:
+                        name: '150'
+                      actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        openconfig-bgp-policy:bgp-actions:
+                          openconfig-bgp-policy:set-ext-community:
+                            openconfig-bgp-policy:config:
+                              openconfig-bgp-policy:method: 'REFERENCE'  # INLINE or REFERENCE
+                              openconfig-bgp-policy:options: 'REMOVE'  # ADD, REMOVE, REPLACE
+                            openconfig-bgp-policy:reference:
+                              openconfig-bgp-policy:config:
+                                openconfig-bgp-policy:ext-community-set-ref: 'test_ext'  # will remove 1:1 and 2:2
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -551,7 +617,7 @@
           - show run
       register: result_after
     - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
     - name: debug changes
       debug:
         msg: "{{ changes }}"
@@ -577,7 +643,16 @@
           - "'+ set community 100:100 200:200 300:300 additive:' in changes"
           - "'+route-map test-set permit 100:' in changes"
           - "'+ set community 100:100 200:200 300:300:' in changes"
+          - "'+route-map test-set permit 110:' in changes"
+          - "'+ set comm-list test_standard delete:' in changes"
+          - "'+route-map test-set permit 120:' in changes"
           - "'+ set weight 65000:' in changes"
+          - "'+route-map test-set permit 130:' in changes"
+          - "'+ set extcommunity rt 1:1 2:2 additive:' in changes"
+          - "'+route-map test-set permit 140:' in changes"
+          - "'+ set extcommunity rt 3:3 4:4:' in changes"
+          - "'+route-map test-set permit 150:' in changes"
+          - "'+ set extcomm-list test_ext delete:' in changes"
 
 - hosts: localhost
   gather_facts: no
