@@ -479,3 +479,378 @@
             <id>0</id>
           </input>
 
+# Test VRF route-targets with route-map extended communities import
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - route_target_extcomm_import
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - route_target_extcomm_import
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-routing-policy:routing-policy:
+          defined-sets:
+            openconfig-bgp-policy:bgp-defined-sets:
+              ext-community-sets:
+                ext-community-set:
+                  - ext-community-set-name: test_ext_match
+                    config:
+                      ext-community-set-name: test_ext_match
+                      match-set-options: ANY
+                      ext-community-member:
+                        - "1:1"
+                        - "2:2"
+                        - "3:3"
+          policy-definitions:
+            policy-definition:
+              - name: 'test-match'
+                config:
+                  name: 'test-match'
+                statements:
+                  openconfig-routing-policy:statement:
+                    - name: '10'
+                      config:
+                        name: '10'
+                      conditions:
+                        openconfig-bgp-policy:bgp-conditions:
+                          openconfig-bgp-policy:config:
+                            openconfig-bgp-policy:ext-community-set: 'test_ext_match'
+                      openconfig-routing-policy:actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: BGP
+                    identifier: BGP
+                    config:
+                      enabled: True
+                      identifier: BGP
+                      name: BGP
+                    bgp:
+                      global:
+                        config:
+                          as: 1
+            - name: 'abc'
+              config:
+                name: 'abc'
+                type: 'L3VRF'
+                enabled: true
+                enabled-address-families:
+                  - 'IPV4'
+                route-distinguisher: '1:1'
+              inter-instance-policies:
+                apply-policy:
+                  config:
+                    import-policy:
+                    - 'test-match'
+              openconfig-network-instance:protocols:
+                protocol:
+                  - name: BGP
+                    identifier: BGP
+                    config:
+                      enabled: True
+                      identifier: BGP
+                      name: BGP
+                    bgp:
+                      global:
+                        config:
+                          as: 1
+                        afi-safis:
+                          afi-safi:
+                            - afi-safi-name: 'IPV4_UNICAST'
+                              config:
+                                afi-safi-name: 'IPV4_UNICAST'
+                                enabled: true
+
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: TEST route_target_extcomm_import
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - route_target_extcomm_import
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ip extcommunity-list standard test_ext_match permit rt 1:1 rt 2:2 rt 3:3:' in changes"
+          - "'+route-map test-match permit 10:' in changes"
+          - "'+ match extcommunity test_ext_match:' in changes"
+          - "'+ route-target import 1:1:' in changes"
+          - "'+ route-target import 2:2:' in changes"
+          - "'+ route-target import 3:3:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - route_target_extcomm_import
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
+
+# Test VRF route-targets with route-map extended communities export
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - route_target_extcomm_export
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (before)
+      ios_command:
+        commands:
+          - show run
+      register: result_before
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - route_target_extcomm_export
+  vars:
+    device_name: "{{ device }}"
+    content: |
+      mdd:openconfig:
+        openconfig-routing-policy:routing-policy:
+          defined-sets:
+            openconfig-bgp-policy:bgp-defined-sets:
+              ext-community-sets:
+                ext-community-set:
+                  - ext-community-set-name: test_ext_match
+                    config:
+                      ext-community-set-name: test_ext_match
+                      match-set-options: ANY
+                      ext-community-member:
+                        - "1:1"
+                        - "2:2"
+                        - "3:3"
+          policy-definitions:
+            policy-definition:
+              - name: 'test-match'
+                config:
+                  name: 'test-match'
+                statements:
+                  openconfig-routing-policy:statement:
+                    - name: '10'
+                      config:
+                        name: '10'
+                      conditions:
+                        openconfig-bgp-policy:bgp-conditions:
+                          openconfig-bgp-policy:config:
+                            openconfig-bgp-policy:ext-community-set: 'test_ext_match'
+                      openconfig-routing-policy:actions:
+                        config:
+                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+        openconfig-network-instance:network-instances:
+          network-instance:
+            - name: 'default'
+              config:
+                name: 'default'
+                type: 'DEFAULT_INSTANCE'
+                enabled: true
+              protocols:
+                protocol:
+                  - name: BGP
+                    identifier: BGP
+                    config:
+                      enabled: True
+                      identifier: BGP
+                      name: BGP
+                    bgp:
+                      global:
+                        config:
+                          as: 1
+            - name: 'abc'
+              config:
+                name: 'abc'
+                type: 'L3VRF'
+                enabled: true
+                enabled-address-families:
+                  - 'IPV4'
+                route-distinguisher: '1:1'
+              inter-instance-policies:
+                apply-policy:
+                  config:
+                    export-policy:
+                    - 'test-match'
+              openconfig-network-instance:protocols:
+                protocol:
+                  - name: BGP
+                    identifier: BGP
+                    config:
+                      enabled: True
+                      identifier: BGP
+                      name: BGP
+                    bgp:
+                      global:
+                        config:
+                          as: 1
+                        afi-safis:
+                          afi-safi:
+                            - afi-safi-name: 'IPV4_UNICAST'
+                              config:
+                                afi-safi-name: 'IPV4_UNICAST'
+                                enabled: true
+
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: TEST route_target_extcomm_export
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PUT
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- hosts: "{{ device }}"
+  connection: network_cli
+  gather_facts: no
+  tags:
+    - all
+    - route_target_extcomm_export
+  vars:
+    ansible_network_os: 'cisco.ios.ios'
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+  roles:
+    - ansible-pyats
+  tasks:
+    - name: collect config (after)
+      ios_command:
+        commands:
+          - show run
+      register: result_after
+    - set_fact:
+        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
+    - name: debug changes
+      debug:
+        msg: "{{ changes }}"
+    - assert:
+        that:
+          - "'+ip extcommunity-list standard test_ext_match permit rt 1:1 rt 2:2 rt 3:3:' in changes"
+          - "'+route-map test-match permit 10:' in changes"
+          - "'+ match extcommunity test_ext_match:' in changes"
+          - "'+ route-target export 1:1:' in changes"
+          - "'+ route-target export 2:2:' in changes"
+          - "'+ route-target export 3:3:' in changes"
+      ignore_errors: yes
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - route_target_extcomm_export
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
