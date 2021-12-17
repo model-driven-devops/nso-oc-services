@@ -164,7 +164,7 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
                             if len(service_protocol.ospfv2.oc_netinst__global.inter_area_propagation_policies.inter_area_propagation_policy) == 0:
                                 del device_ospf_cbd.area[service_area.identifier]
             elif service_area.oc_ospfv2_ext__stub_options.stub.config.enabled and service_area.oc_ospfv2_ext__stub_options.stub.config.default_information_originate is False:
-                raise ValueError('XE stub area ABRs must be configures to default_information_originate.')
+                raise ValueError('XE stub area ABRs must be configured to default_information_originate.')
             # stub areas - totally-stubby
             if service_area.oc_ospfv2_ext__stub_options.totally_stubby.config.enabled:
                 if not device_ospf_cbd.area.exists(service_area.identifier):
@@ -183,7 +183,7 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
                             if len(service_protocol.ospfv2.oc_netinst__global.inter_area_propagation_policies.inter_area_propagation_policy) == 0:
                                 del device_ospf_cbd.area[service_area.identifier]
             elif service_area.oc_ospfv2_ext__stub_options.totally_stubby.config.enabled and service_area.oc_ospfv2_ext__stub_options.totally_stubby.config.default_information_originate is False:
-                raise ValueError('XE totally stubby area ABRs must be configures to default_information_originate.')
+                raise ValueError('XE totally stubby area ABRs must be configured to default_information_originate.')
             # stub areas - nssa
             if service_area.oc_ospfv2_ext__stub_options.nssa.config.enabled:
                 if not device_ospf_cbd.area.exists(service_area.identifier):

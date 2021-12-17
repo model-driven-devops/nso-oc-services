@@ -14,6 +14,8 @@ module openconfig-system-ext{
   import mdd { prefix mdd; }
   import openconfig-network-instance { prefix "oc-netinst"; }
   import openconfig-extensions { prefix oc-ext; }
+  import openconfig-inet-types { prefix oc-inet; }
+  import openconfig-system-logging { prefix oc-log; }
 
 
   // meta
@@ -29,40 +31,203 @@ module openconfig-system-ext{
     description
       "Initial revision";
   }
+
+  identity CIPHERSUITE_TYPE {
+    description
+      "Base identity to define ciphersuite types";
+  }
+  identity aes-128-cbc-sha {
+    base CIPHERSUITE_TYPE;
+    description
+      "Encryption type tls_rsa_with_aes_cbc_128_sha ciphersuite.";
+  }
+  identity aes-256-cbc-sha {
+    base CIPHERSUITE_TYPE;
+    description
+      "Encryption type tls_rsa_with_aes_cbc_256_sha ciphersuite.";
+  }
+  identity dhe-aes-cbc-sha2 {
+    base CIPHERSUITE_TYPE;
+    description
+      "Encryption type tls_dhe_rsa_with_aes_cbc_sha2(TLS1.2 & above) ciphersuite.";
+  }
+  identity dhe-aes-gcm-sha2 {
+    base CIPHERSUITE_TYPE;
+    description
+      " Encryption type tls_dhe_rsa_with_aes_gcm_sha2(TLS1.2 & above) ciphersuite.";
+  }
+  identity ecdhe-ecdsa-aes-gcm-sha2 {
+    base CIPHERSUITE_TYPE;
+    description
+      "ncryption type tls_ecdhe_ecdsa_aes_gcm_sha2  (TLS1.2 & above) SuiteB ciphersuite.";
+  }
+  identity ecdhe-rsa-aes-128-cbc-sha {
+    base CIPHERSUITE_TYPE;
+    description
+      "Encryption type tls_ecdhe_rsa_with_aes_128_cbc_sha ciphersuite.";
+  }
+  identity ecdhe-rsa-aes-cbc-sha2 {
+    base CIPHERSUITE_TYPE;
+    description
+      "Encryption type tls_ecdhe_rsa_aes_cbc_sha2(TLS1.2 & above) ciphersuite.";
+  }
+  identity ecdhe-rsa-aes-gcm-sha2 {
+    base CIPHERSUITE_TYPE;
+    description
+      "Encryption type tls_ecdhe_rsa_aes_gcm_sha2(TLS1.2  & above) ciphersuite.";
+  }
+  identity rsa-aes-cbc-sha2 {
+    base CIPHERSUITE_TYPE;
+    description
+      "Encryption type tls_rsa_with_aes_cbc_sha2(TLS1.2 & above) ciphersuite.";
+  }
+  identity rsa-aes-gcm-sha2 {
+    base CIPHERSUITE_TYPE;
+    description
+      "Encryption type tls_rsa_with_aes_gcm_sha2(TLS1.2 & above) ciphersuite.";
+  }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system {
     container services {
       description
         "Minor network device services";
-        leaf finger {
+      leaf finger {
+          type boolean;
+          //default false;
+          description
+            "Configure a system to accept Finger protocol requests.";
+      }
+      container http {
+        description
+          "HTTP server configurations";
+        leaf http-enabled {
             type boolean;
             //default false;
             description
-              "Configure a system to accept Finger protocol requests.";
+              "Enable HTTP Server.";
         }
+        leaf https-enabled {
+            type boolean;
+            //default false;
+            description
+              "Enable HTTPS Server.";
+        }
+        leaf ip-http-max-connections {
+          type uint16;
+          tailf:info "ios: ip http max connections";
+          description
+            "Sets the maximum number of concurrent connections allowed for the HTTP server.";
+        }
+        leaf-list ip-http-secure-ciphersuite {
+          type identityref {
+            base oc-system-ext:CIPHERSUITE_TYPE;
+          }
+          tailf:info "ios: ip http secure-ciphersuite";
+          description
+            "Specifies the CipherSuites that should be used by the secure HTTP server when negotiating a connection with a remote client.";
+        }
+        container ip-http-timeout-policy {
+          description
+            "Sets the parameters for closing connections to the local HTTP server.";
+          container idle {
+            description
+              "Specifies the maximum number of seconds that a connection will be kept open if no data is received or response data cannot be sent out.";
+            leaf connection {
+              type uint16 {
+                range "0 .. 600";
+              }
+              description
+                "Connection idle time-out value in seconds.";
+            }
+            leaf life {
+              type uint32 {
+                range "0 .. 86400";
+              }
+              description
+                "Specifies the maximum number of seconds that a connection will be kept open from the time the connection is established.";
+            }
+            leaf requests {
+              type uint32 {
+                range "0 .. 86400";
+              }
+              description
+                "Specifies that a maximum limit is set on the number of requests processed on a persistent connection before it is closed.";
+            }
+          }
+        }
+      }
     }
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:config {
-    leaf ip-http-max-connections {
-      type uint16;
-      tailf:info "ios: ip http max connections";
+    leaf console-exec-timeout-seconds {
+      type uint16 {
+        range "0 .. 35791";
+      }
       description
-        "Sets the maximum number of concurrent connections allowed for the HTTP server.";
+        "Configure the inactive session timeout on the console port in seconds.";
     }
-  }
-  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:config {
     leaf enable-secret {
       type string;
       description
         "Sets a local password to control access to various privilege levels.
         At this time, only encryption-type 0 is supported.";
     }
-  }
-  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:config {
-    leaf console-exec-timeout-seconds {
-      type string;
+    container timestamps {
       description
-        "Configure the inactive session timeout on the console port in seconds.";
-    }
+        "Configure logging and debugging time-stamps messages.";
+      container logging {
+        description
+          "Configure logging time-stamps messages.";
+        leaf enabled {
+          type boolean;
+          description
+            "Enables timestamps for logging.";
+         }
+        leaf datetime {
+          type boolean;
+          description
+            "Time stamp with the date and time.";
+         }
+         leaf localtime {
+          type boolean;
+          description
+            "Time stamp relative to the local time zone.";
+         }
+         leaf uptime {
+          type boolean;
+          description
+            "Time stamp with time since the system was rebooted.";
+         }
+       }
+      container debugging {
+        description
+          "Configure debugging time-stamps messages.";
+        leaf enabled {
+          type boolean;
+          description
+            "Enables timestamps for debugging.";
+         }
+        leaf datetime {
+          type boolean;
+          description
+            "Time stamp with the date and time.";
+         }
+         leaf localtime {
+          type boolean;
+          description
+            "Time stamp relative to the local time zone.";
+         }
+         leaf msec {
+          type boolean;
+          description
+            "Include milliseconds in the date and time stamp.";
+         }
+         leaf uptime {
+          type boolean;
+          description
+            "Time stamp with time since the system was rebooted.";
+         }
+       }
+     }
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ntp/oc-sys:config {
     leaf ntp-enable-logging {
@@ -71,7 +236,17 @@ module openconfig-system-ext{
         "Enables Network Time Protocol (NTP) message logging.";
     }
   }
-   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ntp/oc-sys:servers/oc-sys:server {
+   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ntp/oc-sys:servers/oc-sys:server/oc-sys:config {
+    leaf ntp-auth-key-id {
+      type uint16;
+      description
+        "Links to authentication key in oc-sys:system/ntp/ntp-keys";
+    }
+    leaf ntp-source-address {
+      type oc-inet:ip-address;
+      description
+        "Source address to use on outgoing NTP packets";
+    }
     leaf ntp-use-vrf {
       type leafref {
         path "/ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:name";
@@ -80,32 +255,25 @@ module openconfig-system-ext{
         "VRF for communication with NTP servers.";
     }
   }
-   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ntp/oc-sys:servers/oc-sys:server/oc-sys:config {
-    leaf ntp-auth-key-id {
-      type string;
-      description
-        "Links to authentication key in oc-sys:system/ntp/ntp-keys";
-    }
-  }
    augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ssh-server/oc-sys:config {
     leaf absolute-timeout-minutes {
-      type string;
+      type uint16 {
+        range "0 .. 35791";
+      }
       description
         "The absolute timeout for line disconnection in minutes.";
     }
-  }
-   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ssh-server/oc-sys:config {
-    leaf ssh-timeout {
-      type string;
+    leaf ssh-source-interface {
+      type leafref {
+        path "/ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-if:name";
+      }
       description
         "Secure Shell (SSH) control parameter to set the time interval that the router waits for the SSH client to respond.
         In IOS, seconds from 1-120.";
     }
-  }
-   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ssh-server/oc-sys:config {
-    leaf ssh-source-interface {
-      type leafref {
-        path "/ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-if:name";
+    leaf ssh-timeout {
+      type uint16 {
+        range "0 .. 120";
       }
       description
         "Secure Shell (SSH) control parameter to set the time interval that the router waits for the SSH client to respond.
@@ -119,6 +287,64 @@ module openconfig-system-ext{
       }
       description
         "VRF from which to reach the logging servers. '' for no VRF.";
+    }
+  }
+   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:logging {
+    container terminal-monitor {
+      description
+        "Specifies terminal lines other than the console terminal as destinations for system logging (syslog) messages.";
+      container selectors {
+        description
+          "Enclosing container ";
+        container config {
+          description
+            "Configuration data for terminal-monitor logging";
+        }
+        list selector {
+          key "facility severity";
+          description
+            "List of selectors for log messages";
+
+          leaf facility {
+            type leafref {
+              path "../config/facility";
+            }
+            description
+              "Reference to facility list key";
+          }
+          leaf severity {
+            type leafref {
+              path "../config/severity";
+            }
+            description
+              "Reference to severity list key";
+          }
+          container config {
+            leaf facility {
+              type identityref {
+                base oc-log:SYSLOG_FACILITY;
+              }
+              description
+                "Specifies the facility, or class of messages to log";
+            }
+            leaf severity {
+              type oc-log:syslog-severity;
+              description
+                "Specifies that only messages of the given severity (or
+                greater severity) for the corresonding facility are logged";
+            }
+          }
+        }
+      }
+    }
+  }
+   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:dns/oc-sys:servers/oc-sys:server/oc-sys:config {
+    leaf use-vrf {
+      type leafref {
+        path "/ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:name";
+      }
+      description
+        "VRF from which to reach the DNS servers. '' for no VRF.";
     }
   }
 }

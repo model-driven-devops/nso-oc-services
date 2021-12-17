@@ -11,8 +11,6 @@ from translation.openconfig_xe.xe_acls import xe_acls_ntp_program_service
 from translation.openconfig_xe.xe_routing_policy import xe_routing_policy_program_service
 from translation.openconfig_xe.xe_interfaces import xe_interfaces_program_service
 from translation.openconfig_xe.xe_network_instances import xe_network_instances_program_service
-from translation.openconfig_xe.xe_system import xe_system_transform_vars
-from translation.openconfig_xe.xe_system import xe_system_initial_vars
 from translation.openconfig_xe.xe_system import xe_system_program_service
 
 regex_device = re.compile(r'device{(.*)}\/')
@@ -53,16 +51,6 @@ class OCCallback(Service):
                 xe_network_instances_program_service(self)
 
             # OpenConfig System
-            xe_system_transform_vars(self)
-            self.log.info(self.proplist)
-            xe_final_vars = update_vars(xe_system_initial_vars, self.proplist)
-            xe_final_vars['DEVICE'] = self.device_name
-            xe_vars_template = ncs.template.Variables()
-            for k in xe_final_vars:
-                xe_vars_template.add(k, xe_final_vars[k])
-            template = ncs.template.Template(service)
-            template.apply('xe-system-template', xe_vars_template)
-
             xe_system_program_service(self)
 
 
