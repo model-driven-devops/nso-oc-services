@@ -30,7 +30,7 @@
         openconfig-system:system:
           config:
             oc-system-ext:enable-secret: 'password'
-            oc-system-ext:console-exec-timeout-seconds: '800'
+            oc-system-ext:console-exec-timeout-seconds: 800
             domain-name: 'test123.com'
             hostname: 'rxx'
             login-banner: |
@@ -156,13 +156,13 @@
                   enable-flow-control: false
               hold-time:
                 config:
-                  down: '10'
+                  down: 10
               name: GigabitEthernet10
               subinterfaces:
                 subinterface:
                   - config:
-                      index: '0'
-                    index: '0'
+                      index: 0
+                    index: 0
                     openconfig-if-ip:ipv4:
                       addresses:
                         address:
@@ -175,13 +175,13 @@
         openconfig-system:system:
           ssh-server:
             config:
-              oc-system-ext:absolute-timeout-minutes: '1200'
-              oc-system-ext:ssh-timeout: '60'
+              oc-system-ext:absolute-timeout-minutes: 1200
+              oc-system-ext:ssh-timeout: 60
               oc-system-ext:ssh-source-interface: 'GigabitEthernet10'
               enable: true
               protocol-version: 'V2'
-              session-limit: '16'
-              timeout: '1800'
+              session-limit: 16
+              timeout: 1800
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -300,13 +300,13 @@
                   enable-flow-control: false
               hold-time:
                 config:
-                  down: '10'
+                  down: 10
               name: GigabitEthernet8
               subinterfaces:
                 subinterface:
                   - config:
-                      index: '0'
-                    index: '0'
+                      index: 0
+                    index: 0
                     openconfig-if-ip:ipv4:
                       addresses:
                         address:
@@ -326,13 +326,13 @@
                   enable-flow-control: false
               hold-time:
                 config:
-                  down: '10'
+                  down: 10
               name: GigabitEthernet9
               subinterfaces:
                 subinterface:
                   - config:
-                      index: '0'
-                    index: '0'
+                      index: 0
+                    index: 0
                     openconfig-if-ip:ipv4:
                       addresses:
                         address:
@@ -352,13 +352,13 @@
                   enable-flow-control: false
               hold-time:
                 config:
-                  down: '10'
+                  down: 10
               name: GigabitEthernet10
               subinterfaces:
                 subinterface:
                   - config:
-                      index: '0'
-                    index: '0'
+                      index: 0
+                    index: 0
                     openconfig-if-ip:ipv4:
                       addresses:
                         address:
@@ -381,7 +381,7 @@
                     config:
                       id: 'GigabitEthernet10'
                       interface: 'GigabitEthernet10'
-                      subinterface: '0'
+                      subinterface: 0
             - name: 'abc'
               config:
                 name: 'abc'
@@ -395,7 +395,7 @@
                     config:
                       id: 'GigabitEthernet9'
                       interface: 'GigabitEthernet9'
-                      subinterface: '0'
+                      subinterface: 0
         openconfig-system:system:
           ntp:
             config:
@@ -406,47 +406,47 @@
             ntp-keys:
               ntp-key:
                 - config:
-                    key-id: '1'
+                    key-id: 1
                     key-type: 'NTP_AUTH_MD5'
                     key-value: 'password1'
-                  key-id: '1'
+                  key-id: 1
                 - config:
-                    key-id: '2'
+                    key-id: 2
                     key-type: 'NTP_AUTH_MD5'
                     key-value: 'password2'
-                  key-id: '2'
+                  key-id: 2
             servers:
               server:
                 - address: '10.0.0.1'
                   config:
-                    oc-system-ext:ntp-auth-key-id: '1'
+                    oc-system-ext:ntp-auth-key-id: 1
                     oc-system-ext:ntp-use-vrf: 'default'
                     address: '10.0.0.1'
                     association-type: SERVER  # SERVER, PEER, POOL
                     iburst: true
-                    port: '123'  # always 123 for ios
+                    port: 123  # always 123 for ios
                     prefer: false
-                    version: '4'
+                    version: 4
                 - address: '10.0.0.2'
                   config:
-                    oc-system-ext:ntp-auth-key-id: '2'
+                    oc-system-ext:ntp-auth-key-id: 2
                     oc-system-ext:ntp-use-vrf: 'abc'
                     address: '10.0.0.2'
                     association-type: PEER
                     iburst: true
-                    port: '123'  # always 123 for ios
+                    port: 123  # always 123 for ios
                     prefer: false
-                    version: '4'
+                    version: 4
                 - address: '10.0.0.3'
                   config:
-                    oc-system-ext:ntp-auth-key-id: '1'
+                    oc-system-ext:ntp-auth-key-id: 1
                     oc-system-ext:ntp-source-address: '172.27.1.2'
                     address: '10.0.0.3'
                     association-type: SERVER  # SERVER, PEER, POOL
                     iburst: true
-                    port: '123'  # always 123 for ios
+                    port: 123  # always 123 for ios
                     prefer: true
-                    version: '3'
+                    version: 3
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -572,13 +572,13 @@
                   enable-flow-control: false
               hold-time:
                 config:
-                  down: '10'
+                  down: 10
               name: GigabitEthernet8
               subinterfaces:
                 subinterface:
                   - config:
-                      index: '0'
-                    index: '0'
+                      index: 0
+                    index: 0
                     openconfig-if-ip:ipv4:
                       addresses:
                         address:
@@ -598,13 +598,13 @@
                   enable-flow-control: false
               hold-time:
                 config:
-                  down: '10'
+                  down: 10
               name: GigabitEthernet9
               subinterfaces:
                 subinterface:
                   - config:
-                      index: '0'
-                    index: '0'
+                      index: 0
+                    index: 0
                     openconfig-if-ip:ipv4:
                       addresses:
                         address:
@@ -634,7 +634,7 @@
                     config:
                       id: 'GigabitEthernet9'
                       interface: 'GigabitEthernet9'
-                      subinterface: '0'
+                      subinterface: 0
         openconfig-system:system:
           logging:  # facility must be same for all in IOS
             console:  # set console
@@ -658,7 +658,7 @@
               remote-server:
                 - config:
                     host: '10.0.0.1'  # logging host x.x.x.x
-                    remote-port: '514'
+                    remote-port: 514
                     source-address: '172.50.1.2'
                     oc-system-ext:use-vrf: 'abc'
                   host: '10.0.0.1'
@@ -671,7 +671,7 @@
                         severity: 'CRITICAL'
                 - config:
                     host: '10.0.0.2'  # logging host x.x.x.x
-                    remote-port: '514'
+                    remote-port: 514
                     source-address: '172.60.1.2'
                     oc-system-ext:use-vrf: 'default'
                   host: '10.0.0.2'
@@ -684,7 +684,7 @@
                         severity: 'CRITICAL'
                 - config:
                     host: '10.0.0.3'  # logging host x.x.x.x
-                    remote-port: '514'
+                    remote-port: 514
                     source-address: '172.60.1.2'
                   host: '10.0.0.3'
                   selectors:
@@ -826,15 +826,15 @@
                 - address: '8.8.8.8'
                   config:
                     address: '8.8.8.8'
-                    port: '53'  # always 53 for ios
+                    port: 53  # always 53 for ios
                 - address: '8.8.4.4'
                   config:
                     address: '8.8.4.4'
-                    port: '53'  # always 53 for ios
+                    port: 53  # always 53 for ios
                 - address: '8.8.5.5'
                   config:
                     address: '8.8.5.5'
-                    port: '53'  # always 53 for ios
+                    port: 53  # always 53 for ios
                     openconfig-system-ext:use-vrf: 'abc'
 
   tasks:
@@ -1945,7 +1945,7 @@
               remote-server:
                 - config:
                     host: '10.0.0.1'  # logging host x.x.x.x
-                    remote-port: '514'
+                    remote-port: 514
                   host: '10.0.0.1'
                   selectors:
                     selector:
@@ -2071,7 +2071,7 @@
               remote-server:
                 - config:
                     host: '10.0.0.1'  # logging host x.x.x.x
-                    remote-port: '514'
+                    remote-port: 514
                   host: '10.0.0.1'
                   selectors:
                     selector:
@@ -2197,13 +2197,13 @@
                   enable-flow-control: false
               hold-time:
                 config:
-                  down: '10'
+                  down: 10
               name: GigabitEthernet10
               subinterfaces:
                 subinterface:
                   - config:
-                      index: '0'
-                    index: '0'
+                      index: 0
+                    index: 0
                     openconfig-if-ip:ipv4:
                       addresses:
                         address:
@@ -2283,20 +2283,20 @@
                         config:
                           address: '10.1.1.1'
                           name: 'TACACSSVR1'
-                          timeout: '10'
+                          timeout: 10
                         tacacs:
                           config:
-                            port: '49'
+                            port: 49
                             secret-key: 'Password123'
                             source-address: '172.27.1.2'  # For each group, sources must be the same
                       - address: '10.2.2.2'
                         config:
                           address: '10.2.2.2'
                           name: 'TACACSSVR2'
-                          timeout: '10'
+                          timeout: 10
                         tacacs:
                           config:
-                            port: '49'
+                            port: 49
                             secret-key: 'Password123'
                             source-address: '172.27.1.2'  # For each group, sources must be the same
                 - config:
@@ -2309,20 +2309,20 @@
                         config:
                           address: '10.3.3.3'
                           name: 'TACACSSVR3'
-                          timeout: '10'
+                          timeout: 10
                         tacacs:
                           config:
-                            port: '49'
+                            port: 49
                             secret-key: 'Password123'
                             source-address: '172.27.1.2'  # For each group, sources must be the same
                       - address: '10.4.4.4'
                         config:
                           address: '10.4.4.4'
                           name: 'TACACSSVR4'
-                          timeout: '10'
+                          timeout: 10
                         tacacs:
                           config:
-                            port: '49'
+                            port: 49
                             secret-key: 'Password123'
                             source-address: '172.27.1.2'  # For each group, sources must be the same
   tasks:

@@ -159,7 +159,9 @@ module openconfig-system-ext{
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:config {
     leaf console-exec-timeout-seconds {
-      type string;
+      type uint16 {
+        range "0 .. 35791";
+      }
       description
         "Configure the inactive session timeout on the console port in seconds.";
     }
@@ -236,7 +238,7 @@ module openconfig-system-ext{
   }
    augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ntp/oc-sys:servers/oc-sys:server/oc-sys:config {
     leaf ntp-auth-key-id {
-      type string;
+      type uint16;
       description
         "Links to authentication key in oc-sys:system/ntp/ntp-keys";
     }
@@ -255,7 +257,9 @@ module openconfig-system-ext{
   }
    augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ssh-server/oc-sys:config {
     leaf absolute-timeout-minutes {
-      type string;
+      type uint16 {
+        range "0 .. 35791";
+      }
       description
         "The absolute timeout for line disconnection in minutes.";
     }
@@ -268,7 +272,9 @@ module openconfig-system-ext{
         In IOS, seconds from 1-120.";
     }
     leaf ssh-timeout {
-      type string;
+      type uint16 {
+        range "0 .. 120";
+      }
       description
         "Secure Shell (SSH) control parameter to set the time interval that the router waits for the SSH client to respond.
         In IOS, seconds from 1-120.";
