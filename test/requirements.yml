@@ -1,0 +1,7 @@
+collections:
+  - name: https://github.com/model-driven-devops/ansible-mdd.git
+    type: git
+  - name: https://github.com/model-driven-devops/ansible-nso.git
+    type: git
+  - name: https://github.com/CiscoDevNet/ansible-cml.git
+    type: git

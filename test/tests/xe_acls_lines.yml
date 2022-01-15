@@ -1,7 +1,6 @@
 ---
-# ansible-playbook xe_acls_lines.yml --extra-vars "nso_ip=X.X.X.X device=xe1" --tags=all
 # Test create_line_acl_ingress
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -24,7 +23,7 @@
     - all
     - create_line_acl_ingress
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-interfaces:interfaces:
@@ -135,7 +134,7 @@
         msg: "{{ configs }}"
     - name: Create create_line_acl_ingress
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -148,7 +147,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -187,7 +186,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -202,7 +201,7 @@
           </input>
 
 # Test create_line_acl_egress
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -225,7 +224,7 @@
     - all
     - create_line_acl_egress
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-interfaces:interfaces:
@@ -330,7 +329,7 @@
         msg: "{{ configs }}"
     - name: Create create_line_acl_egress
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -343,7 +342,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -382,7 +381,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -397,7 +396,7 @@
           </input>
 
 ## Test create_line_acl_vrfs  WARNING LOSS OF CONNECTIVITY WITH TEST
-#- hosts: "{{ device }}"
+#- hosts: xe1
 #  connection: network_cli
 #  gather_facts: no
 #  tags:
@@ -420,7 +419,7 @@
 #    - all
 #    - create_line_acl_vrfs
 #  vars:
-#    device_name: "{{ device }}"
+#    device_name: xe1
 #    content: |
 #      mdd:openconfig:
 #        openconfig-interfaces:interfaces:
@@ -561,7 +560,7 @@
 #        msg: "{{ content }}"
 #    - name: Create create_line_acl_vrfs
 #      uri:
-#        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
 #        url_username: admin
 #        url_password: admin
 #        force_basic_auth: yes
@@ -574,7 +573,7 @@
 #        body_format: json
 #        body: "{{ configs }}"
 #
-#- hosts: "{{ device }}"
+#- hosts: xe1
 #  connection: network_cli
 #  gather_facts: no
 #  tags:
@@ -613,7 +612,7 @@
 #  tasks:
 #    - name: Rollback
 #      uri:
-#        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
 #        url_username: admin
 #        url_password: admin
 #        force_basic_auth: yes
@@ -628,7 +627,7 @@
 #          </input>
 
 # Test create_line_vrf_also
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -651,7 +650,7 @@
     - all
     - create_line_vrf_also
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-interfaces:interfaces:
@@ -762,7 +761,7 @@
         msg: "{{ configs }}"
     - name: Create create_line_vrf_also
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -775,7 +774,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -814,7 +813,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
