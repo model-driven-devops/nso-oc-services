@@ -33,9 +33,9 @@
             domain-name: 'test123.com'
             hostname: 'rxx'
             login-banner: |
-              This is the login-banner
+              This is the login-banner.
             motd-banner: |
-              This is the motd-banner
+              This is the motd-banner.
 
   tasks:
     - name: Convert string to JSON
