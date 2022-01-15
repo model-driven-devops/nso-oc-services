@@ -1,0 +1,66 @@
+name: GitHub Actions Demo
+on:
+  pull_request_review:
+    types: [submitted]
+    branches: [ main ]
+jobs:
+  test:
+    runs-on: self-hosted
+    if: github.event.review.state == 'approved'
+    steps:
+      - run: echo "The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "The workflow is now ready to test your code on the runner."
+      - name: update ubuntu
+        run: sudo apt-get update
+      - name: install sshpass
+        run: sudo apt-get install sshpass -y
+      - name: Install PIP requirements
+        run: pip install -r requirements.txt
+      - name: Install Collections
+        run: ansible-galaxy collection install -r requirements.yml
+      - name: Delete CML
+        run: ansible-playbook ./test/clean-cml.yml
+        env:
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+      - name: Build CML
+        run: ansible-playbook ./test/build-cml.yml
+        env:
+          CML_LAB_FILE: ./test/arch/test_lab.yaml
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+      - name: Build NSO
+        run: ansible-playbook ./test/build-nso.yml -vvv
+        env:
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          GITHUB_BRANCH: ${{ github.ref }}
+      - name: Run Tests
+        run: |
+          cd ./test/tests
+          for PLAYBOOK in ls ./*.yml
+          do
+              ansible-playbook $PLAYBOOK
+          done
+        env:
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+      - name: Delete CML
+        run: ansible-playbook clean-cml.yml
+        env:
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+      - run: echo "🍏 This job's status is ${{ job.status }}."

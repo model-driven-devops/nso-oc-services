@@ -1,0 +1,6 @@
+---
+- name: Generating device list seed
+  template:
+    src: nso-deviceSetup.xml
+    dest: /home/ubuntu/ncs-run/ncs-cdb/nso-deviceSetup.xml
+    mode: 0640

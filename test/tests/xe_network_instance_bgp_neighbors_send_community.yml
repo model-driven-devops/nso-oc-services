@@ -1,12 +1,11 @@
 ---
-# ansible-playbook -i hosts_lab xe_bgp_peer_groups_send_community.yml -e "nso_ip=X.X.X.X device=xe1" --tags=all
-# Peer group send_community
-- hosts: "{{ device }}"
+# Neighbor send_community
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
     - all
-    - peer_group_send_community
+    - neighbor_send_community
   vars:
     ansible_network_os: 'cisco.ios.ios'
   roles:
@@ -22,9 +21,9 @@
   gather_facts: no
   tags:
     - all
-    - peer_group_send_community
+    - neighbor_send_community
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -46,12 +45,13 @@
                       global:
                         config:
                           as: 1
-                      peer-groups:
-                        peer-group:
+                      neighbors:
+                        neighbor:
                           - config:
-                              peer-group-name: test
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                               send-community: BOTH
-                            peer-group-name: test
+                            neighbor-address: 10.11.11.2
   tasks:
     - name: Convert string to JSON
       set_fact:
@@ -59,9 +59,9 @@
     - name: JSON configs
       debug:
         msg: "{{ configs }}"
-    - name: BGP peer_group_send_community
+    - name: BGP neighbor_send_community
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -74,12 +74,12 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
     - all
-    - peer_group_send_community
+    - neighbor_send_community
   vars:
     ansible_network_os: 'cisco.ios.ios'
     exclude_list:
@@ -102,17 +102,17 @@
         msg: "{{ changes }}"
     - assert:
         that:
-          - "'+ neighbor test send-community both:' in changes"
+          - "'+ neighbor 10.11.11.2 send-community both:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
   tags:
     - all
-    - peer_group_send_community
+    - neighbor_send_community
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -126,8 +126,8 @@
             <id>0</id>
           </input>
 
-# Test peer group address-family ipv4 unicast send community
-- hosts: "{{ device }}"
+# Test neighbor address-family ipv4 unicast send community
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -150,7 +150,7 @@
     - all
     - ad-ipv4-send_community
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -178,12 +178,13 @@
                               config:
                                 afi-safi-name: 'IPV4_UNICAST'
                                 enabled: true
-                      peer-groups:
-                        peer-group:
+                      neighbors:
+                        neighbor:
                           - config:
-                              peer-group-name: test
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                               send-community: BOTH
-                            peer-group-name: test
+                            neighbor-address: 10.11.11.2
                             afi-safis:
                               afi-safi:
                                 - afi-safi-name: 'IPV4_UNICAST'
@@ -199,7 +200,7 @@
         msg: "{{ configs }}"
     - name: BGP ad-ipv4-send_community
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -212,7 +213,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -241,7 +242,7 @@
     - assert:
         that:
           - "'+ address-family ipv4:' in changes"
-          - "'+  neighbor test send-community both:' in changes"
+          - "'+  neighbor 10.11.11.2 send-community both:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
@@ -252,7 +253,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -266,8 +267,8 @@
             <id>0</id>
           </input>
 
-# Test peer group address-family vpnv4 unicast send community
-- hosts: "{{ device }}"
+# Test neighbor address-family vpnv4 unicast send community
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -290,7 +291,7 @@
     - all
     - ad-vpnv4-activate-send-community
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -318,12 +319,13 @@
                               config:
                                 afi-safi-name: 'L3VPN_IPV4_UNICAST'
                                 enabled: true
-                      peer-groups:
-                        peer-group:
+                      neighbors:
+                        neighbor:
                           - config:
-                              peer-group-name: test
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                               send-community: BOTH
-                            peer-group-name: test
+                            neighbor-address: 10.11.11.2
                             afi-safis:
                               afi-safi:
                                 - afi-safi-name: 'L3VPN_IPV4_UNICAST'
@@ -339,7 +341,7 @@
         msg: "{{ configs }}"
     - name: BGP ad-vpnv4-activate-send-community
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -352,7 +354,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -381,7 +383,7 @@
     - assert:
         that:
           - "'+ address-family vpnv4:' in changes"
-          - "'+  neighbor test send-community both:' in changes"
+          - "'+  neighbor 10.11.11.2 send-community both:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
@@ -392,7 +394,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -406,8 +408,8 @@
             <id>0</id>
           </input>
 
-# Test peer-group address-family ipv4 unicast vrf ABC send-community
-- hosts: "{{ device }}"
+# Test neighbor address-family ipv4 unicast vrf ABC send-community
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -430,7 +432,7 @@
     - all
     - ad-ipv4-activate-vrf-send-community
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -490,12 +492,13 @@
                               config:
                                 afi-safi-name: 'IPV4_UNICAST'
                                 enabled: true
-                      peer-groups:
-                        peer-group:
+                      neighbors:
+                        neighbor:
                           - config:
-                              peer-group-name: test
+                              neighbor-address: 10.11.11.2
+                              peer-as: 2
                               send-community: BOTH
-                            peer-group-name: test
+                            neighbor-address: 10.11.11.2
                             afi-safis:
                               afi-safi:
                                 - afi-safi-name: 'IPV4_UNICAST'
@@ -512,7 +515,7 @@
         msg: "{{ configs }}"
     - name: BGP ad-ipv4-activate-vrf-send-community
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -525,7 +528,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -554,7 +557,7 @@
     - assert:
         that:
           - "'+ address-family ipv4 vrf abc:' in changes"
-          - "'+  neighbor test send-community both:' in changes"
+          - "'+  neighbor 10.11.11.2 send-community both:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
@@ -565,7 +568,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes

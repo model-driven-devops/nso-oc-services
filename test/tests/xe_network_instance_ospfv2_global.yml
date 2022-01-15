@@ -1,7 +1,6 @@
 ---
-# ansible-playbook xe_network_instance_ospfv2_global.yml --extra-vars "nso_ip=X.X.X.X device=xe1" --tags=all
 # Test OSPF process
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -24,7 +23,7 @@
     - all
     - process
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -51,7 +50,7 @@
         msg: "{{ configs }}"
     - name: OSPF process
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -64,7 +63,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -103,7 +102,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -118,7 +117,7 @@
           </input>
 
 # Test OSPF router-id
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -141,7 +140,7 @@
     - all
     - router_id
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -172,7 +171,7 @@
         msg: "{{ configs }}"
     - name: OSPF router_id
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -185,7 +184,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -224,7 +223,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -239,7 +238,7 @@
           </input>
 
 # Test OSPF log adjacency changes
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -262,7 +261,7 @@
     - all
     - log_adjacency_changes
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -293,7 +292,7 @@
         msg: "{{ configs }}"
     - name: OSPF log_adjacency_changes
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -306,7 +305,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -345,7 +344,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -359,7 +358,7 @@
             <id>0</id>
           </input>
 # Test OSPF prefix-suppression
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -382,7 +381,7 @@
     - all
     - prefix_suppression
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -413,7 +412,7 @@
         msg: "{{ configs }}"
     - name: OSPF prefix_suppression
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -426,7 +425,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -465,7 +464,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -479,7 +478,7 @@
             <id>0</id>
           </input>
 # Test OSPF summary-route-cost-mode
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -502,7 +501,7 @@
     - all
     - summary_route_cost_mode_2328
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -533,7 +532,7 @@
         msg: "{{ configs }}"
     - name: OSPF summary_route_cost_mode_2328
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -546,7 +545,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -585,7 +584,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -599,7 +598,7 @@
             <id>0</id>
           </input>
 # Test OSPF graceful restart enabled
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -622,7 +621,7 @@
     - all
     - graceful_restart_enabled
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -654,7 +653,7 @@
         msg: "{{ configs }}"
     - name: OSPF graceful_restart_enabled
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -667,7 +666,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -706,7 +705,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -720,7 +719,7 @@
             <id>0</id>
           </input>
 # Test OSPF inter-area-propagation-policies
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -743,7 +742,7 @@
     - all
     - inter_area_propagation_policy
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-interfaces:interfaces:
@@ -887,7 +886,7 @@
         msg: "{{ configs }}"
     - name: OSPF inter_area_propagation_policy
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -900,7 +899,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -939,7 +938,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -953,7 +952,7 @@
             <id>0</id>
           </input>
 # Test OSPF mpls igp-ldp-sync
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -976,7 +975,7 @@
     - all
     - mpls_ldp_igp_sync
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -1009,7 +1008,7 @@
         msg: "{{ configs }}"
     - name: OSPF mpls_ldp_igp_sync
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1022,7 +1021,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1061,7 +1060,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1075,7 +1074,7 @@
             <id>0</id>
           </input>
 # Test OSPF timers lsa-generation
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1098,7 +1097,7 @@
     - all
     - timers_lsa
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -1133,7 +1132,7 @@
         msg: "{{ configs }}"
     - name: OSPF timers_lsa
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1146,7 +1145,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1185,7 +1184,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1199,7 +1198,7 @@
             <id>0</id>
           </input>
 # Test OSPF timers spf
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1222,7 +1221,7 @@
     - all
     - timers_spf
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -1257,7 +1256,7 @@
         msg: "{{ configs }}"
     - name: OSPF timers_spf
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1270,7 +1269,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1309,7 +1308,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1323,7 +1322,7 @@
             <id>0</id>
           </input>
 # Test OSPF process vrf
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1346,7 +1345,7 @@
     - all
     - process_vrf
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -1381,7 +1380,7 @@
         msg: "{{ configs }}"
     - name: OSPF process_vrf
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1394,7 +1393,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1433,7 +1432,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes

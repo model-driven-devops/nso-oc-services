@@ -1,7 +1,6 @@
 ---
-# ansible-playbook xe_system.yml --extra-vars "nso_ip=X.X.X.X device=xe1" --tags=all
 # hostname, domain-name, banners
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -24,7 +23,7 @@
     - all
     - system_config
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-system:system:
@@ -47,7 +46,7 @@
         msg: "{{ configs }}"
     - name: System system_config
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -60,7 +59,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -104,7 +103,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -118,7 +117,7 @@
             <id>0</id>
           </input>
 # ssh server
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -141,7 +140,7 @@
     - all
     - ssh_server
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-interfaces:interfaces:
@@ -191,7 +190,7 @@
         msg: "{{ configs }}"
     - name: System ssh_server
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -204,7 +203,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -248,7 +247,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -262,7 +261,7 @@
             <id>0</id>
           </input>
 # ntp server
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -285,7 +284,7 @@
     - all
     - ntp_server
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-interfaces:interfaces:
@@ -456,7 +455,7 @@
         msg: "{{ configs }}"
     - name: System ntp_server
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -469,7 +468,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -519,7 +518,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -534,7 +533,7 @@
           </input>
 
 # logging server
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -557,7 +556,7 @@
     - all
     - logging_server
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-interfaces:interfaces:
@@ -703,7 +702,7 @@
         msg: "{{ configs }}"
     - name: System logging_server
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -716,7 +715,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -763,7 +762,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -779,7 +778,7 @@
 
 
 # dns-servers
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -802,7 +801,7 @@
     - all
     - dns-servers
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -846,7 +845,7 @@
         msg: "{{ configs }}"
     - name: System dns-servers
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -859,7 +858,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -899,7 +898,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -913,7 +912,7 @@
             <id>0</id>
           </input>
 # clock timezone
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -936,7 +935,7 @@
     - all
     - clock_timezone
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-system:system:
@@ -953,7 +952,7 @@
         msg: "{{ configs }}"
     - name: System clock_timezone
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -966,7 +965,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1005,7 +1004,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1020,7 +1019,7 @@
           </input>
 
 # http server enable
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1043,7 +1042,7 @@
     - all
     - http_server_enable
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-system:system:
@@ -1065,7 +1064,7 @@
         msg: "{{ configs }}"
     - name: System http_server_enable
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1078,7 +1077,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1111,115 +1110,115 @@
           - "'+ip http max-connections 4:' in changes"
           - "'+ip http secure-ciphersuite aes-128-cbc-sha aes-256-cbc-sha:' in changes"
       ignore_errors: yes
-#- hosts: localhost
-#  gather_facts: no
-#  tags:
-#    - all
-#    - http_server_enable
-#    - rollback
-#  tasks:
-#    - name: Rollback
-#      uri:
-#        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-#        url_username: admin
-#        url_password: admin
-#        force_basic_auth: yes
-#        validate_certs: no
-#        status_code: [ 204 ]
-#        method: POST
-#        headers: "{
-#          'Content-Type': 'application/yang-data+xml'}"
-#        body: |
-#          <input xmlns="http://tail-f.com/ns/rollback">
-#            <id>0</id>
-#          </input>
-
-# http server disable
-- hosts: "{{ device }}"
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - http_server_disable
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
 - hosts: localhost
   gather_facts: no
   tags:
     - all
-    - http_server_disable
-  vars:
-    device_name: "{{ device }}"
-    content: |
-      mdd:openconfig:
-        openconfig-system:system:
-          openconfig-system-ext:services:
-            openconfig-system-ext:http:
-              openconfig-system-ext:http-enabled: false
-              openconfig-system-ext:https-enabled: false
-
+    - http_server_enable
+    - rollback
   tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System http_server_disable
+    - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
         validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
+        status_code: [ 204 ]
+        method: POST
         headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
 
-- hosts: "{{ device }}"
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - http_server_disable
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:  # note enable secret is going to be hashed so it's not tested
-        that:
-          - "'+no ip http secure-server:' in changes"
-          - "'+no ip http server:' in changes"
-      ignore_errors: yes
+## http server disable
+#- hosts: xe1
+#  connection: network_cli
+#  gather_facts: no
+#  tags:
+#    - all
+#    - http_server_disable
+#  vars:
+#    ansible_network_os: 'cisco.ios.ios'
+#  roles:
+#    - ansible-pyats
+#  tasks:
+#    - name: collect config (before)
+#      ios_command:
+#        commands:
+#          - show run
+#      register: result_before
+#
+#- hosts: localhost
+#  gather_facts: no
+#  tags:
+#    - all
+#    - http_server_disable
+#  vars:
+#    device_name: xe1
+#    content: |
+#      mdd:openconfig:
+#        openconfig-system:system:
+#          openconfig-system-ext:services:
+#            openconfig-system-ext:http:
+#              openconfig-system-ext:http-enabled: false
+#              openconfig-system-ext:https-enabled: false
+#
+#  tasks:
+#    - name: Convert string to JSON
+#      set_fact:
+#        configs: "{{ content | from_yaml | to_json }}"
+#    - name: JSON configs
+#      debug:
+#        msg: "{{ configs }}"
+#    - name: System http_server_disable
+#      uri:
+#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
+#        url_username: admin
+#        url_password: admin
+#        force_basic_auth: yes
+#        validate_certs: no
+#        status_code: [200,201,204]
+#        method: PUT
+#        headers: "{
+#          'Content-Type': 'application/yang-data+json',
+#          'Accept': 'application/yang-data+json'}"
+#        body_format: json
+#        body: "{{ configs }}"
+#
+#- hosts: xe1
+#  connection: network_cli
+#  gather_facts: no
+#  tags:
+#    - all
+#    - http_server_disable
+#  vars:
+#    ansible_network_os: 'cisco.ios.ios'
+#    exclude_list:
+#      - (^Using.*)
+#      - (Building.*)
+#      - (Current.*)
+#      - (crypto pki certificate chain.*)
+#  roles:
+#    - ansible-pyats
+#  tasks:
+#    - name: collect config (after)
+#      ios_command:
+#        commands:
+#          - show run
+#      register: result_after
+#    - set_fact:
+#        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
+#    - name: debug changes
+#      debug:
+#        msg: "{{ changes }}"
+#    - assert:  # note enable secret is going to be hashed so it's not tested
+#        that:
+#          - "'+no ip http secure-server:' in changes"
+#          - "'+no ip http server:' in changes"
+#      ignore_errors: yes
 #- hosts: localhost
 #  gather_facts: no
 #  tags:
@@ -1229,7 +1228,7 @@
 #  tasks:
 #    - name: Rollback
 #      uri:
-#        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
 #        url_username: admin
 #        url_password: admin
 #        force_basic_auth: yes
@@ -1244,7 +1243,7 @@
 #          </input>
 
 # enable finger
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1267,7 +1266,7 @@
     - all
     - finger_enable
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-system:system:
@@ -1282,7 +1281,7 @@
         msg: "{{ configs }}"
     - name: System finger_enable
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1295,7 +1294,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1325,121 +1324,16 @@
         that:
           - "'+ip finger:' in changes"
 
-#- hosts: localhost
-#  gather_facts: no
-#  tags:
-#    - all
-#    - finger_enable
-#    - rollback
-#  tasks:
-#    - name: Rollback
-#      uri:
-#        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-#        url_username: admin
-#        url_password: admin
-#        force_basic_auth: yes
-#        validate_certs: no
-#        status_code: [ 204 ]
-#        method: POST
-#        headers: "{
-#          'Content-Type': 'application/yang-data+xml'}"
-#        body: |
-#          <input xmlns="http://tail-f.com/ns/rollback">
-#            <id>0</id>
-#          </input>
-
-# disable finger
-- hosts: "{{ device }}"
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - finger_disable
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
 - hosts: localhost
   gather_facts: no
   tags:
     - all
-    - finger_disable
-  vars:
-    device_name: "{{ device }}"
-    content: |
-      mdd:openconfig:
-        openconfig-system:system:
-          openconfig-system-ext:services:
-            finger: false
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System finger_disable
-      uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: "{{ device }}"
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - finger_disable
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
-          - "'-ip finger:' in changes"
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - finger_disable
+    - finger_enable
     - rollback
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1452,8 +1346,113 @@
           <input xmlns="http://tail-f.com/ns/rollback">
             <id>0</id>
           </input>
+
+## disable finger
+#- hosts: xe1
+#  connection: network_cli
+#  gather_facts: no
+#  tags:
+#    - all
+#    - finger_disable
+#  vars:
+#    ansible_network_os: 'cisco.ios.ios'
+#  roles:
+#    - ansible-pyats
+#  tasks:
+#    - name: collect config (before)
+#      ios_command:
+#        commands:
+#          - show run
+#      register: result_before
+#
+#- hosts: localhost
+#  gather_facts: no
+#  tags:
+#    - all
+#    - finger_disable
+#  vars:
+#    device_name: xe1
+#    content: |
+#      mdd:openconfig:
+#        openconfig-system:system:
+#          openconfig-system-ext:services:
+#            finger: false
+#  tasks:
+#    - name: Convert string to JSON
+#      set_fact:
+#        configs: "{{ content | from_yaml | to_json }}"
+#    - name: JSON configs
+#      debug:
+#        msg: "{{ configs }}"
+#    - name: System finger_disable
+#      uri:
+#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
+#        url_username: admin
+#        url_password: admin
+#        force_basic_auth: yes
+#        validate_certs: no
+#        status_code: [200,201,204]
+#        method: PUT
+#        headers: "{
+#          'Content-Type': 'application/yang-data+json',
+#          'Accept': 'application/yang-data+json'}"
+#        body_format: json
+#        body: "{{ configs }}"
+#
+#- hosts: xe1
+#  connection: network_cli
+#  gather_facts: no
+#  tags:
+#    - all
+#    - finger_disable
+#  vars:
+#    ansible_network_os: 'cisco.ios.ios'
+#    exclude_list:
+#      - (^Using.*)
+#      - (Building.*)
+#      - (Current.*)
+#      - (crypto pki certificate chain.*)
+#  roles:
+#    - ansible-pyats
+#  tasks:
+#    - name: collect config (after)
+#      ios_command:
+#        commands:
+#          - show run
+#      register: result_after
+#    - set_fact:
+#        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
+#    - name: debug changes
+#      debug:
+#        msg: "{{ changes }}"
+#    - assert:
+#        that:
+#          - "'-ip finger:' in changes"
+#
+#- hosts: localhost
+#  gather_facts: no
+#  tags:
+#    - all
+#    - finger_disable
+#    - rollback
+#  tasks:
+#    - name: Rollback
+#      uri:
+#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+#        url_username: admin
+#        url_password: admin
+#        force_basic_auth: yes
+#        validate_certs: no
+#        status_code: [ 204 ]
+#        method: POST
+#        headers: "{
+#          'Content-Type': 'application/yang-data+xml'}"
+#        body: |
+#          <input xmlns="http://tail-f.com/ns/rollback">
+#            <id>0</id>
+#          </input>
 # http timeout-policy
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1476,7 +1475,7 @@
     - all
     - http_timeout_policy
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-system:system:
@@ -1496,7 +1495,7 @@
         msg: "{{ configs }}"
     - name: System http_timeout_policy
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1509,7 +1508,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1548,7 +1547,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1562,7 +1561,7 @@
             <id>0</id>
           </input>
 # timestamps logging and debugging datetime
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1585,7 +1584,7 @@
     - all
     - timestamps_datetime
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-system:system:
@@ -1610,7 +1609,7 @@
         msg: "{{ configs }}"
     - name: System timestamps_datetime
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1623,7 +1622,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1662,7 +1661,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1676,7 +1675,7 @@
             <id>0</id>
           </input>
 # timestamps logging and debugging uptime
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1699,7 +1698,7 @@
     - all
     - timestamps_uptime
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-system:system:
@@ -1724,7 +1723,7 @@
         msg: "{{ configs }}"
     - name: System timestamps_uptime
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1737,7 +1736,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1767,30 +1766,30 @@
         that:
           - "'+service timestamps debug uptime:' in changes"
           - "'+service timestamps log uptime:' in changes"
-#- hosts: localhost
-#  gather_facts: no
-#  tags:
-#    - all
-#    - timestamps_uptime
-#    - rollback
-#  tasks:
-#    - name: Rollback
-#      uri:
-#        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-#        url_username: admin
-#        url_password: admin
-#        force_basic_auth: yes
-#        validate_certs: no
-#        status_code: [ 204 ]
-#        method: POST
-#        headers: "{
-#          'Content-Type': 'application/yang-data+xml'}"
-#        body: |
-#          <input xmlns="http://tail-f.com/ns/rollback">
-#            <id>0</id>
-#          </input>
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - all
+    - timestamps_uptime
+    - rollback
+  tasks:
+    - name: Rollback
+      uri:
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url_username: admin
+        url_password: admin
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 204 ]
+        method: POST
+        headers: "{
+          'Content-Type': 'application/yang-data+xml'}"
+        body: |
+          <input xmlns="http://tail-f.com/ns/rollback">
+            <id>0</id>
+          </input>
 # logging console and monitor
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1813,7 +1812,7 @@
     - all
     - console-and-monitor-severity-emergency
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-system:system:
@@ -1844,7 +1843,7 @@
         msg: "{{ configs }}"
     - name: System console-and-monitor-severity-emergency
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1857,7 +1856,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1899,7 +1898,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1913,7 +1912,7 @@
             <id>0</id>
           </input>
 # logging remote server
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1936,7 +1935,7 @@
     - all
     - remote-servers-severity-emergency
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-system:system:
@@ -1963,7 +1962,7 @@
         msg: "{{ configs }}"
     - name: System remote-servers-severity-emergency
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1976,7 +1975,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -2016,7 +2015,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -2030,7 +2029,7 @@
             <id>0</id>
           </input>
 # logging remote server, console, and monitor
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -2053,7 +2052,7 @@
     - all
     - any-emergency
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-system:system:
@@ -2089,7 +2088,7 @@
         msg: "{{ configs }}"
     - name: System any-emergency
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -2102,7 +2101,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -2144,7 +2143,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -2159,7 +2158,7 @@
           </input>
 
 # aaa all
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -2182,7 +2181,7 @@
     - all
     - aaa-all
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-interfaces:interfaces:
@@ -2334,7 +2333,7 @@
         msg: "{{ configs }}"
     - name: System aaa-all
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -2347,7 +2346,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -2413,7 +2412,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes

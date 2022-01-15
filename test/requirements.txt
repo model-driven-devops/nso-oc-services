@@ -1,0 +1,10 @@
+ansible==4.5.0
+virl2_client>=2.0.0b5
+netaddr
+pynetbox
+jsonschema
+ipaddress
+paramiko
+genie
+pyats
+jmespath

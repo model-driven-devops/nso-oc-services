@@ -1,7 +1,6 @@
 ---
-# ansible-playbook xe_network_instance_bgp_global.yml --extra-vars "nso_ip=X.X.X.X device=xe1" --tags=all
 # Test BGP process
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -24,7 +23,7 @@
     - all
     - process
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -55,7 +54,7 @@
         msg: "{{ configs }}"
     - name: BGP process
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -68,7 +67,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -107,7 +106,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -122,7 +121,7 @@
           </input>
 
 # BGP router-id
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -145,7 +144,7 @@
     - all
     - router-id
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -177,7 +176,7 @@
         msg: "{{ configs }}"
     - name: BGP router-id
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -190,7 +189,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -229,7 +228,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -244,7 +243,7 @@
           </input>
 
 # BGP distance external internal
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -267,7 +266,7 @@
     - all
     - distance_bgp
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -302,7 +301,7 @@
         msg: "{{ configs }}"
     - name: BGP distance_bgp
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -315,7 +314,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -354,7 +353,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -370,7 +369,7 @@
 
 
 # BGP Graceful restart
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -393,7 +392,7 @@
     - all
     - graceful_restart
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -429,7 +428,7 @@
         msg: "{{ configs }}"
     - name: BGP graceful_restart
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -442,7 +441,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -483,7 +482,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -498,7 +497,7 @@
           </input>
 
 # BGP route selection
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -521,7 +520,7 @@
     - all
     - route_selection
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -556,7 +555,7 @@
         msg: "{{ configs }}"
     - name: BGP route_selection
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -569,7 +568,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -610,7 +609,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -625,7 +624,7 @@
           </input>
 
 # BGP Multi-Path
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -648,7 +647,7 @@
     - all
     - multipath
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -689,7 +688,7 @@
         msg: "{{ configs }}"
     - name: BGP multipath
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -702,7 +701,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -743,7 +742,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -758,7 +757,7 @@
           </input>
 
 # BGP no ipv4 default
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -781,7 +780,7 @@
     - all
     - no_bgp_ipv4_default
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -818,7 +817,7 @@
         msg: "{{ configs }}"
     - name: BGP no_bgp_ipv4_default
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -831,7 +830,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -871,7 +870,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -886,7 +885,7 @@
           </input>
 
 # BGP AF IPV4 UNICAST
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -909,7 +908,7 @@
     - all
     - ipv4_unicast
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -946,7 +945,7 @@
         msg: "{{ configs }}"
     - name: BGP ipv4_unicast
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -959,7 +958,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -999,7 +998,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1013,7 +1012,7 @@
             <id>0</id>
           </input>
 # BGP AF VPNV4 UNICAST
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1036,7 +1035,7 @@
     - all
     - vpnv4_unicast
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -1073,7 +1072,7 @@
         msg: "{{ configs }}"
     - name: BGP vpnv4_unicast
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1086,7 +1085,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1126,7 +1125,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1141,7 +1140,7 @@
           </input>
 
 # BGP AF IPV4 UNICAST L3VPN
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1164,7 +1163,7 @@
     - all
     - vrf_ipv4_unicast
   vars:
-    device_name: "{{ device }}"
+    device_name: xe1
     content: |
       mdd:openconfig:
         openconfig-network-instance:network-instances:
@@ -1221,7 +1220,7 @@
         msg: "{{ configs }}"
     - name: BGP vrf_ipv4_unicast
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-ncs:devices/device={{ device_name }}/mdd:openconfig"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
@@ -1234,7 +1233,7 @@
         body_format: json
         body: "{{ configs }}"
 
-- hosts: "{{ device }}"
+- hosts: xe1
   connection: network_cli
   gather_facts: no
   tags:
@@ -1274,7 +1273,7 @@
   tasks:
     - name: Rollback
       uri:
-        url: "http://{{ nso_ip }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
         url_username: admin
         url_password: admin
         force_basic_auth: yes
