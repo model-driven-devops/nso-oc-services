@@ -18,9 +18,9 @@ jobs:
       - name: install sshpass
         run: sudo apt-get install sshpass -y
       - name: Install PIP requirements
-        run: pip install -r requirements.txt
+        run: pip install -r ./test/requirements.txt
       - name: Install Collections
-        run: ansible-galaxy collection install -r requirements.yml
+        run: ansible-galaxy collection install -r ./test/requirements.yml
       - name: Delete CML
         run: ansible-playbook ./test/clean-cml.yml
         env:
