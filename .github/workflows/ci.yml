@@ -12,6 +12,7 @@ jobs:
       - run: echo "github.ref_name is ${{ github.ref_name }}."
       - run: echo "github.head_ref is ${{ github.head_ref }}."
       - run: echo "github.base_ref is ${{ github.base_ref }}."
+      - run: echo "github.ref is ${{ github.ref }}."
       - run: echo "github.event is ${{ github.event }}."
       - name: Check out repository code
         uses: actions/checkout@v2
