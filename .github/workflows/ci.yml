@@ -50,7 +50,7 @@ jobs:
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
-          GITHUB_BRANCH: ${{ github.head_ref }}
+          GITHUB_BRANCH: ${{ github.ref }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
       - name: Run Tests
         run: |
