@@ -14,6 +14,7 @@ jobs:
       - run: echo "github.base_ref is ${{ github.base_ref }}."
       - run: echo "github.ref is ${{ github.ref }}."
       - run: echo "github.event is ${{ github.event }}."
+      - run: echo "github context is ${{ github }}."
       - name: Check out repository code
         uses: actions/checkout@v2
       - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
