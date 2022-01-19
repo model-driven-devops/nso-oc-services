@@ -20,7 +20,7 @@
 
     - name: Refresh Inventory
       meta: refresh_inventory
-    - name: Pause for 1 minutes to build app cache
+    - name: Pause for 1 minute
       pause:
         minutes: 1
 
@@ -82,6 +82,6 @@
   hosts: localhost
   tasks:
     - name: replace IP address in local file
-      shell: "sed -i 's/XXXXX/{{hostvars['nso'].ansible_host}}/' ./test/inventory/nso.yml"
+      shell: "sed -i 's/XXXXX/{{hostvars['nso'].ansible_host}}/' ./inventory/nso.yml"
     - name: replace IP address in local file
-      shell: "sed -i 's/ZZZZZ/{{hostvars['xe1'].ansible_host}}/' ./test/inventory/nso.yml"
+      shell: "sed -i 's/ZZZZZ/{{hostvars['xe1'].ansible_host}}/' ./inventory/nso.yml"

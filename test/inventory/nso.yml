@@ -26,6 +26,11 @@ all:
         ext0:
         ext-management-switch:
     nso_devices:
+      vars:
+        admin_user: admin
+        admin_password: admin
+        ansible_user: "{{ admin_user }}"
+        ansible_password: "{{ admin_password }}"
       hosts:
         xe1:
           ansible_host: ZZZZZ

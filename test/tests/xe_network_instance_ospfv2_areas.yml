@@ -50,7 +50,7 @@
                         dhcp-client: false
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -59,7 +59,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -106,8 +106,8 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
-                              id: GigabitEthernet10
+                                id: GigabitEthernet6
+                              id: GigabitEthernet6
               interfaces:
                 interface:
                   - id: 'Loopback10'
@@ -115,10 +115,10 @@
                       id: 'Loopback10'
                       interface: 'Loopback10'
                       subinterface: '0'
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -227,7 +227,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -236,7 +236,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -275,15 +275,15 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
+                                id: GigabitEthernet6
                                 network-type: 'NON_BROADCAST_NETWORK'
-                              id: GigabitEthernet10
+                              id: GigabitEthernet6
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
 
   tasks:
@@ -391,7 +391,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -400,7 +400,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -439,15 +439,15 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
+                                id: GigabitEthernet6
                                 metric: 10
-                              id: GigabitEthernet10
+                              id: GigabitEthernet6
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -554,7 +554,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -563,7 +563,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -602,15 +602,15 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
+                                id: GigabitEthernet6
                                 passive: True
-                              id: GigabitEthernet10
+                              id: GigabitEthernet6
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -662,7 +662,7 @@
         msg: "{{ changes }}"
     - assert:
         that:
-          - "'+ passive-interface GigabitEthernet10:' in changes"
+          - "'+ passive-interface GigabitEthernet6:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
@@ -717,7 +717,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -726,7 +726,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -765,15 +765,15 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
+                                id: GigabitEthernet6
                                 priority: 10
-                              id: GigabitEthernet10
+                              id: GigabitEthernet6
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -880,7 +880,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -889,7 +889,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -928,17 +928,17 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
+                                id: GigabitEthernet6
                               enable-bfd:
                                 config:
                                   enabled: True
-                              id: GigabitEthernet10
+                              id: GigabitEthernet6
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -1045,7 +1045,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -1054,7 +1054,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -1093,20 +1093,20 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
+                                id: GigabitEthernet6
                               neighbors:
                                 neighbor:
                                 - config:
                                     metric: 100
                                     router-id: 10.10.10.10
                                   router-id: 10.10.10.10
-                              id: GigabitEthernet10
+                              id: GigabitEthernet6
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -1214,7 +1214,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -1223,7 +1223,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -1262,19 +1262,19 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
+                                id: GigabitEthernet6
                               timers:
                                 config:
                                   dead-interval: 60
                                   hello-interval: 15
                                   retransmission-interval: 10
-                              id: GigabitEthernet10
+                              id: GigabitEthernet6
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -1383,7 +1383,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -1392,7 +1392,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -1431,17 +1431,17 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
-                              id: GigabitEthernet10
+                                id: GigabitEthernet6
+                              id: GigabitEthernet6
                           mpls:
                             config:
                               traffic-engineering-enabled: True
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -1548,7 +1548,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -1557,7 +1557,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -1596,8 +1596,8 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
-                              id: GigabitEthernet10
+                                id: GigabitEthernet6
+                              id: GigabitEthernet6
                           virtual-links:
                             virtual-link:
                             - config:
@@ -1605,10 +1605,10 @@
                               remote-router-id: 10.200.200.200
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -1715,7 +1715,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -1724,7 +1724,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -1763,8 +1763,8 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
-                              id: GigabitEthernet10
+                                id: GigabitEthernet6
+                              id: GigabitEthernet6
                           openconfig-ospfv2-ext:stub-options:
                             stub:
                               config:
@@ -1781,10 +1781,10 @@
                                 no-summary: false
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -1891,7 +1891,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -1900,7 +1900,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -1939,8 +1939,8 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
-                              id: GigabitEthernet10
+                                id: GigabitEthernet6
+                              id: GigabitEthernet6
                           openconfig-ospfv2-ext:stub-options:
                             stub:
                               config:
@@ -1957,10 +1957,10 @@
                                 no-summary: false
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -2067,7 +2067,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -2076,7 +2076,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -2115,8 +2115,8 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
-                              id: GigabitEthernet10
+                                id: GigabitEthernet6
+                              id: GigabitEthernet6
                           openconfig-ospfv2-ext:stub-options:
                             stub:
                               config:
@@ -2133,10 +2133,10 @@
                                 no-summary: false
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -2243,7 +2243,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -2252,7 +2252,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -2291,8 +2291,8 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
-                              id: GigabitEthernet10
+                                id: GigabitEthernet6
+                              id: GigabitEthernet6
                           openconfig-ospfv2-ext:stub-options:
                             stub:
                               config:
@@ -2309,10 +2309,10 @@
                                 no-summary: false
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -2419,7 +2419,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -2428,7 +2428,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -2467,8 +2467,8 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
-                              id: GigabitEthernet10
+                                id: GigabitEthernet6
+                              id: GigabitEthernet6
                           openconfig-ospfv2-ext:stub-options:
                             stub:
                               config:
@@ -2485,10 +2485,10 @@
                                 no-summary: true
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -2595,7 +2595,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -2604,7 +2604,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -2643,8 +2643,8 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
-                              id: GigabitEthernet10
+                                id: GigabitEthernet6
+                              id: GigabitEthernet6
                           openconfig-ospfv2-ext:stub-options:
                             stub:
                               config:
@@ -2661,10 +2661,10 @@
                                 no-summary: true
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: '0'
   tasks:
     - name: Convert string to JSON

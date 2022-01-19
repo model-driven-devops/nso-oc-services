@@ -769,7 +769,7 @@
                         dhcp-client: false
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -778,7 +778,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -865,8 +865,8 @@
                           interfaces:
                             interface:
                             - config:
-                                id: GigabitEthernet10
-                              id: GigabitEthernet10
+                                id: GigabitEthernet6
+                              id: GigabitEthernet6
                       global:
                         inter-area-propagation-policies:
                           inter-area-propagation-policy:

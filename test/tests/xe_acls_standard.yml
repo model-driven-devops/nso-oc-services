@@ -30,7 +30,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -39,7 +39,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -85,8 +85,8 @@
           interfaces:
             interface:
               - config:
-                  id: 'GigabitEthernet10'
-                id: 'GigabitEthernet10'
+                  id: 'GigabitEthernet6'
+                id: 'GigabitEthernet6'
                 ingress-acl-sets:
                   ingress-acl-set:
                     - config:
@@ -96,7 +96,7 @@
                       type: 'ACL_IPV4_STANDARD'
                 interface-ref:
                   config:
-                    interface: 'GigabitEthernet10'
+                    interface: 'GigabitEthernet6'
                     subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -204,7 +204,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -213,7 +213,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -259,8 +259,8 @@
           interfaces:
             interface:
               - config:
-                  id: 'GigabitEthernet10'
-                id: 'GigabitEthernet10'
+                  id: 'GigabitEthernet6'
+                id: 'GigabitEthernet6'
                 egress-acl-sets:
                   egress-acl-set:
                     - config:
@@ -270,7 +270,7 @@
                       type: 'ACL_IPV4_STANDARD'
                 interface-ref:
                   config:
-                    interface: 'GigabitEthernet10'
+                    interface: 'GigabitEthernet6'
                     subinterface: '0'
   tasks:
     - name: Convert string to JSON
@@ -347,114 +347,114 @@
             <id>0</id>
           </input>
 
-# Test ACL_IPV4_STANDARD Type line in
-# WARNING This will lock NSO out
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - acl_type_standard_line_in
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - acl_type_standard_line_in
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet10
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet10
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.27.1.2
-                              prefix-length: 30
-                            ip: 172.27.1.2
-                      config:
-                        dhcp-client: false
-        openconfig-acl:acl:
-          acl-sets:
-            acl-set:
-              - config:
-                  name: '11'
-                  type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                name: '11'
-                type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                acl-entries:
-                  acl-entry:
-                    - actions:
-                        config:
-                          forwarding-action: 'ACCEPT'
-                          log-action: 'LOG_NONE'
-                      config:
-                        sequence-id: '10'
-                      openconfig-acl-ext:ipv4:
-                        source-address: '0.0.0.0/0'
-                      sequence-id: '10'
-          openconfig-acl-ext:lines:
-            line:
-              - config:
-                  id: 'vty 0 4'
-                id: 'vty 0 4'
-                ingress-acl-sets:
-                  ingress-acl-set:
-                    - ingress-acl-set-name: '11'
-                      config:
-                          vrf: global
-                          vrf-also: false
-                          ingress-acl-set-name: '11'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: ACL acl_type_standard_line_in
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
+## Test ACL_IPV4_STANDARD Type line in
+## WARNING This will lock NSO out
+#- hosts: xe1
+#  connection: network_cli
+#  gather_facts: no
+#  tags:
+#    - all
+#    - acl_type_standard_line_in
+#  vars:
+#    ansible_network_os: 'cisco.ios.ios'
+#  roles:
+#    - ansible-pyats
+#  tasks:
+#    - name: collect config (before)
+#      ios_command:
+#        commands:
+#          - show run
+#      register: result_before
+#
+#- hosts: localhost
+#  gather_facts: no
+#  tags:
+#    - all
+#    - acl_type_standard_line_in
+#  vars:
+#    device_name: xe1
+#    content: |
+#      mdd:openconfig:
+#        openconfig-interfaces:interfaces:
+#          interface:
+#            - config:
+#                enabled: true
+#                name: GigabitEthernet6
+#                type: 'ethernetCsmacd'
+#              openconfig-if-ethernet:ethernet:
+#                config:
+#                  auto-negotiate: true
+#                  enable-flow-control: false
+#              hold-time:
+#                config:
+#                  down: '10'
+#              name: GigabitEthernet6
+#              subinterfaces:
+#                subinterface:
+#                  - config:
+#                      index: '0'
+#                    index: '0'
+#                    openconfig-if-ip:ipv4:
+#                      addresses:
+#                        address:
+#                          - config:
+#                              ip: 172.27.1.2
+#                              prefix-length: 30
+#                            ip: 172.27.1.2
+#                      config:
+#                        dhcp-client: false
+#        openconfig-acl:acl:
+#          acl-sets:
+#            acl-set:
+#              - config:
+#                  name: '11'
+#                  type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+#                name: '11'
+#                type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+#                acl-entries:
+#                  acl-entry:
+#                    - actions:
+#                        config:
+#                          forwarding-action: 'ACCEPT'
+#                          log-action: 'LOG_NONE'
+#                      config:
+#                        sequence-id: '10'
+#                      openconfig-acl-ext:ipv4:
+#                        source-address: '0.0.0.0/0'
+#                      sequence-id: '10'
+#          openconfig-acl-ext:lines:
+#            line:
+#              - config:
+#                  id: 'vty 0 4'
+#                id: 'vty 0 4'
+#                ingress-acl-sets:
+#                  ingress-acl-set:
+#                    - ingress-acl-set-name: '11'
+#                      config:
+#                          vrf: global
+#                          vrf-also: false
+#                          ingress-acl-set-name: '11'
+#  tasks:
+#    - name: Convert string to JSON
+#      set_fact:
+#        configs: "{{ content | from_yaml | to_json }}"
+#    - name: JSON configs
+#      debug:
+#        msg: "{{ configs }}"
+#    - name: ACL acl_type_standard_line_in
+#      uri:
+#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
+#        url_username: admin
+#        url_password: admin
+#        force_basic_auth: yes
+#        validate_certs: no
+#        status_code: [200,201,204]
+#        method: PUT
+#        headers: "{
+#          'Content-Type': 'application/yang-data+json',
+#          'Accept': 'application/yang-data+json'}"
+#        body_format: json
+#        body: "{{ configs }}"
 
 #- hosts: xe1
 #  connection: network_cli
@@ -540,7 +540,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -549,7 +549,7 @@
               hold-time:
                 config:
                   down: '10'
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:

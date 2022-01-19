@@ -11,13 +11,6 @@
     ansible_user: "{{ admin_user }}"
     ansible_password: "{{ admin_password }}"
     nso_xe_ned_id: cisco-ios-cli-6.74
-    github_branch_name: "{{ lookup('env','GITHUB_BRANCH') }}"
-    mdd_model_repos:
-      - name: nso-oc-services
-        model_list:
-          - mdd
-    ipython: true
-    ansible_pyats: true
   roles:
     - ansible-nso
   tasks:

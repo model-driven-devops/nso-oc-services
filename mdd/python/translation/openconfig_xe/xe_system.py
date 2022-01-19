@@ -395,10 +395,14 @@ def xe_system_program_service(self) -> None:
                     setattr(group.ip.tacacs.source_interface, interface_name, interface_number)
     # aaa authentication
     if self.service.oc_sys__system.aaa.authentication.admin_user.config.admin_password:
-        admin_user = device_cdb.username.create('admin')
+        if not device_cdb.username.exists('admin'):
+            device_cdb.username.create('admin')
+        admin_user = device_cdb.username['admin']
         admin_user.privilege = 15
         admin_user.secret.secret = self.service.oc_sys__system.aaa.authentication.admin_user.config.admin_password
         admin_user.secret.type = 0
+        admin_user.password.secret = None
+        admin_user.password.type = None
     if self.service.oc_sys__system.aaa.authentication.config.authentication_method:
         if not device_cdb.ios__aaa.new_model.exists():
             device_cdb.ios__aaa.new_model.create()
@@ -418,6 +422,8 @@ def xe_system_program_service(self) -> None:
             if service_user.config.password:
                 user_cdb.secret.secret = service_user.config.password
                 user_cdb.secret.type = 0
+                user_cdb.password.secret = None
+                user_cdb.password.type = None
             self.log.info(f"service_user.config.role  {service_user.config.role}")
             if service_user.config.role == 'SYSTEM_ROLE_ADMIN':
                 user_cdb.privilege = 15
