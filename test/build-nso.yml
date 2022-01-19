@@ -16,8 +16,6 @@
       - name: nso-oc-services
         model_list:
           - mdd
-    ipython: true
-    ansible_pyats: true
   roles:
     - ansible-nso
   tasks:

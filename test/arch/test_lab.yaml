@@ -113,7 +113,7 @@ nodes:
       !
       crypto key generate rsa modulus 2048
       !
-      username admin privilege 15 password admin
+      username admin privilege 15 secret 0 admin
       !
       interface GigabitEthernet1
        vrf forwarding management

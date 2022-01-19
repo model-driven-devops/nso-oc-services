@@ -147,7 +147,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -156,7 +156,7 @@
               hold-time:
                 config:
                   down: 10
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -176,7 +176,7 @@
             config:
               oc-system-ext:absolute-timeout-minutes: 1200
               oc-system-ext:ssh-timeout: 60
-              oc-system-ext:ssh-source-interface: 'GigabitEthernet10'
+              oc-system-ext:ssh-source-interface: 'GigabitEthernet6'
               enable: true
               protocol-version: 'V2'
               session-limit: 16
@@ -233,7 +233,7 @@
         that:
           - "'+ absolute-timeout 1200:' in changes"
           - "'+ip ssh time-out 60:' in changes"
-          - "'+ip ssh source-interface GigabitEthernet10:' in changes"
+          - "'+ip ssh source-interface GigabitEthernet6:' in changes"
           - "'+ip ssh version 2:' in changes"
           - "'+ session-limit 16:' in changes"
           - "'+ exec-timeout 30 0:' in changes"
@@ -291,7 +291,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet8
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -300,7 +300,7 @@
               hold-time:
                 config:
                   down: 10
-              name: GigabitEthernet8
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -317,7 +317,7 @@
                         dhcp-client: false
             - config:
                 enabled: true
-                name: GigabitEthernet9
+                name: GigabitEthernet7
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -326,7 +326,7 @@
               hold-time:
                 config:
                   down: 10
-              name: GigabitEthernet9
+              name: GigabitEthernet7
               subinterfaces:
                 subinterface:
                   - config:
@@ -341,32 +341,6 @@
                             ip: 172.50.1.2
                       config:
                         dhcp-client: false
-            - config:
-                enabled: true
-                name: GigabitEthernet10
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: 10
-              name: GigabitEthernet10
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: 0
-                    index: 0
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.27.1.2
-                              prefix-length: 30
-                            ip: 172.27.1.2
-                      config:
-                        dhcp-client: false
         openconfig-network-instance:network-instances:
           network-instance:
             - name: 'default'  # All interfaces are in default unless listed under other VRF
@@ -376,10 +350,10 @@
                 enabled: true
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet10'
+                  - id: 'GigabitEthernet6'
                     config:
-                      id: 'GigabitEthernet10'
-                      interface: 'GigabitEthernet10'
+                      id: 'GigabitEthernet6'
+                      interface: 'GigabitEthernet6'
                       subinterface: 0
             - name: 'abc'
               config:
@@ -390,10 +364,10 @@
                   - 'IPV4'
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet9'
+                  - id: 'GigabitEthernet7'
                     config:
-                      id: 'GigabitEthernet9'
-                      interface: 'GigabitEthernet9'
+                      id: 'GigabitEthernet7'
+                      interface: 'GigabitEthernet7'
                       subinterface: 0
         openconfig-system:system:
           ntp:
@@ -498,14 +472,14 @@
         that:
           - "'+ntp authenticate:' in changes"
           - "'+ntp logging:' in changes"
-          - "'+ntp source GigabitEthernet8:' in changes"
+          - "'+ntp source GigabitEthernet6:' in changes"
           - "'+ntp server 10.0.0.1 key 1:' in changes"
           - "'+ntp peer vrf abc 10.0.0.2 key 2:' in changes"
           - "'+ntp trusted-key 1:' in changes"
           - "'+ntp trusted-key 2:' in changes"
           - "'+ntp server 10.0.0.1 key 1:' in changes"
           - "'+ntp peer vrf abc 10.0.0.2 key 2:' in changes"
-          - "'+ntp server 10.0.0.3 key 1 prefer source GigabitEthernet10 version 3:' in changes"
+          - "'+ntp server 10.0.0.3 key 1 prefer source GigabitEthernet6 version 3:' in changes"
 #Hashes Change#          - "'+ntp authentication-key 1 md5 044B0A151C36435C0D48 7:' in changes"  #Hashes Change
 #Hashes Change#          - "'+ntp authentication-key 2 md5 071F205F5D1E16171340 7:' in changes"
       ignore_errors: yes
@@ -563,7 +537,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet8
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -572,7 +546,7 @@
               hold-time:
                 config:
                   down: 10
-              name: GigabitEthernet8
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -589,7 +563,7 @@
                         dhcp-client: false
             - config:
                 enabled: true
-                name: GigabitEthernet9
+                name: GigabitEthernet7
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -598,7 +572,7 @@
               hold-time:
                 config:
                   down: 10
-              name: GigabitEthernet9
+              name: GigabitEthernet7
               subinterfaces:
                 subinterface:
                   - config:
@@ -629,10 +603,10 @@
                   - 'IPV4'
               interfaces:
                 interface:
-                  - id: 'GigabitEthernet9'
+                  - id: 'GigabitEthernet7'
                     config:
-                      id: 'GigabitEthernet9'
-                      interface: 'GigabitEthernet9'
+                      id: 'GigabitEthernet7'
+                      interface: 'GigabitEthernet7'
                       subinterface: 0
         openconfig-system:system:
           logging:  # facility must be same for all in IOS
@@ -748,10 +722,10 @@
           - "'+logging trap critical:' in changes"
           - "'+logging facility syslog:' in changes"
           - "'+logging host 10.0.0.1 vrf abc:' in changes"
-          - "'+logging source-interface GigabitEthernet9 vrf abc:' in changes"
+          - "'+logging source-interface GigabitEthernet7 vrf abc:' in changes"
           - "'+logging host 10.0.0.2:' in changes"
           - "'+logging host 10.0.0.3:' in changes"
-          - "'+logging source-interface GigabitEthernet8:' in changes"
+          - "'+logging source-interface GigabitEthernet6:' in changes"
       ignore_errors: yes
 - hosts: localhost
   gather_facts: no
@@ -2188,7 +2162,7 @@
           interface:
             - config:
                 enabled: true
-                name: GigabitEthernet10
+                name: GigabitEthernet6
                 type: 'ethernetCsmacd'
               openconfig-if-ethernet:ethernet:
                 config:
@@ -2197,7 +2171,7 @@
               hold-time:
                 config:
                   down: 10
-              name: GigabitEthernet10
+              name: GigabitEthernet6
               subinterfaces:
                 subinterface:
                   - config:
@@ -2382,11 +2356,11 @@
           - "'+aaa group server tacacs+ TACACS-GROUP-1:' in changes"
           - "'+ server name TACACSSVR1:' in changes"
           - "'+ server name TACACSSVR2:' in changes"
-          - "'+ ip tacacs source-interface GigabitEthernet10:' in changes"
+          - "'+ ip tacacs source-interface GigabitEthernet6:' in changes"
           - "'+aaa group server tacacs+ TACACS-GROUP-2:' in changes"
           - "'+ server name TACACSSVR3:' in changes"
           - "'+ server name TACACSSVR4:' in changes"
-          - "'+ ip tacacs source-interface GigabitEthernet10:' in changes"
+          - "'+ ip tacacs source-interface GigabitEthernet6:' in changes"
           - "'+tacacs server TACACSSVR1:' in changes"
           - "'+ address ipv4 10.2.2.2:' in changes"
           - "'+ key Password123:' in changes"
