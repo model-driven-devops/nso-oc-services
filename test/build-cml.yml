@@ -25,7 +25,7 @@
         minutes: 1
 
 - name: Start Lab
-  hosts: unmanaged_devices:nso:xe1
+  hosts: unmanaged_devices:nso:xe1:xeswitch1
   connection: local
   gather_facts: no
   tasks:
@@ -78,6 +78,26 @@
     - set_fact:
         ansible_host: "{{result.cml_facts.nodes[inventory_hostname].ansible_host}}"
 
+- name: Check initial topology connectivity xeswitch1
+  hosts: xeswitch1
+  connection: local
+  any_errors_fatal: true
+  gather_facts: no
+  tasks:
+    - name: Wait until the mgmt interface comes up
+      cisco.cml.cml_lab_facts:
+        host: "{{ cml_host }}"
+        user: "{{ cml_username }}"
+        password: "{{ cml_password }}"
+        lab: "{{ cml_lab }}"
+      register: result
+      until: result.cml_facts.nodes[inventory_hostname].ansible_host is defined and result.cml_facts.nodes[inventory_hostname].ansible_host
+      retries: 60
+      delay: 10
+      delegate_to: 127.0.0.1
+    - set_fact:
+        ansible_host: "{{result.cml_facts.nodes[inventory_hostname].ansible_host}}"
+
 - name: Update ansible_host
   hosts: localhost
   tasks:
@@ -85,3 +105,5 @@
       shell: "sed -i 's/XXXXX/{{hostvars['nso'].ansible_host}}/' ./inventory/nso.yml"
     - name: replace IP address in local file
       shell: "sed -i 's/ZZZZZ/{{hostvars['xe1'].ansible_host}}/' ./inventory/nso.yml"
+    - name: replace IP address in local file
+      shell: "sed -i 's/YYYYY/{{hostvars['xeswitch1'].ansible_host}}/' ./inventory/nso.yml"

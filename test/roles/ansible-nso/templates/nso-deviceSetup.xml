@@ -22,5 +22,18 @@
         <admin-state>unlocked</admin-state>
       </state>
     </device>
+    <device>
+      <name>xeswitch1</name>
+      <address>{{hostvars['xeswitch1'].ansible_host}}</address>
+      <authgroup>NSO_Devices</authgroup>
+      <device-type>
+        <cli>
+          <ned-id>{{nso_xe_ned_id}}</ned-id>
+        </cli>
+      </device-type>
+      <state>
+        <admin-state>unlocked</admin-state>
+      </state>
+    </device>
   </devices>
 </config>
