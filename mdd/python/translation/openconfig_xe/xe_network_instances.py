@@ -18,6 +18,7 @@ def xe_network_instances_program_service(self) -> None:
     Program service for xe NED features
     """
     xe_configure_vrfs(self)
+    xe_configure_vlan_db(self)
     xe_reconcile_vrf_interfaces(self)
     xe_configure_mpls(self)
     table_connections = xe_get_table_connections(self)
@@ -137,6 +138,24 @@ def xe_configure_vrfs(self) -> None:
             for rt in rt_export_to_cdb:
                 self.root.devices.device[self.device_name].config.ios__vrf.definition[
                     network_instance.name].route_target.export.create(rt)
+
+
+def xe_configure_vlan_db(self) -> None:
+    """
+    Ensure VLANS are created in the VLAN DB
+    """
+    for network_instance in self.service.oc_netinst__network_instances.network_instance:
+        if len(network_instance.vlans.vlan) > 0:
+            for service_vlan in network_instance.vlans.vlan:
+                self.root.devices.device[self.device_name].config.ios__vlan.vlan_list.create(service_vlan.config.vlan_id)
+                vlan = self.root.devices.device[self.device_name].config.ios__vlan.vlan_list[service_vlan.config.vlan_id]
+                if service_vlan.config.status == "ACTIVE":
+                    if vlan.shutdown.exists():
+                        vlan.shutdown.delete()
+                elif service_vlan.config.status == "SUSPENDED":
+                    vlan.shutdown.create()
+                if service_vlan.config.name:
+                    vlan.name = service_vlan.config.name
 
 
 def xe_reconcile_vrf_interfaces(self) -> None:

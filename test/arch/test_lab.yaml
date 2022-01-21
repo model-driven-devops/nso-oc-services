@@ -173,11 +173,49 @@ nodes:
         label: GigabitEthernet8
         type: physical
   - id: n4
-    label: s1
+    label: xeswitch1
     node_definition: iosvl2
     x: 150
     y: 200
-    configuration: hostname s1
+    configuration: |-
+      hostname xeswitch1
+      !
+      event manager applet CLIlog
+      event cli pattern .* sync no skip no
+      action 1.0 syslog priority informational msg $_cli_msg
+      action 2.0 set _exit_status 1
+      !
+      vrf definition management
+       !
+       address-family ipv4
+       exit-address-family
+      !
+      ip domain name rtp.cisco.com
+      !
+      crypto key generate rsa modulus 2048
+      !
+      username admin privilege 15 secret 0 admin
+      !
+      interface GigabitEthernet0/0
+       no switchport
+       vrf forwarding management
+       ip address dhcp
+       no shutdown
+      !
+      no ip http server
+      no ip http secure-server
+      ip ssh time-out 60
+      ip ssh authentication-retries 2
+      !
+      line con 0
+      line aux 0
+      line vty 0 4
+       login local
+       transport input ssh
+       exec-timeout 0 0
+       exit
+      netconf ssh
+      end
     image_definition: iosvl2-2019
     tags: []
     interfaces:

@@ -34,7 +34,8 @@ all:
       hosts:
         xe1:
           ansible_host: ZZZZZ
+        xeswitch1:
+          ansible_host: YYYYY
 #        xr1:
 #        nx1:
-#        s1:
 #        test-network-switch:
