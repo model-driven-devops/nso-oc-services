@@ -3,11 +3,10 @@
   environment:
     NCS_JAVA_VM_OPTIONS: "{{ nso_java_opts }}"
   block:
-    - name: Copy 'mdd' package to NSO packages directory
-      ansible.builtin.copy:
-        src: ../mdd
+    - name: Copy 'mdd.tgz' and unarchive on NSO
+      ansible.builtin.unarchive:
+        src: "../mdd.tgz"
         dest: "{{ nso_run_dir }}/packages"
-        remote_src: no
     - name: Make packages
       command:
         chdir: '{{ nso_run_dir }}/packages/mdd/src/'
