@@ -1,0 +1,30 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+      - test-releasing
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      # semantic-release requires at least node v14
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 'lts/*'
+
+      # actual configuration of semantic-release is done in .releaserc
+      - name: Install dependencies
+        run: npm install semantic-release && npm install @semantic-release/exec conventional-changelog-conventionalcommits
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
