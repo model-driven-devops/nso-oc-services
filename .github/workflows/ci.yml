@@ -1,4 +1,4 @@
-name: GitHub Actions Demo
+name: NSO-Services CI
 on:
   pull_request_review:
     types: [ submitted ]
