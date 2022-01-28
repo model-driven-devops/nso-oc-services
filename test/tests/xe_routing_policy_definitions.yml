@@ -1,343 +1,233 @@
 ---
-# Add set-up
-- hosts: xe1
-  connection: network_cli
+- hosts: nso
+  connection: local
   gather_facts: no
-  tags:
-    - all
-    - set_up
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
   roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - set_up
+    - nso-rollback-save
+  run_once: true
   vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-acl:acl:
-          acl-sets:
-            acl-set:
-              - config:
-                  description: 'extended_test'
-                  name: '100'
-                  type: 'ACL_IPV4'
-                name: '100'
-                type: 'ACL_IPV4'
-                acl-entries:
-                  acl-entry:
-                    - actions:
-                        config:
-                          forwarding-action: 'ACCEPT'
-                          log-action: 'LOG_NONE'
-                      config:
-                        description: 'extended_test'
-                        sequence-id: '10'
-                      ipv4:
-                        config:
-                          destination-address: '0.0.0.0/0'
-                          source-address: '0.0.0.0/0'
-                      sequence-id: '10'
-              - config:
-                  name: '10'
-                  type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                name: '10'
-                type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                acl-entries:
-                  acl-entry:
-                    - actions:
-                        config:
-                          forwarding-action: 'ACCEPT'
-                          log-action: 'LOG_NONE'
-                      config:
-                        sequence-id: '10'
-                      openconfig-acl-ext:ipv4:
-                        source-address: '0.0.0.0/0'
-                      sequence-id: '10'
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            openconfig-bgp-policy:bgp-defined-sets:
-              as-path-sets:
-                as-path-set:
-                  - as-path-set-name: 1
-                    config:
-                      as-path-set-name: 1
-                      as-path-set-member:
-                        - "^$"
-              community-sets:
-                community-set:
-                  - community-set-name: test_standard
-                    config:
-                      community-set-name: test_standard
-                      match-set-options: ANY
-                      community-member:
-                        - "100:100"
-                  - community-set-name: test_expanded
-                    config:
-                      community-set-name: test_expanded
-                      match-set-options: ANY
-                      community-member:
-                        - "6500[0-9]:1000"
-              ext-community-sets:
-                ext-community-set:
-                  - ext-community-set-name: test_ext
-                    config:
-                      ext-community-set-name: test_ext
-                      match-set-options: ANY
-                      ext-community-member:
-                        - "1:1"
-                        - "2:2"
-            prefix-sets:
-              prefix-set:
-                - name: prefix_test
-                  config:
-                    name: prefix_test
-                    mode: IPV4
-                  prefixes:
-                    prefix:
-                      - ip-prefix: '10.0.0.0/8'
-                        masklength-range: exact
-                        config:
-                          ip-prefix: '10.0.0.0/8'
-                          masklength-range: exact
-                          openconfig-routing-policy-ext:seq: 10
-            tag-sets:
-              tag-set:
-                - name: '2000'
-                  config:
-                    name: '2000'
-                    tag-value:
-                      - '2000'
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
 
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: set_up
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
+- name: test acls extended
+  hosts: xe1
+  gather_facts: no
   connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - set_up
   vars:
+    device: xe1
     ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
   tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-
-# Add routing policy permit match
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - route_map_permit_match
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - route_map_permit_match
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          policy-definitions:
-            policy-definition:
-              - name: 'test-match'
-                config:
-                  name: 'test-match'
-                statements:
-                  openconfig-routing-policy:statement:
-                    - name: '10'
-                      config:
-                        name: '10'
-                      conditions:
-                        match-prefix-set:
+    - name: test set_up
+      tags:
+        - set_up
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-acl:acl:
+              acl-sets:
+                acl-set:
+                  - config:
+                      description: 'extended_test'
+                      name: '100'
+                      type: 'ACL_IPV4'
+                    name: '100'
+                    type: 'ACL_IPV4'
+                    acl-entries:
+                      acl-entry:
+                        - actions:
+                            config:
+                              forwarding-action: 'ACCEPT'
+                              log-action: 'LOG_NONE'
                           config:
-                            prefix-set: 'prefix_test'
-                            match-set-options: 'ANY'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                    - name: '20'
-                      config:
-                        name: '20'
-                      conditions:
-                        openconfig-bgp-policy:bgp-conditions:
-                          openconfig-bgp-policy:match-as-path-set:
-                            openconfig-bgp-policy:config:
-                              openconfig-bgp-policy:as-path-set: '1'
-                              openconfig-bgp-policy:match-set-options: 'ANY'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                    - name: '30'
-                      config:
-                        name: '30'
-                      conditions:
-                        openconfig-bgp-policy:bgp-conditions:
-                          openconfig-bgp-policy:config:
-                            openconfig-bgp-policy:community-set: 'test_standard'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                    - name: '40'
-                      config:
-                        name: '40'
-                      conditions:
-                        openconfig-bgp-policy:bgp-conditions:
-                          openconfig-bgp-policy:config:
-                            openconfig-bgp-policy:community-set: 'test_expanded'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                    - name: '50'
-                      config:
-                        name: '50'
-                      conditions:
-                        openconfig-routing-policy-ext:match-acl-ipv4-set:
-                          openconfig-routing-policy-ext:config:
-                            openconfig-routing-policy-ext:acl-set: '10'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                    - name: '60'
-                      config:
-                        name: '60'
-                      conditions:
-                        openconfig-routing-policy-ext:match-acl-ipv4-set:
-                          openconfig-routing-policy-ext:config:
-                            openconfig-routing-policy-ext:acl-set: '100'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                    - name: '70'
-                      config:
-                        name: '70'
-                      conditions:
-                        match-tag-set:
+                            description: 'extended_test'
+                            sequence-id: 10
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 10
+                  - config:
+                      name: '10'
+                      type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    name: '10'
+                    type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    acl-entries:
+                      acl-entry:
+                        - actions:
+                            config:
+                              forwarding-action: 'ACCEPT'
+                              log-action: 'LOG_NONE'
                           config:
-                            tag-set: '2000'
-                            match-set-options: 'ANY'
-                      actions:
+                            sequence-id: 10
+                          openconfig-acl-ext:ipv4:
+                            source-address: '0.0.0.0/0'
+                          sequence-id: 10
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                openconfig-bgp-policy:bgp-defined-sets:
+                  as-path-sets:
+                    as-path-set:
+                      - as-path-set-name: '1'
                         config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                    - name: '80'
+                          as-path-set-name: '1'
+                          as-path-set-member:
+                            - "^$"
+                  community-sets:
+                    community-set:
+                      - community-set-name: 'test_standard'
+                        config:
+                          community-set-name: 'test_standard'
+                          match-set-options: 'ANY'
+                          community-member:
+                            - "100:100"
+                      - community-set-name: 'test_expanded'
+                        config:
+                          community-set-name: 'test_expanded'
+                          match-set-options: 'ANY'
+                          community-member:
+                            - "6500[0-9]:1000"
+                  ext-community-sets:
+                    ext-community-set:
+                      - ext-community-set-name: 'test_ext'
+                        config:
+                          ext-community-set-name: 'test_ext'
+                          match-set-options: 'ANY'
+                          ext-community-member:
+                            - "1:1"
+                            - "2:2"
+                prefix-sets:
+                  prefix-set:
+                    - name: 'prefix_test'
                       config:
-                        name: '80'
-                      conditions:
-                        openconfig-bgp-policy:bgp-conditions:
-                          openconfig-bgp-policy:config:
-                            openconfig-bgp-policy:ext-community-set: 'test_ext'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: route_map_permit_match
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PATCH
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
+                        name: 'prefix_test'
+                        mode: IPV4
+                      prefixes:
+                        prefix:
+                          - ip-prefix: '10.0.0.0/8'
+                            masklength-range: 'exact'
+                            config:
+                              ip-prefix: '10.0.0.0/8'
+                              masklength-range: 'exact'
+                              openconfig-routing-policy-ext:seq: 10
+                tag-sets:
+                  tag-set:
+                    - name: '2000'
+                      config:
+                        name: '2000'
+                        tag-value:
+                          - '2000'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions: false
 
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - route_map_permit_match
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+    - name: test route_map_permit_match
+      tags:
+        - route_map_permit_match
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              policy-definitions:
+                policy-definition:
+                  - name: 'test-match'
+                    config:
+                      name: 'test-match'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
+                          config:
+                            name: '10'
+                          conditions:
+                            match-prefix-set:
+                              config:
+                                prefix-set: 'prefix_test'
+                                match-set-options: 'ANY'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        - name: '20'
+                          config:
+                            name: '20'
+                          conditions:
+                            openconfig-bgp-policy:bgp-conditions:
+                              openconfig-bgp-policy:match-as-path-set:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:as-path-set: '1'
+                                  openconfig-bgp-policy:match-set-options: 'ANY'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        - name: '30'
+                          config:
+                            name: '30'
+                          conditions:
+                            openconfig-bgp-policy:bgp-conditions:
+                              openconfig-bgp-policy:config:
+                                openconfig-bgp-policy:community-set: 'test_standard'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        - name: '40'
+                          config:
+                            name: '40'
+                          conditions:
+                            openconfig-bgp-policy:bgp-conditions:
+                              openconfig-bgp-policy:config:
+                                openconfig-bgp-policy:community-set: 'test_expanded'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        - name: '50'
+                          config:
+                            name: '50'
+                          conditions:
+                            openconfig-routing-policy-ext:match-acl-ipv4-set:
+                              openconfig-routing-policy-ext:config:
+                                openconfig-routing-policy-ext:acl-set: '10'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        - name: '60'
+                          config:
+                            name: '60'
+                          conditions:
+                            openconfig-routing-policy-ext:match-acl-ipv4-set:
+                              openconfig-routing-policy-ext:config:
+                                openconfig-routing-policy-ext:acl-set: '100'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        - name: '70'
+                          config:
+                            name: '70'
+                          conditions:
+                            match-tag-set:
+                              config:
+                                tag-set: '2000'
+                                match-set-options: 'ANY'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                        - name: '80'
+                          config:
+                            name: '80'
+                          conditions:
+                            openconfig-bgp-policy:bgp-conditions:
+                              openconfig-bgp-policy:config:
+                                openconfig-bgp-policy:ext-community-set: 'test_ext'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
           - "'+route-map test-match permit 10:' in changes"
           - "'+ match ip address prefix-list prefix_test:' in changes"
           - "'+route-map test-match permit 20:' in changes"
@@ -355,273 +245,209 @@
           - "'+route-map test-match permit 80:' in changes"
           - "'+ match extcommunity test_ext:' in changes"
 
-# Add routing policy permit set
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - route_map_permit_set
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - route_map_permit_set
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          policy-definitions:
-            policy-definition:
-              - name: 'test-set'
-                config:
-                  name: 'test-set'
-                statements:
-                  openconfig-routing-policy:statement:
-                    - name: '10'
-                      config:
-                        name: '10'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        set-tag:
+    - name: test route_map_permit_set
+      tags:
+        - route_map_permit_set
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              policy-definitions:
+                policy-definition:
+                  - name: 'test-set'
+                    config:
+                      name: 'test-set'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
                           config:
-                            mode: 'INLINE'
-                          inline:
+                            name: '10'
+                          actions:
                             config:
-                              tag:
-                                - '9999'
-                    - name: '20'
-                      config:
-                        name: '20'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        openconfig-bgp-policy:bgp-actions:
-                          openconfig-bgp-policy:config:
-                            openconfig-bgp-policy:set-route-origin: 'IGP'  # IGP INCOMPLETE EGP 'EGP not supported'
-                    - name: '30'
-                      config:
-                        name: '30'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        openconfig-bgp-policy:bgp-actions:
-                          openconfig-bgp-policy:config:
-                            openconfig-bgp-policy:set-local-pref: '200'
-                    - name: '40'
-                      config:
-                        name: '40'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        openconfig-bgp-policy:bgp-actions:
-                          openconfig-bgp-policy:config:
-                            openconfig-bgp-policy:set-next-hop: 'SELF'
-                    - name: '50'
-                      config:
-                        name: '50'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        openconfig-bgp-policy:bgp-actions:
-                          openconfig-bgp-policy:config:
-                            openconfig-bgp-policy:set-next-hop: '1.1.1.1'
-                    - name: '60'
-                      config:
-                        name: '60'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        openconfig-bgp-policy:bgp-actions:
-                          openconfig-bgp-policy:config:
-                            openconfig-bgp-policy:set-med: '1000'  # number or IGP
-                    - name: '70'
-                      config:
-                        name: '70'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        openconfig-bgp-policy:bgp-actions:
-                          openconfig-bgp-policy:set-as-path-prepend:
-                            openconfig-bgp-policy:config:
-                              openconfig-bgp-policy:asn: '100'  # ASN
-                    - name: '80'
-                      config:
-                        name: '80'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        openconfig-bgp-policy:bgp-actions:
-                          openconfig-bgp-policy:set-as-path-prepend:
-                            openconfig-bgp-policy:config:
-                              openconfig-bgp-policy:repeat-n: '3'  # 1..255
-                              openconfig-bgp-policy:asn: '100'  # ASN
-                    - name: '90'
-                      config:
-                        name: '90'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        openconfig-bgp-policy:bgp-actions:
-                          openconfig-bgp-policy:set-community:
-                            openconfig-bgp-policy:config:
-                              openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
-                              openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
-                            openconfig-bgp-policy:inline:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            set-tag:
+                              config:
+                                mode: 'INLINE'
+                              inline:
+                                config:
+                                  tag:
+                                    - '9999'
+                        - name: '20'
+                          config:
+                            name: '20'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
                               openconfig-bgp-policy:config:
-                                openconfig-bgp-policy:communities:
-                                  - '100:100'
-                                  - '200:200'
-                                  - '300:300'
-                    - name: '100'
-                      config:
-                        name: '100'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        openconfig-bgp-policy:bgp-actions:
-                          openconfig-bgp-policy:set-community:
-                            openconfig-bgp-policy:config:
-                              openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
-                              openconfig-bgp-policy:options: 'REPLACE'  # ADD, REMOVE, REPLACE
-                            openconfig-bgp-policy:inline:
+                                openconfig-bgp-policy:set-route-origin: 'IGP'  # IGP INCOMPLETE EGP 'EGP not supported'
+                        - name: '30'
+                          config:
+                            name: '30'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
                               openconfig-bgp-policy:config:
-                                openconfig-bgp-policy:communities:
-                                  - '100:100'
-                                  - '200:200'
-                                  - '300:300'
-                    - name: '110'
-                      config:
-                        name: '110'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        openconfig-bgp-policy:bgp-actions:
-                          openconfig-bgp-policy:set-community:
-                            openconfig-bgp-policy:config:
-                              openconfig-bgp-policy:method: 'REFERENCE'  # INLINE or REFERENCE
-                              openconfig-bgp-policy:options: 'REMOVE'  # ADD, REMOVE, REPLACE
-                            openconfig-bgp-policy:reference:
+                                openconfig-bgp-policy:set-local-pref: '200'
+                        - name: '40'
+                          config:
+                            name: '40'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
                               openconfig-bgp-policy:config:
-                                openconfig-bgp-policy:community-set-ref: 'test_standard'  # will remove 100:100
-                    - name: '120'
-                      config:
-                        name: '120'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        openconfig-bgp-policy:bgp-actions:
-                          openconfig-bgp-policy:config:
-                            openconfig-routing-policy-ext::set-weight: '65000'
-                    - name: '130'
-                      config:
-                        name: '130'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        openconfig-bgp-policy:bgp-actions:
-                          openconfig-bgp-policy:set-ext-community:
-                            openconfig-bgp-policy:config:
-                              openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
-                              openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
-                            openconfig-bgp-policy:inline:
+                                openconfig-bgp-policy:set-next-hop: 'SELF'
+                        - name: '50'
+                          config:
+                            name: '50'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
                               openconfig-bgp-policy:config:
-                                openconfig-bgp-policy:communities:
-                                  - '1:1'
-                                  - '2:2'
-                    - name: '140'
-                      config:
-                        name: '140'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        openconfig-bgp-policy:bgp-actions:
-                          openconfig-bgp-policy:set-ext-community:
-                            openconfig-bgp-policy:config:
-                              openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
-                              openconfig-bgp-policy:options: 'REPLACE'  # ADD, REMOVE, REPLACE
-                            openconfig-bgp-policy:inline:
+                                openconfig-bgp-policy:set-next-hop: '1.1.1.1'
+                        - name: '60'
+                          config:
+                            name: '60'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
                               openconfig-bgp-policy:config:
-                                openconfig-bgp-policy:communities:
-                                  - '3:3'
-                                  - '4:4'
-                    - name: '150'
-                      config:
-                        name: '150'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                        openconfig-bgp-policy:bgp-actions:
-                          openconfig-bgp-policy:set-ext-community:
-                            openconfig-bgp-policy:config:
-                              openconfig-bgp-policy:method: 'REFERENCE'  # INLINE or REFERENCE
-                              openconfig-bgp-policy:options: 'REMOVE'  # ADD, REMOVE, REPLACE
-                            openconfig-bgp-policy:reference:
+                                openconfig-bgp-policy:set-med: '1000'  # number or IGP
+                        - name: '70'
+                          config:
+                            name: '70'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
+                              openconfig-bgp-policy:set-as-path-prepend:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:asn: '100'  # ASN
+                        - name: '80'
+                          config:
+                            name: '80'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
+                              openconfig-bgp-policy:set-as-path-prepend:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:repeat-n: '3'  # 1..255
+                                  openconfig-bgp-policy:asn: '100'  # ASN
+                        - name: '90'
+                          config:
+                            name: '90'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
+                              openconfig-bgp-policy:set-community:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                                  openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                                openconfig-bgp-policy:inline:
+                                  openconfig-bgp-policy:config:
+                                    openconfig-bgp-policy:communities:
+                                      - '100:100'
+                                      - '200:200'
+                                      - '300:300'
+                        - name: '100'
+                          config:
+                            name: '100'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
+                              openconfig-bgp-policy:set-community:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                                  openconfig-bgp-policy:options: 'REPLACE'  # ADD, REMOVE, REPLACE
+                                openconfig-bgp-policy:inline:
+                                  openconfig-bgp-policy:config:
+                                    openconfig-bgp-policy:communities:
+                                      - '100:100'
+                                      - '200:200'
+                                      - '300:300'
+                        - name: '110'
+                          config:
+                            name: '110'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
+                              openconfig-bgp-policy:set-community:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:method: 'REFERENCE'  # INLINE or REFERENCE
+                                  openconfig-bgp-policy:options: 'REMOVE'  # ADD, REMOVE, REPLACE
+                                openconfig-bgp-policy:reference:
+                                  openconfig-bgp-policy:config:
+                                    openconfig-bgp-policy:community-set-ref: 'test_standard'  # will remove 100:100
+                        - name: '120'
+                          config:
+                            name: '120'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
                               openconfig-bgp-policy:config:
-                                openconfig-bgp-policy:ext-community-set-ref: 'test_ext'  # will remove 1:1 and 2:2
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: route_map_permit_set
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PATCH
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - route_map_permit_set
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                                openconfig-routing-policy-ext::set-weight: '65000'
+                        - name: '130'
+                          config:
+                            name: '130'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
+                              openconfig-bgp-policy:set-ext-community:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                                  openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                                openconfig-bgp-policy:inline:
+                                  openconfig-bgp-policy:config:
+                                    openconfig-bgp-policy:communities:
+                                      - '1:1'
+                                      - '2:2'
+                        - name: '140'
+                          config:
+                            name: '140'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
+                              openconfig-bgp-policy:set-ext-community:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                                  openconfig-bgp-policy:options: 'REPLACE'  # ADD, REMOVE, REPLACE
+                                openconfig-bgp-policy:inline:
+                                  openconfig-bgp-policy:config:
+                                    openconfig-bgp-policy:communities:
+                                      - '3:3'
+                                      - '4:4'
+                        - name: '150'
+                          config:
+                            name: '150'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
+                              openconfig-bgp-policy:set-ext-community:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:method: 'REFERENCE'  # INLINE or REFERENCE
+                                  openconfig-bgp-policy:options: 'REMOVE'  # ADD, REMOVE, REPLACE
+                                openconfig-bgp-policy:reference:
+                                  openconfig-bgp-policy:config:
+                                    openconfig-bgp-policy:ext-community-set-ref: 'test_ext'  # will remove 1:1 and 2:2
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
           - "'+route-map test-set permit 10:' in changes"
           - "'+ set tag 9999:' in changes"
           - "'+route-map test-set permit 20:' in changes"
@@ -653,23 +479,11 @@
           - "'+route-map test-set permit 150:' in changes"
           - "'+ set extcomm-list test_ext delete:' in changes"
 
-- hosts: localhost
+- hosts: nso
+  connection: local
   gather_facts: no
-  tags:
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
+  roles:
+    - nso-rollback-load
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"

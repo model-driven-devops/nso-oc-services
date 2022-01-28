@@ -1,0 +1,41 @@
+---
+#- hosts: nso
+#  connection: local
+#  gather_facts: no
+#  roles:
+#    - nso-rollback-save
+#  run_once: true
+#  vars:
+#    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- name: test acls extended
+  hosts: xe1
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: xe1
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test set_up
+      tags:
+        - set_up
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - assertion 1
+
+#- hosts: nso
+#  connection: local
+#  gather_facts: no
+#  roles:
+#    - nso-rollback-load
+#  run_once: true
+#  vars:
+#    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"

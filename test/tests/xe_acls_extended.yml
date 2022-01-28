@@ -1,0 +1,653 @@
+---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- name: test acls extended
+  hosts: xe1
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: xe1
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test set_up configurations
+      tags:
+        - set_up
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 5'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet5'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                      up: 0
+                  name: 'GigabitEthernet5'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.1'
+                                  prefix-length: 24
+                                ip: '10.1.0.1'
+                          config:
+                            dhcp-client: false
+                - config:
+                    description: 'Physical Interface 6'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                      up: 0
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.1.2'
+                                  prefix-length: 24
+                                ip: '10.1.1.2'
+                          config:
+                            dhcp-client: false
+                - config:
+                    description: 'Physical Interface 7'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet7'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                  hold-time:
+                    config:
+                      down: 10
+                      up: 0
+                  name: 'GigabitEthernet7'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          description: 'Sub interface 100'
+                          enabled: true
+                          index: 100
+                        index: 100
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '192.168.100.1'
+                                  prefix-length: 24
+                                ip: '192.168.100.1'
+                          config:
+                            dhcp-client: false
+                            enabled: true
+                            mtu: 1500
+                          proxy-arp:
+                            config:
+                              mode: DISABLE
+                        openconfig-vlan:vlan:
+                          config:
+                            vlan-id: 100
+                      - config:
+                          description: 'Sub interface 200'
+                          enabled: true
+                          index: 200
+                        index: 200
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '192.168.200.2'
+                                  prefix-length: 24
+                                ip: '192.168.200.2'
+                          config:
+                            dhcp-client: false
+                            enabled: true
+                            mtu: 1500
+                          proxy-arp:
+                            config:
+                              mode: DISABLE
+                        openconfig-vlan:vlan:
+                          config:
+                            vlan-id: 200
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    enabled: true
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet5'
+                        config:
+                          id: 'GigabitEthernet5'
+                          interface: 'GigabitEthernet5'
+                          subinterface: 0
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+                      - id: 'GigabitEthernet7.100'
+                        config:
+                          id: 'GigabitEthernet7.100'
+                          interface: 'GigabitEthernet7'
+                          subinterface: 100
+                      - id: 'GigabitEthernet7.200'
+                        config:
+                          id: 'GigabitEthernet7.200'
+                          interface: 'GigabitEthernet7'
+                          subinterface: 200
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions: false
+    - name: test acl_type_extended_deny_bogons_egress configurations
+      tags:
+        - acl_type_extended_deny_bogons_egress
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-acl:acl:
+              acl-sets:
+                acl-set:
+                  - config:
+                      description: 'bogons-aggregated'
+                      name: 'deny-bogons-egress'
+                      type: 'ACL_IPV4'
+                    name: 'deny-bogons-egress'
+                    type: 'ACL_IPV4'
+                    acl-entries:
+                      acl-entry:
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 10
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/8'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 10
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 20
+                          ipv4:
+                            config:
+                              destination-address: '10.0.0.0/8'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 20
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 30
+                          ipv4:
+                            config:
+                              destination-address: '100.64.0.0/10'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 30
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 40
+                          ipv4:
+                            config:
+                              destination-address: '127.0.0.0/8'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 40
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 50
+                          ipv4:
+                            config:
+                              destination-address: '169.254.0.0/16'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 50
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 60
+                          ipv4:
+                            config:
+                              destination-address: '172.16.0.0/12'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 60
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 70
+                          ipv4:
+                            config:
+                              destination-address: '192.0.0.0/24'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 70
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 80
+                          ipv4:
+                            config:
+                              destination-address: '192.0.2.0/24'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 80
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 90
+                          ipv4:
+                            config:
+                              destination-address: '192.168.0.0/16'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 90
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 100
+                          ipv4:
+                            config:
+                              destination-address: '198.18.0.0/15'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 100
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 110
+                          ipv4:
+                            config:
+                              destination-address: '198.51.100.0/24'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 110
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 120
+                          ipv4:
+                            config:
+                              destination-address: '203.0.113.0/24'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 120
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 130
+                          ipv4:
+                            config:
+                              destination-address: '224.0.0.0/3'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 130
+                        - actions:
+                            config:
+                              forwarding-action: 'ACCEPT'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 140
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 140
+        assertions:
+          - "'+ip access-list extended deny-bogons-egress:' in changes"
+          - "'+ 10 deny   ip any 0.0.0.0 0.255.255.255 log-input:' in changes"
+          - "'+ 20 deny   ip any 10.0.0.0 0.255.255.255 log-input:' in changes"
+          - "'+ 30 deny   ip any 100.64.0.0 0.63.255.255 log-input:' in changes"
+          - "'+ 40 deny   ip any 127.0.0.0 0.255.255.255 log-input:' in changes"
+          - "'+ 50 deny   ip any 169.254.0.0 0.0.255.255 log-input:' in changes"
+          - "'+ 60 deny   ip any 172.16.0.0 0.15.255.255 log-input:' in changes"
+          - "'+ 70 deny   ip any 192.0.0.0 0.0.0.255 log-input:' in changes"
+          - "'+ 80 deny   ip any 192.0.2.0 0.0.0.255 log-input:' in changes"
+          - "'+ 90 deny   ip any 192.168.0.0 0.0.255.255 log-input:' in changes"
+          - "'+ 100 deny   ip any 198.18.0.0 0.1.255.255 log-input:' in changes"
+          - "'+ 110 deny   ip any 198.51.100.0 0.0.0.255 log-input:' in changes"
+          - "'+ 120 deny   ip any 203.0.113.0 0.0.0.255 log-input:' in changes"
+          - "'+ 130 deny   ip any 224.0.0.0 31.255.255.255 log-input:' in changes"
+          - "'+ 140 permit ip any any:' in changes"
+        api_method: PATCH
+        rollback: false
+        assertion_ignore_errors: false
+    - name: test acl_type_extended_deny_bogons_ingress configurations
+      tags:
+        - acl_type_extended_deny_bogons_ingress
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-acl:acl:
+              acl-sets:
+                acl-set:
+                  - config:
+                      description: 'bogons-aggregated'
+                      name: 'deny-bogons-ingress'
+                      type: 'ACL_IPV4'
+                    name: 'deny-bogons-ingress'
+                    type: 'ACL_IPV4'
+                    acl-entries:
+                      acl-entry:
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 10
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              source-address: '0.0.0.0/8'
+                          sequence-id: 10
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 20
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              source-address: '10.0.0.0/8'
+                          sequence-id: 20
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 30
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              source-address: '100.64.0.0/10'
+                          sequence-id: 30
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 40
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              source-address: '127.0.0.0/8'
+                          sequence-id: 40
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'bogons'
+                            sequence-id: 50
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              source-address: '169.254.0.0/16'
+                          sequence-id: 50
+        assertions:
+          - "'+ip access-list extended deny-bogons-ingress:' in changes"
+          - "'+ 10 deny   ip 0.0.0.0 0.255.255.255 any log-input:' in changes"
+          - "'+ 20 deny   ip 10.0.0.0 0.255.255.255 any log-input:' in changes"
+          - "'+ 30 deny   ip 100.64.0.0 0.63.255.255 any log-input:' in changes"
+          - "'+ 40 deny   ip 127.0.0.0 0.255.255.255 any log-input:' in changes"
+          - "'+ 50 deny   ip 169.254.0.0 0.0.255.255 any log-input:' in changes"
+        api_method: PATCH
+        rollback: false
+        assertion_ignore_errors: false
+    - name: test acl_type_extended_external_ingress configurations
+      tags:
+        - acl_type_extended_external_ingress
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-acl:acl:
+              acl-sets:
+                acl-set:
+                  - config:
+                      description: 'external to internal'
+                      name: 'external-ingress'
+                      type: 'ACL_IPV4'
+                    name: 'external-ingress'
+                    type: 'ACL_IPV4'
+                    acl-entries:
+                      acl-entry:
+                        - actions:
+                            config:
+                              forwarding-action: 'ACCEPT'
+                              log-action: 'LOG_NONE'
+                          config:
+                            description: 'ssh'
+                            sequence-id: 10
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              protocol: 'IP_TCP'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 10
+                          transport:
+                            config:
+                              destination-port: 22
+                        - actions:
+                            config:
+                              forwarding-action: 'ACCEPT'
+                              log-action: 'LOG_NONE'
+                          config:
+                            description: 'established TCP traffic'
+                            sequence-id: 20
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              protocol: 'IP_TCP'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 20
+                          transport:
+                            config:
+                              destination-port: '1024..65535'
+                              tcp-flags:
+                                - 'TCP_ACK'
+                                - 'TCP_RST'
+                        - actions:
+                            config:
+                              forwarding-action: 'REJECT'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'drop log other packets'
+                            sequence-id: 30
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 30
+        assertions:
+          - "'+ip access-list extended external-ingress:' in changes"
+          - "'+ 10 permit tcp any any eq 22:' in changes"
+          - "'+ 20 permit tcp any any range 1024 65535 established:' in changes"
+          - "'+ 30 deny   ip any any log-input:' in changes"
+        api_method: PATCH
+        rollback: false
+        assertion_ignore_errors: false
+
+    - name: test acl_type_extended_apply configurations
+      tags:
+        - acl_type_extended_apply
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-acl:acl:
+              interfaces:
+                interface:
+                  - config:
+                      id: 'GigabitEthernet5'
+                    id: 'GigabitEthernet5'
+                    ingress-acl-sets:
+                      ingress-acl-set:
+                        - config:
+                            set-name: 'external-ingress'
+                            type: 'ACL_IPV4'
+                          set-name: 'external-ingress'
+                          type: 'ACL_IPV4'
+                    interface-ref:
+                      config:
+                        interface: 'GigabitEthernet5'
+                        subinterface: 0
+                  - config:
+                      id: 'GigabitEthernet6'
+                    id: 'GigabitEthernet6'
+                    egress-acl-sets:
+                      egress-acl-set:
+                        - config:
+                            set-name: 'deny-bogons-egress'
+                            type: 'ACL_IPV4'
+                          set-name: 'deny-bogons-egress'
+                          type: 'ACL_IPV4'
+                    ingress-acl-sets:
+                      ingress-acl-set:
+                        - config:
+                            set-name: 'deny-bogons-ingress'
+                            type: 'ACL_IPV4'
+                          set-name: 'deny-bogons-ingress'
+                          type: 'ACL_IPV4'
+                    interface-ref:
+                      config:
+                        interface: 'GigabitEthernet6'
+                        subinterface: 0
+                  - config:
+                      id: 'GigabitEthernet7.100'
+                    id: 'GigabitEthernet7.100'
+                    ingress-acl-sets:
+                      ingress-acl-set:
+                        - config:
+                            set-name: 'deny-bogons-ingress'
+                            type: 'ACL_IPV4'
+                          set-name: 'deny-bogons-ingress'
+                          type: 'ACL_IPV4'
+                    interface-ref:
+                      config:
+                        interface: 'GigabitEthernet7'
+                        subinterface: 100
+                  - config:
+                      id: 'GigabitEthernet7.200'
+                    id: 'GigabitEthernet7.200'
+                    ingress-acl-sets:
+                      ingress-acl-set:
+                        - config:
+                            set-name: 'deny-bogons-ingress'
+                            type: 'ACL_IPV4'
+                          set-name: 'deny-bogons-ingress'
+                          type: 'ACL_IPV4'
+                    interface-ref:
+                      config:
+                        interface: 'GigabitEthernet7'
+                        subinterface: 200
+        assertions:
+          - "' interface GigabitEthernet5:' in changes"
+          - "'+ ip access-group external-ingress in:' in changes"
+          - "' interface GigabitEthernet6:' in changes"
+          - "'+ ip access-group deny-bogons-egress out:' in changes"
+          - "'+ ip access-group deny-bogons-ingress in:' in changes"
+          - "' interface GigabitEthernet7.100:' in changes"
+          - "'+ ip access-group deny-bogons-ingress in:' in changes"
+          - "' interface GigabitEthernet7.200:' in changes"
+          - "'+ ip access-group deny-bogons-ingress in:' in changes"
+        api_method: PATCH
+        rollback: false
+        assertion_ignore_errors: false
+
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-load
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"

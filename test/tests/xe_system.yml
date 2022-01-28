@@ -1,475 +1,246 @@
 ---
-# hostname, domain-name, banners
-- hosts: xe1
+- name: test acls extended
+  hosts: xe1
+  gather_facts: no
   connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - system_config
   vars:
+    device: xe1
     ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
   tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - system_config
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-system:system:
-          config:
-            oc-system-ext:enable-secret: 'password'
-            oc-system-ext:console-exec-timeout-seconds: 800
-            domain-name: 'test123.com'
-            hostname: 'rxx'
-            login-banner: |
-              This is the login-banner.
-            motd-banner: |
-              This is the motd-banner.
-
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System system_config
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - system_config
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:  # note enable secret is going to be hashed so it's not tested
-        that:
+    - name: test http_server
+      tags:
+        - http_server
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              config:
+                oc-system-ext:enable-secret: 'password'
+                oc-system-ext:console-exec-timeout-seconds: 800
+                domain-name: 'test123.com'
+                hostname: 'rxx'
+                login-banner: |
+                  This is the login-banner.
+                motd-banner: |
+                  This is the motd-banner.
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+hostname rxx:' in changes"
           - "'+ip domain name test123.com:' in changes"
-          - "'+banner login ^CThis is the login-banner:' in changes"
-          - "'+banner motd ^CThis is the motd-banner:' in changes"
+          - "'+banner login ^CThis is the login-banner.:' in changes"
+          - "'+banner motd ^CThis is the motd-banner.:' in changes"
           - "' line con 0:' in changes"
           - "'+ exec-timeout 13 20:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - system_config
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# ssh server
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - ssh_server
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - ssh_server
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
+    - name: test ssh_server
+      tags:
+        - ssh_server
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.27.1.2'
+                                  prefix-length: 30
+                                ip: '172.27.1.2'
+                          config:
+                            dhcp-client: false
+            openconfig-system:system:
+              ssh-server:
                 config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: 10
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: 0
-                    index: 0
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.27.1.2
-                              prefix-length: 30
-                            ip: 172.27.1.2
-                      config:
-                        dhcp-client: false
-        openconfig-system:system:
-          ssh-server:
-            config:
-              oc-system-ext:absolute-timeout-minutes: 1200
-              oc-system-ext:ssh-timeout: 60
-              oc-system-ext:ssh-source-interface: 'GigabitEthernet6'
-              enable: true
-              protocol-version: 'V2'
-              session-limit: 16
-              timeout: 1800
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System ssh_server
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - ssh_server
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:  # note enable ssh - there's no transport input ssh because it's already there
-        that:
+                  oc-system-ext:absolute-timeout-minutes: 1200
+                  oc-system-ext:ssh-timeout: 55
+                  oc-system-ext:ssh-source-interface: 'GigabitEthernet6'
+                  enable: true
+                  protocol-version: 'V2'
+                  session-limit: 16
+                  timeout: 1800
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ absolute-timeout 1200:' in changes"
-          - "'+ip ssh time-out 60:' in changes"
+          - "'+ip ssh time-out 55:' in changes"
           - "'+ip ssh source-interface GigabitEthernet6:' in changes"
           - "'+ip ssh version 2:' in changes"
           - "'+ session-limit 16:' in changes"
           - "'+ exec-timeout 30 0:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - ssh_server
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# ntp server
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - ntp_server
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - ntp_server
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: 10
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: 0
-                    index: 0
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.60.1.2
-                              prefix-length: 30
-                            ip: 172.60.1.2
-                      config:
-                        dhcp-client: false
-            - config:
-                enabled: true
-                name: GigabitEthernet7
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: 10
-              name: GigabitEthernet7
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: 0
-                    index: 0
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.50.1.2
-                              prefix-length: 30
-                            ip: 172.50.1.2
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'  # All interfaces are in default unless listed under other VRF
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: 0
-            - name: 'abc'
-              config:
-                name: 'abc'
-                type: 'L3VRF'  # oc-ni-types:DEFAULT_INSTANCE
-                enabled: true  # not in IOS
-                enabled-address-families:
-                  - 'IPV4'
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet7'
-                    config:
-                      id: 'GigabitEthernet7'
-                      interface: 'GigabitEthernet7'
-                      subinterface: 0
-        openconfig-system:system:
-          ntp:
-            config:
-              enabled: true
-              enable-ntp-auth: true
-              oc-system-ext:ntp-enable-logging: true
-              ntp-source-address: '172.60.1.2'
-            ntp-keys:
-              ntp-key:
+    - name: test ntp_server
+      tags:
+        - ntp_server
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
                 - config:
-                    key-id: 1
-                    key-type: 'NTP_AUTH_MD5'
-                    key-value: 'password1'
-                  key-id: 1
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.60.1.2'
+                                  prefix-length: 30
+                                ip: '172.60.1.2'
+                          config:
+                            dhcp-client: false
                 - config:
-                    key-id: 2
-                    key-type: 'NTP_AUTH_MD5'
-                    key-value: 'password2'
-                  key-id: 2
-            servers:
-              server:
-                - address: '10.0.0.1'
+                    enabled: true
+                    name: 'GigabitEthernet7'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet7'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.50.1.2'
+                                  prefix-length: 30
+                                ip: '172.50.1.2'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'  # All interfaces are in default unless listed under other VRF
                   config:
-                    oc-system-ext:ntp-auth-key-id: 1
-                    oc-system-ext:ntp-use-vrf: 'default'
-                    address: '10.0.0.1'
-                    association-type: SERVER  # SERVER, PEER, POOL
-                    iburst: true
-                    port: 123  # always 123 for ios
-                    prefer: false
-                    version: 4
-                - address: '10.0.0.2'
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+                - name: 'abc'
                   config:
-                    oc-system-ext:ntp-auth-key-id: 2
-                    oc-system-ext:ntp-use-vrf: 'abc'
-                    address: '10.0.0.2'
-                    association-type: PEER
-                    iburst: true
-                    port: 123  # always 123 for ios
-                    prefer: false
-                    version: 4
-                - address: '10.0.0.3'
-                  config:
-                    oc-system-ext:ntp-auth-key-id: 1
-                    oc-system-ext:ntp-source-address: '172.27.1.2'
-                    address: '10.0.0.3'
-                    association-type: SERVER  # SERVER, PEER, POOL
-                    iburst: true
-                    port: 123  # always 123 for ios
-                    prefer: true
-                    version: 3
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System ntp_server
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - ntp_server
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:  # note enable ssh - there's no transport input ssh because it's already there
-        that:
+                    name: 'abc'
+                    type: 'L3VRF'  # oc-ni-types:DEFAULT_INSTANCE
+                    enabled: true  # not in IOS
+                    enabled-address-families:
+                      - 'IPV4'
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet7'
+                        config:
+                          id: 'GigabitEthernet7'
+                          interface: 'GigabitEthernet7'
+                          subinterface: 0
+            openconfig-system:system:
+              ntp:
+                config:
+                  enabled: true
+                  enable-ntp-auth: true
+                  oc-system-ext:ntp-enable-logging: true
+                  ntp-source-address: '172.60.1.2'
+                ntp-keys:
+                  ntp-key:
+                    - config:
+                        key-id: 1
+                        key-type: 'NTP_AUTH_MD5'
+                        key-value: 'password1'
+                      key-id: 1
+                    - config:
+                        key-id: 2
+                        key-type: 'NTP_AUTH_MD5'
+                        key-value: 'password2'
+                      key-id: 2
+                servers:
+                  server:
+                    - address: '10.0.0.1'
+                      config:
+                        oc-system-ext:ntp-auth-key-id: 1
+                        oc-system-ext:ntp-use-vrf: 'default'
+                        address: '10.0.0.1'
+                        association-type: 'SERVER'  # SERVER, PEER, POOL
+                        iburst: true
+                        port: 123  # always 123 for ios
+                        prefer: false
+                        version: 4
+                    - address: '10.0.0.2'
+                      config:
+                        oc-system-ext:ntp-auth-key-id: 2
+                        oc-system-ext:ntp-use-vrf: 'abc'
+                        address: '10.0.0.2'
+                        association-type: 'PEER'
+                        iburst: true
+                        port: 123  # always 123 for ios
+                        prefer: false
+                        version: 4
+                    - address: '10.0.0.3'
+                      config:
+                        oc-system-ext:ntp-auth-key-id: 1
+                        oc-system-ext:ntp-source-address: '172.60.1.2'
+                        address: '10.0.0.3'
+                        association-type: 'SERVER'  # SERVER, PEER, POOL
+                        iburst: true
+                        port: 123  # always 123 for ios
+                        prefer: true
+                        version: 3
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ntp authenticate:' in changes"
           - "'+ntp logging:' in changes"
           - "'+ntp source GigabitEthernet6:' in changes"
@@ -482,241 +253,154 @@
           - "'+ntp server 10.0.0.3 key 1 prefer source GigabitEthernet6 version 3:' in changes"
 #Hashes Change#          - "'+ntp authentication-key 1 md5 044B0A151C36435C0D48 7:' in changes"  #Hashes Change
 #Hashes Change#          - "'+ntp authentication-key 2 md5 071F205F5D1E16171340 7:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - ntp_server
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-# logging server
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - logging_server
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - logging_server
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: 10
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: 0
-                    index: 0
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.60.1.2
-                              prefix-length: 30
-                            ip: 172.60.1.2
-                      config:
-                        dhcp-client: false
-            - config:
-                enabled: true
-                name: GigabitEthernet7
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: 10
-              name: GigabitEthernet7
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: 0
-                    index: 0
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.50.1.2
-                              prefix-length: 30
-                            ip: 172.50.1.2
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'  # All interfaces are in default unless listed under other VRF
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-            - name: 'abc'
-              config:
-                name: 'abc'
-                type: 'L3VRF'  # oc-ni-types:DEFAULT_INSTANCE
-                enabled: true  # not in IOS
-                enabled-address-families:
-                  - 'IPV4'
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet7'
+    - name: test logging_server
+      tags:
+        - logging_server
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
                     config:
-                      id: 'GigabitEthernet7'
-                      interface: 'GigabitEthernet7'
-                      subinterface: 0
-        openconfig-system:system:
-          logging:  # facility must be same for all in IOS
-            console:  # set console
-              config: { }
-              selectors:
-                selector:
-                  - config:
-                      facility: 'SYSLOG'
-                      severity: 'INFORMATIONAL'  # logging console
-                    facility: 'SYSLOG'
-                    severity: 'INFORMATIONAL'
-            openconfig-system-ext:terminal-monitor: # set monitor
-              selectors:
-                selector:
-                  - config:
-                      facility: 'SYSLOG'
-                      severity: 'ALERT'  # logging monitor
-                    facility: 'SYSLOG'
-                    severity: 'ALERT'
-            remote-servers:
-              remote-server:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.60.1.2'
+                                  prefix-length: 30
+                                ip: '172.60.1.2'
+                          config:
+                            dhcp-client: false
                 - config:
-                    host: '10.0.0.1'  # logging host x.x.x.x
-                    remote-port: 514
-                    source-address: '172.50.1.2'
-                    oc-system-ext:use-vrf: 'abc'
-                  host: '10.0.0.1'
+                    enabled: true
+                    name: 'GigabitEthernet7'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet7'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.50.1.2'
+                                  prefix-length: 30
+                                ip: '172.50.1.2'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'  # All interfaces are in default unless listed under other VRF
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'  # oc-ni-types:DEFAULT_INSTANCE
+                    enabled: true  # not in IOS
+                    enabled-address-families:
+                      - 'IPV4'
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet7'
+                        config:
+                          id: 'GigabitEthernet7'
+                          interface: 'GigabitEthernet7'
+                          subinterface: 0
+            openconfig-system:system:
+              logging:  # facility must be same for all in IOS
+                console:  # set console
+                  config: { }
                   selectors:
                     selector:
                       - config:
                           facility: 'SYSLOG'
-                          severity: 'CRITICAL'
+                          severity: 'INFORMATIONAL'  # logging console
                         facility: 'SYSLOG'
-                        severity: 'CRITICAL'
-                - config:
-                    host: '10.0.0.2'  # logging host x.x.x.x
-                    remote-port: 514
-                    source-address: '172.60.1.2'
-                    oc-system-ext:use-vrf: 'default'
-                  host: '10.0.0.2'
+                        severity: 'INFORMATIONAL'
+                openconfig-system-ext:terminal-monitor: # set monitor
                   selectors:
                     selector:
                       - config:
                           facility: 'SYSLOG'
-                          severity: 'CRITICAL'
+                          severity: 'ALERT'  # logging monitor
                         facility: 'SYSLOG'
-                        severity: 'CRITICAL'
-                - config:
-                    host: '10.0.0.3'  # logging host x.x.x.x
-                    remote-port: 514
-                    source-address: '172.60.1.2'
-                  host: '10.0.0.3'
-                  selectors:
-                    selector:
-                      - config:
-                          facility: 'SYSLOG'
-                          severity: 'CRITICAL'
-                        facility: 'SYSLOG'
-                        severity: 'CRITICAL'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System logging_server
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - logging_server
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:  # note enable ssh - there's no transport input ssh because it's already there
-        that:
+                        severity: 'ALERT'
+                remote-servers:
+                  remote-server:
+                    - config:
+                        host: '10.0.0.1'  # logging host x.x.x.x
+                        remote-port: 514
+                        source-address: '172.50.1.2'
+                        oc-system-ext:use-vrf: 'abc'
+                      host: '10.0.0.1'
+                      selectors:
+                        selector:
+                          - config:
+                              facility: 'SYSLOG'
+                              severity: 'CRITICAL'
+                            facility: 'SYSLOG'
+                            severity: 'CRITICAL'
+                    - config:
+                        host: '10.0.0.2'  # logging host x.x.x.x
+                        remote-port: 514
+                        source-address: '172.60.1.2'
+                        oc-system-ext:use-vrf: 'default'
+                      host: '10.0.0.2'
+                      selectors:
+                        selector:
+                          - config:
+                              facility: 'SYSLOG'
+                              severity: 'CRITICAL'
+                            facility: 'SYSLOG'
+                            severity: 'CRITICAL'
+                    - config:
+                        host: '10.0.0.3'  # logging host x.x.x.x
+                        remote-port: 514
+                        source-address: '172.60.1.2'
+                      host: '10.0.0.3'
+                      selectors:
+                        selector:
+                          - config:
+                              facility: 'SYSLOG'
+                              severity: 'CRITICAL'
+                            facility: 'SYSLOG'
+                            severity: 'CRITICAL'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+logging console informational:' in changes"
           - "'+logging monitor alerts:' in changes"
           - "'+logging trap critical:' in changes"
@@ -726,1200 +410,281 @@
           - "'+logging host 10.0.0.2:' in changes"
           - "'+logging host 10.0.0.3:' in changes"
           - "'+logging source-interface GigabitEthernet6:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - logging_server
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-
-# dns-servers
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - dns-servers
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - dns-servers
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'  # All interfaces are in default unless listed under other VRF
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-            - name: 'abc'
-              config:
-                name: 'abc'
-                type: 'L3VRF'  # oc-ni-types:DEFAULT_INSTANCE
-                enabled: true  # not in IOS
-                enabled-address-families:
-                  - 'IPV4'
-        openconfig-system:system:
-          dns:
-            servers:
-              server:
-                - address: '8.8.8.8'
+    - name: test dns-servers
+      tags:
+        - dns-servers
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'  # All interfaces are in default unless listed under other VRF
                   config:
-                    address: '8.8.8.8'
-                    port: 53  # always 53 for ios
-                - address: '8.8.4.4'
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                - name: 'abc'
                   config:
-                    address: '8.8.4.4'
-                    port: 53  # always 53 for ios
-                - address: '8.8.5.5'
-                  config:
-                    address: '8.8.5.5'
-                    port: 53  # always 53 for ios
-                    openconfig-system-ext:use-vrf: 'abc'
-
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System dns-servers
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - dns-servers
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                    name: 'abc'
+                    type: 'L3VRF'  # oc-ni-types:DEFAULT_INSTANCE
+                    enabled: true  # not in IOS
+                    enabled-address-families:
+                      - 'IPV4'
+            openconfig-system:system:
+              dns:
+                servers:
+                  server:
+                    - address: '8.8.8.8'
+                      config:
+                        address: '8.8.8.8'
+                        port: 53  # always 53 for ios
+                    - address: '8.8.4.4'
+                      config:
+                        address: '8.8.4.4'
+                        port: 53  # always 53 for ios
+                    - address: '8.8.5.5'
+                      config:
+                        address: '8.8.5.5'
+                        port: 53  # always 53 for ios
+                        openconfig-system-ext:use-vrf: 'abc'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ip name-server 8.8.8.8 8.8.4.4:' in changes"
           - "'+ip name-server vrf abc 8.8.5.5:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - dns-servers
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# clock timezone
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - clock_timezone
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - clock_timezone
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-system:system:
-          clock:
-            config:
-              timezone-name: 'CST -6 0'
-
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System clock_timezone
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - clock_timezone
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+    - name: test clock_timezone
+      tags:
+        - clock_timezone
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              clock:
+                config:
+                  timezone-name: 'CST -6 0'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+clock timezone CST -6 0:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - clock_timezone
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-# http server enable
-- hosts: xe1
-  connection: network_cli
+- hosts: nso
+  connection: local
   gather_facts: no
-  tags:
-    - all
-    - http_server_enable
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
   roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - http_server_enable
+    - nso-rollback-save
+  run_once: true
   vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-system:system:
-          openconfig-system-ext:services:
-            openconfig-system-ext:http:
-              openconfig-system-ext:http-enabled: true
-              openconfig-system-ext:https-enabled: true
-              openconfig-system-ext:ip-http-max-connections: 4
-              openconfig-system-ext:ip-http-secure-ciphersuite:
-                - 'aes-256-cbc-sha'
-                - 'aes-128-cbc-sha'
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
 
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System http_server_enable
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
+- name: test acls extended
+  hosts: xe1
+  gather_facts: no
   connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - http_server_enable
   vars:
+    device: xe1
     ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
   tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:  # note enable secret is going to be hashed so it's not tested
-        that:
+    - name: test http_server
+      tags:
+        - http_server
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:http:
+                  openconfig-system-ext:http-enabled: true
+                  openconfig-system-ext:https-enabled: true
+                  openconfig-system-ext:ip-http-max-connections: 4
+                  openconfig-system-ext:ip-http-secure-ciphersuite:
+                    - 'aes-256-cbc-sha'
+                    - 'aes-128-cbc-sha'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
           - "'+ip http secure-server:' in changes"
           - "'+ip http server:' in changes"
           - "'+ip http max-connections 4:' in changes"
           - "'+ip http secure-ciphersuite aes-128-cbc-sha aes-256-cbc-sha:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - http_server_enable
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-
-## http server disable
-#- hosts: xe1
-#  connection: network_cli
-#  gather_facts: no
-#  tags:
-#    - all
-#    - http_server_disable
-#  vars:
-#    ansible_network_os: 'cisco.ios.ios'
-#  roles:
-#    - ansible-pyats
-#  tasks:
-#    - name: collect config (before)
-#      ios_command:
-#        commands:
-#          - show run
-#      register: result_before
-#
-#- hosts: localhost
-#  gather_facts: no
-#  tags:
-#    - all
-#    - http_server_disable
-#  vars:
-#    device_name: xe1
-#    content: |
-#      mdd:openconfig:
-#        openconfig-system:system:
-#          openconfig-system-ext:services:
-#            openconfig-system-ext:http:
-#              openconfig-system-ext:http-enabled: false
-#              openconfig-system-ext:https-enabled: false
-#
-#  tasks:
-#    - name: Convert string to JSON
-#      set_fact:
-#        configs: "{{ content | from_yaml | to_json }}"
-#    - name: JSON configs
-#      debug:
-#        msg: "{{ configs }}"
-#    - name: System http_server_disable
-#      uri:
-#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-#        url_username: admin
-#        url_password: admin
-#        force_basic_auth: yes
-#        validate_certs: no
-#        status_code: [200,201,204]
-#        method: PUT
-#        headers: "{
-#          'Content-Type': 'application/yang-data+json',
-#          'Accept': 'application/yang-data+json'}"
-#        body_format: json
-#        body: "{{ configs }}"
-#
-#- hosts: xe1
-#  connection: network_cli
-#  gather_facts: no
-#  tags:
-#    - all
-#    - http_server_disable
-#  vars:
-#    ansible_network_os: 'cisco.ios.ios'
-#    exclude_list:
-#      - (^Using.*)
-#      - (Building.*)
-#      - (Current.*)
-#      - (crypto pki certificate chain.*)
-#  roles:
-#    - ansible-pyats
-#  tasks:
-#    - name: collect config (after)
-#      ios_command:
-#        commands:
-#          - show run
-#      register: result_after
-#    - set_fact:
-#        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-#    - name: debug changes
-#      debug:
-#        msg: "{{ changes }}"
-#    - assert:  # note enable secret is going to be hashed so it's not tested
-#        that:
-#          - "'+no ip http secure-server:' in changes"
-#          - "'+no ip http server:' in changes"
-#      ignore_errors: yes
-#- hosts: localhost
-#  gather_facts: no
-#  tags:
-#    - all
-#    - http_server_disable
-#    - rollback
-#  tasks:
-#    - name: Rollback
-#      uri:
-#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-#        url_username: admin
-#        url_password: admin
-#        force_basic_auth: yes
-#        validate_certs: no
-#        status_code: [ 204 ]
-#        method: POST
-#        headers: "{
-#          'Content-Type': 'application/yang-data+xml'}"
-#        body: |
-#          <input xmlns="http://tail-f.com/ns/rollback">
-#            <id>0</id>
-#          </input>
-
-# enable finger
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - finger_enable
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - finger_enable
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-system:system:
-          openconfig-system-ext:services:
-            finger: true
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System finger_enable
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - finger_enable
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+    - name: test http_server
+      tags:
+        - http_server
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:http:
+                  openconfig-system-ext:http-enabled: false
+                  openconfig-system-ext:https-enabled: false
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+no ip http secure-server:' in changes"
+          - "'+no ip http server:' in changes"
+    - name: test finger_service
+      tags:
+        - finger_service
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                finger: true
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
           - "'+ip finger:' in changes"
+    - name: test set_up
+      tags:
+        - set_up
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                finger: false
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'-ip finger:' in changes"
 
-- hosts: localhost
+- hosts: nso
+  connection: local
   gather_facts: no
-  tags:
-    - all
-    - finger_enable
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-
-## disable finger
-#- hosts: xe1
-#  connection: network_cli
-#  gather_facts: no
-#  tags:
-#    - all
-#    - finger_disable
-#  vars:
-#    ansible_network_os: 'cisco.ios.ios'
-#  roles:
-#    - ansible-pyats
-#  tasks:
-#    - name: collect config (before)
-#      ios_command:
-#        commands:
-#          - show run
-#      register: result_before
-#
-#- hosts: localhost
-#  gather_facts: no
-#  tags:
-#    - all
-#    - finger_disable
-#  vars:
-#    device_name: xe1
-#    content: |
-#      mdd:openconfig:
-#        openconfig-system:system:
-#          openconfig-system-ext:services:
-#            finger: false
-#  tasks:
-#    - name: Convert string to JSON
-#      set_fact:
-#        configs: "{{ content | from_yaml | to_json }}"
-#    - name: JSON configs
-#      debug:
-#        msg: "{{ configs }}"
-#    - name: System finger_disable
-#      uri:
-#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-#        url_username: admin
-#        url_password: admin
-#        force_basic_auth: yes
-#        validate_certs: no
-#        status_code: [200,201,204]
-#        method: PUT
-#        headers: "{
-#          'Content-Type': 'application/yang-data+json',
-#          'Accept': 'application/yang-data+json'}"
-#        body_format: json
-#        body: "{{ configs }}"
-#
-#- hosts: xe1
-#  connection: network_cli
-#  gather_facts: no
-#  tags:
-#    - all
-#    - finger_disable
-#  vars:
-#    ansible_network_os: 'cisco.ios.ios'
-#    exclude_list:
-#      - (^Using.*)
-#      - (Building.*)
-#      - (Current.*)
-#      - (crypto pki certificate chain.*)
-#  roles:
-#    - ansible-pyats
-#  tasks:
-#    - name: collect config (after)
-#      ios_command:
-#        commands:
-#          - show run
-#      register: result_after
-#    - set_fact:
-#        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-#    - name: debug changes
-#      debug:
-#        msg: "{{ changes }}"
-#    - assert:
-#        that:
-#          - "'-ip finger:' in changes"
-#
-#- hosts: localhost
-#  gather_facts: no
-#  tags:
-#    - all
-#    - finger_disable
-#    - rollback
-#  tasks:
-#    - name: Rollback
-#      uri:
-#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-#        url_username: admin
-#        url_password: admin
-#        force_basic_auth: yes
-#        validate_certs: no
-#        status_code: [ 204 ]
-#        method: POST
-#        headers: "{
-#          'Content-Type': 'application/yang-data+xml'}"
-#        body: |
-#          <input xmlns="http://tail-f.com/ns/rollback">
-#            <id>0</id>
-#          </input>
-# http timeout-policy
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - http_timeout_policy
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
   roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - http_timeout_policy
+    - nso-rollback-load
+  run_once: true
   vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-system:system:
-          openconfig-system-ext:services:
-            openconfig-system-ext:http:
-              openconfig-system-ext:ip-http-timeout-policy:
-                openconfig-system-ext:idle:
-                  openconfig-system-ext:connection: 240
-                  openconfig-system-ext:life: 240
-                  openconfig-system-ext:requests: 3
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System http_timeout_policy
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
 
-- hosts: xe1
+- name: test acls extended
+  hosts: xe1
+  gather_facts: no
   connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - http_timeout_policy
   vars:
+    device: xe1
     ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
   tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+    - name: test http_timeout_policy
+      tags:
+        - http_timeout_policy
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:http:
+                  openconfig-system-ext:ip-http-timeout-policy:
+                    openconfig-system-ext:idle:
+                      openconfig-system-ext:connection: 240
+                      openconfig-system-ext:life: 240
+                      openconfig-system-ext:requests: 3
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ip http timeout-policy idle 240 life 240 requests 3:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - http_timeout_policy
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# timestamps logging and debugging datetime
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - timestamps_datetime
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - timestamps_datetime
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-system:system:
-          openconfig-system:config:
-            openconfig-system-ext:timestamps:
-              openconfig-system-ext:logging:
-                openconfig-system-ext:enabled: true
-                openconfig-system-ext:datetime: true
-                openconfig-system-ext:uptime: false
-                openconfig-system-ext:localtime: true
-              openconfig-system-ext:debugging:
-                openconfig-system-ext:enabled: true
-                openconfig-system-ext:datetime: true
-                openconfig-system-ext:uptime: false
-                openconfig-system-ext:localtime: true
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System timestamps_datetime
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - timestamps_datetime
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+    - name: test timestamps_datetime
+      tags:
+        - timestamps_datetime
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system:config:
+                openconfig-system-ext:timestamps:
+                  openconfig-system-ext:logging:
+                    openconfig-system-ext:enabled: true
+                    openconfig-system-ext:datetime: true
+                    openconfig-system-ext:uptime: false
+                    openconfig-system-ext:localtime: true
+                  openconfig-system-ext:debugging:
+                    openconfig-system-ext:enabled: true
+                    openconfig-system-ext:datetime: true
+                    openconfig-system-ext:uptime: false
+                    openconfig-system-ext:localtime: true
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+service timestamps debug datetime msec localtime:' in changes"
           - "'+service timestamps log datetime msec localtime:' in changes"
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - timestamps_datetime
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# timestamps logging and debugging uptime
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - timestamps_uptime
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - timestamps_uptime
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-system:system:
-          openconfig-system:config:
-            openconfig-system-ext:timestamps:
-              openconfig-system-ext:logging:
-                openconfig-system-ext:enabled: true
-                openconfig-system-ext:datetime: false
-                openconfig-system-ext:uptime: true
-                openconfig-system-ext:localtime: true
-              openconfig-system-ext:debugging:
-                openconfig-system-ext:enabled: true
-                openconfig-system-ext:datetime: false
-                openconfig-system-ext:uptime: true
-                openconfig-system-ext:localtime: true
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System timestamps_uptime
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - timestamps_uptime
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+    - name: test timestamps_uptime
+      tags:
+        - timestamps_uptime
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system:config:
+                openconfig-system-ext:timestamps:
+                  openconfig-system-ext:logging:
+                    openconfig-system-ext:enabled: true
+                    openconfig-system-ext:datetime: false
+                    openconfig-system-ext:uptime: true
+                    openconfig-system-ext:localtime: true
+                  openconfig-system-ext:debugging:
+                    openconfig-system-ext:enabled: true
+                    openconfig-system-ext:datetime: false
+                    openconfig-system-ext:uptime: true
+                    openconfig-system-ext:localtime: true
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+service timestamps debug uptime:' in changes"
           - "'+service timestamps log uptime:' in changes"
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - timestamps_uptime
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# logging console and monitor
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - console-and-monitor-severity-emergency
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - console-and-monitor-severity-emergency
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-system:system:
-          logging:  # facility must be same for all in IOS
-            console:  # set console and monitor
-              config: { }
-              selectors:
-                selector:
-                  - config:
-                      facility: 'SYSLOG'
-                      severity: 'EMERGENCY'
-                    facility: 'SYSLOG'
-                    severity: 'EMERGENCY'
-            openconfig-system-ext:terminal-monitor:
-              selectors:
-                selector:
-                  - config:
-                      facility: 'SYSLOG'
-                      severity: 'EMERGENCY'
-                    facility: 'SYSLOG'
-                    severity: 'EMERGENCY'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System console-and-monitor-severity-emergency
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - console-and-monitor-severity-emergency
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
-          - "'+logging facility syslog:' in changes"
-          - "'+logging console emergencies:' in changes"
-          - "'+logging monitor emergencies:' in changes"
-      ignore_errors: yes
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - console-and-monitor-severity-emergency
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# logging remote server
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - remote-servers-severity-emergency
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - remote-servers-severity-emergency
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-system:system:
-          logging:  # facility must be same for all in IOS
-            remote-servers:
-              remote-server:
-                - config:
-                    host: '10.0.0.1'  # logging host x.x.x.x
-                    remote-port: 514
-                  host: '10.0.0.1'
+    - name: test console-and-monitor-severity-emergency
+      tags:
+        - console-and-monitor-severity-emergency
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              logging:  # facility must be same for all in IOS
+                console:  # set console and monitor
+                  config: { }
                   selectors:
                     selector:
                       - config:
@@ -1927,427 +692,255 @@
                           severity: 'EMERGENCY'
                         facility: 'SYSLOG'
                         severity: 'EMERGENCY'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System remote-servers-severity-emergency
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - remote-servers-severity-emergency
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
-          - "'+logging trap emergencies:' in changes"
-      ignore_errors: yes
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - remote-servers-severity-emergency
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# logging remote server, console, and monitor
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - any-emergency
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - any-emergency
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-system:system:
-          logging:  # facility must be same for all in IOS
-            console:  # set console and monitor
-              config: { }
-              selectors:
-                selector:
-                  - config:
-                      facility: 'SYSLOG'
-                      severity: 'CRITICAL'  # logging console & logging monitor
-                    facility: 'SYSLOG'
-                    severity: 'CRITICAL'
-            remote-servers:
-              remote-server:
-                - config:
-                    host: '10.0.0.1'  # logging host x.x.x.x
-                    remote-port: 514
-                  host: '10.0.0.1'
+                openconfig-system-ext:terminal-monitor:
                   selectors:
                     selector:
                       - config:
                           facility: 'SYSLOG'
-                          severity: 'ERROR'
+                          severity: 'EMERGENCY'
                         facility: 'SYSLOG'
-                        severity: 'ERROR'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System any-emergency
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
+                        severity: 'EMERGENCY'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+logging facility syslog:' in changes"
+          - "'+logging console emergencies:' in changes"
+          - "'+logging monitor emergencies:' in changes"
 
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - any-emergency
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+    - name: test remote-servers-severity-emergency
+      tags:
+        - remote-servers-severity-emergency
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              logging:  # facility must be same for all in IOS
+                remote-servers:
+                  remote-server:
+                    - config:
+                        host: '10.0.0.1'  # logging host x.x.x.x
+                        remote-port: 514
+                      host: '10.0.0.1'
+                      selectors:
+                        selector:
+                          - config:
+                              facility: 'SYSLOG'
+                              severity: 'EMERGENCY'
+                            facility: 'SYSLOG'
+                            severity: 'EMERGENCY'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+logging trap emergencies:' in changes"
+
+    - name: test any-emergency
+      tags:
+        - any-emergency
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              logging:  # facility must be same for all in IOS
+                console:  # set console and monitor
+                  config: { }
+                  selectors:
+                    selector:
+                      - config:
+                          facility: 'SYSLOG'
+                          severity: 'CRITICAL'
+                        facility: 'SYSLOG'
+                        severity: 'CRITICAL'
+                openconfig-system-ext:terminal-monitor:  # set console and monitor
+                  selectors:
+                    selector:
+                      - config:
+                          facility: 'SYSLOG'
+                          severity: 'CRITICAL'
+                        facility: 'SYSLOG'
+                        severity: 'CRITICAL'
+                remote-servers:
+                  remote-server:
+                    - config:
+                        host: '10.0.0.1'  # logging host x.x.x.x
+                        remote-port: 514
+                      host: '10.0.0.1'
+                      selectors:
+                        selector:
+                          - config:
+                              facility: 'SYSLOG'
+                              severity: 'ERROR'
+                            facility: 'SYSLOG'
+                            severity: 'ERROR'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+logging console critical:' in changes"
           - "'+logging monitor critical:' in changes"
           - "'+logging trap errors:' in changes"
-      ignore_errors: yes
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - any-emergency
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-
-# aaa all
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - aaa-all
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - aaa-all
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: 10
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: 0
-                    index: 0
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.27.1.2
-                              prefix-length: 30
-                            ip: 172.27.1.2
-                      config:
-                        dhcp-client: false
-        openconfig-system:system:
-          config:
-            oc-system-ext:enable-secret: 'admin'
-          aaa:
-            accounting:
-              config:
-                accounting-method:  # group name, TACACS_ALL
-      #                - 'TACACS_ALL'
-                  - 'TACACS-GROUP-1'
-              events:
-                event:  # OC supports command and login
-                  - config:
-                      event-type: 'AAA_ACCOUNTING_EVENT_LOGIN'  # IOS aaa accounting exec for ios
-                      record: 'STOP'  # or START_STOP
-                    event-type: 'AAA_ACCOUNTING_EVENT_LOGIN'
-                  - config:
-                      event-type: 'AAA_ACCOUNTING_EVENT_COMMAND'  # IOS aaa accounting commanda and priv 15
-                      record: 'STOP'  # or START_STOP
-                    event-type: 'AAA_ACCOUNTING_EVENT_COMMAND'
-            authentication:
-              admin-user:
-                config:
-                  admin-password: 'admin'
-                  admin-password-hashed: ''
-              config:
-                authentication-method:
-      #                - 'TACACS_ALL'
-                  - 'LOCAL'
-              users:
-                user:
-                  - config:
-                      username: 'user1'
-                      password: 'Password123'
-                      password-hashed: ''
-                      role: 'SYSTEM_ROLE_ADMIN'  # This is the one role in model
-                      ssh-key: ''
-                    username: 'user1'
-                  - config:
-                      username: 'user2'
-                      password: 'Password123'
-                      password-hashed: ''
-                      role: 'SYSTEM_ROLE_ADMIN'  # This is the one role in model
-                      ssh-key: ''
-                    username: 'user2'
-            authorization:
-              config:
-                authorization-method:
-      #                - 'TACACS_ALL'
-                  - 'LOCAL'
-              events:
-                event:
-                  - config:
-                      event-type: 'AAA_AUTHORIZATION_EVENT_CONFIG'  # Specifies configuration (e.g., EXEC) events for AAA
-                    event-type: 'AAA_AUTHORIZATION_EVENT_CONFIG'
-      #                - config:
-      #                    event-type: 'AAA_AUTHORIZATION_EVENT_COMMAND'  # Specifies interactive command events for AAA authorization
-      #                  event-type: 'AAA_AUTHORIZATION_EVENT_COMMAND'
-            config: { }
-            server-groups:
-              server-group:
+    - name: test aaa-all
+      tags:
+        - aaa-all
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
                 - config:
-                    name: 'TACACS-GROUP-1'
-                    type: 'TACACS'
-                  name: 'TACACS-GROUP-1'
-                  servers:
-                    server:
-                      - address: '10.1.1.1'
-                        config:
-                          address: '10.1.1.1'
-                          name: 'TACACSSVR1'
-                          timeout: 10
-                        tacacs:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.27.1.2'
+                                  prefix-length: 30
+                                ip: '172.27.1.2'
                           config:
-                            port: 49
-                            secret-key: 'Password123'
-                            source-address: '172.27.1.2'  # For each group, sources must be the same
-                      - address: '10.2.2.2'
-                        config:
-                          address: '10.2.2.2'
-                          name: 'TACACSSVR2'
-                          timeout: 10
-                        tacacs:
-                          config:
-                            port: 49
-                            secret-key: 'Password123'
-                            source-address: '172.27.1.2'  # For each group, sources must be the same
-                - config:
-                    name: 'TACACS-GROUP-2'
-                    type: 'TACACS'
-                  name: 'TACACS-GROUP-2'
-                  servers:
-                    server:
-                      - address: '10.3.3.3'
-                        config:
-                          address: '10.3.3.3'
-                          name: 'TACACSSVR3'
-                          timeout: 10
-                        tacacs:
-                          config:
-                            port: 49
-                            secret-key: 'Password123'
-                            source-address: '172.27.1.2'  # For each group, sources must be the same
-                      - address: '10.4.4.4'
-                        config:
-                          address: '10.4.4.4'
-                          name: 'TACACSSVR4'
-                          timeout: 10
-                        tacacs:
-                          config:
-                            port: 49
-                            secret-key: 'Password123'
-                            source-address: '172.27.1.2'  # For each group, sources must be the same
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: System aaa-all
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - aaa-all
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                            dhcp-client: false
+            openconfig-system:system:
+              config:
+                oc-system-ext:enable-secret: 'admin'
+              aaa:
+                accounting:
+                  config:
+                    accounting-method:  # group name, TACACS_ALL
+          #                - 'TACACS_ALL'
+                      - 'TACACS-GROUP-1'
+                  events:
+                    event:  # OC supports command and login
+                      - config:
+                          event-type: 'AAA_ACCOUNTING_EVENT_LOGIN'  # IOS aaa accounting exec for ios
+                          record: 'STOP'  # or START_STOP
+                        event-type: 'AAA_ACCOUNTING_EVENT_LOGIN'
+                      - config:
+                          event-type: 'AAA_ACCOUNTING_EVENT_COMMAND'  # IOS aaa accounting commanda and priv 15
+                          record: 'STOP'  # or START_STOP
+                        event-type: 'AAA_ACCOUNTING_EVENT_COMMAND'
+                authentication:
+                  admin-user:
+                    config:
+                      admin-password: 'admin'
+                      admin-password-hashed: ''
+                  config:
+                    authentication-method:
+          #                - 'TACACS_ALL'
+                      - 'LOCAL'
+                  users:
+                    user:
+                      - config:
+                          username: 'user1'
+                          password: 'Password123'
+                          password-hashed: ''
+                          role: 'SYSTEM_ROLE_ADMIN'  # This is the one role in model
+                          ssh-key: ''
+                        username: 'user1'
+                      - config:
+                          username: 'user2'
+                          password: 'Password123'
+                          password-hashed: ''
+                          role: 'SYSTEM_ROLE_ADMIN'  # This is the one role in model
+                          ssh-key: ''
+                        username: 'user2'
+                authorization:
+                  config:
+                    authorization-method:
+          #                - 'TACACS_ALL'
+                      - 'LOCAL'
+                  events:
+                    event:
+                      - config:
+                          event-type: 'AAA_AUTHORIZATION_EVENT_CONFIG'  # Specifies configuration (e.g., EXEC) events for AAA
+                        event-type: 'AAA_AUTHORIZATION_EVENT_CONFIG'
+          #                - config:
+          #                    event-type: 'AAA_AUTHORIZATION_EVENT_COMMAND'  # Specifies interactive command events for AAA authorization
+          #                  event-type: 'AAA_AUTHORIZATION_EVENT_COMMAND'
+                config: { }
+                server-groups:
+                  server-group:
+                    - config:
+                        name: 'TACACS-GROUP-1'
+                        type: 'TACACS'
+                      name: 'TACACS-GROUP-1'
+                      servers:
+                        server:
+                          - address: '10.1.1.1'
+                            config:
+                              address: '10.1.1.1'
+                              name: 'TACACSSVR1'
+                              timeout: 10
+                            tacacs:
+                              config:
+                                port: 49
+                                secret-key: 'Password123'
+                                source-address: '172.27.1.2'  # For each group, sources must be the same
+                          - address: '10.2.2.2'
+                            config:
+                              address: '10.2.2.2'
+                              name: 'TACACSSVR2'
+                              timeout: 10
+                            tacacs:
+                              config:
+                                port: 49
+                                secret-key: 'Password123'
+                                source-address: '172.27.1.2'  # For each group, sources must be the same
+                    - config:
+                        name: 'TACACS-GROUP-2'
+                        type: 'TACACS'
+                      name: 'TACACS-GROUP-2'
+                      servers:
+                        server:
+                          - address: '10.3.3.3'
+                            config:
+                              address: '10.3.3.3'
+                              name: 'TACACSSVR3'
+                              timeout: 10
+                            tacacs:
+                              config:
+                                port: 49
+                                secret-key: 'Password123'
+                                source-address: '172.27.1.2'  # For each group, sources must be the same
+                          - address: '10.4.4.4'
+                            config:
+                              address: '10.4.4.4'
+                              name: 'TACACSSVR4'
+                              timeout: 10
+                            tacacs:
+                              config:
+                                port: 49
+                                secret-key: 'Password123'
+                                source-address: '172.27.1.2'  # For each group, sources must be the same
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+aaa new-model:' in changes"
           - "'+aaa accounting commands 15 default stop-only group TACACS-GROUP-1:' in changes"
           - "'+aaa accounting exec default stop-only group TACACS-GROUP-1:' in changes"
@@ -2376,26 +969,3 @@
 #          - "'+username admin privilege 15 secret 0 admin:' in changes"  # passwords will be hashed
 #          - "'+username user1 privilege 15 secret 0 Password123:' in changes"
 #          - "'+username user2 privilege 15 secret 0 Password123:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - aaa-all
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>

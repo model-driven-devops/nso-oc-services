@@ -92,7 +92,7 @@ def xe_acls_program_service(self) -> None:
                                 ('TCP_RST' in i.transport.config.tcp_flags):
                             rule += 'established '
                 if i.actions.config.log_action:
-                    if i.actions.config.log_action == 'LOG_SYSLOG':
+                    if i.actions.config.log_action == 'oc-acl:LOG_SYSLOG':
                         rule += 'log-input'
                 rules_oc_config.append(rule)
             for i in rules_oc_config:
@@ -111,7 +111,7 @@ def xe_acls_program_service(self) -> None:
                 else:
                     rule += prefix_to_network_and_mask(i.oc_acl_ext__ipv4.source_address) + ' '
                 if i.actions.config.log_action:
-                    if i.actions.config.log_action == 'LOG_SYSLOG':
+                    if i.actions.config.log_action == 'oc-acl:LOG_SYSLOG':
                         rule += 'log-input'
                 rules_oc_config.append(rule)
             for i in rules_oc_config:

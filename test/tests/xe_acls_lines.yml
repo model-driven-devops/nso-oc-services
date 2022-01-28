@@ -1,828 +1,476 @@
 ---
-## Test create_line_acl_ingress
-#- hosts: xe1
-#  connection: network_cli
-#  gather_facts: no
-#  tags:
-#    - all
-#    - create_line_acl_ingress
-#  vars:
-#    ansible_network_os: 'cisco.ios.ios'
-#  roles:
-#    - ansible-pyats
-#  tasks:
-#    - name: collect config (before)
-#      ios_command:
-#        commands:
-#          - show run
-#      register: result_before
-#
-#- hosts: localhost
-#  gather_facts: no
-#  tags:
-#    - all
-#    - create_line_acl_ingress
-#  vars:
-#    device_name: xe1
-#    content: |
-#      mdd:openconfig:
-#        openconfig-interfaces:interfaces:
-#          interface:
-#            - config:
-#                enabled: true
-#                name: GigabitEthernet6
-#                type: 'ethernetCsmacd'
-#              openconfig-if-ethernet:ethernet:
-#                config:
-#                  auto-negotiate: true
-#                  enable-flow-control: false
-#              hold-time:
-#                config:
-#                  down: '10'
-#              name: GigabitEthernet6
-#              subinterfaces:
-#                subinterface:
+- name: test acls lines
+  hosts: xe1
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: xe1
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+#    - name: test create_line_acl_ingress configurations   WARNING LOSS OF CONNECTIVITY WITH TEST
+#      tags:
+#        - create_line_acl_ingress
+#      import_role:
+#        name: nso-openconfig-test
+#      vars:
+#        content: |
+#          mdd:openconfig:
+#            openconfig-interfaces:interfaces:
+#              interface:
+#                - config:
+#                    enabled: true
+#                    name: 'GigabitEthernet6'
+#                    type: 'ethernetCsmacd'
+#                  openconfig-if-ethernet:ethernet:
+#                    config:
+#                      auto-negotiate: true
+#                      enable-flow-control: false
+#                  hold-time:
+#                    config:
+#                      down: 10
+#                  name: 'GigabitEthernet6'
+#                  subinterfaces:
+#                    subinterface:
+#                      - config:
+#                          index: 0
+#                        index: 0
+#                        openconfig-if-ip:ipv4:
+#                          addresses:
+#                            address:
+#                              - config:
+#                                  ip: '172.27.1.2'
+#                                  prefix-length: 30
+#                                ip: '172.27.1.2'
+#                          config:
+#                            dhcp-client: false
+#            openconfig-acl:acl:
+#              acl-sets:
+#                acl-set:
 #                  - config:
-#                      index: '0'
-#                    index: '0'
-#                    openconfig-if-ip:ipv4:
-#                      addresses:
-#                        address:
-#                          - config:
-#                              ip: 172.27.1.2
-#                              prefix-length: 30
-#                            ip: 172.27.1.2
-#                      config:
-#                        dhcp-client: false
-#        openconfig-acl:acl:
-#          acl-sets:
-#            acl-set:
-#              - config:
-#                  description: 'external to internal'
-#                  name: 'external-ingress'
-#                  type: 'ACL_IPV4'
-#                name: 'external-ingress'
-#                type: 'ACL_IPV4'
-#                acl-entries:
-#                  acl-entry:
-#                    - actions:
-#                        config:
-#                          forwarding-action: 'ACCEPT'
-#                          log-action: 'LOG_NONE'
-#                      config:
-#                        description: 'ssh'
-#                        sequence-id: '10'
-#                      ipv4:
-#                        config:
-#                          destination-address: '0.0.0.0/0'
-#                          protocol: 'IP_TCP'
-#                          source-address: '0.0.0.0/0'
-#                      sequence-id: '10'
-#                      transport:
-#                        config:
-#                          destination-port: '22'
-#                    - actions:
-#                        config:
-#                          forwarding-action: 'ACCEPT'
-#                          log-action: 'LOG_NONE'
-#                      config:
-#                        description: 'established TCP traffic'
-#                        sequence-id: '20'
-#                      ipv4:
-#                        config:
-#                          destination-address: '0.0.0.0/0'
-#                          protocol: 'IP_TCP'
-#                          source-address: '0.0.0.0/0'
-#                      sequence-id: '20'
-#                      transport:
-#                        config:
-#                          destination-port: '1024..65535'
-#                          tcp-flags:
-#                            - 'TCP_ACK'
-#                            - 'TCP_RST'
-#                    - actions:
-#                        config:
-#                          forwarding-action: 'DROP'
-#                          log-action: 'LOG_SYSLOG'
-#                      config:
-#                        description: 'drop log other packets'
-#                        sequence-id: '30'
-#                      ipv4:
-#                        config:
-#                          destination-address: '0.0.0.0/0'
-#                          source-address: '0.0.0.0/0'
-#                      sequence-id: '30'
-#          openconfig-acl-ext:lines:
-#            line:
-#              - config:
-#                  id: 'vty 0 4'
-#                id: 'vty 0 4'
-#                ingress-acl-sets:
-#                  ingress-acl-set:
-#                    - ingress-acl-set-name: 'external-ingress'
-#                      config:
-#                          vrf: global
-#                          vrf-also: false
-#                          ingress-acl-set-name: 'external-ingress'
+#                      description: 'external to internal'
+#                      name: 'external-ingress'
+#                      type: 'ACL_IPV4'
+#                    name: 'external-ingress'
+#                    type: 'ACL_IPV4'
+#                    acl-entries:
+#                      acl-entry:
+#                        - actions:
+#                            config:
+#                              forwarding-action: 'ACCEPT'
+#                              log-action: 'LOG_NONE'
+#                          config:
+#                            description: 'ssh'
+#                            sequence-id: 10
+#                          ipv4:
+#                            config:
+#                              destination-address: '0.0.0.0/0'
+#                              protocol: 'IP_TCP'
+#                              source-address: '0.0.0.0/0'
+#                          sequence-id: 10
+#                          transport:
+#                            config:
+#                              destination-port: 22
+#                        - actions:
+#                            config:
+#                              forwarding-action: 'ACCEPT'
+#                              log-action: 'LOG_NONE'
+#                          config:
+#                            description: 'established TCP traffic'
+#                            sequence-id: 20
+#                          ipv4:
+#                            config:
+#                              destination-address: '0.0.0.0/0'
+#                              protocol: 'IP_TCP'
+#                              source-address: '0.0.0.0/0'
+#                          sequence-id: 20
+#                          transport:
+#                            config:
+#                              destination-port: '1024..65535'
+#                              tcp-flags:
+#                                - 'TCP_ACK'
+#                                - 'TCP_RST'
+#                        - actions:
+#                            config:
+#                              forwarding-action: 'DROP'
+#                              log-action: 'LOG_SYSLOG'
+#                          config:
+#                            description: 'drop log other packets'
+#                            sequence-id: 30
+#                          ipv4:
+#                            config:
+#                              destination-address: '0.0.0.0/0'
+#                              source-address: '0.0.0.0/0'
+#                          sequence-id: 30
+#              openconfig-acl-ext:lines:
+#                line:
+#                  - config:
+#                      id: 'vty 0 4'
+#                    id: 'vty 0 4'
+#                    ingress-acl-sets:
+#                      ingress-acl-set:
+#                        - ingress-acl-set-name: 'external-ingress'
+#                          config:
+#                              vrf: global
+#                              vrf-also: false
+#                              ingress-acl-set-name: 'external-ingress'
 #
-#  tasks:
-#    - name: Convert string to JSON
-#      set_fact:
-#        configs: "{{ content | from_yaml | to_json }}"
-#    - name: JSON configs
-#      debug:
-#        msg: "{{ configs }}"
-#    - name: Create create_line_acl_ingress
-#      uri:
-#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-#        url_username: admin
-#        url_password: admin
-#        force_basic_auth: yes
-#        validate_certs: no
-#        status_code: [200,201,204]
-#        method: PUT
-#        headers: "{
-#          'Content-Type': 'application/yang-data+json',
-#          'Accept': 'application/yang-data+json'}"
-#        body_format: json
-#        body: "{{ configs }}"
-#
-#- hosts: xe1
-#  connection: network_cli
-#  gather_facts: no
-#  tags:
-#    - all
-#    - create_line_acl_ingress
-#  vars:
-#    ansible_network_os: 'cisco.ios.ios'
-#    exclude_list:
-#      - (^Using.*)
-#      - (Building.*)
-#      - (Current.*)
-#      - (crypto pki certificate chain.*)
-#  roles:
-#    - ansible-pyats
-#  tasks:
-#    - name: collect config (after)
-#      ios_command:
-#        commands:
-#          - show run
-#      register: result_after
-#    - set_fact:
-#        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-#    - name: debug changes
-#      debug:
-#        msg: "{{ changes }}"
-#    - assert:
-#        that:
+#        api_method: PUT
+#        rollback: true
+#        assertion_ignore_errors: false
+#        assertions:
 #          - "'+ access-class external-ingress in:' in changes"
-#      ignore_errors: yes
-#- hosts: localhost
-#  gather_facts: no
-#  tags:
-#    - all
-#    - create_line_acl_ingress
-#    - rollback
-#  tasks:
-#    - name: Rollback
-#      uri:
-#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-#        url_username: admin
-#        url_password: admin
-#        force_basic_auth: yes
-#        validate_certs: no
-#        status_code: [ 204 ]
-#        method: POST
-#        headers: "{
-#          'Content-Type': 'application/yang-data+xml'}"
-#        body: |
-#          <input xmlns="http://tail-f.com/ns/rollback">
-#            <id>0</id>
-#          </input>
-
-# Test create_line_acl_egress
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - create_line_acl_egress
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - create_line_acl_egress
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
+    - name: test create_line_acl_egress configurations
+      tags:
+        - create_line_acl_egress
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.27.1.2'
+                                  prefix-length: 30
+                                ip: '172.27.1.2'
+                          config:
+                            dhcp-client: false
+            openconfig-acl:acl:
+              acl-sets:
+                acl-set:
                   - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.27.1.2
-                              prefix-length: 30
-                            ip: 172.27.1.2
-                      config:
-                        dhcp-client: false
-        openconfig-acl:acl:
-          acl-sets:
-            acl-set:
-              - config:
-                  description: 'external to internal'
-                  name: 'external-ingress'
-                  type: 'ACL_IPV4'
-                name: 'external-ingress'
-                type: 'ACL_IPV4'
-                acl-entries:
-                  acl-entry:
-                    - actions:
-                        config:
-                          forwarding-action: 'ACCEPT'
-                          log-action: 'LOG_NONE'
-                      config:
-                        description: 'ssh'
-                        sequence-id: '10'
-                      ipv4:
-                        config:
-                          destination-address: '0.0.0.0/0'
-                          protocol: 'IP_TCP'
-                          source-address: '0.0.0.0/0'
-                      sequence-id: '10'
-                      transport:
-                        config:
-                          destination-port: '22'
-                    - actions:
-                        config:
-                          forwarding-action: 'ACCEPT'
-                          log-action: 'LOG_NONE'
-                      config:
-                        description: 'established TCP traffic'
-                        sequence-id: '20'
-                      ipv4:
-                        config:
-                          destination-address: '0.0.0.0/0'
-                          protocol: 'IP_TCP'
-                          source-address: '0.0.0.0/0'
-                      sequence-id: '20'
-                      transport:
-                        config:
-                          destination-port: '1024..65535'
-                          tcp-flags:
-                            - 'TCP_ACK'
-                            - 'TCP_RST'
-                    - actions:
-                        config:
-                          forwarding-action: 'DROP'
-                          log-action: 'LOG_SYSLOG'
-                      config:
-                        description: 'drop log other packets'
-                        sequence-id: '30'
-                      ipv4:
-                        config:
-                          destination-address: '0.0.0.0/0'
-                          source-address: '0.0.0.0/0'
-                      sequence-id: '30'
-          openconfig-acl-ext:lines:
-            line:
-              - config:
-                  id: 'vty 0 4'
-                id: 'vty 0 4'
-                egress-acl-set: 'external-ingress'
-
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: Create create_line_acl_egress
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - create_line_acl_egress
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                      description: 'external to internal'
+                      name: 'external-ingress'
+                      type: 'ACL_IPV4'
+                    name: 'external-ingress'
+                    type: 'ACL_IPV4'
+                    acl-entries:
+                      acl-entry:
+                        - actions:
+                            config:
+                              forwarding-action: 'ACCEPT'
+                              log-action: 'LOG_NONE'
+                          config:
+                            description: 'ssh'
+                            sequence-id: 10
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              protocol: 'IP_TCP'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 10
+                          transport:
+                            config:
+                              destination-port: 22
+                        - actions:
+                            config:
+                              forwarding-action: 'ACCEPT'
+                              log-action: 'LOG_NONE'
+                          config:
+                            description: 'established TCP traffic'
+                            sequence-id: 20
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              protocol: 'IP_TCP'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 20
+                          transport:
+                            config:
+                              destination-port: '1024..65535'
+                              tcp-flags:
+                                - 'TCP_ACK'
+                                - 'TCP_RST'
+                        - actions:
+                            config:
+                              forwarding-action: 'DROP'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'drop log other packets'
+                            sequence-id: 30
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 30
+              openconfig-acl-ext:lines:
+                line:
+                  - config:
+                      id: 'vty 0 4'
+                    id: 'vty 0 4'
+                    egress-acl-set: 'external-ingress'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ access-class external-ingress out:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - create_line_acl_egress
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-
-## Test create_line_acl_vrfs  WARNING LOSS OF CONNECTIVITY WITH TEST
-#- hosts: xe1
-#  connection: network_cli
-#  gather_facts: no
-#  tags:
-#    - all
-#    - create_line_acl_vrfs
-#  vars:
-#    ansible_network_os: 'cisco.ios.ios'
-#  roles:
-#    - ansible-pyats
-#  tasks:
-#    - name: collect config (before)
-#      ios_command:
-#        commands:
-#          - show run
-#      register: result_before
-#
-#- hosts: localhost
-#  gather_facts: no
-#  tags:
-#    - all
-#    - create_line_acl_vrfs
-#  vars:
-#    device_name: xe1
-#    content: |
-#      mdd:openconfig:
-#        openconfig-interfaces:interfaces:
-#          interface:
-#            - config:
-#                enabled: true
-#                name: GigabitEthernet6
-#                type: 'ethernetCsmacd'
-#              openconfig-if-ethernet:ethernet:
-#                config:
-#                  auto-negotiate: true
-#                  enable-flow-control: false
-#              hold-time:
-#                config:
-#                  down: '10'
-#              name: GigabitEthernet6
-#              subinterfaces:
-#                subinterface:
+#    - name: test create_line_acl_vrfs configurations   WARNING LOSS OF CONNECTIVITY WITH TEST
+#      tags:
+#        - create_line_acl_vrfs
+#      import_role:
+#        name: nso-openconfig-test
+#      vars:
+#        content: |
+#          mdd:openconfig:
+#            openconfig-interfaces:interfaces:
+#              interface:
+#                - config:
+#                    enabled: true
+#                    name: 'GigabitEthernet6'
+#                    type: 'ethernetCsmacd'
+#                  openconfig-if-ethernet:ethernet:
+#                    config:
+#                      auto-negotiate: true
+#                      enable-flow-control: false
+#                  hold-time:
+#                    config:
+#                      down: 10
+#                  name: 'GigabitEthernet6'
+#                  subinterfaces:
+#                    subinterface:
+#                      - config:
+#                          index: 0
+#                        index: 0
+#                        openconfig-if-ip:ipv4:
+#                          addresses:
+#                            address:
+#                              - config:
+#                                  ip: '172.27.1.2'
+#                                  prefix-length: 30
+#                                ip: '172.27.1.2'
+#                          config:
+#                            dhcp-client: false
+#            openconfig-network-instance:network-instances:
+#              network-instance:
+#                - name: 'default'
+#                  config:
+#                    name: 'default'
+#                    type: 'DEFAULT_INSTANCE'
+#                    enabled: true
+#                - name: 'management'
+#                  config:
+#                    name: 'management'
+#                    type: 'L3VRF'
+#                    enabled: true
+#                    enabled-address-families:
+#                      - 'IPV4'
+#                - name: 'abc'
+#                  config:
+#                    name: 'abc'
+#                    type: 'L3VRF'
+#                    enabled: true
+#                    enabled-address-families:
+#                      - 'IPV4'
+#                - name: 'xyz'
+#                  config:
+#                    name: 'xyz'
+#                    type: 'L3VRF'
+#                    enabled: true
+#                    enabled-address-families:
+#                      - 'IPV4'
+#            openconfig-acl:acl:
+#              acl-sets:
+#                acl-set:
 #                  - config:
-#                      index: '0'
-#                    index: '0'
-#                    openconfig-if-ip:ipv4:
-#                      addresses:
-#                        address:
-#                          - config:
-#                              ip: 172.27.1.2
-#                              prefix-length: 30
-#                            ip: 172.27.1.2
-#                      config:
-#                        dhcp-client: false
-#        openconfig-network-instance:network-instances:
-#          network-instance:
-#            - name: 'default'
-#              config:
-#                name: 'default'
-#                type: 'DEFAULT_INSTANCE'
-#                enabled: true
-#            - name: 'management'
-#              config:
-#                name: 'management'
-#                type: 'L3VRF'
-#                enabled: true
-#                enabled-address-families:
-#                  - 'IPV4'
-#            - name: 'abc'
-#              config:
-#                name: 'abc'
-#                type: 'L3VRF'
-#                enabled: true
-#                enabled-address-families:
-#                  - 'IPV4'
-#            - name: 'xyz'
-#              config:
-#                name: 'xyz'
-#                type: 'L3VRF'
-#                enabled: true
-#                enabled-address-families:
-#                  - 'IPV4'
-#        openconfig-acl:acl:
-#          acl-sets:
-#            acl-set:
-#              - config:
-#                  description: 'external to internal'
-#                  name: 'external-ingress'
-#                  type: 'ACL_IPV4'
-#                name: 'external-ingress'
-#                type: 'ACL_IPV4'
-#                acl-entries:
-#                  acl-entry:
-#                    - actions:
-#                        config:
-#                          forwarding-action: 'ACCEPT'
-#                          log-action: 'LOG_NONE'
-#                      config:
-#                        description: 'ssh'
-#                        sequence-id: '10'
-#                      ipv4:
-#                        config:
-#                          destination-address: '0.0.0.0/0'
-#                          protocol: 'IP_TCP'
-#                          source-address: '0.0.0.0/0'
-#                      sequence-id: '10'
-#                      transport:
-#                        config:
-#                          destination-port: '22'
-#                    - actions:
-#                        config:
-#                          forwarding-action: 'ACCEPT'
-#                          log-action: 'LOG_NONE'
-#                      config:
-#                        description: 'established TCP traffic'
-#                        sequence-id: '20'
-#                      ipv4:
-#                        config:
-#                          destination-address: '0.0.0.0/0'
-#                          protocol: 'IP_TCP'
-#                          source-address: '0.0.0.0/0'
-#                      sequence-id: '20'
-#                      transport:
-#                        config:
-#                          destination-port: '1024..65535'
-#                          tcp-flags:
-#                            - 'TCP_ACK'
-#                            - 'TCP_RST'
-#                    - actions:
-#                        config:
-#                          forwarding-action: 'DROP'
-#                          log-action: 'LOG_SYSLOG'
-#                      config:
-#                        description: 'drop log other packets'
-#                        sequence-id: '30'
-#                      ipv4:
-#                        config:
-#                          destination-address: '0.0.0.0/0'
-#                          source-address: '0.0.0.0/0'
-#                      sequence-id: '30'
-#          openconfig-acl-ext:lines:
-#            line:
-#              - config:
-#                  id: 'vty 0 4'
-#                id: 'vty 0 4'
-#                ingress-acl-sets:
-#                  ingress-acl-set:
-#                    - ingress-acl-set-name: 'external-ingress'
-#                      config:
-#                          vrf: management
-#                          vrf-also: false
-#                          ingress-acl-set-name: 'external-ingress'
-#  tasks:
-#    - name: Convert string to JSON
-#      set_fact:
-#        configs: "{{ content | from_yaml | to_json }}"
-#    - name: JSON configs
-#      debug:
-#        msg: "{{ configs }}"
-#    - name: JSON configs
-#      debug:
-#        msg: "{{ content }}"
-#    - name: Create create_line_acl_vrfs
-#      uri:
-#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-#        url_username: admin
-#        url_password: admin
-#        force_basic_auth: yes
-#        validate_certs: no
-#        status_code: [200,201,204]
-#        method: PUT
-#        headers: "{
-#          'Content-Type': 'application/yang-data+json',
-#          'Accept': 'application/yang-data+json'}"
-#        body_format: json
-#        body: "{{ configs }}"
-#
-#- hosts: xe1
-#  connection: network_cli
-#  gather_facts: no
-#  tags:
-#    - all
-#    - create_line_acl_vrfs
-#  vars:
-#    ansible_network_os: 'cisco.ios.ios'
-#    exclude_list:
-#      - (^Using.*)
-#      - (Building.*)
-#      - (Current.*)
-#      - (crypto pki certificate chain.*)
-#  roles:
-#    - ansible-pyats
-#  tasks:
-#    - name: collect config (after)
-#      ios_command:
-#        commands:
-#          - show run
-#      register: result_after
-#    - set_fact:
-#        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-#    - name: debug changes
-#      debug:
-#        msg: "{{ changes }}"
-##    - assert:
-##        that:
-##          - "'+router bgp 1:' in changes"
-##      ignore_errors: yes
-#- hosts: localhost
-#  gather_facts: no
-#  tags:
-#    - all
-#    - create_line_acl_vrfs
-#    - rollback
-#  tasks:
-#    - name: Rollback
-#      uri:
-#        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-#        url_username: admin
-#        url_password: admin
-#        force_basic_auth: yes
-#        validate_certs: no
-#        status_code: [ 204 ]
-#        method: POST
-#        headers: "{
-#          'Content-Type': 'application/yang-data+xml'}"
-#        body: |
-#          <input xmlns="http://tail-f.com/ns/rollback">
-#            <id>0</id>
-#          </input>
-
-# Test create_line_vrf_also
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - create_line_vrf_also
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - create_line_vrf_also
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
+#                      description: 'external to internal'
+#                      name: 'external-ingress'
+#                      type: 'ACL_IPV4'
+#                    name: 'external-ingress'
+#                    type: 'ACL_IPV4'
+#                    acl-entries:
+#                      acl-entry:
+#                        - actions:
+#                            config:
+#                              forwarding-action: 'ACCEPT'
+#                              log-action: 'LOG_NONE'
+#                          config:
+#                            description: 'ssh'
+#                            sequence-id: 10
+#                          ipv4:
+#                            config:
+#                              destination-address: '0.0.0.0/0'
+#                              protocol: 'IP_TCP'
+#                              source-address: '0.0.0.0/0'
+#                          sequence-id: 10
+#                          transport:
+#                            config:
+#                              destination-port: 22
+#                        - actions:
+#                            config:
+#                              forwarding-action: 'ACCEPT'
+#                              log-action: 'LOG_NONE'
+#                          config:
+#                            description: 'established TCP traffic'
+#                            sequence-id: 20
+#                          ipv4:
+#                            config:
+#                              destination-address: '0.0.0.0/0'
+#                              protocol: 'IP_TCP'
+#                              source-address: '0.0.0.0/0'
+#                          sequence-id: 20
+#                          transport:
+#                            config:
+#                              destination-port: '1024..65535'
+#                              tcp-flags:
+#                                - 'TCP_ACK'
+#                                - 'TCP_RST'
+#                        - actions:
+#                            config:
+#                              forwarding-action: 'DROP'
+#                              log-action: 'LOG_SYSLOG'
+#                          config:
+#                            description: 'drop log other packets'
+#                            sequence-id: 30
+#                          ipv4:
+#                            config:
+#                              destination-address: '0.0.0.0/0'
+#                              source-address: '0.0.0.0/0'
+#                          sequence-id: 30
+#              openconfig-acl-ext:lines:
+#                line:
+#                  - config:
+#                      id: 'vty 0 4'
+#                    id: 'vty 0 4'
+#                    ingress-acl-sets:
+#                      ingress-acl-set:
+#                        - ingress-acl-set-name: 'external-ingress'
+#                          config:
+#                              vrf: management
+#                              vrf-also: false
+#                              ingress-acl-set-name: 'external-ingress'
+#        api_method: PUT
+#        rollback: true
+#        assertion_ignore_errors: false
+#        assertions:
+#          - assertion 1
+    - name: test create_line_vrf_also configurations
+      tags:
+        - create_line_vrf_also
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.27.1.2'
+                                  prefix-length: 30
+                                ip: '172.27.1.2'
+                          config:
+                            dhcp-client: false
+            openconfig-acl:acl:
+              acl-sets:
+                acl-set:
                   - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.27.1.2
-                              prefix-length: 30
-                            ip: 172.27.1.2
-                      config:
-                        dhcp-client: false
-        openconfig-acl:acl:
-          acl-sets:
-            acl-set:
-              - config:
-                  description: 'external to internal'
-                  name: 'external-ingress'
-                  type: 'ACL_IPV4'
-                name: 'external-ingress'
-                type: 'ACL_IPV4'
-                acl-entries:
-                  acl-entry:
-                    - actions:
-                        config:
-                          forwarding-action: 'ACCEPT'
-                          log-action: 'LOG_NONE'
-                      config:
-                        description: 'ssh'
-                        sequence-id: '10'
-                      ipv4:
-                        config:
-                          destination-address: '0.0.0.0/0'
-                          protocol: 'IP_TCP'
-                          source-address: '0.0.0.0/0'
-                      sequence-id: '10'
-                      transport:
-                        config:
-                          destination-port: '22'
-                    - actions:
-                        config:
-                          forwarding-action: 'ACCEPT'
-                          log-action: 'LOG_NONE'
-                      config:
-                        description: 'established TCP traffic'
-                        sequence-id: '20'
-                      ipv4:
-                        config:
-                          destination-address: '0.0.0.0/0'
-                          protocol: 'IP_TCP'
-                          source-address: '0.0.0.0/0'
-                      sequence-id: '20'
-                      transport:
-                        config:
-                          destination-port: '1024..65535'
-                          tcp-flags:
-                            - 'TCP_ACK'
-                            - 'TCP_RST'
-                    - actions:
-                        config:
-                          forwarding-action: 'DROP'
-                          log-action: 'LOG_SYSLOG'
-                      config:
-                        description: 'drop log other packets'
-                        sequence-id: '30'
-                      ipv4:
-                        config:
-                          destination-address: '0.0.0.0/0'
-                          source-address: '0.0.0.0/0'
-                      sequence-id: '30'
-          openconfig-acl-ext:lines:
-            line:
-              - config:
-                  id: 'vty 0 4'
-                id: 'vty 0 4'
-                ingress-acl-sets:
-                  ingress-acl-set:
-                    - ingress-acl-set-name: 'external-ingress'
-                      config:
-                          vrf: global
-                          vrf-also: true
-                          ingress-acl-set-name: 'external-ingress'
-
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: Create create_line_vrf_also
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - create_line_vrf_also
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                      description: 'external to internal'
+                      name: 'external-ingress'
+                      type: 'ACL_IPV4'
+                    name: 'external-ingress'
+                    type: 'ACL_IPV4'
+                    acl-entries:
+                      acl-entry:
+                        - actions:
+                            config:
+                              forwarding-action: 'ACCEPT'
+                              log-action: 'LOG_NONE'
+                          config:
+                            description: 'ssh'
+                            sequence-id: 10
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              protocol: 'IP_TCP'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 10
+                          transport:
+                            config:
+                              destination-port: 22
+                        - actions:
+                            config:
+                              forwarding-action: 'ACCEPT'
+                              log-action: 'LOG_NONE'
+                          config:
+                            description: 'established TCP traffic'
+                            sequence-id: 20
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              protocol: 'IP_TCP'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 20
+                          transport:
+                            config:
+                              destination-port: '1024..65535'
+                              tcp-flags:
+                                - 'TCP_ACK'
+                                - 'TCP_RST'
+                        - actions:
+                            config:
+                              forwarding-action: 'DROP'
+                              log-action: 'LOG_SYSLOG'
+                          config:
+                            description: 'drop log other packets'
+                            sequence-id: 30
+                          ipv4:
+                            config:
+                              destination-address: '0.0.0.0/0'
+                              source-address: '0.0.0.0/0'
+                          sequence-id: 30
+              openconfig-acl-ext:lines:
+                line:
+                  - config:
+                      id: 'vty 0 4'
+                    id: 'vty 0 4'
+                    ingress-acl-sets:
+                      ingress-acl-set:
+                        - ingress-acl-set-name: 'external-ingress'
+                          config:
+                              vrf: global
+                              vrf-also: true
+                              ingress-acl-set-name: 'external-ingress'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ access-class external-ingress in vrf-also:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - create_line_vrf_also
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>

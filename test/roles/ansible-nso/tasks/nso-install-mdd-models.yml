@@ -3,7 +3,21 @@
   environment:
     NCS_JAVA_VM_OPTIONS: "{{ nso_java_opts }}"
   block:
-    - name: Copy 'mdd.tgz' and unarchive on NSO
+#    - name: Copy 'mdd' package to NSO packages directory
+#      ansible.builtin.copy:
+#        src: ../mdd
+#        dest: "{{ nso_run_dir }}/packages"
+#        remote_src: no
+#    - name: Compress directory mdd into mdd.tgz
+#      community.general.archive:
+#        path: ../mdd
+#        dest: ../mdd.tgz
+#    - name: Copy 'mdd.tgz' file to NSO packages directory
+#      ansible.builtin.copy:
+#        src: ../mdd.tgz
+#        dest: "{{ nso_run_dir }}/packages"
+#        remote_src: no
+    - name: Unarchive 'mdd.tgz' on the NSO
       ansible.builtin.unarchive:
         src: "../mdd.tgz"
         dest: "{{ nso_run_dir }}/packages"

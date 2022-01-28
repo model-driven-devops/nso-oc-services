@@ -1,2993 +1,1424 @@
 ---
-# redistribute connected
-- hosts: xe1
+- name: test acls extended
+  hosts: xe1
+  gather_facts: no
   connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4
   vars:
+    device: xe1
     ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
   tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
+    - name: test bgp_ipv4
+      tags:
+        - bgp_ipv4
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
                         config:
-                          as: 1
-              table-connections:
-                table-connection:
-                  - address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'DIRECTLY_CONNECTED'
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                  table-connections:
+                    table-connection:
+                      - address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'DIRECTLY_CONNECTED'
+                        config:
+                          address-family: 'IPV4'
+                          dst-protocol: 'BGP'
+                          src-protocol: 'DIRECTLY_CONNECTED'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ redistribute connected:' in changes"
+
+    - name: test bgp_ipv4_route_map
+      tags:
+        - bgp_ipv4_route_map
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                prefix-sets:
+                  prefix-set:
+                    - name: prefix_test
+                      config:
+                        name: prefix_test
+                        mode: IPV4
+                      prefixes:
+                        prefix:
+                          - ip-prefix: '192.133.184.0/22'
+                            masklength-range: exact
+                            config:
+                              ip-prefix: '192.133.184.0/22'
+                              masklength-range: exact
+                              openconfig-routing-policy-ext:seq: 10
+              policy-definitions:
+                policy-definition:
+                  - name: 'test'
                     config:
-                      address-family: 'IPV4'
+                      name: 'test'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
+                          config:
+                            name: '10'
+                          conditions:
+                            match-prefix-set:
+                              config:
+                                prefix-set: 'prefix_test'
+                                match-set-options: 'ANY'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - name: '20'
+                          config:
+                            name: '20'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                  table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
                       dst-protocol: 'BGP'
                       src-protocol: 'DIRECTLY_CONNECTED'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ipv4
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
-          - "'+ redistribute connected:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-
-# redistribute connected route-map
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_route_map
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            prefix-sets:
-              prefix-set:
-                - name: prefix_test
-                  config:
-                    name: prefix_test
-                    mode: IPV4
-                  prefixes:
-                    prefix:
-                      - ip-prefix: '192.133.184.0/22'
-                        masklength-range: exact
-                        config:
-                          ip-prefix: '192.133.184.0/22'
-                          masklength-range: exact
-                          openconfig-routing-policy-ext:seq: 10
-          policy-definitions:
-            policy-definition:
-              - name: 'test'
-                config:
-                  name: 'test'
-                statements:
-                  openconfig-routing-policy:statement:
-                    - name: '10'
                       config:
-                        name: '10'
-                      conditions:
-                        match-prefix-set:
-                          config:
-                            prefix-set: 'prefix_test'
-                            match-set-options: 'ANY'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                    - name: '20'
-                      config:
-                        name: '20'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-              table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'DIRECTLY_CONNECTED'
-                  config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'DIRECTLY_CONNECTED'
-                    import-policy:
-                    - 'test'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ipv4_route_map
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'DIRECTLY_CONNECTED'
+                        import-policy:
+                        - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ redistribute connected route-map test:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_route_map
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-#Test address-family ipv4 connected
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_connected
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_connected
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-              table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'DIRECTLY_CONNECTED'
+    - name: test bgp_ad_ipv4_connected
+      tags:
+        - bgp_ad_ipv4_connected
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
                   config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'DIRECTLY_CONNECTED'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ad_ipv4_connected
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_connected
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                  table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
+                      dst-protocol: 'BGP'
+                      src-protocol: 'DIRECTLY_CONNECTED'
+                      config:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'DIRECTLY_CONNECTED'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ address-family ipv4:' in changes"
           - "'+  redistribute connected:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_connected
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-# Test address-family ipv4 connected route-map
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_connected_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_connected_route_map
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            prefix-sets:
-              prefix-set:
-                - name: prefix_test
-                  config:
-                    name: prefix_test
-                    mode: IPV4
-                  prefixes:
-                    prefix:
-                      - ip-prefix: '192.133.184.0/22'
-                        masklength-range: exact
-                        config:
-                          ip-prefix: '192.133.184.0/22'
-                          masklength-range: exact
-                          openconfig-routing-policy-ext:seq: 10
-          policy-definitions:
-            policy-definition:
-              - name: 'test'
-                config:
-                  name: 'test'
-                statements:
-                  openconfig-routing-policy:statement:
-                    - name: '10'
+    - name: test bgp_ad_ipv4_connected_route_map
+      tags:
+        - bgp_ad_ipv4_connected_route_map
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                prefix-sets:
+                  prefix-set:
+                    - name: prefix_test
                       config:
-                        name: '10'
-                      conditions:
-                        match-prefix-set:
-                          config:
-                            prefix-set: 'prefix_test'
-                            match-set-options: 'ANY'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                    - name: '20'
-                      config:
-                        name: '20'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
+                        name: prefix_test
+                        mode: IPV4
+                      prefixes:
+                        prefix:
+                          - ip-prefix: '192.133.184.0/22'
+                            masklength-range: exact
+                            config:
+                              ip-prefix: '192.133.184.0/22'
+                              masklength-range: exact
+                              openconfig-routing-policy-ext:seq: 10
+              policy-definitions:
+                policy-definition:
+                  - name: 'test'
                     config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
+                      name: 'test'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
+                          config:
+                            name: '10'
+                          conditions:
+                            match-prefix-set:
                               config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-              table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'DIRECTLY_CONNECTED'
+                                prefix-set: 'prefix_test'
+                                match-set-options: 'ANY'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - name: '20'
+                          config:
+                            name: '20'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
                   config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'DIRECTLY_CONNECTED'
-                    import-policy:
-                    - 'test'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ad_ipv4_connected_route_map
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_connected_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                  table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
+                      dst-protocol: 'BGP'
+                      src-protocol: 'DIRECTLY_CONNECTED'
+                      config:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'DIRECTLY_CONNECTED'
+                        import-policy:
+                        - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ address-family ipv4:' in changes"
           - "'+  redistribute connected route-map test:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_connected_route_map
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-
-# Test address-family ipv4 vrf redistribute connected
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_connected
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_connected
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-            - name: 'abc'
-              config:
-                name: 'abc'
-                type: 'L3VRF'
-                enabled: true
-                enabled-address-families:
-                  - 'IPV4'
-                route-distinguisher: '1:1'
-                openconfig-network-instance-ext:route-targets-import:
-                  - '100:100'
-                  - '101:101'
-                openconfig-network-instance-ext:route-targets-export:
-                  - '200:200'
-                  - '202:202'
-              openconfig-network-instance:protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-              openconfig-network-instance:table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'DIRECTLY_CONNECTED'
+    - name: test bgp_ad_ipv4_vrf_connected
+      tags:
+        - bgp_ad_ipv4_vrf_connected
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
                   config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'DIRECTLY_CONNECTED'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ad_ipv4_vrf_connected
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_connected
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                    route-distinguisher: '1:1'
+                    openconfig-network-instance-ext:route-targets-import:
+                      - '100:100'
+                      - '101:101'
+                    openconfig-network-instance-ext:route-targets-export:
+                      - '200:200'
+                      - '202:202'
+                  openconfig-network-instance:protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                  openconfig-network-instance:table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
+                      dst-protocol: 'BGP'
+                      src-protocol: 'DIRECTLY_CONNECTED'
+                      config:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'DIRECTLY_CONNECTED'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
           - "'+  redistribute connected:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_connected
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-# Test redistribute connected route-map
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_connected_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_connected_route_map
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            prefix-sets:
-              prefix-set:
-                - name: prefix_test
-                  config:
-                    name: prefix_test
-                    mode: IPV4
-                  prefixes:
-                    prefix:
-                      - ip-prefix: '192.133.184.0/22'
-                        masklength-range: exact
-                        config:
-                          ip-prefix: '192.133.184.0/22'
-                          masklength-range: exact
-                          openconfig-routing-policy-ext:seq: 10
-          policy-definitions:
-            policy-definition:
-              - name: 'test'
-                config:
-                  name: 'test'
-                statements:
-                  openconfig-routing-policy:statement:
-                    - name: '10'
+    - name: test bgp_ad_ipv4_vrf_connected_route_map
+      tags:
+        - bgp_ad_ipv4_vrf_connected_route_map
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                prefix-sets:
+                  prefix-set:
+                    - name: prefix_test
                       config:
-                        name: '10'
-                      conditions:
-                        match-prefix-set:
+                        name: prefix_test
+                        mode: IPV4
+                      prefixes:
+                        prefix:
+                          - ip-prefix: '192.133.184.0/22'
+                            masklength-range: 'exact'
+                            config:
+                              ip-prefix: '192.133.184.0/22'
+                              masklength-range: 'exact'
+                              openconfig-routing-policy-ext:seq: 10
+              policy-definitions:
+                policy-definition:
+                  - name: 'test'
+                    config:
+                      name: 'test'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
                           config:
-                            prefix-set: 'prefix_test'
-                            match-set-options: 'ANY'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                    - name: '20'
-                      config:
-                        name: '20'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
+                            name: '10'
+                          conditions:
+                            match-prefix-set:
                               config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-            - name: 'abc'
-              config:
-                name: 'abc'
-                type: 'L3VRF'
-                enabled: true
-                enabled-address-families:
-                  - 'IPV4'
-                route-distinguisher: '1:1'
-                openconfig-network-instance-ext:route-targets-import:
-                  - '100:100'
-                  - '101:101'
-                openconfig-network-instance-ext:route-targets-export:
-                  - '200:200'
-                  - '202:202'
-              openconfig-network-instance:protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-              openconfig-network-instance:table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'DIRECTLY_CONNECTED'
+                                prefix-set: 'prefix_test'
+                                match-set-options: 'ANY'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - name: '20'
+                          config:
+                            name: '20'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
                   config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'DIRECTLY_CONNECTED'
-                    import-policy:
-                    - 'test'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ad_ipv4_vrf_connected_route_map
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_connected_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                    route-distinguisher: '1:1'
+                    openconfig-network-instance-ext:route-targets-import:
+                      - '100:100'
+                      - '101:101'
+                    openconfig-network-instance-ext:route-targets-export:
+                      - '200:200'
+                      - '202:202'
+                  openconfig-network-instance:protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                  openconfig-network-instance:table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
+                      dst-protocol: 'BGP'
+                      src-protocol: 'DIRECTLY_CONNECTED'
+                      config:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'DIRECTLY_CONNECTED'
+                        import-policy:
+                        - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
           - "'+  redistribute connected route-map test:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_connected_route_map
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-# redistribute static
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_static
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_static
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
+    - name: test bgp_ipv4_static
+      tags:
+        - bgp_ipv4_static
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
                         config:
-                          as: 1
-              table-connections:
-                table-connection:
-                  - address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'STATIC'
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                  table-connections:
+                    table-connection:
+                      - address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'STATIC'
+                        config:
+                          address-family: 'IPV4'
+                          dst-protocol: 'BGP'
+                          src-protocol: 'STATIC'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ redistribute static:' in changes"
+
+    - name: test bgp_ipv4_static_route_map
+      tags:
+        - bgp_ipv4_static_route_map
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                prefix-sets:
+                  prefix-set:
+                    - name: 'prefix_test'
+                      config:
+                        name: 'prefix_test'
+                        mode: 'IPV4'
+                      prefixes:
+                        prefix:
+                          - ip-prefix: '192.133.184.0/22'
+                            masklength-range: 'exact'
+                            config:
+                              ip-prefix: '192.133.184.0/22'
+                              masklength-range: 'exact'
+                              openconfig-routing-policy-ext:seq: 10
+              policy-definitions:
+                policy-definition:
+                  - name: 'test'
                     config:
-                      address-family: 'IPV4'
+                      name: 'test'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
+                          config:
+                            name: '10'
+                          conditions:
+                            match-prefix-set:
+                              config:
+                                prefix-set: 'prefix_test'
+                                match-set-options: 'ANY'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - name: '20'
+                          config:
+                            name: '20'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                  table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
                       dst-protocol: 'BGP'
                       src-protocol: 'STATIC'
-
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ipv4_static
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_static
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
-          - "'+ redistribute static:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_static
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-
-# redistribute static route-map
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_static_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_static_route_map
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            prefix-sets:
-              prefix-set:
-                - name: prefix_test
-                  config:
-                    name: prefix_test
-                    mode: IPV4
-                  prefixes:
-                    prefix:
-                      - ip-prefix: '192.133.184.0/22'
-                        masklength-range: exact
-                        config:
-                          ip-prefix: '192.133.184.0/22'
-                          masklength-range: exact
-                          openconfig-routing-policy-ext:seq: 10
-          policy-definitions:
-            policy-definition:
-              - name: 'test'
-                config:
-                  name: 'test'
-                statements:
-                  openconfig-routing-policy:statement:
-                    - name: '10'
                       config:
-                        name: '10'
-                      conditions:
-                        match-prefix-set:
-                          config:
-                            prefix-set: 'prefix_test'
-                            match-set-options: 'ANY'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                    - name: '20'
-                      config:
-                        name: '20'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-              table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'STATIC'
-                  config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'STATIC'
-                    import-policy:
-                    - 'test'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ipv4_static_route_map
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_static_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'STATIC'
+                        import-policy:
+                        - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ redistribute static route-map test:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_static_route_map
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-#Test address-family ipv4 static
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_static
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_static
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-              table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'STATIC'
+    - name: test bgp_ad_ipv4_static
+      tags:
+        - bgp_ad_ipv4_static
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
                   config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'STATIC'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ad_ipv4_static
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_static
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                  table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
+                      dst-protocol: 'BGP'
+                      src-protocol: 'STATIC'
+                      config:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'STATIC'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ address-family ipv4:' in changes"
           - "'+  redistribute static:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_static
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test address-family ipv4 static route-map
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_static_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_static_route_map
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            prefix-sets:
-              prefix-set:
-                - name: prefix_test
-                  config:
-                    name: prefix_test
-                    mode: IPV4
-                  prefixes:
-                    prefix:
-                      - ip-prefix: '192.133.184.0/22'
-                        masklength-range: exact
-                        config:
-                          ip-prefix: '192.133.184.0/22'
-                          masklength-range: exact
-                          openconfig-routing-policy-ext:seq: 10
-          policy-definitions:
-            policy-definition:
-              - name: 'test'
-                config:
-                  name: 'test'
-                statements:
-                  openconfig-routing-policy:statement:
-                    - name: '10'
+    - name: test bgp_ad_ipv4_static_route_map
+      tags:
+        - bgp_ad_ipv4_static_route_map
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                prefix-sets:
+                  prefix-set:
+                    - name: prefix_test
                       config:
-                        name: '10'
-                      conditions:
-                        match-prefix-set:
-                          config:
-                            prefix-set: 'prefix_test'
-                            match-set-options: 'ANY'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                    - name: '20'
-                      config:
-                        name: '20'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
+                        name: prefix_test
+                        mode: IPV4
+                      prefixes:
+                        prefix:
+                          - ip-prefix: '192.133.184.0/22'
+                            masklength-range: 'exact'
+                            config:
+                              ip-prefix: '192.133.184.0/22'
+                              masklength-range: 'exact'
+                              openconfig-routing-policy-ext:seq: 10
+              policy-definitions:
+                policy-definition:
+                  - name: 'test'
                     config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
+                      name: 'test'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
+                          config:
+                            name: '10'
+                          conditions:
+                            match-prefix-set:
                               config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-              table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'STATIC'
+                                prefix-set: 'prefix_test'
+                                match-set-options: 'ANY'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - name: '20'
+                          config:
+                            name: '20'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
                   config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'STATIC'
-                    import-policy:
-                    - 'test'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ad_ipv4_static_route_map
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_static_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                  table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
+                      dst-protocol: 'BGP'
+                      src-protocol: 'STATIC'
+                      config:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'STATIC'
+                        import-policy:
+                        - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ address-family ipv4:' in changes"
           - "'+  redistribute static route-map test:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_static_route_map
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-# Test address-family ipv4 vrf redistribute static
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_static
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_static
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-            - name: 'abc'
-              config:
-                name: 'abc'
-                type: 'L3VRF'
-                enabled: true
-                enabled-address-families:
-                  - 'IPV4'
-                route-distinguisher: '1:1'
-                openconfig-network-instance-ext:route-targets-import:
-                  - '100:100'
-                  - '101:101'
-                openconfig-network-instance-ext:route-targets-export:
-                  - '200:200'
-                  - '202:202'
-              openconfig-network-instance:protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-              openconfig-network-instance:table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'STATIC'
+    - name: test bgp_ad_ipv4_vrf_static
+      tags:
+        - bgp_ad_ipv4_vrf_static
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
                   config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'STATIC'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ad_ipv4_vrf_static
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_static
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                    route-distinguisher: '1:1'
+                    openconfig-network-instance-ext:route-targets-import:
+                      - '100:100'
+                      - '101:101'
+                    openconfig-network-instance-ext:route-targets-export:
+                      - '200:200'
+                      - '202:202'
+                  openconfig-network-instance:protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                  openconfig-network-instance:table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
+                      dst-protocol: 'BGP'
+                      src-protocol: 'STATIC'
+                      config:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'STATIC'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
           - "'+  redistribute static:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_static
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-# Test address-family ipv4 vrf redistribute static route-map
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_static_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_static_route_map
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            prefix-sets:
-              prefix-set:
-                - name: prefix_test
-                  config:
-                    name: prefix_test
-                    mode: IPV4
-                  prefixes:
-                    prefix:
-                      - ip-prefix: '192.133.184.0/22'
-                        masklength-range: exact
-                        config:
-                          ip-prefix: '192.133.184.0/22'
-                          masklength-range: exact
-                          openconfig-routing-policy-ext:seq: 10
-          policy-definitions:
-            policy-definition:
-              - name: 'test'
-                config:
-                  name: 'test'
-                statements:
-                  openconfig-routing-policy:statement:
-                    - name: '10'
+    - name: test bgp_ad_ipv4_vrf_static_route_map
+      tags:
+        - bgp_ad_ipv4_vrf_static_route_map
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                prefix-sets:
+                  prefix-set:
+                    - name: 'prefix_test'
                       config:
-                        name: '10'
-                      conditions:
-                        match-prefix-set:
+                        name: 'prefix_test'
+                        mode: 'IPV4'
+                      prefixes:
+                        prefix:
+                          - ip-prefix: '192.133.184.0/22'
+                            masklength-range: 'exact'
+                            config:
+                              ip-prefix: '192.133.184.0/22'
+                              masklength-range: 'exact'
+                              openconfig-routing-policy-ext:seq: 10
+              policy-definitions:
+                policy-definition:
+                  - name: 'test'
+                    config:
+                      name: 'test'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
                           config:
-                            prefix-set: 'prefix_test'
-                            match-set-options: 'ANY'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                    - name: '20'
-                      config:
-                        name: '20'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
+                            name: '10'
+                          conditions:
+                            match-prefix-set:
                               config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-            - name: 'abc'
-              config:
-                name: 'abc'
-                type: 'L3VRF'
-                enabled: true
-                enabled-address-families:
-                  - 'IPV4'
-                route-distinguisher: '1:1'
-                openconfig-network-instance-ext:route-targets-import:
-                  - '100:100'
-                  - '101:101'
-                openconfig-network-instance-ext:route-targets-export:
-                  - '200:200'
-                  - '202:202'
-              openconfig-network-instance:protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-              openconfig-network-instance:table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'STATIC'
+                                prefix-set: 'prefix_test'
+                                match-set-options: 'ANY'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - name: '20'
+                          config:
+                            name: '20'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
                   config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'STATIC'
-                    import-policy:
-                    - 'test'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ad_ipv4_vrf_static_route_map
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_static_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                    route-distinguisher: '1:1'
+                    openconfig-network-instance-ext:route-targets-import:
+                      - '100:100'
+                      - '101:101'
+                    openconfig-network-instance-ext:route-targets-export:
+                      - '200:200'
+                      - '202:202'
+                  openconfig-network-instance:protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                  openconfig-network-instance:table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
+                      dst-protocol: 'BGP'
+                      src-protocol: 'STATIC'
+                      config:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'STATIC'
+                        import-policy:
+                        - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
           - "'+  redistribute static route-map test:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_static_route_map
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-
-# redistribute ospf
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_ospf
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_ospf
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
+    - name: test bgp_ipv4_ospf
+      tags:
+        - bgp_ipv4_ospf
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
                         config:
-                          as: 1
-              table-connections:
-                table-connection:
-                  - address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'OSPF'
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                  table-connections:
+                    table-connection:
+                      - address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'OSPF'
+                        config:
+                          address-family: 'IPV4'
+                          dst-protocol: 'BGP'
+                          src-protocol: 'OSPF'
+                          openconfig-network-instance-ext:src-protocol-process-number: 1
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ redistribute ospf 1:' in changes"
+
+    - name: test bgp_ipv4_ospf_route_map
+      tags:
+        - bgp_ipv4_ospf_route_map
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                prefix-sets:
+                  prefix-set:
+                    - name: 'prefix_test'
+                      config:
+                        name: 'prefix_test'
+                        mode: 'IPV4'
+                      prefixes:
+                        prefix:
+                          - ip-prefix: '192.133.184.0/22'
+                            masklength-range: 'exact'
+                            config:
+                              ip-prefix: '192.133.184.0/22'
+                              masklength-range: 'exact'
+                              openconfig-routing-policy-ext:seq: 10
+              policy-definitions:
+                policy-definition:
+                  - name: 'test'
                     config:
-                      address-family: 'IPV4'
+                      name: 'test'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
+                          config:
+                            name: '10'
+                          conditions:
+                            match-prefix-set:
+                              config:
+                                prefix-set: 'prefix_test'
+                                match-set-options: 'ANY'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - name: '20'
+                          config:
+                            name: '20'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                  table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
                       dst-protocol: 'BGP'
                       src-protocol: 'OSPF'
-                      openconfig-network-instance-ext:src-protocol-process-number: 1
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ipv4_ospf
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_ospf
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
-          - "'+ redistribute ospf 1:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_ospf
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-
-# redistribute ospf route-map
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_ospf_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_ospf_route_map
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            prefix-sets:
-              prefix-set:
-                - name: prefix_test
-                  config:
-                    name: prefix_test
-                    mode: IPV4
-                  prefixes:
-                    prefix:
-                      - ip-prefix: '192.133.184.0/22'
-                        masklength-range: exact
-                        config:
-                          ip-prefix: '192.133.184.0/22'
-                          masklength-range: exact
-                          openconfig-routing-policy-ext:seq: 10
-          policy-definitions:
-            policy-definition:
-              - name: 'test'
-                config:
-                  name: 'test'
-                statements:
-                  openconfig-routing-policy:statement:
-                    - name: '10'
                       config:
-                        name: '10'
-                      conditions:
-                        match-prefix-set:
-                          config:
-                            prefix-set: 'prefix_test'
-                            match-set-options: 'ANY'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                    - name: '20'
-                      config:
-                        name: '20'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-              table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'OSPF'
-                  config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'OSPF'
-                    openconfig-network-instance-ext:src-protocol-process-number: 1
-                    import-policy:
-                    - 'test'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ipv4_ospf_route_map
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_ospf_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'OSPF'
+                        openconfig-network-instance-ext:src-protocol-process-number: 1
+                        import-policy:
+                        - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ redistribute ospf 1 route-map test:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ipv4_ospf_route_map
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-#Test address-family ipv4 ospf
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_ospf
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_ospf
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-              table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'OSPF'
+    - name: test bgp_ad_ipv4_ospf
+      tags:
+        - bgp_ad_ipv4_ospf
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
                   config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'OSPF'
-                    openconfig-network-instance-ext:src-protocol-process-number: 1
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ad_ipv4_ospf
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_ospf
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                  table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
+                      dst-protocol: 'BGP'
+                      src-protocol: 'OSPF'
+                      config:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'OSPF'
+                        openconfig-network-instance-ext:src-protocol-process-number: 1
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ address-family ipv4:' in changes"
           - "'+  redistribute ospf 1:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_ospf
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test address-family ipv4 ospf route-map
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_ospf_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_ospf_route_map
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            prefix-sets:
-              prefix-set:
-                - name: prefix_test
-                  config:
-                    name: prefix_test
-                    mode: IPV4
-                  prefixes:
-                    prefix:
-                      - ip-prefix: '192.133.184.0/22'
-                        masklength-range: exact
-                        config:
-                          ip-prefix: '192.133.184.0/22'
-                          masklength-range: exact
-                          openconfig-routing-policy-ext:seq: 10
-          policy-definitions:
-            policy-definition:
-              - name: 'test'
-                config:
-                  name: 'test'
-                statements:
-                  openconfig-routing-policy:statement:
-                    - name: '10'
+    - name: test bgp_ad_ipv4_ospf_route_map
+      tags:
+        - bgp_ad_ipv4_ospf_route_map
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                prefix-sets:
+                  prefix-set:
+                    - name: 'prefix_test'
                       config:
-                        name: '10'
-                      conditions:
-                        match-prefix-set:
-                          config:
-                            prefix-set: 'prefix_test'
-                            match-set-options: 'ANY'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                    - name: '20'
-                      config:
-                        name: '20'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
+                        name: 'prefix_test'
+                        mode: 'IPV4'
+                      prefixes:
+                        prefix:
+                          - ip-prefix: '192.133.184.0/22'
+                            masklength-range: 'exact'
+                            config:
+                              ip-prefix: '192.133.184.0/22'
+                              masklength-range: 'exact'
+                              openconfig-routing-policy-ext:seq: 10
+              policy-definitions:
+                policy-definition:
+                  - name: 'test'
                     config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
+                      name: 'test'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
+                          config:
+                            name: '10'
+                          conditions:
+                            match-prefix-set:
                               config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-              table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'OSPF'
+                                prefix-set: 'prefix_test'
+                                match-set-options: 'ANY'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - name: '20'
+                          config:
+                            name: '20'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
                   config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'OSPF'
-                    openconfig-network-instance-ext:src-protocol-process-number: 1
-                    import-policy:
-                    - 'test'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ad_ipv4_ospf_route_map
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_ospf_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                  table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
+                      dst-protocol: 'BGP'
+                      src-protocol: 'OSPF'
+                      config:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'OSPF'
+                        openconfig-network-instance-ext:src-protocol-process-number: 1
+                        import-policy:
+                        - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ address-family ipv4:' in changes"
           - "'+  redistribute ospf 1 route-map test:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_ospf_route_map
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-# Test address-family ipv4 vrf redistribute ospf
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_ospf
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_ospf
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-            - name: 'abc'
-              config:
-                name: 'abc'
-                type: 'L3VRF'
-                enabled: true
-                enabled-address-families:
-                  - 'IPV4'
-                route-distinguisher: '1:1'
-                openconfig-network-instance-ext:route-targets-import:
-                  - '100:100'
-                  - '101:101'
-                openconfig-network-instance-ext:route-targets-export:
-                  - '200:200'
-                  - '202:202'
-              openconfig-network-instance:protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-              openconfig-network-instance:table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'OSPF'
+    - name: test bgp_ad_ipv4_vrf_ospf
+      tags:
+        - bgp_ad_ipv4_vrf_ospf
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
                   config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'OSPF'
-                    openconfig-network-instance-ext:src-protocol-process-number: 2
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ad_ipv4_vrf_ospf
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_ospf
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                    route-distinguisher: '1:1'
+                    openconfig-network-instance-ext:route-targets-import:
+                      - '100:100'
+                      - '101:101'
+                    openconfig-network-instance-ext:route-targets-export:
+                      - '200:200'
+                      - '202:202'
+                  openconfig-network-instance:protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                  openconfig-network-instance:table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
+                      dst-protocol: 'BGP'
+                      src-protocol: 'OSPF'
+                      config:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'OSPF'
+                        openconfig-network-instance-ext:src-protocol-process-number: 2
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: true  # this one can randomly error out
+        assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
           - "'+  redistribute ospf 2:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_ospf
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-# Test address-family ipv4 vrf redistribute ospf route-map
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_ospf_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_ospf_route_map
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            prefix-sets:
-              prefix-set:
-                - name: prefix_test
-                  config:
-                    name: prefix_test
-                    mode: IPV4
-                  prefixes:
-                    prefix:
-                      - ip-prefix: '192.133.184.0/22'
-                        masklength-range: exact
-                        config:
-                          ip-prefix: '192.133.184.0/22'
-                          masklength-range: exact
-                          openconfig-routing-policy-ext:seq: 10
-          policy-definitions:
-            policy-definition:
-              - name: 'test'
-                config:
-                  name: 'test'
-                statements:
-                  openconfig-routing-policy:statement:
-                    - name: '10'
+    - name: test bgp_ad_ipv4_vrf_ospf_route_map
+      tags:
+        - bgp_ad_ipv4_vrf_ospf_route_map
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                prefix-sets:
+                  prefix-set:
+                    - name: 'prefix_test'
                       config:
-                        name: '10'
-                      conditions:
-                        match-prefix-set:
+                        name: 'prefix_test'
+                        mode: 'IPV4'
+                      prefixes:
+                        prefix:
+                          - ip-prefix: '192.133.184.0/22'
+                            masklength-range: 'exact'
+                            config:
+                              ip-prefix: '192.133.184.0/22'
+                              masklength-range: 'exact'
+                              openconfig-routing-policy-ext:seq: 10
+              policy-definitions:
+                policy-definition:
+                  - name: 'test'
+                    config:
+                      name: 'test'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
                           config:
-                            prefix-set: 'prefix_test'
-                            match-set-options: 'ANY'
-                      openconfig-routing-policy:actions:
-                        config:
-                          policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                    - name: '20'
-                      config:
-                        name: '20'
-                      actions:
-                        config:
-                          policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
+                            name: '10'
+                          conditions:
+                            match-prefix-set:
                               config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-            - name: 'abc'
-              config:
-                name: 'abc'
-                type: 'L3VRF'
-                enabled: true
-                enabled-address-families:
-                  - 'IPV4'
-                route-distinguisher: '1:1'
-                openconfig-network-instance-ext:route-targets-import:
-                  - '100:100'
-                  - '101:101'
-                openconfig-network-instance-ext:route-targets-export:
-                  - '200:200'
-                  - '202:202'
-              openconfig-network-instance:protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-              openconfig-network-instance:table-connections:
-                table-connection:
-                - address-family: 'IPV4'
-                  dst-protocol: 'BGP'
-                  src-protocol: 'OSPF'
+                                prefix-set: 'prefix_test'
+                                match-set-options: 'ANY'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - name: '20'
+                          config:
+                            name: '20'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
                   config:
-                    address-family: 'IPV4'
-                    dst-protocol: 'BGP'
-                    src-protocol: 'OSPF'
-                    openconfig-network-instance-ext:src-protocol-process-number: 2
-                    import-policy:
-                    - 'test'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP bgp_ad_ipv4_vrf_ospf_route_map
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_ospf_route_map
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                    route-distinguisher: '1:1'
+                    openconfig-network-instance-ext:route-targets-import:
+                      - '100:100'
+                      - '101:101'
+                    openconfig-network-instance-ext:route-targets-export:
+                      - '200:200'
+                      - '202:202'
+                  openconfig-network-instance:protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                  openconfig-network-instance:table-connections:
+                    table-connection:
+                    - address-family: 'IPV4'
+                      dst-protocol: 'BGP'
+                      src-protocol: 'OSPF'
+                      config:
+                        address-family: 'IPV4'
+                        dst-protocol: 'BGP'
+                        src-protocol: 'OSPF'
+                        openconfig-network-instance-ext:src-protocol-process-number: 2
+                        import-policy:
+                        - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: true  # this one can randomly error out
+        assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
           - "'+  redistribute ospf 2 route-map test:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - bgp_ad_ipv4_vrf_ospf_route_map
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
