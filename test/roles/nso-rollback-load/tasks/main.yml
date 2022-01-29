@@ -1,0 +1,45 @@
+- set_fact:
+    nso_host: "{{ lookup('env', 'NSO_HOST') }}"
+    nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
+    nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
+    apply:
+      delegate_to: localhost
+
+- include_role:
+    name: ciscops.mdd.nso
+    tasks_from: get_rollbacks
+
+- name: Check the Rollback File
+  stat:
+    path: "{{ rollback_file }}"
+  register: stat_results
+
+- assert:
+    that:
+      - stat_results.stat.exists
+    fail_msg: "Cannot find rollback file {{ rollback_file }}"
+    success_msg: "Using rollback file {{ rollback_file }}"
+
+- name: Read Rollback File
+  include_vars: "{{ rollback_file }}"
+
+- set_fact:
+    current_nr: "{{ nso_rollback_facts.data | selectattr('rollback_nr', 'equalto', rollback_id | int) | map(attribute='nr') | first }}"
+
+- debug:
+    msg: "Current Rollback ID: {{ rollback_id }} NR: {{ current_nr }}"
+
+- block:
+    - set_fact:
+        previous_rollback_id: "{{ nso_rollback_facts.data | selectattr('nr', 'equalto', previous_nr | int) | map(attribute='rollback_nr') | first }}"
+      vars:
+        previous_nr: "{{ ( current_nr | int ) - 1 }}"
+
+    - name: Load Rollback {{ previous_rollback_id }}
+      include_role:
+        name: ciscops.mdd.nso
+        tasks_from: rollback
+      vars:
+        rollback_id: "{{ previous_rollback_id }}"
+      when: current_nr != '0'
+

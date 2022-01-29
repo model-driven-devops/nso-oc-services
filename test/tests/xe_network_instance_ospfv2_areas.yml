@@ -1,2694 +1,1357 @@
 ---
-# Test OSPF area
-- hosts: xe1
+- name: test acls extended
+  hosts: xe1
+  gather_facts: no
   connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - area
   vars:
+    device: xe1
     ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
   tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - area
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: Loopback10
-                type: softwareLoopback
-                description: TEST123
-              name: Loopback10
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.16.1.2
-                              prefix-length: 32
-                            ip: 172.16.1.2
-                      config:
-                        dhcp-client: false
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
+    - name: test area
+      tags:
+        - area
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'Loopback10'
+                    type: 'softwareLoopback'
+                    description: 'TEST123'
+                  name: 'Loopback10'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.16.1.2'
+                                  prefix-length: 32
+                                ip: '172.16.1.2'
+                          config:
+                            dhcp-client: false
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
                     config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 1
-                          identifier: 1
-                          interfaces:
-                            interface:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
                             - config:
-                                id: Loopback10
-                              id: Loopback10
-                        - config:
-                            identifier: 0
-                          identifier: 0
-                          interfaces:
-                            interface:
+                                identifier: 1
+                              identifier: 1
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'Loopback10'
+                                  id: 'Loopback10'
                             - config:
-                                id: GigabitEthernet6
-                              id: GigabitEthernet6
-              interfaces:
-                interface:
-                  - id: 'Loopback10'
-                    config:
-                      id: 'Loopback10'
-                      interface: 'Loopback10'
-                      subinterface: '0'
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF area
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - area
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                                identifier: 0
+                              identifier: 0
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                  id: 'GigabitEthernet6'
+                  interfaces:
+                    interface:
+                      - id: 'Loopback10'
+                        config:
+                          id: 'Loopback10'
+                          interface: 'Loopback10'
+                          subinterface: '0'
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: '0'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+router ospf 1:' in changes"
           - "'+ network 172.16.1.2 0.0.0.0 area 1:' in changes"
           - "'+ network 172.17.0.1 0.0.0.0 area 0:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - area
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF network_type
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - network_type
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - network_type
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
+    - name: test network_type
+      tags:
+        - network_type
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
                     config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 0
-                          identifier: 0
-                          interfaces:
-                            interface:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
                             - config:
-                                id: GigabitEthernet6
-                                network-type: 'NON_BROADCAST_NETWORK'
-                              id: GigabitEthernet6
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF network_type
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - network_type
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
-          - "'+ ip ospf network non-broadcast:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - network_type
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF interface_cost
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - interface_cost
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - interface_cost
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
-                    config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 0
-                          identifier: 0
-                          interfaces:
-                            interface:
-                            - config:
-                                id: GigabitEthernet6
-                                metric: 10
-                              id: GigabitEthernet6
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF interface_cost
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - interface_cost
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
-          - "'+ ip ospf cost 10:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - interface_cost
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF passive_interface
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - passive_interface
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - passive_interface
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
-                    config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 0
-                          identifier: 0
-                          interfaces:
-                            interface:
-                            - config:
-                                id: GigabitEthernet6
-                                passive: True
-                              id: GigabitEthernet6
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF passive_interface
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - passive_interface
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
-          - "'+ passive-interface GigabitEthernet6:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - passive_interface
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF priority
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - priority
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - priority
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
-                    config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 0
-                          identifier: 0
-                          interfaces:
-                            interface:
-                            - config:
-                                id: GigabitEthernet6
-                                priority: 10
-                              id: GigabitEthernet6
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF priority
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - priority
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
-          - "'+ ip ospf priority 10:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - priority
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF ospf_bfd
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - ospf_bfd
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - ospf_bfd
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
-                    config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 0
-                          identifier: 0
-                          interfaces:
-                            interface:
-                            - config:
-                                id: GigabitEthernet6
-                              enable-bfd:
-                                config:
-                                  enabled: True
-                              id: GigabitEthernet6
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF ospf_bfd
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - ospf_bfd
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
-          - "'+ ip ospf bfd:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - ospf_bfd
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF neighbor
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - neighbor
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - neighbor
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
-                    config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 0
-                          identifier: 0
-                          interfaces:
-                            interface:
-                            - config:
-                                id: GigabitEthernet6
-                              neighbors:
-                                neighbor:
+                                identifier: 0
+                              identifier: 0
+                              interfaces:
+                                interface:
                                 - config:
-                                    metric: 100
-                                    router-id: 10.10.10.10
-                                  router-id: 10.10.10.10
-                              id: GigabitEthernet6
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF neighbor
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
+                                    id: 'GigabitEthernet6'
+                                    network-type: 'NON_BROADCAST_NETWORK'
+                                  id: 'GigabitEthernet6'
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ ip ospf network non-broadcast:' in changes"
 
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - neighbor
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+    - name: test interface_cost
+      tags:
+        - interface_cost
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
+                            - config:
+                                identifier: 0
+                              identifier: 0
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                    metric: 10
+                                  id: 'GigabitEthernet6'
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ ip ospf cost 10:' in changes"
+
+    - name: test passive_interface
+      tags:
+        - passive_interface
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
+                            - config:
+                                identifier: 0
+                              identifier: 0
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                    passive: True
+                                  id: 'GigabitEthernet6'
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ passive-interface GigabitEthernet6:' in changes"
+
+    - name: test priority
+      tags:
+        - priority
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
+                            - config:
+                                identifier: 0
+                              identifier: 0
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                    priority: 10
+                                  id: 'GigabitEthernet6'
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ ip ospf priority 10:' in changes"
+
+    - name: test ospf_bfd
+      tags:
+        - ospf_bfd
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
+                            - config:
+                                identifier: 0
+                              identifier: 0
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                  enable-bfd:
+                                    config:
+                                      enabled: True
+                                  id: 'GigabitEthernet6'
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ ip ospf bfd:' in changes"
+
+    - name: test neighbor
+      tags:
+        - neighbor
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
+                            - config:
+                                identifier: 0
+                              identifier: 0
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                  neighbors:
+                                    neighbor:
+                                    - config:
+                                        metric: 100
+                                        router-id: '10.10.10.10'
+                                      router-id: '10.10.10.10'
+                                  id: 'GigabitEthernet6'
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+router ospf 1:' in changes"
           - "'+ neighbor 10.10.10.10 cost 100:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - neighbor
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF interface_timers
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - interface_timers
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - interface_timers
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
+    - name: test interface_timers
+      tags:
+        - interface_timers
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
                     config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 0
-                          identifier: 0
-                          interfaces:
-                            interface:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
                             - config:
-                                id: GigabitEthernet6
-                              timers:
-                                config:
-                                  dead-interval: 60
-                                  hello-interval: 15
-                                  retransmission-interval: 10
-                              id: GigabitEthernet6
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF interface_timers
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - interface_timers
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                                identifier: 0
+                              identifier: 0
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                  timers:
+                                    config:
+                                      dead-interval: 60
+                                      hello-interval: 15
+                                      retransmission-interval: 10
+                                  id: 'GigabitEthernet6'
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ ip ospf dead-interval 60:' in changes"
           - "'+ ip ospf hello-interval 15:' in changes"
           - "'+ ip ospf retransmit-interval 10:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - interface_timers
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF mpls_traffic_eng_area
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - mpls_traffic_eng_area
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - mpls_traffic_eng_area
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
+    - name: test mpls_traffic_eng_area
+      tags:
+        - mpls_traffic_eng_area
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
                     config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 0
-                          identifier: 0
-                          interfaces:
-                            interface:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
                             - config:
-                                id: GigabitEthernet6
-                              id: GigabitEthernet6
-                          mpls:
-                            config:
-                              traffic-engineering-enabled: True
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF mpls_traffic_eng_area
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - mpls_traffic_eng_area
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                                identifier: 0
+                              identifier: 0
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                  id: 'GigabitEthernet6'
+                              mpls:
+                                config:
+                                  traffic-engineering-enabled: True
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ mpls traffic-eng area 0:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - mpls_traffic_eng_area
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF virtual_link
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - virtual_link
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - virtual_link
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
+    - name: test virtual_link
+      tags:
+        - virtual_link
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
                     config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 200
-                          identifier: 200
-                          interfaces:
-                            interface:
-                            - config:
-                                id: GigabitEthernet6
-                              id: GigabitEthernet6
-                          virtual-links:
-                            virtual-link:
-                            - config:
-                                remote-router-id: 10.200.200.200
-                              remote-router-id: 10.200.200.200
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
                     config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF virtual_link
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - virtual_link
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
+                            - config:
+                                identifier: 200
+                              identifier: 200
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                  id: 'GigabitEthernet6'
+                              virtual-links:
+                                virtual-link:
+                                - config:
+                                    remote-router-id: '10.200.200.200'
+                                  remote-router-id: '10.200.200.200'
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ area 200 virtual-link 10.200.200.200:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - virtual_link
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF stub area
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - stub_area
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - stub_area
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
+    - name: test stub_area
+      tags:
+        - stub_area
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
                     config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 200
-                          identifier: 200
-                          interfaces:
-                            interface:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
                             - config:
-                                id: GigabitEthernet6
-                              id: GigabitEthernet6
-                          openconfig-ospfv2-ext:stub-options:
-                            stub:
-                              config:
-                                enabled: true
-                                default-information-originate: true
-                            totally-stubby:
-                              config:
-                                enabled: false
-                                default-information-originate: false
-                            nssa:
-                              config:
-                                enabled: false
-                                default-information-originate: false
-                                no-summary: false
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF stub_area
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - stub_area
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                                identifier: 200
+                              identifier: 200
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                  id: 'GigabitEthernet6'
+                              openconfig-ospfv2-ext:stub-options:
+                                stub:
+                                  config:
+                                    enabled: true
+                                    default-information-originate: true
+                                totally-stubby:
+                                  config:
+                                    enabled: false
+                                    default-information-originate: false
+                                nssa:
+                                  config:
+                                    enabled: false
+                                    default-information-originate: false
+                                    no-summary: false
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ area 200 stub:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - stub_area
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF totally-stubby area
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - totally_stubby_area
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - totally_stubby_area
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
+    - name: test totally_stubby_area
+      tags:
+        - totally_stubby_area
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
                     config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 200
-                          identifier: 200
-                          interfaces:
-                            interface:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
                             - config:
-                                id: GigabitEthernet6
-                              id: GigabitEthernet6
-                          openconfig-ospfv2-ext:stub-options:
-                            stub:
-                              config:
-                                enabled: false
-                                default-information-originate: false
-                            totally-stubby:
-                              config:
-                                enabled: true
-                                default-information-originate: true
-                            nssa:
-                              config:
-                                enabled: false
-                                default-information-originate: false
-                                no-summary: false
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF totally_stubby_area
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - totally_stubby_area
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                                identifier: 200
+                              identifier: 200
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                  id: 'GigabitEthernet6'
+                              openconfig-ospfv2-ext:stub-options:
+                                stub:
+                                  config:
+                                    enabled: false
+                                    default-information-originate: false
+                                totally-stubby:
+                                  config:
+                                    enabled: true
+                                    default-information-originate: true
+                                nssa:
+                                  config:
+                                    enabled: false
+                                    default-information-originate: false
+                                    no-summary: false
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ area 200 stub no-summary:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - totally_stubby_area
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF NSSA
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - nssa
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - nssa
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
+    - name: test nsa
+      tags:
+        - nsa
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
                     config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 200
-                          identifier: 200
-                          interfaces:
-                            interface:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
                             - config:
-                                id: GigabitEthernet6
-                              id: GigabitEthernet6
-                          openconfig-ospfv2-ext:stub-options:
-                            stub:
-                              config:
-                                enabled: false
-                                default-information-originate: false
-                            totally-stubby:
-                              config:
-                                enabled: false
-                                default-information-originate: false
-                            nssa:
-                              config:
-                                enabled: true
-                                default-information-originate: false
-                                no-summary: false
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF nssa
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - nssa
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                                identifier: 200
+                              identifier: 200
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                  id: 'GigabitEthernet6'
+                              openconfig-ospfv2-ext:stub-options:
+                                stub:
+                                  config:
+                                    enabled: false
+                                    default-information-originate: false
+                                totally-stubby:
+                                  config:
+                                    enabled: false
+                                    default-information-originate: false
+                                nssa:
+                                  config:
+                                    enabled: true
+                                    default-information-originate: false
+                                    no-summary: false
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ area 200 nssa:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - nssa
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF NSSA with default
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - nssa_default_originate
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - nssa_default_originate
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
+    - name: test nssa_default_originate
+      tags:
+        - nssa_default_originate
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
                     config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 200
-                          identifier: 200
-                          interfaces:
-                            interface:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
                             - config:
-                                id: GigabitEthernet6
-                              id: GigabitEthernet6
-                          openconfig-ospfv2-ext:stub-options:
-                            stub:
-                              config:
-                                enabled: false
-                                default-information-originate: false
-                            totally-stubby:
-                              config:
-                                enabled: false
-                                default-information-originate: false
-                            nssa:
-                              config:
-                                enabled: true
-                                default-information-originate: true
-                                no-summary: false
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF nssa_default_originate
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - nssa_default_originate
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                                identifier: 200
+                              identifier: 200
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                  id: 'GigabitEthernet6'
+                              openconfig-ospfv2-ext:stub-options:
+                                stub:
+                                  config:
+                                    enabled: false
+                                    default-information-originate: false
+                                totally-stubby:
+                                  config:
+                                    enabled: false
+                                    default-information-originate: false
+                                nssa:
+                                  config:
+                                    enabled: true
+                                    default-information-originate: true
+                                    no-summary: false
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ area 200 nssa default-information-originate:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - nssa_default_originate
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF NSSA with default no-summary
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - nssa_default_originate_no_summary
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - nssa_default_originate_no_summary
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
+    - name: test nssa_default_originate_no_summary
+      tags:
+        - nssa_default_originate_no_summary
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
                     config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 200
-                          identifier: 200
-                          interfaces:
-                            interface:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
                             - config:
-                                id: GigabitEthernet6
-                              id: GigabitEthernet6
-                          openconfig-ospfv2-ext:stub-options:
-                            stub:
-                              config:
-                                enabled: false
-                                default-information-originate: false
-                            totally-stubby:
-                              config:
-                                enabled: false
-                                default-information-originate: false
-                            nssa:
-                              config:
-                                enabled: true
-                                default-information-originate: false
-                                no-summary: true
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF nssa_default_originate_no_summary
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - nssa_default_originate_no_summary
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                                identifier: 200
+                              identifier: 200
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                  id: 'GigabitEthernet6'
+                              openconfig-ospfv2-ext:stub-options:
+                                stub:
+                                  config:
+                                    enabled: false
+                                    default-information-originate: false
+                                totally-stubby:
+                                  config:
+                                    enabled: false
+                                    default-information-originate: false
+                                nssa:
+                                  config:
+                                    enabled: true
+                                    default-information-originate: false
+                                    no-summary: true
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ area 200 nssa no-summary:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - nssa_default_originate_no_summary
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-# Test OSPF error multiple stubs configured same area
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - error_nssa_and_stub
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - error_nssa_and_stub
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                enabled: true
-                name: GigabitEthernet6
-                type: 'ethernetCsmacd'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-              hold-time:
-                config:
-                  down: '10'
-              name: GigabitEthernet6
-              subinterfaces:
-                subinterface:
-                  - config:
-                      index: '0'
-                    index: '0'
-                    openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: 172.17.0.1
-                              prefix-length: 24
-                            ip: 172.17.0.1
-                      config:
-                        dhcp-client: false
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: 1
-                    identifier: OSPF
+    - name: test error_nssa_and_stub
+      tags:
+        - error_nssa_and_stub
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
                     config:
-                      enabled: True
-                      identifier: OSPF
-                      name: 1
-                    ospfv2:
-                      areas:
-                        area:
-                        - config:
-                            identifier: 200
-                          identifier: 200
-                          interfaces:
-                            interface:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                  hold-time:
+                    config:
+                      down: 10
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.17.0.1'
+                                  prefix-length: 24
+                                ip: '172.17.0.1'
+                          config:
+                            dhcp-client: false
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          areas:
+                            area:
                             - config:
-                                id: GigabitEthernet6
-                              id: GigabitEthernet6
-                          openconfig-ospfv2-ext:stub-options:
-                            stub:
-                              config:
-                                enabled: true
-                                default-information-originate: true
-                            totally-stubby:
-                              config:
-                                enabled: false
-                                default-information-originate: false
-                            nssa:
-                              config:
-                                enabled: true
-                                default-information-originate: false
-                                no-summary: true
-              interfaces:
-                interface:
-                  - id: 'GigabitEthernet6'
-                    config:
-                      id: 'GigabitEthernet6'
-                      interface: 'GigabitEthernet6'
-                      subinterface: '0'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: OSPF error_nssa_and_stub
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-      register: error_results
-      ignore_errors: yes
-    - assert:
-        that:
+                                identifier: 200
+                              identifier: 200
+                              interfaces:
+                                interface:
+                                - config:
+                                    id: 'GigabitEthernet6'
+                                  id: 'GigabitEthernet6'
+                              openconfig-ospfv2-ext:stub-options:
+                                stub:
+                                  config:
+                                    enabled: true
+                                    default-information-originate: true
+                                totally-stubby:
+                                  config:
+                                    enabled: false
+                                    default-information-originate: false
+                                nssa:
+                                  config:
+                                    enabled: true
+                                    default-information-originate: false
+                                    no-summary: true
+                  interfaces:
+                    interface:
+                      - id: 'GigabitEthernet6'
+                        config:
+                          id: 'GigabitEthernet6'
+                          interface: 'GigabitEthernet6'
+                          subinterface: 0
+        api_method: PUT
+        api_ignore_errors: true
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
           - error_results.json['ietf-restconf:errors']['error'][0]['error-message'] == "Python cb_create error. OSPF stub areas can only be type stub, totally-stubby, or nssa: not more than one type."

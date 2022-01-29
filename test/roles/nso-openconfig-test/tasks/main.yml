@@ -1,0 +1,93 @@
+- set_fact:
+    nso_host: "{{ lookup('env', 'NSO_HOST') }}"
+    nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
+    nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
+    apply:
+      delegate_to: localhost
+
+- name: run pyats
+  include_role:
+    name: ansible-pyats
+
+- name: collect config (before)
+  ios_command:
+    commands:
+      - show run
+  register: result_before
+
+- name: Convert string to JSON
+  set_fact:
+    configs: "{{ content | from_yaml | to_json }}"
+    apply:
+      delegate_to: localhost
+
+- name: JSON configs
+  debug:
+    msg: "{{ configs }}"
+
+- name: NSO API call
+  uri:
+    url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+    url_username: "{{ nso_username }}"
+    url_password: "{{ nso_password }}"
+    force_basic_auth: yes
+    validate_certs: no
+    status_code: [200,201,204]
+    method: "{{ api_method }}"
+    headers: "{
+      'Content-Type': 'application/yang-data+json',
+      'Accept': 'application/yang-data+json'}"
+    body_format: json
+    body: "{{ configs }}"
+  delegate_to: localhost
+  ignore_errors: "{{ api_ignore_errors | default(false) }}"
+
+- name: run pyats
+  include_role:
+    name: ansible-pyats
+
+- name: collect config (after)
+  ios_command:
+    commands:
+      - show run
+  register: result_after
+
+- set_fact:
+    exclude_list:
+      - (^Using.*)
+      - (Building.*)
+      - (Current.*)
+      - (crypto pki certificate chain.*)
+    apply:
+      delegate_to: localhost
+
+- set_fact:
+    changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
+    apply:
+      delegate_to: localhost
+
+- name: debug changes
+  debug:
+    msg: "{{ changes }}"
+
+- assert:
+    that: "{{ assertions }}"
+  ignore_errors: "{{ assertion_ignore_errors | default(false) }}"
+  when: assertions != false
+
+- name: Rollback
+  uri:
+    url: "http://{{ nso_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
+    url_username: "{{ nso_username }}"
+    url_password: "{{ nso_password }}"
+    force_basic_auth: yes
+    validate_certs: no
+    status_code: [ 204 ]
+    method: POST
+    headers: "{
+      'Content-Type': 'application/yang-data+xml'}"
+    body: |
+      <input xmlns="http://tail-f.com/ns/rollback">
+        <id>0</id>
+      </input>
+  when: rollback|bool == true

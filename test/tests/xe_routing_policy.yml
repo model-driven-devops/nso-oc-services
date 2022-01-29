@@ -1,568 +1,159 @@
 ---
-# Add prefix list
-- hosts: xe1
+- name: test acls extended
+  hosts: xe1
+  gather_facts: no
   connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - prefix-list
   vars:
+    device: xe1
     ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
   tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - prefix-list
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            prefix-sets:
-              prefix-set:
-                - name: LOCAL-PREFIXES
-                  config:
-                    name: LOCAL-PREFIXES
-                    mode: IPV4
-                  prefixes:
-                    prefix:
-                      - ip-prefix: '1.1.1.1/32'
-                        masklength-range: exact
-                        config:
-                          ip-prefix: '1.1.1.1/32'
-                          masklength-range: exact
-                          openconfig-routing-policy-ext:seq: 10
-                      - ip-prefix: '2.2.2.0/23'
-                        masklength-range: '24..30'
-                        config:
-                          ip-prefix: '2.2.2.0/23'
-                          masklength-range: '24..30'
-                          openconfig-routing-policy-ext:seq: 20
-
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: Routing policy prefix-list
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - prefix-list
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+    - name: test prefix-list
+      tags:
+        - prefix-list
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                prefix-sets:
+                  prefix-set:
+                    - name: 'LOCAL-PREFIXES'
+                      config:
+                        name: 'LOCAL-PREFIXES'
+                        mode: 'IPV4'
+                      prefixes:
+                        prefix:
+                          - ip-prefix: '1.1.1.1/32'
+                            masklength-range: 'exact'
+                            config:
+                              ip-prefix: '1.1.1.1/32'
+                              masklength-range: 'exact'
+                              openconfig-routing-policy-ext:seq: 10
+                          - ip-prefix: '2.2.2.0/23'
+                            masklength-range: '24..30'
+                            config:
+                              ip-prefix: '2.2.2.0/23'
+                              masklength-range: '24..30'
+                              openconfig-routing-policy-ext:seq: 20
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ip prefix-list LOCAL-PREFIXES seq 10 permit 1.1.1.1/32:' in changes"
           - "'+ip prefix-list LOCAL-PREFIXES seq 20 permit 2.2.2.0/23 ge 24 le 30:' in changes"
 
-# Add as-path
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - as-path-list
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - as-path-list
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            openconfig-bgp-policy:bgp-defined-sets:
-              as-path-sets:
-                as-path-set:
-                  - as-path-set-name: 11
-                    config:
-                      as-path-set-name: 11
-                      as-path-set-member:
-                        - "^$"
-                        - "_100"
-
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: Routing policy as-path-list
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - as-path-list
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+    - name: test as-path-list
+      tags:
+        - as-path-list
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                openconfig-bgp-policy:bgp-defined-sets:
+                  as-path-sets:
+                    as-path-set:
+                      - as-path-set-name: '11'
+                        config:
+                          as-path-set-name: '11'
+                          as-path-set-member:
+                            - "^$"
+                            - "_100"
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ip as-path access-list 11 permit ^$:' in changes"
           - "'+ip as-path access-list 11 permit _100:' in changes"
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - as-path-list
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-
-# Add community list
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - community-list
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - community-list
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            openconfig-bgp-policy:bgp-defined-sets:
-              community-sets:
-                community-set:
-                  - community-set-name: test
-                    config:
-                      community-set-name: test
-                      match-set-options: ANY  # ANY, ALL, INVERT  ONLY ANY supported on ios
-                      community-member:  # NO_EXPORT, NO_ADVERTISE, NO_EXPORT_SUBCONFED, NOPEER, AS:AS, regexs
-                        - "100:100"
-                        - "200:200"
-
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: Routing policy community-list
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - community-list
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+    - name: test community-list
+      tags:
+        - community-list
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                openconfig-bgp-policy:bgp-defined-sets:
+                  community-sets:
+                    community-set:
+                      - community-set-name: 'test'
+                        config:
+                          community-set-name: 'test'
+                          match-set-options: 'ANY'  # ANY, ALL, INVERT  ONLY ANY supported on ios
+                          community-member:  # NO_EXPORT, NO_ADVERTISE, NO_EXPORT_SUBCONFED, NOPEER, AS:AS, regexs
+                            - "100:100"
+                            - "200:200"
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ip community-list standard test permit 100:100:' in changes"
           - "'+ip community-list standard test permit 200:200:' in changes"
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - community-list
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-
-# Add community list expanded
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - community-list-expanded
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - community-list-expanded
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            openconfig-bgp-policy:bgp-defined-sets:
-              community-sets:
-                community-set:
-                  - community-set-name: test
-                    config:
-                      community-set-name: test
-                      match-set-options: ANY  # ANY, ALL, INVERT  ONLY ANY supported on ios
-                      community-member:  # NO_EXPORT, NO_ADVERTISE, NO_EXPORT_SUBCONFED, NOPEER, AS:AS, regexs
-                        - "6509[6-9]:4000"
-                        - "6509[6-9]:3000"
-
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: Routing policy community-list-expanded
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - community-list-expanded
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+    - name: test community-list-expanded
+      tags:
+        - community-list-expanded
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                openconfig-bgp-policy:bgp-defined-sets:
+                  community-sets:
+                    community-set:
+                      - community-set-name: 'test'
+                        config:
+                          community-set-name: 'test'
+                          match-set-options: 'ANY'  # ANY, ALL, INVERT  ONLY ANY supported on ios
+                          community-member:  # NO_EXPORT, NO_ADVERTISE, NO_EXPORT_SUBCONFED, NOPEER, AS:AS, regexs
+                            - "6509[6-9]:4000"
+                            - "6509[6-9]:3000"
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ip community-list expanded test permit 6509[6-9]:4000:' in changes"
           - "'+ip community-list expanded test permit 6509[6-9]:3000:' in changes"
 
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - community-list-expanded
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
-
-# Add community list well known
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - community-list-well-known
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - community-list-well-known
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-routing-policy:routing-policy:
-          defined-sets:
-            openconfig-bgp-policy:bgp-defined-sets:
-              community-sets:
-                community-set:
-                  - community-set-name: test
-                    config:
-                      community-set-name: test
-                      match-set-options: ANY  # ANY, ALL, INVERT  ONLY ANY supported on ios
-                      community-member:  # NO_EXPORT, NO_ADVERTISE, NO_EXPORT_SUBCONFED, NOPEER, AS:AS, regexs
-                        - "NO_EXPORT"
-                        - "NO_ADVERTISE"
-                        - "NO_EXPORT_SUBCONFED"
-
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: Routing policy community-list-well-known
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - community-list-well-known
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+    - name: test community-list-well-known
+      tags:
+        - community-list-well-known
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                openconfig-bgp-policy:bgp-defined-sets:
+                  community-sets:
+                    community-set:
+                      - community-set-name: 'test'
+                        config:
+                          community-set-name: 'test'
+                          match-set-options: 'ANY'  # ANY, ALL, INVERT  ONLY ANY supported on ios
+                          community-member:  # NO_EXPORT, NO_ADVERTISE, NO_EXPORT_SUBCONFED, NOPEER, AS:AS, regexs
+                            - "NO_EXPORT"
+                            - "NO_ADVERTISE"
+                            - "NO_EXPORT_SUBCONFED"
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ip community-list standard test permit no-export:' in changes"
           - "'+ip community-list standard test permit no-advertise:' in changes"
           - "'+ip community-list standard test permit local-AS:' in changes"
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - community-list-well-known
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>

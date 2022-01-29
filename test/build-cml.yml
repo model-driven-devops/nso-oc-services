@@ -101,12 +101,15 @@
 - name: Update ansible_host
   hosts: localhost
   tasks:
-    - name: replace IP address in local file
-      shell: "sed -i 's/XXXXX/{{hostvars['nso'].ansible_host}}/' ./inventory/nso.yml"
-    - name: replace IP address in local file
-      shell: "sed -i 's/ZZZZZ/{{hostvars['xe1'].ansible_host}}/' ./inventory/nso.yml"
-    - name: replace IP address in local file
-      shell: "sed -i 's/YYYYY/{{hostvars['xeswitch1'].ansible_host}}/' ./inventory/nso.yml"
     - copy:
         content: "NSO_HOST={{ hostvars['nso'].ansible_host }}"
         dest: "../nso_host.txt"
+      when: hostvars['nso'].ansible_host is defined
+    - copy:
+        content: "XE1_HOST={{ hostvars['xe1'].ansible_host }}"
+        dest: "../xe1_host.txt"
+      when: hostvars['xe1'].ansible_host is defined
+    - copy:
+        content: "XESWITCH1_HOST={{ hostvars['xeswitch1'].ansible_host }}"
+        dest: "../xeswitch1_host.txt"
+      when: hostvars['xeswitch1'].ansible_host is defined

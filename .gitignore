@@ -1,0 +1,9 @@
+venv-navy-devops/
+.virl/
+.virlrc
+*.pyc
+*.retry
+envfile.sh
+*.signed.bin
+.cache/
+collections/

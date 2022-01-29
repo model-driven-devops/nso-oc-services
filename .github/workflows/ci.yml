@@ -1,4 +1,4 @@
-name: GitHub Actions Demo
+name: NSO-Services CI
 on:
   pull_request_review:
     types: [ submitted ]
@@ -41,6 +41,15 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
+      - name: Write contents of nso IP file to envars
+        run: |
+          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+      - name: Write contents of xe1 IP file to envars
+        run: |
+          cat ${{ github.workspace }}/xe1_host.txt >> $GITHUB_ENV
+      - name: Write contents of xeswitch1 IP file to envars
+        run: |
+          cat ${{ github.workspace }}/xeswitch1_host.txt >> $GITHUB_ENV
       - name: Build NSO
         run: ansible-playbook ./test/build-nso.yml
         env:
@@ -49,9 +58,6 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
-      - name: Copy contents of nso_host.txt to GITHUB_ENV
-        run: |
-          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
       - name: Run Tests
         run: |
           cd ./test/tests
@@ -70,6 +76,12 @@ jobs:
           NSO_HOST: ${{ env.NSO_HOST }}
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
+          NSO_OS_USERNAME: ${{ secrets.NSO_OS_USERNAME }}
+          NSO_OS_PASSWORD: ${{ secrets.NSO_OS_PASSWORD }}
+          XE1_HOST: ${{ env.XE1_HOST }}
+          XESWITCH1_HOST: ${{ env.XESWITCH1_HOST }}
+          NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
+          NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
       - name: Delete CML
         if: always()
         run: ansible-playbook ./test/clean-cml.yml

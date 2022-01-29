@@ -1,181 +1,103 @@
 ---
-# Test VLAN DB Creation
-- hosts: xeswitch1
+- name: test acls extended
+  hosts: xeswitch1
+  gather_facts: no
   connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - vlan_db_create
   vars:
+    device: xeswitch1
     ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
   tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - vlan_db_create
-  vars:
-    device_name: xeswitch1
-    content: |
-      mdd:openconfig:
-        openconfig-interfaces:interfaces:
-          interface:
-            - config:
-                description: 'Access Port Example'
-                enabled: true
-                loopback-mode: false
-                name: 'GigabitEthernet0/2'
-                type: 'l2vlan'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-                openconfig-vlan:switched-vlan:
+    - name: test vlan_db_create
+      tags:
+        - vlan_db_create
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Access Port Example'
+                    enabled: true
+                    loopback-mode: false
+                    name: 'GigabitEthernet0/2'
+                    type: 'l2vlan'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                    openconfig-vlan:switched-vlan:
+                      config:
+                        access-vlan: 100
+                        interface-mode: 'ACCESS'
+                  hold-time:
+                    config:
+                      down: 0
+                      up: 0
+                  name: 'GigabitEthernet0/2'
+                - config:
+                    description: 'Access Port Example'
+                    enabled: true
+                    loopback-mode: false
+                    name: 'GigabitEthernet0/3'
+                    type: 'l2vlan'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      auto-negotiate: true
+                      enable-flow-control: false
+                    openconfig-vlan:switched-vlan:
+                      config:
+                        access-vlan: 200
+                        interface-mode: 'ACCESS'
+                  hold-time:
+                    config:
+                      down: 0
+                      up: 0
+                  name: 'GigabitEthernet0/3'
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
                   config:
-                    access-vlan: 100
-                    interface-mode: 'ACCESS'
-              hold-time:
-                config:
-                  down: 0
-                  up: 0
-              name: 'GigabitEthernet0/2'
-            - config:
-                description: 'Access Port Example'
-                enabled: true
-                loopback-mode: false
-                name: 'GigabitEthernet0/3'
-                type: 'l2vlan'
-              openconfig-if-ethernet:ethernet:
-                config:
-                  auto-negotiate: true
-                  enable-flow-control: false
-                openconfig-vlan:switched-vlan:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  vlans:
+                    vlan:
+                      - vlan-id: 100
+                        config:
+                          vlan-id: 100
+                          name: 'VLAN100'
+                          status: 'ACTIVE'
+                      - vlan-id: 101
+                        config:
+                          vlan-id: 101
+                          name: 'VLAN101'
+                          status: 'SUSPENDED'
+                - name: 'abc'
                   config:
-                    access-vlan: 200
-                    interface-mode: 'ACCESS'
-              hold-time:
-                config:
-                  down: 0
-                  up: 0
-              name: 'GigabitEthernet0/3'
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              vlans:
-                vlan:
-                  - vlan-id: 100
-                    config:
-                      vlan-id: 100
-                      name: 'VLAN100'
-                      status: 'ACTIVE'
-                  - vlan-id: 101
-                    config:
-                      vlan-id: 101
-                      name: 'VLAN101'
-                      status: 'SUSPENDED'
-            - name: 'abc'
-              config:
-                name: 'abc'
-                type: 'L3VRF'
-                enabled: true
-                enabled-address-families:
-                  - 'IPV4'
-              vlans:
-                vlan:
-                  - vlan-id: 200
-                    config:
-                      vlan-id: 200
-                      name: 'VLAN200'
-                      status: 'ACTIVE'
-                  - vlan-id: 201
-                    config:
-                      vlan-id: 201
-                      name: 'VLAN201'
-                      status: 'ACTIVE'
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: TEST vlan_db_create
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xeswitch1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xeswitch1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - vlan_db_create
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                  vlans:
+                    vlan:
+                      - vlan-id: 200
+                        config:
+                          vlan-id: 200
+                          name: 'VLAN200'
+                          status: 'ACTIVE'
+                      - vlan-id: 201
+                        config:
+                          vlan-id: 201
+                          name: 'VLAN201'
+                          status: 'ACTIVE'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ switchport access vlan 100:' in changes"
           - "'+ switchport access vlan 200:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - vlan_db_create
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
+

@@ -11,15 +11,15 @@ all:
   children:
     nso_hosts:
       vars:
-        admin_user: ubuntu
-        admin_password: admin
+        admin_user: "{{ lookup('env', 'NSO_OS_USERNAME') | default('ubuntu') }}"
+        admin_password: "{{ lookup('env', 'NSO_OS_PASSWORD') | default('admin') }}"
         ansible_user: "{{ admin_user }}"
         ansible_password: "{{ admin_password }}"
       hosts:
         nso:
-          ansible_host: XXXXX
-          ansible_user: ubuntu
-          ansible_password: admin
+          ansible_host: "{{ lookup('env', 'NSO_HOST') | default('') }}"
+          ansible_user: "{{ lookup('env', 'NSO_USERNAME') | default('admin') }}"
+          ansible_password: "{{ lookup('env', 'NSO_PASSWORD') | default('admin') }}"
           ansible_python_interpreter: auto_silent
     unmanaged_devices:
       hosts:
@@ -27,15 +27,15 @@ all:
         ext-management-switch:
     nso_devices:
       vars:
-        admin_user: admin
-        admin_password: admin
+        admin_user: "{{ lookup('env', 'NSO_DEVICES_USERNAME') | default('admin') }}"
+        admin_password: "{{ lookup('env', 'NSO_DEVICES_PASSWORD') | default('admin') }}"
         ansible_user: "{{ admin_user }}"
         ansible_password: "{{ admin_password }}"
       hosts:
         xe1:
-          ansible_host: ZZZZZ
+          ansible_host: "{{ lookup('env', 'XE1_HOST') | default('') }}"
         xeswitch1:
-          ansible_host: YYYYY
+          ansible_host: "{{ lookup('env', 'XESWITCH1_HOST') | default('') }}"
 #        xr1:
 #        nx1:
 #        test-network-switch:

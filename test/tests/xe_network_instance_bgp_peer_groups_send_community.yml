@@ -1,579 +1,235 @@
 ---
-# Peer group send_community
-- hosts: xe1
+- name: test acls extended
+  hosts: xe1
+  gather_facts: no
   connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - peer_group_send_community
   vars:
+    device: xe1
     ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
   tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - peer_group_send_community
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
+    - name: test peer_group_send_community
+      tags:
+        - peer_group_send_community
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
                         config:
-                          as: 1
-                      peer-groups:
-                        peer-group:
-                          - config:
-                              peer-group-name: test
-                              send-community: BOTH
-                            peer-group-name: test
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP peer_group_send_community
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - peer_group_send_community
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                          peer-groups:
+                            peer-group:
+                              - config:
+                                  peer-group-name: 'test'
+                                  send-community: 'BOTH'
+                                peer-group-name: 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ neighbor test send-community both:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - peer_group_send_community
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-# Test peer group address-family ipv4 unicast send community
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - ad-ipv4-send_community
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - ad-ipv4-send_community
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
+    - name: test ad-ipv4-send_community
+      tags:
+        - ad-ipv4-send_community
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
                         config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-                      peer-groups:
-                        peer-group:
-                          - config:
-                              peer-group-name: test
-                              send-community: BOTH
-                            peer-group-name: test
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
                             afi-safis:
                               afi-safi:
                                 - afi-safi-name: 'IPV4_UNICAST'
                                   config:
                                     afi-safi-name: 'IPV4_UNICAST'
                                     enabled: true
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP ad-ipv4-send_community
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - ad-ipv4-send_community
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                          peer-groups:
+                            peer-group:
+                              - config:
+                                  peer-group-name: 'test'
+                                  send-community: 'BOTH'
+                                peer-group-name: 'test'
+                                afi-safis:
+                                  afi-safi:
+                                    - afi-safi-name: 'IPV4_UNICAST'
+                                      config:
+                                        afi-safi-name: 'IPV4_UNICAST'
+                                        enabled: true
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ address-family ipv4:' in changes"
           - "'+  neighbor test send-community both:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - ad-ipv4-send_community
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-# Test peer group address-family vpnv4 unicast send community
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - ad-vpnv4-activate-send-community
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - ad-vpnv4-activate-send-community
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
+    - name: test ad-vpnv4-activate-send-community
+      tags:
+        - ad-vpnv4-activate-send-community
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
                         config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                enabled: true
-                      peer-groups:
-                        peer-group:
-                          - config:
-                              peer-group-name: test
-                              send-community: BOTH
-                            peer-group-name: test
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
                             afi-safis:
                               afi-safi:
                                 - afi-safi-name: 'L3VPN_IPV4_UNICAST'
                                   config:
                                     afi-safi-name: 'L3VPN_IPV4_UNICAST'
                                     enabled: true
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP ad-vpnv4-activate-send-community
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - ad-vpnv4-activate-send-community
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                          peer-groups:
+                            peer-group:
+                              - config:
+                                  peer-group-name: 'test'
+                                  send-community: 'BOTH'
+                                peer-group-name: 'test'
+                                afi-safis:
+                                  afi-safi:
+                                    - afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                      config:
+                                        afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                        enabled: true
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ address-family vpnv4:' in changes"
           - "'+  neighbor test send-community both:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - ad-vpnv4-activate-send-community
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
 
-# Test peer-group address-family ipv4 unicast vrf ABC send-community
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - ad-ipv4-activate-vrf-send-community
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (before)
-      ios_command:
-        commands:
-          - show run
-      register: result_before
-
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - ad-ipv4-activate-vrf-send-community
-  vars:
-    device_name: xe1
-    content: |
-      mdd:openconfig:
-        openconfig-network-instance:network-instances:
-          network-instance:
-            - name: 'default'
-              config:
-                name: 'default'
-                type: 'DEFAULT_INSTANCE'
-                enabled: true
-              protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
+    - name: test ad-ipv4-activate-vrf-send-community
+      tags:
+        - ad-ipv4-activate-vrf-send-community
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
                         config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-            - name: 'abc'
-              config:
-                name: 'abc'
-                type: 'L3VRF'
-                enabled: true
-                enabled-address-families:
-                  - 'IPV4'
-                route-distinguisher: '1:1'
-                openconfig-network-instance-ext:route-targets-import:
-                  - '100:100'
-                  - '101:101'
-                openconfig-network-instance-ext:route-targets-export:
-                  - '200:200'
-                  - '202:202'
-              openconfig-network-instance:protocols:
-                protocol:
-                  - name: BGP
-                    identifier: BGP
-                    config:
-                      enabled: True
-                      identifier: BGP
-                      name: BGP
-                    bgp:
-                      global:
-                        config:
-                          as: 1
-                        afi-safis:
-                          afi-safi:
-                            - afi-safi-name: 'IPV4_UNICAST'
-                              config:
-                                afi-safi-name: 'IPV4_UNICAST'
-                                enabled: true
-                      peer-groups:
-                        peer-group:
-                          - config:
-                              peer-group-name: test
-                              send-community: BOTH
-                            peer-group-name: test
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
                             afi-safis:
                               afi-safi:
                                 - afi-safi-name: 'IPV4_UNICAST'
                                   config:
                                     afi-safi-name: 'IPV4_UNICAST'
                                     enabled: true
-
-  tasks:
-    - name: Convert string to JSON
-      set_fact:
-        configs: "{{ content | from_yaml | to_json }}"
-    - name: JSON configs
-      debug:
-        msg: "{{ configs }}"
-    - name: BGP ad-ipv4-activate-vrf-send-community
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-ncs:devices/device=xe1/mdd:openconfig"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: PUT
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-        body: "{{ configs }}"
-
-- hosts: xe1
-  connection: network_cli
-  gather_facts: no
-  tags:
-    - all
-    - ad-ipv4-activate-vrf-send-community
-  vars:
-    ansible_network_os: 'cisco.ios.ios'
-    exclude_list:
-      - (^Using.*)
-      - (Building.*)
-      - (Current.*)
-      - (crypto pki certificate chain.*)
-  roles:
-    - ansible-pyats
-  tasks:
-    - name: collect config (after)
-      ios_command:
-        commands:
-          - show run
-      register: result_after
-    - set_fact:
-        changes: "{{ result_before.stdout[0] | genie_config_diff(result_after.stdout[0], mode='add', exclude=exclude_list) }}"
-    - name: debug changes
-      debug:
-        msg: "{{ changes }}"
-    - assert:
-        that:
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                    route-distinguisher: '1:1'
+                    openconfig-network-instance-ext:route-targets-import:
+                      - '100:100'
+                      - '101:101'
+                    openconfig-network-instance-ext:route-targets-export:
+                      - '200:200'
+                      - '202:202'
+                  openconfig-network-instance:protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                          peer-groups:
+                            peer-group:
+                              - config:
+                                  peer-group-name: 'test'
+                                  send-community: 'BOTH'
+                                peer-group-name: 'test'
+                                afi-safis:
+                                  afi-safi:
+                                    - afi-safi-name: 'IPV4_UNICAST'
+                                      config:
+                                        afi-safi-name: 'IPV4_UNICAST'
+                                        enabled: true
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
           - "'+  neighbor test send-community both:' in changes"
-      ignore_errors: yes
-- hosts: localhost
-  gather_facts: no
-  tags:
-    - all
-    - ad-ipv4-activate-vrf-send-community
-    - rollback
-  tasks:
-    - name: Rollback
-      uri:
-        url: "http://{{ hostvars['nso'].ansible_host }}:8080/restconf/data/tailf-rollback:rollback-files/apply-rollback-file"
-        url_username: admin
-        url_password: admin
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 204 ]
-        method: POST
-        headers: "{
-          'Content-Type': 'application/yang-data+xml'}"
-        body: |
-          <input xmlns="http://tail-f.com/ns/rollback">
-            <id>0</id>
-          </input>
