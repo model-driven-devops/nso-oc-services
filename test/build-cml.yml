@@ -110,6 +110,6 @@
         dest: "../xe1_host.txt"
       when: hostvars['xe1'].ansible_host is defined
     - copy:
-        content: "XESWITCH1_HOST={{ hostvars['xeswitch1'].ansible_host }} "
+        content: "XESWITCH1_HOST={{ hostvars['xeswitch1'].ansible_host }}"
         dest: "../xeswitch1_host.txt"
       when: hostvars['xeswitch1'].ansible_host is defined
