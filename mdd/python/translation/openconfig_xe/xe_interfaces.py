@@ -286,7 +286,16 @@ def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: nc
     if service_ipv4.config.dhcp_client is False:
         if interface_cdb.ip.address.dhcp.exists():
             interface_cdb.ip.address.dhcp.delete()
-
+    # no ip redirects
+    if service_ipv4.config.oc_if_ip_mdd_ext__redirects:
+        interface_cdb.ip.redirects = True
+    elif service_ipv4.config.oc_if_ip_mdd_ext__redirects is False:
+        interface_cdb.ip.redirects = False
+    # no ip unreachables
+    if service_ipv4.config.oc_if_ip_mdd_ext__unreachables:
+        interface_cdb.ip.unreachables = True
+    elif service_ipv4.config.oc_if_ip_mdd_ext__unreachables is False:
+        interface_cdb.ip.unreachables = False
     # proxy-arp
     if service_ipv4.proxy_arp.config.mode == 'DISABLE':
         interface_cdb.ip.proxy_arp = False

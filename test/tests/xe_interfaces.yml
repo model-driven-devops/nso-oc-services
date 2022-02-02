@@ -1,0 +1,112 @@
+---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- name: test interfaces
+  hosts: xe1
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: xe1
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test no_ip_redirects_no_ip_unreachables configuration
+      tags:
+        - no_ip_redirects_no_ip_unreachables
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 5'
+                    enabled: true
+                    name: 'GigabitEthernet5'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet5'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.1'
+                                  prefix-length: 24
+                                ip: '10.1.0.1'
+                          config:
+                            dhcp-client: false
+                            openconfig-if-ip-mdd-ext:redirects: false
+                            openconfig-if-ip-mdd-ext:unreachables: false
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ no ip redirects:' in changes"
+          - "'+ no ip unreachables:' in changes"
+
+- name: test interfaces
+  hosts: xe1
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: xe1
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test ip_redirects_ip_unreachables configuration
+      tags:
+        - ip_redirects_ip_unreachables
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 5'
+                    enabled: true
+                    name: 'GigabitEthernet5'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet5'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.1'
+                                  prefix-length: 24
+                                ip: '10.1.0.1'
+                          config:
+                            dhcp-client: false
+                            openconfig-if-ip-mdd-ext:redirects: true
+                            openconfig-if-ip-mdd-ext:unreachables: true
+        api_method: PATCH
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'- no ip redirects:' in changes"
+          - "'- no ip unreachables:' in changes"
+
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-load
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
