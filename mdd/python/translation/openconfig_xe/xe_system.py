@@ -65,6 +65,29 @@ def xe_system_program_service(self) -> None:
     elif self.service.oc_sys__system.services.finger is False:
         if device_cdb.ios__ip.finger.exists():
             device_cdb.ios__ip.finger.delete()
+    # ip gratuitous arps
+    if self.service.oc_sys__system.services.ip_gratuitous_arps:
+        device_cdb.ios__ip.gratuitous_arps_conf.gratuitous_arps = True
+    elif self.service.oc_sys__system.services.ip_gratuitous_arps is False:
+        device_cdb.ios__ip.gratuitous_arps_conf.gratuitous_arps = None
+    # service password-encryption
+    if self.service.oc_sys__system.services.service_password_encryption:
+        device_cdb.ios__service.password_encryption.create()
+    elif self.service.oc_sys__system.services.service_password_encryption is False:
+        if device_cdb.ios__service.password_encryption.exists():
+            device_cdb.ios__service.password_encryption.delete()
+    # service-tcp-small-servers
+    if self.service.oc_sys__system.services.service_tcp_small_servers:
+        device_cdb.ios__service.tcp_small_servers.create()
+    elif self.service.oc_sys__system.services.service_tcp_small_servers is False:
+        if device_cdb.ios__service.tcp_small_servers.exists():
+            device_cdb.ios__service.tcp_small_servers.delete()
+    # service-udp-small-servers
+    if self.service.oc_sys__system.services.service_udp_small_servers:
+        device_cdb.ios__service.udp_small_servers.create()
+    elif self.service.oc_sys__system.services.service_udp_small_servers is False:
+        if device_cdb.ios__service.udp_small_servers.exists():
+            device_cdb.ios__service.udp_small_servers.delete()
     # service http
     if self.service.oc_sys__system.services.http.http_enabled:
         device_cdb.ios__ip.http.server = True

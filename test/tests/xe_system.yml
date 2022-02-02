@@ -969,3 +969,85 @@
 #          - "'+username admin privilege 15 secret 0 admin:' in changes"  # passwords will be hashed
 #          - "'+username user1 privilege 15 secret 0 Password123:' in changes"
 #          - "'+username user2 privilege 15 secret 0 Password123:' in changes"
+
+- hosts: nso
+  tags: tcp_udp_gratuitous_arp_password_encryption
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- name: test services
+  hosts: xe1
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: xe1
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test tcp_udp_gratuitous_arp_password_encryption configuration
+      tags:
+        - tcp_udp_gratuitous_arp_password_encryption
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                ip-gratuitous-arps: true
+                service-password-encryption: true
+                service-tcp-small-servers: true
+                service-udp-small-servers: true
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip gratuitous-arps:' in changes"
+          - "'+service password-encryption:' in changes"
+          - "'+service tcp-small-servers:' in changes"
+          - "'+service udp-small-servers:' in changes"
+
+- name: test services
+  hosts: xe1
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: xe1
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test no_tcp_udp_gratuitous_arp_password_encryption configuration
+      tags:
+        - no_tcp_udp_gratuitous_arp_password_encryption
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                ip-gratuitous-arps: false
+                service-password-encryption: false
+                service-tcp-small-servers: false
+                service-udp-small-servers: false
+        api_method: PATCH
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'-ip gratuitous-arps:' in changes"
+          - "'-service password-encryption:' in changes"
+          - "'-service tcp-small-servers:' in changes"
+          - "'-service udp-small-servers:' in changes"
+
+- hosts: nso
+  tags: no_tcp_udp_gratuitous_arp_password_encryption
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-load
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
