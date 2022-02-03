@@ -1,5 +1,5 @@
 ---
-- name: test acls extended
+- name: test network instance vlans
   hosts: xeswitch1
   gather_facts: no
   connection: network_cli

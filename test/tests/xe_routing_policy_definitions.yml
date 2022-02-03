@@ -8,7 +8,7 @@
   vars:
     rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
 
-- name: test acls extended
+- name: test routng policy definitions
   hosts: xe1
   gather_facts: no
   connection: network_cli
