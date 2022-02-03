@@ -6,8 +6,8 @@
     nso_install_dir: /pkgs/nso-install
     nso_run_dir: /home/ubuntu/ncs-run
     nso_java_opts: "-Xmx2G -Xms1G"
-    admin_user: ubuntu
-    admin_password: admin
+    admin_user: "{{ lookup('env', 'NSO_OS_USERNAME') | default('ubuntu') }}"
+    admin_password: "{{ lookup('env', 'NSO_OS_PASSWORD') }}"
     ansible_user: "{{ admin_user }}"
     ansible_password: "{{ admin_password }}"
     nso_xe_ned_id: cisco-ios-cli-6.74

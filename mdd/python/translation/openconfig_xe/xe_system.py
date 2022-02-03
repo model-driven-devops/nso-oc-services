@@ -128,6 +128,20 @@ def xe_system_program_service(self) -> None:
         seconds_all = int(self.service.oc_sys__system.config.console_exec_timeout_seconds)
         device_cdb.ios__line.console[0].exec_timeout.minutes = str(seconds_all // 60)
         device_cdb.ios__line.console[0].exec_timeout.seconds = str(seconds_all % 60)
+    if self.service.oc_sys__system.config.ip_options:
+        if self.service.oc_sys__system.config.ip_options == "oc-system-ext:ENABLE":
+            if device_cdb.ios__ip.options.drop.exists():
+                device_cdb.ios__ip.options.drop.delete()
+            if device_cdb.ios__ip.options.ignore.exists():
+                device_cdb.ios__ip.options.ignore.delete()
+        elif self.service.oc_sys__system.config.ip_options == "oc-system-ext:DROP":
+            if device_cdb.ios__ip.options.ignore.exists():
+                device_cdb.ios__ip.options.ignore.delete()
+            device_cdb.ios__ip.options.drop.create()
+        elif self.service.oc_sys__system.config.ip_options == "oc-system-ext:IGNORE":
+            if device_cdb.ios__ip.options.drop.exists():
+                device_cdb.ios__ip.options.drop.delete()
+            device_cdb.ios__ip.options.ignore.create()
     if self.service.oc_sys__system.config.timestamps.logging.enabled and (
             self.service.oc_sys__system.config.timestamps.logging.datetime or self.service.oc_sys__system.config.timestamps.logging.uptime):
         if self.service.oc_sys__system.config.timestamps.logging.datetime:

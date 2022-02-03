@@ -46,6 +46,58 @@
           - "' line con 0:' in changes"
           - "'+ exec-timeout 13 20:' in changes"
 
+    - name: test ip_option_drop
+      tags:
+        - ip_option_drop
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              config:
+                oc-system-ext:ip-options: 'DROP'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip options drop:' in changes"
+    - name: test ip_option_ignore
+      tags:
+        - ip_option_ignore
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              config:
+                oc-system-ext:ip-options: 'IGNORE'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip options ignore:' in changes"
+    - name: test ip_option_enable
+      tags:
+        - ip_option_enable
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              config:
+                oc-system-ext:ip-options: 'ENABLE'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'-ip options ignore:' in changes"
+
     - name: test ssh_server
       tags:
         - ssh_server

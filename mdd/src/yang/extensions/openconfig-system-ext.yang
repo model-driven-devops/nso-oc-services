@@ -31,7 +31,25 @@ module openconfig-system-ext{
     description
       "Initial revision";
   }
-
+  identity IP_OPTIONS {
+    description
+      "Drop or ignore ip options";
+  }
+  identity ENABLE {
+    base  IP_OPTIONS;
+    description
+      "Process IP options packets that are sent to the router";
+  }
+  identity DROP {
+    base  IP_OPTIONS;
+    description
+      "Drops IP options packets that are sent to the router";
+  }
+   identity IGNORE {
+    base  IP_OPTIONS;
+    description
+      "Ignores IP options packets that are sent to the router";
+  }
   identity CIPHERSUITE_TYPE {
     description
       "Base identity to define ciphersuite types";
@@ -184,6 +202,13 @@ module openconfig-system-ext{
       }
       description
         "Configure the inactive session timeout on the console port in seconds.";
+    }
+    leaf ip-options {
+      type identityref {
+        base IP_OPTIONS;
+      }
+      description
+        "Drops or ignores IP options packets that are sent to the router.";
     }
     leaf enable-secret {
       type string;
