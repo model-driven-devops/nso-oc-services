@@ -1,5 +1,14 @@
 ---
-- name: test acls extended
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- name: test system
   hosts: xe1
   gather_facts: no
   connection: network_cli
@@ -27,7 +36,7 @@
                   This is the motd-banner.
         api_method: PUT
         api_ignore_errors: false
-        rollback: true
+        rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+hostname rxx:' in changes"
@@ -85,7 +94,7 @@
                   timeout: 1800
         api_method: PUT
         api_ignore_errors: false
-        rollback: true
+        rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+ absolute-timeout 1200:' in changes"
@@ -238,7 +247,7 @@
                         version: 3
         api_method: PUT
         api_ignore_errors: false
-        rollback: true
+        rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+ntp authenticate:' in changes"
@@ -398,7 +407,7 @@
                             severity: 'CRITICAL'
         api_method: PUT
         api_ignore_errors: false
-        rollback: true
+        rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+logging console informational:' in changes"
@@ -452,7 +461,7 @@
                         openconfig-system-ext:use-vrf: 'abc'
         api_method: PUT
         api_ignore_errors: false
-        rollback: true
+        rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+ip name-server 8.8.8.8 8.8.4.4:' in changes"
@@ -472,21 +481,12 @@
                   timezone-name: 'CST -6 0'
         api_method: PUT
         api_ignore_errors: false
-        rollback: true
+        rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+clock timezone CST -6 0:' in changes"
 
-- hosts: nso
-  connection: local
-  gather_facts: no
-  roles:
-    - nso-rollback-save
-  run_once: true
-  vars:
-    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
-
-- name: test acls extended
+- name: test system
   hosts: xe1
   gather_facts: no
   connection: network_cli
@@ -575,16 +575,7 @@
         assertions:
           - "'-ip finger:' in changes"
 
-- hosts: nso
-  connection: local
-  gather_facts: no
-  roles:
-    - nso-rollback-load
-  run_once: true
-  vars:
-    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
-
-- name: test acls extended
+- name: test system
   hosts: xe1
   gather_facts: no
   connection: network_cli
@@ -610,7 +601,7 @@
                       openconfig-system-ext:requests: 3
         api_method: PUT
         api_ignore_errors: false
-        rollback: true
+        rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+ip http timeout-policy idle 240 life 240 requests 3:' in changes"
@@ -638,7 +629,7 @@
                     openconfig-system-ext:localtime: true
         api_method: PUT
         api_ignore_errors: false
-        rollback: true
+        rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+service timestamps debug datetime msec localtime:' in changes"
@@ -667,7 +658,7 @@
                     openconfig-system-ext:localtime: true
         api_method: PUT
         api_ignore_errors: false
-        rollback: true
+        rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+service timestamps debug uptime:' in changes"
@@ -702,7 +693,7 @@
                         severity: 'EMERGENCY'
         api_method: PUT
         api_ignore_errors: false
-        rollback: true
+        rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+logging facility syslog:' in changes"
@@ -734,7 +725,7 @@
                             severity: 'EMERGENCY'
         api_method: PUT
         api_ignore_errors: false
-        rollback: true
+        rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+logging trap emergencies:' in changes"
@@ -781,7 +772,7 @@
                             severity: 'ERROR'
         api_method: PUT
         api_ignore_errors: false
-        rollback: true
+        rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+logging console critical:' in changes"
@@ -938,7 +929,7 @@
                                 source-address: '172.27.1.2'  # For each group, sources must be the same
         api_method: PUT
         api_ignore_errors: false
-        rollback: true
+        rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+aaa new-model:' in changes"
@@ -969,3 +960,75 @@
 #          - "'+username admin privilege 15 secret 0 admin:' in changes"  # passwords will be hashed
 #          - "'+username user1 privilege 15 secret 0 Password123:' in changes"
 #          - "'+username user2 privilege 15 secret 0 Password123:' in changes"
+
+- name: test services
+  hosts: xe1
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: xe1
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test tcp_udp_gratuitous_arp_password_encryption configuration
+      tags:
+        - tcp_udp_gratuitous_arp_password_encryption
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                ip-gratuitous-arps: true
+                service-password-encryption: true
+                service-tcp-small-servers: true
+                service-udp-small-servers: true
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip gratuitous-arps:' in changes"
+          - "'+service password-encryption:' in changes"
+          - "'+service tcp-small-servers:' in changes"
+          - "'+service udp-small-servers:' in changes"
+
+- name: test services
+  hosts: xe1
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: xe1
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test no_tcp_udp_gratuitous_arp_password_encryption configuration
+      tags:
+        - no_tcp_udp_gratuitous_arp_password_encryption
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                ip-gratuitous-arps: false
+                service-password-encryption: false
+                service-tcp-small-servers: false
+                service-udp-small-servers: false
+                finger: true
+        api_method: PATCH
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'-ip gratuitous-arps:' in changes"
+          - "'-service password-encryption:' in changes"
+          - "'-service tcp-small-servers:' in changes"
+          - "'-service udp-small-servers:' in changes"
+
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-load
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"

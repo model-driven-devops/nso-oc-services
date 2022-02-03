@@ -1,5 +1,5 @@
 ---
-- name: test acls extended
+- name: test routng policy
   hosts: xe1
   gather_facts: no
   connection: network_cli

@@ -1,0 +1,40 @@
+module openconfig-if-ip-mdd-ext{
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/openconfig-if-ip-mdd-ext";
+
+  prefix "oc-if-ip-mdd-ext";
+
+  import tailf-ncs { prefix ncs; }
+  import tailf-common { prefix tailf; }
+  import mdd { prefix mdd; }
+  import openconfig-interfaces { prefix oc-if; }
+  import openconfig-if-ip { prefix oc-ip; }
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Augmentation to openconfig ip model.";
+
+  revision "2022-02-02" {
+    description
+      "Initial revision";
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-ip:ipv4/oc-ip:config {
+    leaf redirects {
+      type boolean;
+      description
+        "Enables the sending of ICMP redirect messages if the device is forced to resend a packet through the same interface on which it was received.";
+    }
+   leaf unreachables {
+      type boolean;
+      description
+        "Enables the generation of ICMP unreachable messages.";
+    }
+  }
+}

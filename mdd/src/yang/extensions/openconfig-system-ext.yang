@@ -96,6 +96,26 @@ module openconfig-system-ext{
           description
             "Configure a system to accept Finger protocol requests.";
       }
+      leaf ip-gratuitous-arps {
+        type boolean;
+        description
+          "Enable the transmission of gratuitous Address Resolution Protocol (ARP) messages.";
+      }
+      leaf service-password-encryption {
+        type boolean;
+        description
+          "Converts unencrypted passwords to encrypted passwords.";
+      }
+      leaf service-tcp-small-servers {
+        type boolean;
+        description
+          "Enables small TCP servers such as the ECHO.";
+      }
+      leaf service-udp-small-servers {
+        type boolean;
+        description
+          "Enables small User Datagram Protocol (UDP) servers such as the ECHO.";
+      }
       container http {
         description
           "HTTP server configurations";
