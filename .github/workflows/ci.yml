@@ -58,6 +58,8 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
+          NSO_OS_USERNAME: ${{ secrets.NSO_OS_USERNAME }}
+          NSO_OS_PASSWORD: ${{ secrets.NSO_OS_PASSWORD }}
       - name: Run Tests
         run: |
           cd ./test/tests
