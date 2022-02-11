@@ -348,6 +348,8 @@ def xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor) -> None:
             neighbor.peer_group = service_bgp_neighbor.config.peer_group
         if service_bgp_neighbor.config.remove_private_as:
             remove_private_as(neighbor, service_bgp_neighbor)
+        if service_bgp_neighbor.config.ttl_security:
+            neighbor.ttl_security.hops = service_bgp_neighbor.config.ttl_security
     if service_bgp_neighbor.ebgp_multihop:
         ebgp_multihop(neighbor, service_bgp_neighbor)
     if service_bgp_neighbor.route_reflector:

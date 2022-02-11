@@ -46,6 +46,47 @@
         assertions:
           - "'+ neighbor 10.11.11.2 remote-as 2:' in changes"
 
+    - name: test neighbor_ttl_security
+      tags:
+        - neighbor_ttl_security
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: BGP
+                        identifier: BGP
+                        config:
+                          enabled: True
+                          identifier: BGP
+                          name: BGP
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                  openconfig-bgp-ext:ttl-security: 2
+                                neighbor-address: '10.11.11.2'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ neighbor 10.11.11.2 ttl-security hops 2:' in changes"
+
+
     - name: test neighbor_remote_auth_password
       tags:
         - neighbor_remote_auth_password
