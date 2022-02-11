@@ -55,14 +55,6 @@
           - "'+ no ip redirects:' in changes"
           - "'+ no ip unreachables:' in changes"
 
-- name: test interfaces
-  hosts: xe1
-  gather_facts: no
-  connection: network_cli
-  vars:
-    device: xe1
-    ansible_network_os: 'cisco.ios.ios'
-  tasks:
     - name: test ip_redirects_ip_unreachables configuration
       tags:
         - ip_redirects_ip_unreachables
@@ -101,6 +93,78 @@
         assertions:
           - "'- no ip redirects:' in changes"
           - "'- no ip unreachables:' in changes"
+
+    - name: test gre_tunnel configuration
+      tags:
+        - gre_tunnel
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'Loopback10'
+                    type: 'softwareLoopback'
+                    description: 'TEST123'
+                  name: 'Loopback10'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.16.1.2'
+                                  prefix-length: 32
+                                ip: '172.16.1.2'
+                          config:
+                            dhcp-client: false
+                - config:
+                    description: 'GRE Tunnel Interface'
+                    enabled: true
+                    name: 'Tunnel1'
+                    type: 'tunnel'
+                  name: 'Tunnel1'
+                  openconfig-if-tunnel:tunnel:
+                    config:
+                      src: '172.16.1.2'
+                      dst: '192.168.1.1'
+                      gre-key: 1
+                      openconfig-if-tunnel-ext:tunnel-path-mtu-discovery: true
+                      openconfig-if-tunnel-ext:keepalives:
+                        openconfig-if-tunnel-ext:period: 5
+                        openconfig-if-tunnel-ext:retries: 3
+                    ipv4:
+                      config:
+                        mtu: 1476
+                        dhcp-client: false
+                        openconfig-if-ip-mdd-ext:tcp-adjust-mss: 1460
+                      addresses:
+                        address:
+                          - config:
+                              ip: '10.222.0.1'
+                              prefix-length: 24
+                            ip: '10.222.0.1'
+
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+interface Tunnel1:' in changes"
+          - "'+ tunnel source 172.16.1.2:' in changes"
+          - "'+ tunnel destination 192.168.1.1:' in changes"
+          - "'+ tunnel key 1:' in changes"
+          - "'+ tunnel path-mtu-discovery:' in changes"
+          - "'+ keepalive 5 3:' in changes"
+          - "'+ ip address 10.222.0.1 255.255.255.0:' in changes"
+          - "'+ ip mtu 1476:' in changes"
+          - "'+ ip tcp adjust-mss 1460:' in changes"
+#          - "'+ tunnel ttl 255:' in changes"  # not in NSO XE NED
 
 - hosts: nso
   connection: local

@@ -12,6 +12,7 @@ module openconfig-if-ip-mdd-ext{
   import mdd { prefix mdd; }
   import openconfig-interfaces { prefix oc-if; }
   import openconfig-if-ip { prefix oc-ip; }
+  import openconfig-if-tunnel { prefix oc-tun; }
   // meta
   organization "Cisco";
 
@@ -20,7 +21,10 @@ module openconfig-if-ip-mdd-ext{
 
   description
     "Augmentation to openconfig ip model.";
-
+  revision "2022-02-11" {
+    description
+      "Added support for tunnel ipv4";
+  }
   revision "2022-02-02" {
     description
       "Initial revision";
@@ -31,10 +35,32 @@ module openconfig-if-ip-mdd-ext{
       description
         "Enables the sending of ICMP redirect messages if the device is forced to resend a packet through the same interface on which it was received.";
     }
-   leaf unreachables {
+    leaf unreachables {
       type boolean;
       description
         "Enables the generation of ICMP unreachable messages.";
+    }
+    leaf tcp-adjust-mss {
+      type uint16;
+      description
+        "Adjusts the maximum segment size (MSS) value of TCP synchronize/start (SYN) packets going through a router in bytes.";
+    }
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-tun:tunnel/oc-tun:ipv4/oc-tun:config {
+    leaf redirects {
+      type boolean;
+      description
+        "Enables the sending of ICMP redirect messages if the device is forced to resend a packet through the same interface on which it was received.";
+    }
+    leaf unreachables {
+      type boolean;
+      description
+        "Enables the generation of ICMP unreachable messages.";
+    }
+    leaf tcp-adjust-mss {
+      type uint16;
+      description
+        "Adjusts the maximum segment size (MSS) value of TCP synchronize/start (SYN) packets going through a router in bytes.";
     }
   }
 }

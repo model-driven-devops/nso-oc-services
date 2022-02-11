@@ -162,6 +162,38 @@ def xe_process_interfaces(self) -> None:
             xe_interface_config(interface, vasi_interface)
             xe_configure_ipv4(self, vasi_interface, interface.subinterfaces.subinterface[0].ipv4)
 
+        # GRE Tunnel interface
+        if interface.config.type == 'ianaift:tunnel':
+            interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
+            class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+                                      interface_type)
+            if not class_attribute.exists(interface_number):
+                class_attribute.create(interface_number)
+            tunnel_interface = class_attribute[interface_number]
+            xe_interface_config(interface, tunnel_interface)
+            xe_configure_tunnel_interface(interface, tunnel_interface)
+            xe_configure_ipv4(self, tunnel_interface, interface.oc_tun__tunnel.ipv4)
+
+
+def xe_configure_tunnel_interface(interface_service: ncs.maagic.ListElement,
+                                  interface_cdb: ncs.maagic.ListElement) -> None:
+    if interface_service.oc_tun__tunnel.config.src:
+        interface_cdb.tunnel.source = interface_service.oc_tun__tunnel.config.src
+    if interface_service.oc_tun__tunnel.config.dst:
+        interface_cdb.tunnel.destination = interface_service.oc_tun__tunnel.config.dst
+    if interface_service.oc_tun__tunnel.config.gre_key:
+        interface_cdb.tunnel.key = interface_service.oc_tun__tunnel.config.gre_key
+    if interface_service.oc_tun__tunnel.config.oc_if_tun_ext__tunnel_path_mtu_discovery:
+        interface_cdb.tunnel.path_mtu_discovery.create()
+    elif interface_service.oc_tun__tunnel.config.oc_if_tun_ext__tunnel_path_mtu_discovery is False:
+        if interface_cdb.tunnel.path_mtu_discovery.exists():
+            interface_cdb.tunnel.path_mtu_discovery.delete()
+    if interface_service.oc_tun__tunnel.config.oc_if_tun_ext__keepalives.oc_if_tun_ext__period and interface_service.oc_tun__tunnel.config.oc_if_tun_ext__keepalives.oc_if_tun_ext__retries:
+        interface_cdb.keepalive_period_retries.keepalive.period = interface_service.oc_tun__tunnel.config.oc_if_tun_ext__keepalives.oc_if_tun_ext__period
+        interface_cdb.keepalive_period_retries.keepalive.retries = interface_service.oc_tun__tunnel.config.oc_if_tun_ext__keepalives.oc_if_tun_ext__retries
+    if interface_service.oc_tun__tunnel.config.ttl:
+        raise ValueError('NSO XE CLI NED cisco-ios-cli-6.74 does not support Tunnel TTL')
+
 
 def xe_get_subinterfaces(self) -> list:
     """
@@ -286,6 +318,12 @@ def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: nc
     if service_ipv4.config.dhcp_client is False:
         if interface_cdb.ip.address.dhcp.exists():
             interface_cdb.ip.address.dhcp.delete()
+    # ip mtu
+    if service_ipv4.config.mtu:
+        interface_cdb.ip.mtu = service_ipv4.config.mtu
+    # adjust TCP MSS
+    if service_ipv4.config.oc_if_ip_mdd_ext__tcp_adjust_mss:
+        interface_cdb.ip.tcp.adjust_mss = service_ipv4.config.oc_if_ip_mdd_ext__tcp_adjust_mss
     # no ip redirects
     if service_ipv4.config.oc_if_ip_mdd_ext__redirects:
         interface_cdb.ip.redirects = True
@@ -304,31 +342,32 @@ def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: nc
 
     # VRRP
     for a in service_ipv4.addresses.address:
-        if a.vrrp.vrrp_group:
-            for v in a.vrrp.vrrp_group:
-                if not interface_cdb.vrrp.exists(v.virtual_router_id):
-                    interface_cdb.vrrp.create(v.virtual_router_id)
-                vrrp_group = interface_cdb.vrrp[v.virtual_router_id]
-                # accept_mode TODO
-                # priority
-                if v.config.priority:
-                    vrrp_group.priority = v.config.priority
-                # preempt
-                if v.config.preempt:
-                    if v.config.preempt_delay:
-                        vrrp_group.preempt.delay.minimum = v.config.preempt_delay
-                    else:
-                        vrrp_group.preempt.delay.minimum = 0
-                # virtual address
-                if v.config.virtual_address:
-                    for counter, address in enumerate(v.config.virtual_address):
-                        if counter == 0:
-                            vrrp_group.ip.address = address
-                        # else:  TODO add secondaries
-                        #     vrrp_group.ip.secondary_address.create(address)
-                if v.config.advertisement_interval:
-                    vrrp_group.timers.advertise.seconds = v.config.advertisement_interval//100  # oc-ip uses centiseconds
-                # VRRP interface tracking TODO
+        if hasattr(a, 'vrrp'):
+            if a.vrrp.vrrp_group:
+                for v in a.vrrp.vrrp_group:
+                    if not interface_cdb.vrrp.exists(v.virtual_router_id):
+                        interface_cdb.vrrp.create(v.virtual_router_id)
+                    vrrp_group = interface_cdb.vrrp[v.virtual_router_id]
+                    # accept_mode TODO
+                    # priority
+                    if v.config.priority:
+                        vrrp_group.priority = v.config.priority
+                    # preempt
+                    if v.config.preempt:
+                        if v.config.preempt_delay:
+                            vrrp_group.preempt.delay.minimum = v.config.preempt_delay
+                        else:
+                            vrrp_group.preempt.delay.minimum = 0
+                    # virtual address
+                    if v.config.virtual_address:
+                        for counter, address in enumerate(v.config.virtual_address):
+                            if counter == 0:
+                                vrrp_group.ip.address = address
+                            # else:  TODO add secondaries
+                            #     vrrp_group.ip.secondary_address.create(address)
+                    if v.config.advertisement_interval:
+                        vrrp_group.timers.advertise.seconds = v.config.advertisement_interval//100  # oc-ip uses centiseconds
+                    # VRRP interface tracking TODO
 
 
 def xe_configure_switched_vlan(interface_cdb: ncs.maagic.ListElement,
