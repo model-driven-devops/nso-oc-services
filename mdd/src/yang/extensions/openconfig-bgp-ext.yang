@@ -1,0 +1,41 @@
+module openconfig-bgp-ext{
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/openconfig-bgp-ext";
+
+  prefix "oc-bgp-ext";
+
+  import tailf-ncs { prefix ncs; }
+  import tailf-common { prefix tailf; }
+  import mdd { prefix mdd; }
+  import openconfig-network-instance { prefix "oc-netinst"; }
+  import openconfig-extensions { prefix oc-ext; }
+
+
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Augmentation to openconfig bgp model.";
+
+  revision "2022-02-10" {
+    description
+      "Initial revision";
+  }
+
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:bgp/oc-netinst:neighbors/oc-netinst:neighbor/oc-netinst:config {
+    when "../../../../oc-netinst:identifier = 'oc-pol-types:BGP'";
+    leaf ttl-security {
+        type uint8 {
+            range "1..254";
+        }
+        description
+          "XE - Protects the eBGP peering session by comparing the value in the TTL field of received IP packets against a hop count that is configured locally for each eBGP peering session";
+    }
+  }
+}
