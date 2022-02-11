@@ -318,6 +318,12 @@ def xe_system_program_service(self) -> None:
         if len(device_cdb.ios__ntp.peer.vrf) > 0:
             device_cdb.ios__ntp.peer.vrf.delete()
     # Logging
+    if self.service.oc_sys__system.logging.buffered.config.severity and self.service.oc_sys__system.logging.buffered.config.buffer_size:
+        device_cdb.ios__logging.buffered.buffer_size = self.service.oc_sys__system.logging.buffered.config.buffer_size
+        device_cdb.ios__logging.buffered.severity_level = severity_levels_oc_to_xe.get(str(self.service.oc_sys__system.logging.buffered.config.severity))
+    elif self.service.oc_sys__system.logging.buffered.config.enabled is False:
+        device_cdb.ios__logging.buffered.buffer_size = None
+        device_cdb.ios__logging.buffered.severity_level = None
     logging_facility = set()
     remote_server_severity = list()
     if self.service.oc_sys__system.logging.console.selectors.selector:

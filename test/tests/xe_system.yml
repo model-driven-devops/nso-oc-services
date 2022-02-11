@@ -1076,6 +1076,48 @@
           - "'-service tcp-small-servers:' in changes"
           - "'-service udp-small-servers:' in changes"
 
+    - name: test logging_buffered
+      tags:
+        - logging_buffered
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              logging:
+               openconfig-system-ext:buffered:
+                  openconfig-system-ext:config:
+                      openconfig-system-ext:enabled: true
+                      openconfig-system-ext:severity: 'INFORMATIONAL'
+                      openconfig-system-ext:buffer-size: 200000
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+logging buffered 200000 informational:' in changes"
+
+    - name: test logging_buffered
+      tags:
+        - logging_buffered
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              logging:
+               openconfig-system-ext:buffered:
+                  openconfig-system-ext:config:
+                      openconfig-system-ext:enabled: false
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+no logging buffered:' in changes"
+
 - hosts: nso
   connection: local
   gather_facts: no

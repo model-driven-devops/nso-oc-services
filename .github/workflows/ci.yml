@@ -53,10 +53,6 @@ jobs:
       - name: Build NSO
         run: ansible-playbook ./test/build-nso.yml
         env:
-          CML_LAB: ${{ secrets.CML_LAB }}
-          CML_HOST: ${{ secrets.CML_HOST }}
-          CML_USERNAME: ${{ secrets.CML_USERNAME }}
-          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
           NSO_OS_USERNAME: ${{ secrets.NSO_OS_USERNAME }}
           NSO_OS_PASSWORD: ${{ secrets.NSO_OS_PASSWORD }}
@@ -70,10 +66,6 @@ jobs:
           ansible-playbook $PLAYBOOK
           done
         env:
-          CML_LAB: ${{ secrets.CML_LAB }}
-          CML_HOST: ${{ secrets.CML_HOST }}
-          CML_USERNAME: ${{ secrets.CML_USERNAME }}
-          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
           NSO_HOST: ${{ env.NSO_HOST }}
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}

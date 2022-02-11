@@ -1,0 +1,48 @@
+module openconfig-if-tunnel-ext {
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/openconfig-if-tunnel-ext";
+
+  prefix "oc-if-tun-ext";
+
+  import tailf-ncs { prefix ncs; }
+  import tailf-common { prefix tailf; }
+  import mdd { prefix mdd; }
+  import openconfig-interfaces { prefix oc-if; }
+  import openconfig-inet-types { prefix oc-inet; }
+  import openconfig-if-tunnel { prefix oc-tun; }
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Augmentation to openconfig if tunnel model.";
+
+  revision "2022-02-08" {
+    description
+      "Initial revision";
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-tun:tunnel/oc-tun:config {
+    leaf tunnel-path-mtu-discovery {
+      type boolean;
+      description
+        "Enables Path MTU Discovery.";
+    }
+    container keepalives {
+      leaf period {
+        type uint16;
+        description
+          "Enables Path MTU Discovery.";
+      }
+      leaf retries {
+        type uint8;
+        description
+          "Enables Path MTU Discovery.";
+      }
+    }
+  }
+}

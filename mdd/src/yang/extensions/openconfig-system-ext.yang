@@ -335,6 +335,29 @@ module openconfig-system-ext{
     }
   }
    augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:logging {
+    container buffered {
+      container config {
+        description "Specifies the logging buffer as a destination for system logging (syslog) messages.";
+          leaf enabled {
+            type boolean;
+            description
+              "Enables local buffering of logging messages.";
+          }
+          leaf severity {
+            type oc-log:syslog-severity;
+            description
+              "Specifies that only messages of the given severity (or
+              greater severity) for the corresonding facility are logged";
+          }
+          leaf buffer-size {
+            type uint32 {
+              range "4096 .. 2147483647";
+            }
+            description
+              "Size of the buffer, in bytes.";
+          }
+      }
+    }
     container terminal-monitor {
       description
         "Specifies terminal lines other than the console terminal as destinations for system logging (syslog) messages.";
