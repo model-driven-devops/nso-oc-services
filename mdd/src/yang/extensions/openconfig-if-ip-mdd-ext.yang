@@ -13,6 +13,8 @@ module openconfig-if-ip-mdd-ext{
   import openconfig-interfaces { prefix oc-if; }
   import openconfig-if-ip { prefix oc-ip; }
   import openconfig-if-tunnel { prefix oc-tun; }
+  import openconfig-if-aggregate { prefix oc-lag; }
+  import openconfig-vlan { prefix oc-vlan; }
   // meta
   organization "Cisco";
 
@@ -21,6 +23,10 @@ module openconfig-if-ip-mdd-ext{
 
   description
     "Augmentation to openconfig ip model.";
+  revision "2022-02-14" {
+    description
+      "Added support for L3 LACP IPV4, L3 VLAN IPV4, and better organization";
+  }
   revision "2022-02-11" {
     description
       "Added support for tunnel ipv4";
@@ -29,7 +35,7 @@ module openconfig-if-ip-mdd-ext{
     description
       "Initial revision";
   }
-  augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-ip:ipv4/oc-ip:config {
+  grouping if-ip-extensions {
     leaf redirects {
       type boolean;
       description
@@ -46,21 +52,17 @@ module openconfig-if-ip-mdd-ext{
         "Adjusts the maximum segment size (MSS) value of TCP synchronize/start (SYN) packets going through a router in bytes.";
     }
   }
+
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-ip:ipv4/oc-ip:config {
+    uses if-ip-extensions;
+  }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-tun:tunnel/oc-tun:ipv4/oc-tun:config {
-    leaf redirects {
-      type boolean;
-      description
-        "Enables the sending of ICMP redirect messages if the device is forced to resend a packet through the same interface on which it was received.";
-    }
-    leaf unreachables {
-      type boolean;
-      description
-        "Enables the generation of ICMP unreachable messages.";
-    }
-    leaf tcp-adjust-mss {
-      type uint16;
-      description
-        "Adjusts the maximum segment size (MSS) value of TCP synchronize/start (SYN) packets going through a router in bytes.";
-    }
+    uses if-ip-extensions;
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-lag:aggregation/oc-ip:ipv4/oc-ip:config {
+    uses if-ip-extensions;
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-vlan:routed-vlan/oc-ip:ipv4/oc-ip:config {
+    uses if-ip-extensions;
   }
 }
