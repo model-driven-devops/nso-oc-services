@@ -1,0 +1,282 @@
+---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- name: test interfaces_switch
+  hosts: xeswitch1
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: xeswitch1
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test flowcontrol
+      tags:
+        -  flowcontrol
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 1/0'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet1/0'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      enable-flow-control: true
+                  hold-time:
+                    config:
+                      down: 0
+                      up: 0  # not in xe
+                  name: 'GigabitEthernet1/0'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.2'
+                                  prefix-length: 24
+                                ip: '10.1.0.2'
+                          config:
+                            dhcp-client: false
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet1/0:' in changes"
+          - "'+ flowcontrol receive on:' in changes"
+
+    - name: test access_port
+      tags:
+        - access_port
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Access Port Example'
+                    enabled: true
+                    name: 'GigabitEthernet0/1'
+                    type: 'l2vlan'
+                  openconfig-if-ethernet:ethernet:
+                    openconfig-vlan:switched-vlan:
+                      config:
+                        access-vlan: 100
+                        interface-mode: 'ACCESS'
+                  name: 'GigabitEthernet0/1'
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ description Access Port Example:' in changes"
+          - "'+ switchport access vlan 100:' in changes"
+          - "'+ switchport mode access:' in changes"
+
+    - name: test trunk_port
+      tags:
+        - trunk_port
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Trunk Port Example'
+                    enabled: true
+                    name: 'GigabitEthernet0/2'
+                    type: 'l2vlan'
+                  openconfig-if-ethernet:ethernet:
+                    openconfig-vlan:switched-vlan:
+                      config:
+                        interface-mode: 'TRUNK'
+                        native-vlan: 99
+                        trunk-vlans:
+                          - 100
+                          - 200
+                          - 300
+                  name: 'GigabitEthernet0/2'
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ description Trunk Port Example:' in changes"
+          - "'+ switchport mode trunk:' in changes"
+          - "'+ switchport trunk allowed vlan 100,200,300:' in changes"
+          - "'+ switchport trunk encapsulation dot1q:' in changes"
+          - "'+ switchport trunk native vlan 99:' in changes"
+
+    - name: test lacp_trunk_po1 configuration
+      tags:
+        - lacp_trunk_po1
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - openconfig-if-aggregate:aggregation:
+                    config:
+                      lag-type: 'LACP'
+                    openconfig-vlan:switched-vlan:
+                      config:
+                        interface-mode: 'TRUNK'
+                        native-vlan: 99
+                        trunk-vlans:
+                          - 100
+                          - 200
+                          - 300
+                  config:
+                    description: 'LACP Example PO1'
+                    enabled: true
+                    mtu: 1500
+                    name: 'port-channel1'
+                    type: 'ieee8023adLag'
+                  name: 'port-channel1'
+                - config:
+                    description: 'LACP Link Trunk Port Example'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet1/1'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      openconfig-if-aggregate:aggregate-id: 'port-channel1'
+                    openconfig-vlan:switched-vlan:
+                      config:
+                        interface-mode: 'TRUNK'
+                        native-vlan: 99
+                        trunk-vlans:
+                          - 100
+                          - 200
+                          - 300
+                  name: 'GigabitEthernet1/1'
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+interface Port-channel1:' in changes"
+          - "'+ description LACP Example PO1:' in changes"
+          - "'+ switchport mode trunk:' in changes"
+          - "'+ switchport trunk allowed vlan 100,200,300:' in changes"
+          - "'+ switchport trunk encapsulation dot1q:' in changes"
+          - "'+ switchport trunk native vlan 99:' in changes"
+          - "' interface GigabitEthernet1/1:' in changes"
+          - "'+ channel-group 1 mode active:' in changes"
+          - "'+ description LACP Link Trunk Port Example:' in changes"
+          - "'+ switchport mode trunk:' in changes"
+          - "'+ switchport trunk allowed vlan 100,200,300:' in changes"
+          - "'+ switchport trunk encapsulation dot1q:' in changes"
+          - "'+ switchport trunk native vlan 99:' in changes"
+
+    - name: test lacp_L3_po2 configuration
+      tags:
+        - lacp_L3_po2
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - openconfig-if-aggregate:aggregation:
+                    config:
+                      lag-type: 'LACP'
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: '192.168.50.1'
+                              prefix-length: '24'
+                            ip: '192.168.50.1'
+                  config:
+                    description: 'LACP Example PO2'
+                    enabled: true
+                    name: 'port-channel2'
+                    type: 'ieee8023adLag'
+                  name: 'port-channel2'
+                - config:
+                    description: 'LACP Link L3 Port Example'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet1/2'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      openconfig-if-aggregate:aggregate-id: 'port-channel2'
+                  name: 'GigabitEthernet1/2'
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+interface Port-channel2:' in changes"
+          - "'+ description LACP Example PO2:' in changes"
+          - "'+ ip address 192.168.50.1 255.255.255.0:' in changes"
+          - "' interface GigabitEthernet1/2:' in changes"
+          - "'+ channel-group 2 mode active:' in changes"
+          - "'+ description LACP Link L3 Port Example:' in changes"
+
+    - name: test l3_vlan configuration
+      tags:
+        - l3_vlan
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Example Routed Vlan100 IP'
+                    enabled: true
+                    loopback-mode: false
+                    mtu: 1500
+                    name: 'Vlan100'
+                    type: 'l3ipvlan'
+                  name: 'Vlan100'
+                  openconfig-vlan:routed-vlan:
+                    config:
+                      vlan: 100
+                    openconfig-if-ip:ipv4:
+                      addresses:
+                        address:
+                          - config:
+                              ip: '192.168.100.1'
+                              prefix-length: '24'
+                            ip: '192.168.100.1'
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+interface Vlan100:' in changes"
+          - "'+ description Example Routed Vlan100 IP:' in changes"
+          - "'+ ip address 192.168.100.1 255.255.255.0:' in changes"
+
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-load
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"

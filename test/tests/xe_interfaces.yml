@@ -16,6 +16,379 @@
     device: xe1
     ansible_network_os: 'cisco.ios.ios'
   tasks:
+    - name: test vrrp
+      tags:
+        - vrrp
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 6 VRRP'
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.2'
+                                  prefix-length: 24
+                                ip: '10.1.0.2'
+                                vrrp:
+                                  vrrp-group:
+                                    - config:
+                                        advertisement-interval: 300  # units "centiseconds"; vrrp 5 timers advertise 3
+                                        preempt: true
+                                        preempt-delay: 10  # vrrp 5 preempt delay minimum 100
+                                        priority: 200  # vrrp 5 priority 200
+                                        virtual-address:  # vrrp 5 ip10.1.0.2
+                                          - '10.1.0.2'
+                                        virtual-router-id: 6  # group number
+                                      virtual-router-id: 6  # group number
+                          config:
+                            dhcp-client: false
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet6:' in changes"
+          - "'+ description Physical Interface 6 VRRP:' in changes"
+          - "'+ ip address 10.1.0.2 255.255.255.0:' in changes"
+          - "'+ vrrp 6 ip 10.1.0.2:' in changes"
+          - "'+ vrrp 6 preempt delay minimum 10:' in changes"
+          - "'+ vrrp 6 priority 200:' in changes"
+          - "'+ vrrp 6 timers advertise 3:' in changes"
+
+    - name: test dot1q
+      tags:
+        - dot1q
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 7 802.1q'
+                    enabled: true
+                    name: 'GigabitEthernet7'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet7'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          description: 'Sub interface 5'
+                          enabled: true
+                          index: 5
+                        index: 5
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.5.5.5'
+                                  prefix-length: '24'
+                                ip: '10.5.5.5'
+                          config:
+                            dhcp-client: false
+                            enabled: true
+                        openconfig-vlan:vlan:
+                          config:
+                            vlan-id: 5
+                      - config:
+                          description: 'Sub interface 6'
+                          enabled: true
+                          index: '6'
+                        index: '6'
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.6.6.6'
+                                  prefix-length: '24'
+                                ip: '10.6.6.6'
+                          config:
+                            dhcp-client: false
+                            enabled: true
+                        openconfig-vlan:vlan:
+                          config:
+                            vlan-id: 6
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet7:' in changes"
+          - "'+ description Physical Interface 7 802.1q:' in changes"
+          - "'+interface GigabitEthernet7.5:' in changes"
+          - "'+ description Sub interface 5:' in changes"
+          - "'+ encapsulation dot1Q 5:' in changes"
+          - "'+ ip address 10.5.5.5 255.255.255.0:' in changes"
+          - "'+interface GigabitEthernet7.6:' in changes"
+          - "'+ description Sub interface 6:' in changes"
+          - "'+ encapsulation dot1Q 6:' in changes"
+          - "'+ ip address 10.6.6.6 255.255.255.0:' in changes"
+
+    - name: test loopback interface
+      tags:
+        - loopback
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Loopback 0'
+                    enabled: true
+                    name: 'Loopback0'
+                    type: 'softwareLoopback'
+                  name: 'Loopback0'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.10.0.101'
+                                  prefix-length: '32'
+                                ip: '10.10.0.101'
+                          config:
+                            dhcp-client: false
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+interface Loopback0:' in changes"
+          - "'+ description Loopback 0:' in changes"
+          - "'+ ip address 10.10.0.101 255.255.255.255:' in changes"
+
+    - name: test vasi interfaces
+      tags:
+        - vasi
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'vasi left1'
+                    enabled: true
+                    name: 'vasileft1'
+                    type: 'vasi'
+                  name: 'vasileft1'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '192.168.1.1'
+                                  prefix-length: '30'
+                                ip: '192.168.1.1'
+                - config:
+                    description: 'vasi right1'
+                    enabled: true
+                    name: 'vasiright1'
+                    type: 'vasi'
+                  name: 'vasiright1'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '192.168.1.2'
+                                  prefix-length: '30'
+                                ip: '192.168.1.2'
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                  interfaces:
+                    interface:
+                      - id: 'vasileft1'
+                        config:
+                          id: 'vasileft1'
+                          interface: 'vasileft1'
+                          subinterface: 0
+                - name: 'xyz'
+                  config:
+                    name: 'xyz'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                  interfaces:
+                    interface:
+                      - id: 'vasiright1'
+                        config:
+                          id: 'vasiright1'
+                          interface: 'vasiright1'
+                          subinterface: 0
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+interface vasileft1:' in changes"
+          - "'+ description vasi left1:' in changes"
+          - "'+ ip address 192.168.1.1 255.255.255.252:' in changes"
+          - "'+ vrf forwarding abc:' in changes"
+          - "'+interface vasiright1:' in changes"
+          - "'+ description vasi right1:' in changes"
+          - "'+ ip address 192.168.1.2 255.255.255.252:' in changes"
+          - "'+ vrf forwarding xyz:' in changes"
+
+#    - name: test ethernet_speed_duplex    ## EXAMPLE ONLY - ISSUES testing in CML
+#      tags:
+#        - ethernet_speed_duplex
+#      import_role:
+#        name: nso-openconfig-test
+#      vars:
+#        content: |
+#          mdd:openconfig:
+#            openconfig-interfaces:interfaces:
+#              interface:
+#                - config:
+#                    description: 'Physical Interface 5'
+#                    enabled: true
+#                    name: 'GigabitEthernet5'
+#                    type: 'ethernetCsmacd'
+#                  name: 'GigabitEthernet5'
+#                  openconfig-if-ethernet:ethernet:
+#                    config:
+#                      auto-negotiate: false
+#                      port-speed: 'SPEED_1GB'
+#                      duplex-mode: 'FULL'
+#                  subinterfaces:
+#                    subinterface:
+#                      - config:
+#                          index: 0
+#                        index: 0
+#                        openconfig-if-ip:ipv4:
+#                          addresses:
+#                            address:
+#                              - config:
+#                                  ip: '10.1.0.1'
+#                                  prefix-length: 24
+#                                ip: '10.1.0.1'
+#        api_method: PUT
+#        rollback: false
+#        assertion_ignore_errors: false
+#        assertions:
+#          - "' interface GigabitEthernet5:' in changes"
+#          - "'+ no negotiation auto:' in changes"
+#          - "'+ speed 1000:' in changes"
+#          - "'+ duplex full:' in changes"
+
+    - name: test proxyarp
+      tags:
+        - proxyarp
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 5'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet5'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet5'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.2'
+                                  prefix-length: 24
+                                ip: '10.1.0.2'
+                          config:
+                            dhcp-client: false
+                          proxy-arp:
+                            config:
+                              mode: REMOTE_ONLY  # Default is DISABLE other option is REMOTE_ONLY for IOS
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet5:' in changes"
+          - "'- no ip address:' in changes"
+
+    - name: test proxyarp
+      tags:
+        - proxyarp
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 5'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet5'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet5'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.2'
+                                  prefix-length: 24
+                                ip: '10.1.0.2'
+                          config:
+                            dhcp-client: false
+                          proxy-arp:
+                            config:
+                              mode: DISABLE  # Default is DISABLE other option is REMOTE_ONLY for IOS
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet5:' in changes"
+          - "'+ no ip proxy-arp:' in changes"
+
     - name: test no_ip_redirects_no_ip_unreachables configuration
       tags:
         - no_ip_redirects_no_ip_unreachables
@@ -164,7 +537,95 @@
           - "'+ ip address 10.222.0.1 255.255.255.0:' in changes"
           - "'+ ip mtu 1476:' in changes"
           - "'+ ip tcp adjust-mss 1460:' in changes"
-#          - "'+ tunnel ttl 255:' in changes"  # not in NSO XE NED
+#          - "'+ tunnel ttl 255:' in changes"  # not available in NSO XE NED
+
+
+    - name: test mac-address
+      tags:
+        -  mac-address
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 5'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet5'
+                    type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    config:
+                      mac-address: '52:54:00:99:99:99'
+                  hold-time:
+                    config:
+                      down: 0
+                      up: 0  # not in xe
+                  name: 'GigabitEthernet5'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.2'
+                                  prefix-length: 24
+                                ip: '10.1.0.2'
+                          config:
+                            dhcp-client: false
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet5:' in changes"
+          - "'+ mac-address 5254.0099.9999:' in changes"
+
+    - name: test hold-down-timer
+      tags:
+        -  hold-down-timer
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 5'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet5'
+                    type: 'ethernetCsmacd'
+                  hold-time:
+                    config:
+                      down: 10
+                      up: 0  # not in xe
+                  name: 'GigabitEthernet5'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.2'
+                                  prefix-length: 24
+                                ip: '10.1.0.2'
+                          config:
+                            dhcp-client: false
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet5:' in changes"
+          - "'+ carrier-delay msec 10:' in changes"
 
 - hosts: nso
   connection: local

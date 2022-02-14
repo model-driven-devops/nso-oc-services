@@ -202,6 +202,27 @@ nodes:
        ip address dhcp
        no shutdown
       !
+      interface GigabitEthernet0/1
+       no switchport
+      !
+      interface GigabitEthernet0/2
+       no switchport
+      !
+      interface GigabitEthernet0/3
+       no switchport
+      !
+      interface GigabitEthernet1/0
+       no switchport
+      !
+      interface GigabitEthernet1/1
+       no switchport
+      !
+      interface GigabitEthernet1/2
+       no switchport
+      !
+      interface GigabitEthernet1/3
+       no switchport
+      !
       no ip http server
       no ip http secure-server
       ip ssh time-out 60

@@ -5,6 +5,13 @@ import re
 import ncs
 from translation.openconfig_xe.common import xe_get_interface_type_and_number
 
+speeds_oc_to_xe = {
+    'SPEED_10MB': '10',
+    'SPEED_100MB': '100',
+    'SPEED_1GB': '1000',
+    'SPEED_10GB': '10000'
+}
+
 
 def xe_interfaces_program_service(self) -> None:
     """
@@ -81,7 +88,7 @@ def xe_process_interfaces(self) -> None:
             xe_configure_ipv4(self, vlan, interface.routed_vlan.ipv4)
 
         # Layer 2 interfaces
-        if interface.config.type == 'ianaift:l2vlan' or (
+        elif interface.config.type == 'ianaift:l2vlan' or (
                 interface.config.type == 'ianaift:ethernetCsmacd' and interface.ethernet.config.aggregate_id):
             interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
             class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
@@ -92,7 +99,7 @@ def xe_process_interfaces(self) -> None:
             xe_interface_ethernet(interface, l2_interface)
 
         # Port channels
-        if interface.config.type == 'ianaift:ieee8023adLag':
+        elif interface.config.type == 'ianaift:ieee8023adLag':
             port_channel_number = xe_get_port_channel_number(interface.name)
             if not self.root.devices.device[self.device_name].config.ios__interface.Port_channel.exists(
                     port_channel_number):
@@ -105,7 +112,7 @@ def xe_process_interfaces(self) -> None:
             xe_interface_aggregation(self, interface, port_channel)
 
         # Physical and Sub-interfaces
-        if interface.config.type == 'ianaift:ethernetCsmacd' and interface.subinterfaces.subinterface:
+        elif interface.config.type == 'ianaift:ethernetCsmacd' and interface.subinterfaces.subinterface:
             interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
             class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                       interface_type)
@@ -143,7 +150,7 @@ def xe_process_interfaces(self) -> None:
                     xe_configure_ipv4(self, physical_interface, subinterface_service.ipv4)
 
         # Loopback interfaces
-        if interface.config.type == 'ianaift:softwareLoopback':
+        elif interface.config.type == 'ianaift:softwareLoopback':
             interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
             if not self.root.devices.device[self.device_name].config.ios__interface.Loopback.exists(interface_number):
                 self.root.devices.device[self.device_name].config.ios__interface.Loopback.create(interface_number)
@@ -152,7 +159,7 @@ def xe_process_interfaces(self) -> None:
             xe_configure_ipv4(self, loopback, interface.subinterfaces.subinterface[0].ipv4)
 
         # VASI interfaces
-        if interface.config.type == 'iftext:vasi':
+        elif interface.config.type == 'iftext:vasi':
             interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
             class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                       interface_type)
@@ -163,7 +170,7 @@ def xe_process_interfaces(self) -> None:
             xe_configure_ipv4(self, vasi_interface, interface.subinterfaces.subinterface[0].ipv4)
 
         # GRE Tunnel interface
-        if interface.config.type == 'ianaift:tunnel':
+        elif interface.config.type == 'ianaift:tunnel':
             interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
             class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                       interface_type)
@@ -173,6 +180,9 @@ def xe_process_interfaces(self) -> None:
             xe_interface_config(interface, tunnel_interface)
             xe_configure_tunnel_interface(interface, tunnel_interface)
             xe_configure_ipv4(self, tunnel_interface, interface.oc_tun__tunnel.ipv4)
+        else:
+            raise ValueError(
+                f'Interface type {interface.config.type} not supported by this NSO_OC_Services implementation. Please file an issue at https://github.com/model-driven-devops/nso-oc-services')
 
 
 def xe_configure_tunnel_interface(interface_service: ncs.maagic.ListElement,
@@ -219,17 +229,14 @@ def xe_interface_ethernet(interface_service: ncs.maagic.ListElement, interface_c
         interface_cdb.negotiation.auto = interface_service.ethernet.config.auto_negotiate
     elif interface_service.ethernet.config.auto_negotiate is False:
         interface_cdb.negotiation.auto = interface_service.ethernet.config.auto_negotiate
+        # port-speed - may need to be set before duplex is configured
+        if interface_service.ethernet.config.port_speed:
+            interface_cdb.speed = speeds_oc_to_xe.get(interface_service.ethernet.config.port_speed)
         # duplex-mode
         if interface_service.ethernet.config.duplex_mode:
-            interface_cdb.duplex = interface_service.config.description.lower()
+            interface_cdb.duplex = str(interface_service.ethernet.config.duplex_mode).lower()
     # port-speed
     if interface_service.ethernet.config.port_speed:
-        speeds_oc_to_xe = {
-            'SPEED_10MB': '10',
-            'SPEED_100MB': '100',
-            'SPEED_1GB': '1000',
-            'SPEED_10GB': '10000'
-        }
         interface_cdb.speed = speeds_oc_to_xe.get(interface_service.ethernet.config.port_speed)
     # enable-flow-control
     if interface_service.ethernet.config.enable_flow_control is True:
@@ -238,12 +245,7 @@ def xe_interface_ethernet(interface_service: ncs.maagic.ListElement, interface_c
         interface_cdb.flowcontrol.receive = None
     # mac-address
     if interface_service.ethernet.config.mac_address:
-        xe_mac = f'{interface_service.ethernet.config.mac_address[0:2]}\
-        {interface_service.ethernet.config.mac_address[3:5]}.\
-        {interface_service.ethernet.config.mac_address[6:8]}\
-        {interface_service.ethernet.config.mac_address[9:11]}.\
-        {interface_service.ethernet.config.mac_address[12:14]}\
-        {interface_service.ethernet.config.mac_address[15:17]}'
+        xe_mac = f'{interface_service.ethernet.config.mac_address[0:2]}{interface_service.ethernet.config.mac_address[3:5]}.{interface_service.ethernet.config.mac_address[6:8]}{interface_service.ethernet.config.mac_address[9:11]}.{interface_service.ethernet.config.mac_address[12:14]}{interface_service.ethernet.config.mac_address[15:17]}'
         interface_cdb.mac_address = xe_mac
     # # poe  TODO
     # if interface_service.ethernet.poe.config.enabled is True:
@@ -366,7 +368,7 @@ def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: nc
                             # else:  TODO add secondaries
                             #     vrrp_group.ip.secondary_address.create(address)
                     if v.config.advertisement_interval:
-                        vrrp_group.timers.advertise.seconds = v.config.advertisement_interval//100  # oc-ip uses centiseconds
+                        vrrp_group.timers.advertise.seconds = v.config.advertisement_interval // 100  # oc-ip uses centiseconds
                     # VRRP interface tracking TODO
 
 
@@ -430,6 +432,8 @@ def xe_interface_config(interface_service: ncs.maagic.ListElement, interface_cdb
 def xe_interface_hold_time(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
     if interface_service.hold_time.config.down:
         interface_cdb.carrier_delay.msec = int(interface_service.hold_time.config.down)
+    if interface_service.hold_time.config.up:
+        raise ValueError('interface hold-time up is not supported in XE')
 
 
 def xe_get_port_channel_number(interface: str) -> int:
