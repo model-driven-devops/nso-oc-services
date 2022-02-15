@@ -129,7 +129,7 @@ def xe_acls_interfaces_program_service(self) -> None:
             service_acl_interface.interface_ref.config.interface)
         class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                   interface_type)
-        if service_acl_interface.interface_ref.config.subinterface == 0:
+        if service_acl_interface.interface_ref.config.subinterface == 0 or not service_acl_interface.interface_ref.config.subinterface:
             interface_cdb = class_attribute[interface_number]
         else:
             interface_cdb = class_attribute[f'{interface_number}.{service_acl_interface.interface_ref.config.subinterface}']
