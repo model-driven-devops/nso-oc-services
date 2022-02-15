@@ -100,17 +100,42 @@ def xe_process_interfaces(self) -> None:
 
         # Port channels
         elif interface.config.type == 'ianaift:ieee8023adLag':
-            port_channel_number = xe_get_port_channel_number(interface.name)
-            if not self.root.devices.device[self.device_name].config.ios__interface.Port_channel.exists(
-                    port_channel_number):
-                self.root.devices.device[self.device_name].config.ios__interface.Port_channel.create(
-                    port_channel_number)
-            port_channel = self.root.devices.device[self.device_name].config.ios__interface.Port_channel[
-                port_channel_number]
+            interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
+            class_attribute = self.root.devices.device[self.device_name].config.ios__interface.Port_channel
+            if not class_attribute.exists(interface_number):
+                class_attribute.create(interface_number)
+            port_channel = class_attribute[interface_number]
             xe_interface_config(interface, port_channel)
             xe_interface_hold_time(interface, port_channel)
-            xe_interface_aggregation(self, interface, port_channel)
-
+            if len(interface.subinterfaces.subinterface) == 0:
+                xe_interface_aggregation(self, interface, port_channel)
+            else:
+                for subinterface_service in interface.subinterfaces.subinterface:
+                    if subinterface_service.index != 0:
+                        class_attribute_sub_if = self.root.devices.device[self.device_name].config.ios__interface.Port_channel_subinterface.Port_channel
+                        if not class_attribute_sub_if.exists(f'{interface_number}.{subinterface_service.index}'):
+                            class_attribute_sub_if.create(f'{interface_number}.{subinterface_service.index}')
+                        subinterface_cdb =class_attribute_sub_if[f'{interface_number}.{subinterface_service.index}']
+                        # If switchport tag, then remove
+                        if subinterface_cdb.switchport.exists():
+                            subinterface_cdb.switchport.delete()
+                        # description
+                        if subinterface_service.config.description:
+                            subinterface_cdb.description = subinterface_service.config.description
+                        # enabled
+                        if subinterface_service.config.enabled:
+                            if subinterface_cdb.shutdown.exists():
+                                subinterface_cdb.shutdown.delete()
+                        else:
+                            if not subinterface_cdb.shutdown.exists():
+                                subinterface_cdb.shutdown.create()
+                        subinterface_cdb.encapsulation.dot1Q.vlan_id = subinterface_service.vlan.config.vlan_id
+                        xe_configure_ipv4(self, subinterface_cdb, subinterface_service.ipv4)
+                    else:  # IPv4 for main interface
+                        # Remove switchport
+                        if physical_interface.switchport.exists():
+                            physical_interface.switchport.delete()
+                        xe_interface_aggregation(self, interface, port_channel)
         # Physical and Sub-interfaces
         elif interface.config.type == 'ianaift:ethernetCsmacd' and interface.subinterfaces.subinterface:
             interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)

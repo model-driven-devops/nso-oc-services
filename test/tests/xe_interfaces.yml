@@ -627,6 +627,73 @@
           - "' interface GigabitEthernet5:' in changes"
           - "'+ carrier-delay msec 10:' in changes"
 
+    - name: test lacp_trunk_po10 configuration
+      tags:
+        - lacp_trunk_po10
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - openconfig-if-aggregate:aggregation:
+                    config:
+                      lag-type: 'LACP'
+                  config:
+                    description: 'LACP Example PO10'
+                    enabled: true
+                    mtu: 1500
+                    name: 'port-channel10'
+                    type: 'ieee8023adLag'
+                  name: 'port-channel10'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          description: 'Sub interface 105'
+                          enabled: true
+                          index: 105
+                        index: 105
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.105.105.105'
+                                  prefix-length: 24
+                                ip: '10.105.105.105'
+                        openconfig-vlan:vlan:
+                          config:
+                            vlan-id: 105
+                      - config:
+                          description: 'Sub interface 106'
+                          enabled: true
+                          index: 106
+                        index: 106
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.106.106.106'
+                                  prefix-length: 24
+                                ip: '10.106.106.106'
+                        openconfig-vlan:vlan:
+                          config:
+                            vlan-id: 106
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+interface Port-channel10:' in changes"
+          - "'+ description LACP Example PO10:' in changes"
+          - "'+interface Port-channel10.105:' in changes"
+          - "'+ description Sub interface 105:' in changes"
+          - "'+ encapsulation dot1Q 105:' in changes"
+          - "'+ ip address 10.105.105.105 255.255.255.0:' in changes"
+          - "'+interface Port-channel10.106:' in changes"
+          - "'+ description Sub interface 106:' in changes"
+          - "'+ encapsulation dot1Q 106:' in changes"
+          - "'+ ip address 10.106.106.106 255.255.255.0:' in changes"
+
 - hosts: nso
   connection: local
   gather_facts: no
