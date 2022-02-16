@@ -644,9 +644,9 @@
                     description: 'LACP Example PO10'
                     enabled: true
                     mtu: 1500
-                    name: 'port-channel10'
+                    name: 'Port-channel10'
                     type: 'ieee8023adLag'
-                  name: 'port-channel10'
+                  name: 'Port-channel10'
                   subinterfaces:
                     subinterface:
                       - config:

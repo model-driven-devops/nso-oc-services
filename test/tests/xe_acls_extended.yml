@@ -26,6 +26,48 @@
           mdd:openconfig:
             openconfig-interfaces:interfaces:
               interface:
+                - openconfig-if-aggregate:aggregation:
+                    config:
+                      lag-type: 'LACP'
+                  config:
+                    description: 'LACP Example PO10'
+                    enabled: true
+                    mtu: 1500
+                    name: 'Port-channel10'
+                    type: 'ieee8023adLag'
+                  name: 'Port-channel10'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          description: 'Sub interface 105'
+                          enabled: true
+                          index: 105
+                        index: 105
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.105.105.105'
+                                  prefix-length: 24
+                                ip: '10.105.105.105'
+                        openconfig-vlan:vlan:
+                          config:
+                            vlan-id: 105
+                      - config:
+                          description: 'Sub interface 106'
+                          enabled: true
+                          index: 106
+                        index: 106
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.106.106.106'
+                                  prefix-length: 24
+                                ip: '10.106.106.106'
+                        openconfig-vlan:vlan:
+                          config:
+                            vlan-id: 106
                 - config:
                     description: 'Physical Interface 5'
                     enabled: true
@@ -186,6 +228,7 @@
         rollback: false
         assertion_ignore_errors: false
         assertions: false
+
     - name: test acl_type_extended_deny_bogons_egress configurations
       tags:
         - acl_type_extended_deny_bogons_egress
@@ -391,6 +434,7 @@
         api_method: PATCH
         rollback: false
         assertion_ignore_errors: false
+
     - name: test acl_type_extended_deny_bogons_ingress configurations
       tags:
         - acl_type_extended_deny_bogons_ingress
@@ -480,6 +524,7 @@
         api_method: PATCH
         rollback: false
         assertion_ignore_errors: false
+
     - name: test acl_type_extended_external_ingress configurations
       tags:
         - acl_type_extended_external_ingress
@@ -629,6 +674,20 @@
                       config:
                         interface: 'GigabitEthernet7'
                         subinterface: 200
+                  - config:
+                      id: 'Port-channel10.105'
+                    id: 'Port-channel10.105'
+                    ingress-acl-sets:
+                      ingress-acl-set:
+                        - config:
+                            set-name: 'deny-bogons-ingress'
+                            type: 'ACL_IPV4'
+                          set-name: 'deny-bogons-ingress'
+                          type: 'ACL_IPV4'
+                    interface-ref:
+                      config:
+                        interface: 'Port-channel10'
+                        subinterface: 105
         assertions:
           - "' interface GigabitEthernet5:' in changes"
           - "'+ ip access-group external-ingress in:' in changes"
@@ -638,6 +697,8 @@
           - "' interface GigabitEthernet7.100:' in changes"
           - "'+ ip access-group deny-bogons-ingress in:' in changes"
           - "' interface GigabitEthernet7.200:' in changes"
+          - "'+ ip access-group deny-bogons-ingress in:' in changes"
+          - "' interface Port-channel10.105:' in changes"
           - "'+ ip access-group deny-bogons-ingress in:' in changes"
         api_method: PATCH
         rollback: false

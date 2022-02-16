@@ -150,9 +150,9 @@
                     description: 'LACP Example PO1'
                     enabled: true
                     mtu: 1500
-                    name: 'port-channel1'
+                    name: 'Port-channel1'
                     type: 'ieee8023adLag'
-                  name: 'port-channel1'
+                  name: 'Port-channel1'
                 - config:
                     description: 'LACP Link Trunk Port Example'
                     enabled: true
@@ -161,7 +161,7 @@
                     type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
                     config:
-                      openconfig-if-aggregate:aggregate-id: 'port-channel1'
+                      openconfig-if-aggregate:aggregate-id: 'Port-channel1'
                     openconfig-vlan:switched-vlan:
                       config:
                         interface-mode: 'TRUNK'
@@ -212,9 +212,9 @@
                   config:
                     description: 'LACP Example PO2'
                     enabled: true
-                    name: 'port-channel2'
+                    name: 'Port-channel2'
                     type: 'ieee8023adLag'
-                  name: 'port-channel2'
+                  name: 'Port-channel2'
                 - config:
                     description: 'LACP Link L3 Port Example'
                     enabled: true
@@ -223,7 +223,7 @@
                     type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
                     config:
-                      openconfig-if-aggregate:aggregate-id: 'port-channel2'
+                      openconfig-if-aggregate:aggregate-id: 'Port-channel2'
                   name: 'GigabitEthernet1/2'
         api_method: PUT
         rollback: false

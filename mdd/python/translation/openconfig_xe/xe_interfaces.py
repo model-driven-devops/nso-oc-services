@@ -101,7 +101,8 @@ def xe_process_interfaces(self) -> None:
         # Port channels
         elif interface.config.type == 'ianaift:ieee8023adLag':
             interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
-            class_attribute = self.root.devices.device[self.device_name].config.ios__interface.Port_channel
+            class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+                                      interface_type)
             if not class_attribute.exists(interface_number):
                 class_attribute.create(interface_number)
             port_channel = class_attribute[interface_number]
@@ -115,7 +116,7 @@ def xe_process_interfaces(self) -> None:
                         class_attribute_sub_if = self.root.devices.device[self.device_name].config.ios__interface.Port_channel_subinterface.Port_channel
                         if not class_attribute_sub_if.exists(f'{interface_number}.{subinterface_service.index}'):
                             class_attribute_sub_if.create(f'{interface_number}.{subinterface_service.index}')
-                        subinterface_cdb =class_attribute_sub_if[f'{interface_number}.{subinterface_service.index}']
+                        subinterface_cdb = class_attribute_sub_if[f'{interface_number}.{subinterface_service.index}']
                         # If switchport tag, then remove
                         if subinterface_cdb.switchport.exists():
                             subinterface_cdb.switchport.delete()

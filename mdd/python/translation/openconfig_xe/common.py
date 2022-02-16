@@ -13,6 +13,7 @@ def xe_get_interface_type_and_number(interface: str) -> Tuple[str, str]:
     interface_name = rt.group(0)
     rn = re.search(r'[0-9]+(\/[0-9]+)*', interface)
     interface_number = rn.group(0)
+    interface_name = interface_name.replace('-', '_')
     return interface_name, interface_number
 
 
