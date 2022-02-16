@@ -131,8 +131,12 @@ def xe_acls_interfaces_program_service(self) -> None:
                                   interface_type)
         if service_acl_interface.interface_ref.config.subinterface == 0 or not service_acl_interface.interface_ref.config.subinterface:
             interface_cdb = class_attribute[interface_number]
-        else:
-            interface_cdb = class_attribute[f'{interface_number}.{service_acl_interface.interface_ref.config.subinterface}']
+        elif interface_type != 'Port_channel':
+            interface_cdb = class_attribute[
+                f'{interface_number}.{service_acl_interface.interface_ref.config.subinterface}']
+        elif interface_type == 'Port_channel':
+            interface_cdb = self.root.devices.device[self.device_name].config.ios__interface.Port_channel_subinterface.Port_channel[
+                f'{interface_number}.{service_acl_interface.interface_ref.config.subinterface}']
 
         # Apply ACLs  TODO add other ACL types
         if service_acl_interface.egress_acl_sets:
