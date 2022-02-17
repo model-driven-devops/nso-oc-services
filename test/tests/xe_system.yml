@@ -1118,6 +1118,26 @@
         assertions:
           - "'+no logging buffered:' in changes"
 
+    - name: test no_logging_console
+      tags:
+        - no_logging_console
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              logging:
+               console:
+                 config:
+                   openconfig-system-ext:enabled: false
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+no logging console:' in changes"
+
 - hosts: nso
   connection: local
   gather_facts: no

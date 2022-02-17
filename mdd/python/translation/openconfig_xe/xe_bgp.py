@@ -18,6 +18,10 @@ def xe_bgp_global_program_service(self, service_protocol, network_instance_type,
             service_bgp_global.config.oc_netinst__as]
         if service_bgp_global.config.router_id:
             device_bgp_cbd.bgp.router_id = service_bgp_global.config.router_id
+        if service_bgp_global.config.log_neighbor_changes:
+            device_bgp_cbd.bgp.log_neighbor_changes = True
+        elif service_bgp_global.config.log_neighbor_changes is False:
+            device_bgp_cbd.bgp.log_neighbor_changes = False
         if service_bgp_global.default_route_distance.config.external_route_distance and service_bgp_global.default_route_distance.config.internal_route_distance:  # because command needs ex, in, and local
             device_bgp_cbd.distance.bgp.extern_as = service_bgp_global.default_route_distance.config.external_route_distance
             device_bgp_cbd.distance.bgp.internal_as = service_bgp_global.default_route_distance.config.internal_route_distance

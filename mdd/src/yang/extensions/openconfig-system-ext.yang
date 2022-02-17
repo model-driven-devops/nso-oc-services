@@ -334,6 +334,13 @@ module openconfig-system-ext{
         "VRF from which to reach the logging servers. '' for no VRF.";
     }
   }
+   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:logging/oc-sys:console/oc-sys:config {
+      leaf enabled {
+        type boolean;
+        description
+          "Enables logging messages output to console.";
+      }
+  }
    augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:logging {
     container buffered {
       container config {
