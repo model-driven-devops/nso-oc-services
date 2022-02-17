@@ -23,6 +23,10 @@ module openconfig-bgp-ext{
   description
     "Augmentation to openconfig bgp model.";
 
+  revision "2022-02-17" {
+    description
+      "Added log-neighbor-changes";
+  }
   revision "2022-02-10" {
     description
       "Initial revision";
@@ -36,6 +40,14 @@ module openconfig-bgp-ext{
         }
         description
           "XE - Protects the eBGP peering session by comparing the value in the TTL field of received IP packets against a hop count that is configured locally for each eBGP peering session";
+    }
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:bgp/oc-netinst:global/oc-netinst:config {
+    when "../../../oc-netinst:identifier = 'oc-pol-types:BGP'";
+    leaf log-neighbor-changes {
+      type boolean;
+      description
+        "Enables logging of neighbor changes.";
     }
   }
 }

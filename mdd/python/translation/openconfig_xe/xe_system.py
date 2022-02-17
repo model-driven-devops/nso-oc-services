@@ -326,7 +326,9 @@ def xe_system_program_service(self) -> None:
         device_cdb.ios__logging.buffered.severity_level = None
     logging_facility = set()
     remote_server_severity = list()
-    if self.service.oc_sys__system.logging.console.selectors.selector:
+    if self.service.oc_sys__system.logging.console.config.enabled is False:
+        device_cdb.ios__logging.console.severity_level = None
+    elif self.service.oc_sys__system.logging.console.selectors.selector:
         if len(self.service.oc_sys__system.logging.console.selectors.selector) == 1:
             key0 = self.service.oc_sys__system.logging.console.selectors.selector.keys()[0]
             device_cdb.ios__logging.console.severity_level = severity_levels_oc_to_xe.get(
@@ -556,7 +558,7 @@ def xe_configure_ntp_server(service_ntp_server, peer_cdb) -> None:
         peer_cdb.key = service_ntp_server.config.ntp_auth_key_id
     if service_ntp_server.config.iburst:
         peer_cdb.iburst.create()
-    elif service_ntp_server.iburst is False:
+    elif service_ntp_server.config.iburst is False:
         if peer_cdb.iburst.exits():
             peer_cdb.iburst.delete()
     if service_ntp_server.config.port:
