@@ -51,6 +51,11 @@ module openconfig-if-ip-mdd-ext{
       description
         "Adjusts the maximum segment size (MSS) value of TCP synchronize/start (SYN) packets going through a router in bytes.";
     }
+    leaf mask-reply {
+      type boolean;
+      description
+        "Enables the router to send the subnet mask of an interface in response to a ICMP mask request.";
+    }
   }
 
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-ip:ipv4/oc-ip:config {

@@ -466,6 +466,80 @@
         assertions:
           - "'- no ip redirects:' in changes"
           - "'- no ip unreachables:' in changes"
+   
+    - name: test ip_mask_reply configuration
+      tags:
+        - ip_mask_reply
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 5'
+                    enabled: true
+                    name: 'GigabitEthernet5'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet5'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.1'
+                                  prefix-length: 24
+                                ip: '10.1.0.1'
+                          config:
+                            dhcp-client: false
+                            openconfig-if-ip-mdd-ext:mask-reply: true
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ ip mask-reply:' in changes"
+
+    - name: test no_ip_mask_reply configuration
+      tags:
+        - no_ip_mask_reply
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 5'
+                    enabled: true
+                    name: 'GigabitEthernet5'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet5'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.1'
+                                  prefix-length: 24
+                                ip: '10.1.0.1'
+                          config:
+                            dhcp-client: false
+                            openconfig-if-ip-mdd-ext:mask-reply: false
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'- ip mask-reply:' in changes"
 
     - name: test gre_tunnel configuration
       tags:
