@@ -367,6 +367,12 @@ def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: nc
         interface_cdb.ip.proxy_arp = False
     if service_ipv4.proxy_arp.config.mode == 'REMOTE_ONLY':
         interface_cdb.ip.proxy_arp = True
+    # reply-mask
+    if service_ipv4.config.oc_if_ip_mdd_ext__mask_reply:
+        interface_cdb.ip.mask_reply.create()
+    elif service_ipv4.config.oc_if_ip_mdd_ext__mask_reply is False:
+        if interface_cdb.ip.mask_reply.exists():
+            interface_cdb.ip.mask_reply.delete()
 
     # VRRP
     for a in service_ipv4.addresses.address:
