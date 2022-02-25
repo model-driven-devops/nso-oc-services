@@ -1086,6 +1086,38 @@
 #*Feb 24 21:44:33.502: %RADIUS-4-SERVREFNAME: Warning: Server RADIUSSVR1 is still referenced by server group.
 # Command still works hence disregarding NED errors at the top of file
 
+    - name: test aaa-authentication-login-lists
+      tags:
+        - aaa-authentication-login-lists
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              config:
+                oc-system-ext:enable-secret: 'admin'
+              aaa:
+                authentication:
+                  admin-user:
+                    config:
+                      admin-password: 'admin'
+                      admin-password-hashed: ''
+                  config:
+                    authentication-method:
+                      - 'LOCAL'
+                  openconfig-system-ext:authentication-lists-login:
+                    openconfig-system-ext:config:
+                      openconfig-system-ext:name: 'USETACACS'
+                      openconfig-system-ext:authentication-method: 
+                        - 'TACACS_ALL'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+aaa authentication login USETACACS group tacacs+:' in changes"
+
 - name: test services
   hosts: xe1
   gather_facts: no

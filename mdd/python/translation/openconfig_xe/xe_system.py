@@ -504,13 +504,20 @@ def xe_system_program_service(self) -> None:
         admin_user.secret.type = 0
         admin_user.password.secret = None
         admin_user.password.type = None
-    if self.service.oc_sys__system.aaa.authentication.config.authentication_method:
+    if len(self.service.oc_sys__system.aaa.authentication.config.authentication_method) > 0:
         if not device_cdb.ios__aaa.new_model.exists():
             device_cdb.ios__aaa.new_model.create()
         if not device_cdb.ios__aaa.authentication.login.exists('default'):
             device_cdb.ios__aaa.authentication.login.create('default')
         aaa_login = device_cdb.ios__aaa.authentication.login['default']
         aaa_configure_methods(aaa_login, self.service.oc_sys__system.aaa.authentication.config.authentication_method)
+    if len(self.service.oc_sys__system.aaa.authentication.oc_system_ext__authentication_lists_login.config.authentication_method) > 0:
+        if not device_cdb.ios__aaa.new_model.exists():
+            device_cdb.ios__aaa.new_model.create()
+        if not device_cdb.ios__aaa.authentication.login.exists(self.service.oc_sys__system.aaa.authentication.oc_system_ext__authentication_lists_login.config.name):
+            device_cdb.ios__aaa.authentication.login.create(self.service.oc_sys__system.aaa.authentication.oc_system_ext__authentication_lists_login.config.name)
+        aaa_login = device_cdb.ios__aaa.authentication.login[self.service.oc_sys__system.aaa.authentication.oc_system_ext__authentication_lists_login.config.name]
+        aaa_configure_methods(aaa_login, self.service.oc_sys__system.aaa.authentication.oc_system_ext__authentication_lists_login.config.authentication_method)
     if self.service.oc_sys__system.aaa.authentication.users.user:
         for service_user in self.service.oc_sys__system.aaa.authentication.users.user:
             if not device_cdb.username.exists(service_user.username):
