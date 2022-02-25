@@ -138,7 +138,7 @@ def xe_process_interfaces(self) -> None:
                             physical_interface.switchport.delete()
                         xe_interface_aggregation(self, interface, port_channel)
         # Physical and Sub-interfaces
-        elif interface.config.type == 'ianaift:ethernetCsmacd' and interface.subinterfaces.subinterface:
+        elif interface.config.type == 'ianaift:ethernetCsmacd':
             interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
             class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                       interface_type)

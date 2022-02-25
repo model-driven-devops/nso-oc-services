@@ -1,0 +1,30 @@
+submodule system-ext-sub-nat {
+  belongs-to "openconfig-system-ext" {
+    prefix "oc-system-ext";
+  }
+
+  import openconfig-extensions { prefix "oc-ext"; }
+  import openconfig-inet-types { prefix "oc-inet"; }
+
+
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Submodule containing definitions of groupings IP NAT.";
+
+  revision 2022-02-25 {
+    description
+      "Init";
+  }
+
+  grouping config-ip-nat-grouping {
+    container nat {
+      description
+        "NAT configuration commands";
+    }
+  }
+}
