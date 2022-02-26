@@ -26,6 +26,23 @@ facility_levels_oc_to_xe = {'KERNAL': 'kern',
                             'LOCAL6': 'local6',
                             'LOCAL7': 'local7'}
 
+
+def aaa_configure_methods(aaa_cdb, service_methods) -> None:
+    aaa_method_options = {'TACACS_ALL': 'tacacs+',
+                          'RADIUS_ALL': 'radius'}
+    aaa_groups = {0: aaa_cdb,
+                  1: aaa_cdb.group2,
+                  2: aaa_cdb.group3}
+    login_group_counter = 0
+    for i in service_methods:
+        if i == 'LOCAL':
+            aaa_cdb.local.create()
+        else:
+            aaa_method = aaa_method_options.get(i, i)
+            setattr(aaa_groups.get(login_group_counter), 'group', aaa_method)
+            login_group_counter += 1
+
+
 def xe_system_program_service(self) -> None:
     """
     Program service
@@ -390,54 +407,93 @@ def xe_system_program_service(self) -> None:
         device_cdb.ios__logging.facility = facility_levels_oc_to_xe.get(list(logging_facility)[0].replace('oc-log:', ''))
     elif len(logging_facility) > 1:
         raise ValueError('XE logging facility must be the same value for console, terminal-monitor, and remote-servers.')
+
     # aaa server-groups
-    if self.service.oc_sys__system.aaa.server_groups.server_group:
+    # gather group and server configurations
+    if len(self.service.oc_sys__system.aaa.server_groups.server_group) > 0:
         server_groups = list()
         for group in self.service.oc_sys__system.aaa.server_groups.server_group:
             server_group = dict(name=group.name, type=group.config.type, servers=[])
             for server in group.servers.server:
-                server_info = dict(address=server.address,
-                                   name=server.config.name,
-                                   timeout=server.config.timeout,
-                                   port=server.tacacs.config.port,
-                                   secret_key=server.tacacs.config.secret_key,
-                                   source_address=server.tacacs.config.source_address)
+                if group.config.type == 'oc-aaa:TACACS':
+                    server_info = dict(address=server.address,
+                                       name=server.config.name,
+                                       timeout=server.config.timeout,
+                                       port=server.tacacs.config.port,
+                                       secret_key=server.tacacs.config.secret_key,
+                                       source_address=server.tacacs.config.source_address)
+                elif group.config.type == 'oc-aaa:RADIUS':
+                    server_info = dict(address=server.address,
+                                       name=server.config.name,
+                                       timeout=server.config.timeout,
+                                       acct_port=server.radius.config.acct_port,
+                                       auth_port=server.radius.config.auth_port,
+                                       retransmit_attempts=server.radius.config.retransmit_attempts,
+                                       secret_key=server.radius.config.secret_key,
+                                       source_address=server.radius.config.source_address)
                 server_group['servers'].append(server_info)
             server_groups.append(server_group)
+
+        # configure groups
         for g in server_groups:
+            if g.get('type') == 'oc-aaa:TACACS':
+                device_cdb_server = device_cdb.ios__tacacs.server
+                device_cdb_group = device_cdb.ios__aaa.group.server.tacacs_plus
+            elif g.get('type') == 'oc-aaa:RADIUS':
+                device_cdb_server = device_cdb.ios__radius.server
+                device_cdb_group = device_cdb.ios__aaa.group.server.radius
+
+            if not device_cdb_group.exists((g.get('name'))):
+                device_cdb_group.create((g.get('name')))
+            group = device_cdb_group[(g.get('name'))]
+
             source_address = ''
             for s in g['servers']:
-                if not device_cdb.ios__tacacs.server.exists((s.get('name'))):
-                    device_cdb.ios__tacacs.server.create(s.get('name'))
-                server = device_cdb.ios__tacacs.server[(s.get('name'))]
-
-                if s.get('address'):
-                    server.address.ipv4 = s.get('address')
-                server.key.type = '0'
-                if s.get('secret_key'):
-                    server.key.secret = s.get('secret_key')
-                if server.timeout:
-                    server.timeout = s.get('timeout')
-                if s.get('port'):
-                    server.port = s.get('port')
-                if s.get('source_address'):
-                    source_address = s.get('source_address')
-
-            if not device_cdb.ios__aaa.group.server.tacacs_plus.exists(
-                    (g.get('name'))):
-                device_cdb.ios__aaa.group.server.tacacs_plus.create(
-                    (g.get('name')))
-            group = device_cdb.ios__aaa.group.server.tacacs_plus[(g.get('name'))]
-
-            for s in g['servers']:
+                # create and configure server
+                if not device_cdb_server.exists((s.get('name'))):
+                    device_cdb_server.create(s.get('name'))
+                server = device_cdb_server[(s.get('name'))]
+                if g.get('type') == 'oc-aaa:TACACS':
+                    if s.get('address'):
+                        server.address.ipv4 = s.get('address')
+                    server.key.type = '0'
+                    if s.get('secret_key'):
+                        server.key.secret = s.get('secret_key')
+                    if server.timeout:
+                        server.timeout = s.get('timeout')
+                    if s.get('port'):
+                        server.port = s.get('port')
+                    if s.get('source_address'):
+                        source_address = s.get('source_address')
+                elif g.get('type') == 'oc-aaa:RADIUS':
+                    if s.get('acct_port'):
+                        server.address.ipv4.acct_port = s.get('acct_port')
+                    if s.get('auth_port'):
+                        server.address.ipv4.auth_port = s.get('auth_port')
+                    if s.get('retransmit_attempts'):
+                        server.retransmit = s.get('retransmit_attempts')
+                    if s.get('address'):
+                        server.address.ipv4.host = s.get('address')
+                    server.key.type = '0'
+                    if s.get('secret_key'):
+                        server.key.secret = s.get('secret_key')
+                    if server.timeout:
+                        server.timeout = s.get('timeout')
+                    if s.get('source_address'):
+                        source_address = s.get('source_address')
+                # add server to group
                 if not group.server.name.exists(s.get('name')):
                     group.server.name.create(s.get('name'))
+            # add source_address to group
             if source_address:
                 ip_name_dict = xe_system_get_interface_ip_address(self)
                 if ip_name_dict[source_address]:
                     interface_name, interface_number = xe_get_interface_type_and_number(
                         ip_name_dict.get(source_address))
-                    setattr(group.ip.tacacs.source_interface, interface_name, interface_number)
+                    if g.get('type') == 'oc-aaa:TACACS':
+                        setattr(group.ip.tacacs.source_interface, interface_name, interface_number)
+                    elif g.get('type') == 'oc-aaa:RADIUS':
+                        setattr(group.ip.radius.source_interface, interface_name, interface_number)
     # aaa authentication
     if self.service.oc_sys__system.aaa.authentication.admin_user.config.admin_password:
         if not device_cdb.username.exists('admin'):
@@ -448,17 +504,20 @@ def xe_system_program_service(self) -> None:
         admin_user.secret.type = 0
         admin_user.password.secret = None
         admin_user.password.type = None
-    if self.service.oc_sys__system.aaa.authentication.config.authentication_method:
+    if len(self.service.oc_sys__system.aaa.authentication.config.authentication_method) > 0:
         if not device_cdb.ios__aaa.new_model.exists():
             device_cdb.ios__aaa.new_model.create()
         if not device_cdb.ios__aaa.authentication.login.exists('default'):
             device_cdb.ios__aaa.authentication.login.create('default')
         aaa_login = device_cdb.ios__aaa.authentication.login['default']
-        for i in self.service.oc_sys__system.aaa.authentication.config.authentication_method:
-            if i == 'TACACS_ALL':
-                aaa_login.tacacsplus.create()
-            if i == 'LOCAL':
-                aaa_login.local.create()
+        aaa_configure_methods(aaa_login, self.service.oc_sys__system.aaa.authentication.config.authentication_method)
+    if len(self.service.oc_sys__system.aaa.authentication.oc_system_ext__authentication_lists_login.config.authentication_method) > 0:
+        if not device_cdb.ios__aaa.new_model.exists():
+            device_cdb.ios__aaa.new_model.create()
+        if not device_cdb.ios__aaa.authentication.login.exists(self.service.oc_sys__system.aaa.authentication.oc_system_ext__authentication_lists_login.config.name):
+            device_cdb.ios__aaa.authentication.login.create(self.service.oc_sys__system.aaa.authentication.oc_system_ext__authentication_lists_login.config.name)
+        aaa_login = device_cdb.ios__aaa.authentication.login[self.service.oc_sys__system.aaa.authentication.oc_system_ext__authentication_lists_login.config.name]
+        aaa_configure_methods(aaa_login, self.service.oc_sys__system.aaa.authentication.oc_system_ext__authentication_lists_login.config.authentication_method)
     if self.service.oc_sys__system.aaa.authentication.users.user:
         for service_user in self.service.oc_sys__system.aaa.authentication.users.user:
             if not device_cdb.username.exists(service_user.username):
@@ -488,7 +547,7 @@ def xe_system_program_service(self) -> None:
                     device_cdb.ios__aaa.authorization.exec.create('default')
                 authorization_method_cdb = device_cdb.ios__aaa.authorization.exec['default']
                 if self.service.oc_sys__system.aaa.authorization.config.authorization_method:
-                    xe_configure_authorization_method()
+                    aaa_configure_methods(authorization_method_cdb, self.service.oc_sys__system.aaa.authorization.config.authorization_method)
             elif i.event_type == 'oc-aaa-types:AAA_AUTHORIZATION_EVENT_COMMAND':
                 if not device_cdb.ios__aaa.authorization.config_commands:
                     device_cdb.ios__aaa.authorization.config_commands.create()

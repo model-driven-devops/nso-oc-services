@@ -56,6 +56,22 @@ module openconfig-if-ip-mdd-ext{
       description
         "Enables the router to send the subnet mask of an interface in response to a ICMP mask request.";
     }
+    container nat {
+      description
+        "NAT interface commands";
+      leaf nat-choice {
+        type enumeration {
+          enum inside {
+            description
+              "Inside interface for address translation.";
+          }
+          enum outside {
+            description
+              "Outside interface for address translation.";
+          }
+        }
+      }
+    }
   }
 
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-ip:ipv4/oc-ip:config {

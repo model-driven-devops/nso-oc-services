@@ -29,7 +29,7 @@ OC_MODELS = $(filter-out %aaa-tacacs.yang %aaa-radius.yang %grpc.yang, $(wildcar
 			$(filter-out %openconfig-bgp-common.yang %openconfig-bgp-common-multiprotocol.yang %openconfig-bgp-common-structure.yang %openconfig-bgp-peer-group.yang %openconfig-bgp-neighbor.yang %openconfig-bgp-global.yang %openconfig-bgp-errors.yang, $(wildcard yang/openconfig/bgp/*.yang)) \
 			$(filter-out %if-8021X.yang %if-ethernet-ext.yang %if-ip-ext.yang %if-sdn-ext.yang, $(wildcard yang/openconfig/interfaces/*.yang)) \
 			$(wildcard yang/openconfig/vlan/*.yang) \
-			$(wildcard yang/extensions/*.yang)
+			$(filter-out %system-ext-sub-nat.yang, $(wildcard yang/extensions/*.yang))
 IETF_MODELS = $(wildcard yang/ietf/*.yang)
 
 SRC = yang/mdd.yang $(OC_MODELS) $(IETF_MODELS)

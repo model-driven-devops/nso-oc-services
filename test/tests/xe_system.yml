@@ -8,6 +8,37 @@
   vars:
     rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
 
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - disable_ned_checks
+  vars:
+    device_name: xe1
+    content: |
+      config-warning: 
+        - warning: .*
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: DISABLE NED checks - For error message from deleting radius server before removing radius server group
+      uri:
+        url: "http://{{ lookup('env', 'NSO_HOST') }}:8080/restconf/data/tailf-ncs:devices/device={{device_name}}/ned-settings/tailf-ned-cisco-ios-meta:cisco-ios/write/config-warning"
+        url_username: "{{ lookup('env', 'NSO_USERNAME') }}"
+        url_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PATCH
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
 - name: test system
   hosts: xe1
   gather_facts: no
@@ -874,8 +905,8 @@
                 accounting:
                   config:
                     accounting-method:  # group name, TACACS_ALL
-          #                - 'TACACS_ALL'
                       - 'TACACS-GROUP-1'
+                      - 'TACACS_ALL'
                   events:
                     event:  # OC supports command and login
                       - config:
@@ -893,7 +924,6 @@
                       admin-password-hashed: ''
                   config:
                     authentication-method:
-          #                - 'TACACS_ALL'
                       - 'LOCAL'
                   users:
                     user:
@@ -979,14 +1009,42 @@
                                 port: 49
                                 secret-key: 'Password123'
                                 source-address: '172.27.1.2'  # For each group, sources must be the same
+                    - config:
+                        name: 'RADIUS-GROUP-1'
+                        type: 'RADIUS'
+                      name: 'RADIUS-GROUP-1'
+                      servers:
+                        server:
+                          - address: '10.5.5.5'
+                            config:
+                              address: '10.5.5.5'
+                              name: 'RADIUSSVR1'
+                              timeout: 10
+                            radius:
+                              config:
+                                acct-port: 1853
+                                auth-port: 1852
+                                secret-key: 'Password123'
+                                source-address: '172.27.1.2'  # For each group, sources must be the same
+                          - address: '10.6.6.6'
+                            config:
+                              address: '10.6.6.6'
+                              name: 'RADIUSSVR2'
+                              timeout: 10
+                            radius:
+                              config:
+                                acct-port: 1853
+                                auth-port: 1852
+                                secret-key: 'Password123'
+                                source-address: '172.27.1.2'  # For each group, sources must be the same
         api_method: PUT
         api_ignore_errors: false
         rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+aaa new-model:' in changes"
-          - "'+aaa accounting commands 15 default stop-only group TACACS-GROUP-1:' in changes"
-          - "'+aaa accounting exec default stop-only group TACACS-GROUP-1:' in changes"
+          - "'+aaa accounting commands 15 default stop-only group TACACS-GROUP-1 group tacacs+:' in changes"
+          - "'+aaa accounting exec default stop-only group TACACS-GROUP-1 group tacacs+:' in changes"
           - "'+aaa authentication login default local:' in changes"
           - "'+aaa authorization exec default local:' in changes"
           - "'+aaa group server tacacs+ TACACS-GROUP-1:' in changes"
@@ -1009,9 +1067,56 @@
           - "'+tacacs server TACACSSVR4:' in changes"
           - "'+ address ipv4 10.4.4.4:' in changes"
           - "'+ key Password123:' in changes"
+          - "'+aaa group server radius RADIUS-GROUP-1:' in changes"
+          - "'+ server name RADIUSSVR1:' in changes"
+          - "'+ server name RADIUSSVR2:' in changes"
+          - "'+ ip radius source-interface GigabitEthernet6:' in changes"
+          - "'+radius server RADIUSSVR1:' in changes"
+          - "'+ address ipv4 10.5.5.5 auth-port 1852 acct-port 1853:' in changes"
+          - "'+ key Password123:' in changes"
+          - "'+radius server RADIUSSVR2:' in changes"
+          - "'+ address ipv4 10.6.6.6 auth-port 1852 acct-port 1853:' in changes"
+          - "'+ key Password123:' in changes"
 #          - "'+username admin privilege 15 secret 0 admin:' in changes"  # passwords will be hashed
 #          - "'+username user1 privilege 15 secret 0 Password123:' in changes"
 #          - "'+username user2 privilege 15 secret 0 Password123:' in changes"
+
+# xe1(config)#no radius server RADIUSSVR1
+#xe1(config)#
+#*Feb 24 21:44:33.502: %RADIUS-4-SERVREFNAME: Warning: Server RADIUSSVR1 is still referenced by server group.
+# Command still works hence disregarding NED errors at the top of file
+
+    - name: test aaa-authentication-login-lists
+      tags:
+        - aaa-authentication-login-lists
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              config:
+                oc-system-ext:enable-secret: 'admin'
+              aaa:
+                authentication:
+                  admin-user:
+                    config:
+                      admin-password: 'admin'
+                      admin-password-hashed: ''
+                  config:
+                    authentication-method:
+                      - 'LOCAL'
+                  openconfig-system-ext:authentication-lists-login:
+                    openconfig-system-ext:config:
+                      openconfig-system-ext:name: 'USETACACS'
+                      openconfig-system-ext:authentication-method: 
+                        - 'LOCAL'
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+aaa authentication login USETACACS local:' in changes"
 
 - name: test services
   hosts: xe1

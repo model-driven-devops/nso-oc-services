@@ -16,7 +16,10 @@ module openconfig-system-ext{
   import openconfig-extensions { prefix oc-ext; }
   import openconfig-inet-types { prefix oc-inet; }
   import openconfig-system-logging { prefix oc-log; }
+  import openconfig-aaa-types { prefix oc-aaa-types; }
 
+  // Include NAT submodule.
+  //include system-ext-sub-nat;
 
   // meta
   organization "Cisco";
@@ -193,6 +196,7 @@ module openconfig-system-ext{
           }
         }
       }
+      //uses config-ip-nat-grouping;
     }
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:config {
@@ -420,6 +424,27 @@ module openconfig-system-ext{
       }
       description
         "VRF from which to reach the DNS servers. '' for no VRF.";
+    }
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:aaa/oc-sys:authentication {
+    container authentication-lists-login {
+      container config {
+        description
+          "Configuration data for global authentication services";
+        leaf name {
+          type string;
+          description
+            "XE - Named authentication list";
+        }
+        leaf-list authentication-method {
+          type union {
+            type identityref {
+              base oc-aaa-types:AAA_METHOD_TYPE;
+            }
+            type string;
+          }
+        }
+      }
     }
   }
 }

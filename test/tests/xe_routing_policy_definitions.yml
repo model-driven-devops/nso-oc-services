@@ -116,7 +116,7 @@
                       config:
                         name: '2000'
                         tag-value:
-                          - '2000'
+                          - 2000
         api_method: PUT
         api_ignore_errors: false
         rollback: false
