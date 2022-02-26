@@ -1110,13 +1110,13 @@
                     openconfig-system-ext:config:
                       openconfig-system-ext:name: 'USETACACS'
                       openconfig-system-ext:authentication-method: 
-                        - 'TACACS_ALL'
-        api_method: PUT
+                        - 'LOCAL'
+        api_method: PATCH
         api_ignore_errors: false
         rollback: false
         assertion_ignore_errors: false
         assertions:
-          - "'+aaa authentication login USETACACS group tacacs+:' in changes"
+          - "'+aaa authentication login USETACACS local:' in changes"
 
 - name: test services
   hosts: xe1
