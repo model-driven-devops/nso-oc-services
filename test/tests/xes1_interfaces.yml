@@ -9,11 +9,11 @@
     rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
 
 - name: test interfaces_switch
-  hosts: xeswitch1
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
   gather_facts: no
   connection: network_cli
   vars:
-    device: xeswitch1
+    device: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
     ansible_network_os: 'cisco.ios.ios'
   tasks:
     - name: test flowcontrol

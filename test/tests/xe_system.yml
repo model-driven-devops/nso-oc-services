@@ -13,7 +13,7 @@
   tags:
     - disable_ned_checks
   vars:
-    device_name: xe1
+    device_name: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
     content: |
       config-warning: 
         - warning: .*
@@ -40,11 +40,11 @@
         body: "{{ configs }}"
 
 - name: test system
-  hosts: xe1
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
   gather_facts: no
   connection: network_cli
   vars:
-    device: xe1
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
     ansible_network_os: 'cisco.ios.ios'
   tasks:
     - name: test http_server
@@ -570,11 +570,11 @@
           - "'+clock timezone CST -6 0:' in changes"
 
 - name: test system
-  hosts: xe1
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
   gather_facts: no
   connection: network_cli
   vars:
-    device: xe1
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
     ansible_network_os: 'cisco.ios.ios'
   tasks:
     - name: test http_server
@@ -659,11 +659,11 @@
           - "'-ip finger:' in changes"
 
 - name: test system
-  hosts: xe1
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
   gather_facts: no
   connection: network_cli
   vars:
-    device: xe1
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
     ansible_network_os: 'cisco.ios.ios'
   tasks:
     - name: test http_timeout_policy
@@ -1119,11 +1119,11 @@
           - "'+aaa authentication login USETACACS local:' in changes"
 
 - name: test services
-  hosts: xe1
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
   gather_facts: no
   connection: network_cli
   vars:
-    device: xe1
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
     ansible_network_os: 'cisco.ios.ios'
   tasks:
     - name: test tcp_udp_gratuitous_arp_password_encryption configuration
@@ -1150,11 +1150,11 @@
           - "'+service udp-small-servers:' in changes"
 
 - name: test services
-  hosts: xe1
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
   gather_facts: no
   connection: network_cli
   vars:
-    device: xe1
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
     ansible_network_os: 'cisco.ios.ios'
   tasks:
     - name: test no_tcp_udp_gratuitous_arp_password_encryption configuration

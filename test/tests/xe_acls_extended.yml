@@ -9,11 +9,11 @@
     rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
 
 - name: test acls extended
-  hosts: xe1
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
   gather_facts: no
   connection: network_cli
   vars:
-    device: xe1
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
     ansible_network_os: 'cisco.ios.ios'
   tasks:
     - name: test set_up configurations

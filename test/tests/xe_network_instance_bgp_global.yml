@@ -1,10 +1,10 @@
 ---
 - name: test network instance bgp global
-  hosts: xe1
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
   gather_facts: no
   connection: network_cli
   vars:
-    device: xe1
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
     ansible_network_os: 'cisco.ios.ios'
   tasks:
     - name: test set_up
@@ -378,3 +378,55 @@
         assertion_ignore_errors: false
         assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
+    - name: test dynamic_peers
+      tags:
+        - dynamic_peers
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'  # All interfaces are in default unless listed under other VRF
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'  # oc-ni-types:DEFAULT_INSTANCE
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: BGP
+                        identifier: BGP
+                        config:
+                          enabled: True
+                          identifier: BGP
+                          name: BGP
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                              router-id: 1.1.1.1
+                              openconfig-bgp-ext:log-neighbor-changes: false
+                            dynamic-neighbor-prefixes:
+                              dynamic-neighbor-prefix:
+                                - config:
+                                    peer-group: 'PEERS'
+                                    prefix: '10.255.255.0/24'
+                                  prefix: '10.255.255.0/24'
+                                - config:
+                                    peer-group: 'PEERS'
+                                    prefix: '10.255.254.0/24'
+                                  prefix: '10.255.254.0/24'
+                          peer-groups:
+                            peer-group:
+                              - config:
+                                  peer-group-name: 'PEERS'
+                                peer-group-name: 'PEERS'
+
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+router bgp 1:' in changes"
+          - "'+ bgp listen range 10.255.255.0/24 peer-group PEERS:' in changes"
+          - "'+ bgp listen range 10.255.254.0/24 peer-group PEERS:' in changes"

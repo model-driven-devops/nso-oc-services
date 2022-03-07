@@ -55,6 +55,11 @@ def xe_bgp_global_program_service(self, service_protocol, network_instance_type,
                 if service_bgp_global.use_multiple_paths.ibgp.config.maximum_paths:
                     device_bgp_cbd.maximum_paths.ibgp.paths.number_of_paths = service_bgp_global.use_multiple_paths.ibgp.config.maximum_paths
 
+        if len(service_bgp_global.dynamic_neighbor_prefixes.dynamic_neighbor_prefix) > 0:
+            for service_dynamic_neighbor in service_bgp_global.dynamic_neighbor_prefixes.dynamic_neighbor_prefix:
+                device_bgp_cbd.bgp.listen.range.create(service_dynamic_neighbor.config.prefix,
+                                                       service_dynamic_neighbor.config.peer_group)
+
     device_bgp_cbd = self.root.devices.device[self.device_name].config.ios__router.bgp[
         service_bgp_global.config.oc_netinst__as]
     if service_bgp_global.afi_safis.afi_safi:
