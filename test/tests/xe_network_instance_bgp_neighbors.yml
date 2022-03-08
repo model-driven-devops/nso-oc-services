@@ -525,16 +525,18 @@
                                 route-reflector:
                                   config:
                                     route-reflector-client: True
+                                    route-reflector-cluster-id: '1.1.1.1'
                                 neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
           - "'+ neighbor 10.11.11.2 route-reflector-client:' in changes"
+          - "'+ neighbor 10.11.11.2 cluster-id 1.1.1.1:' in changes"
 
-    - name: test neighbor_route_reflector_cluster_id_test
+    - name: test neighbor_route_reflector_client_test_ad_ipv4
       tags:
-        - neighbor_route_reflector_cluster_id_test
+        - neighbor_route_reflector_client_test_ad_ipv4
       import_role:
         name: nso-openconfig-test
       vars:
@@ -559,6 +561,12 @@
                           global:
                             config:
                               as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
                           neighbors:
                             neighbor:
                               - config:
@@ -566,13 +574,169 @@
                                   peer-as: 1
                                 route-reflector:
                                   config:
+                                    route-reflector-client: True
                                     route-reflector-cluster-id: '1.1.1.1'
                                 neighbor-address: '10.11.11.2'
+                                afi-safis:
+                                  afi-safi:
+                                    - afi-safi-name: 'IPV4_UNICAST'
+                                      config:
+                                        afi-safi-name: 'IPV4_UNICAST'
+                                        enabled: true
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
           - "'+ neighbor 10.11.11.2 cluster-id 1.1.1.1:' in changes"
+          - "'+ address-family ipv4:' in changes"
+          - "'+  neighbor 10.11.11.2 route-reflector-client:' in changes"
+
+    - name: test neighbor_route_reflector_client_test_ad_vpnv4
+      tags:
+        - neighbor_route_reflector_client_test_ad_vpnv4
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                    enabled: true
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 1
+                                route-reflector:
+                                  config:
+                                    route-reflector-client: True
+                                    route-reflector-cluster-id: '1.1.1.1'
+                                neighbor-address: '10.11.11.2'
+                                afi-safis:
+                                  afi-safi:
+                                    - afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                      config:
+                                        afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                        enabled: true
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ neighbor 10.11.11.2 cluster-id 1.1.1.1:' in changes"
+          - "'+ address-family vpnv4:' in changes"
+          - "'+  neighbor 10.11.11.2 route-reflector-client:' in changes"
+
+    - name: test neighbor_route_reflector_client_test_ad_ipv4_vrf
+      tags:
+        - neighbor_route_reflector_client_test_ad_ipv4_vrf
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                    route-distinguisher: '1:1'
+                    openconfig-network-instance-ext:route-targets-import:
+                      - '100:100'
+                      - '101:101'
+                    openconfig-network-instance-ext:route-targets-export:
+                      - '200:200'
+                      - '202:202'
+                  openconfig-network-instance:protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 1
+                                route-reflector:
+                                  config:
+                                    route-reflector-client: True
+                                    route-reflector-cluster-id: '1.1.1.1'
+                                neighbor-address: '10.11.11.2'
+                                afi-safis:
+                                  afi-safi:
+                                    - afi-safi-name: 'IPV4_UNICAST'
+                                      config:
+                                        afi-safi-name: 'IPV4_UNICAST'
+                                        enabled: true
+
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ address-family ipv4 vrf abc:' in changes"
+          - "'+  neighbor 10.11.11.2 route-reflector-client:' in changes"
+          - "'+  neighbor 10.11.11.2 cluster-id 1.1.1.1:' in changes"
 
     - name: test neighbor_timers_test
       tags:
