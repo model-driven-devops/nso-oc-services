@@ -2,6 +2,7 @@
 import copy
 import ipaddress
 
+from translation.openconfig_xe.common import verify_ipv4
 from translation.openconfig_xe.common import xe_get_interface_type_and_number
 from translation.openconfig_xe.common import xe_get_interface_type_number_and_subinterface
 from translation.openconfig_xe.common import xe_system_get_interface_ip_address
@@ -333,7 +334,6 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
     for network_instance in self.service.oc_netinst__network_instances.network_instance:
         if network_instance.protocols.protocol:
             for p in network_instance.protocols.protocol:
-                self.log.debug(f'protocol identifier: {p.identifier}')
                 if p.identifier == 'oc-pol-types:STATIC':
                     device_route = self.root.devices.device[self.device_name].config.ios__ip.route
                     if network_instance.config.type == 'oc-ni-types:DEFAULT_INSTANCE':  # if global table
@@ -341,18 +341,7 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
                             for static in p.static_routes.static:
                                 network = ipaddress.ip_network(static.prefix)
                                 for nh in static.next_hops.next_hop:
-                                    if nh.config.next_hop == 'oc-loc-rt:DROP':
-                                        route = device_route.ip_route_interface_list.create(
-                                            str(network.network_address),
-                                            str(network.netmask),
-                                            'Null0')
-                                        if nh.config.metric:
-                                            route.metric = nh.config.metric
-                                        if static.config.description:
-                                            route.name = static.config.description
-                                        if static.config.set_tag:
-                                            route.tag = static.config.set_tag
-                                    else:
+                                    if verify_ipv4(nh.config.next_hop):
                                         route = device_route.ip_route_forwarding_list.create(
                                             str(network.network_address),
                                             str(network.netmask),
@@ -363,6 +352,48 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
                                             route.name = static.config.description
                                         if static.config.set_tag:
                                             route.tag = static.config.set_tag
+                                    elif nh.config.next_hop == 'oc-loc-rt:DROP':
+                                        route = device_route.ip_route_interface_list.create(
+                                            str(network.network_address),
+                                            str(network.netmask),
+                                            'Null0')
+                                        if nh.config.metric:
+                                            route.metric = nh.config.metric
+                                        if static.config.description:
+                                            route.name = static.config.description
+                                        if static.config.set_tag:
+                                            route.tag = static.config.set_tag
+                                    elif nh.config.next_hop == 'oc-loc-rt:LOCAL_LINK':
+                                        if not nh.interface_ref.config.subinterface or nh.interface_ref.config.subinterface == 0:
+                                            next_hop_interface = nh.interface_ref.config.interface
+                                        else:
+                                            next_hop_interface = f"{nh.interface_ref.config.interface}/{str(nh.interface_ref.config.subinterface)}"
+                                        route = device_route.ip_route_interface_list.create(
+                                            str(network.network_address),
+                                            str(network.netmask),
+                                            next_hop_interface)
+                                        if nh.config.metric:
+                                            route.metric = nh.config.metric
+                                        if nh.config.oc_loc_rt_ext__dhcp_learned == 'ENABLE':
+                                            route.dhcp.create()
+                                        if nh.config.oc_loc_rt_ext__dhcp_learned == 'DISABLE':
+                                            if route.dhcp.exists():
+                                                route.dhcp.delete()
+                                        if static.config.description:
+                                            route.name = static.config.description
+                                        if static.config.set_tag:
+                                            route.tag = static.config.set_tag
+                                    elif nh.config.next_hop == 'oc-loc-rt-ext:DHCP':
+                                        route = device_route.ip_route_interface_list.create(
+                                            str(network.network_address),
+                                            str(network.netmask),
+                                            'dhcp')
+                                        if nh.config.metric:
+                                            route.metric = nh.config.metric
+                                        if static.config.description:
+                                            raise ValueError('XE static routes using DHCP next-hop do not support descriptions.')
+                                        if static.config.set_tag:
+                                            raise ValueError('XE static routes using DHCP next-hop do not support tags.')
                     elif network_instance.config.type == 'oc-ni-types:L3VRF':  # if VRF table
                         if not device_route.vrf.exists(network_instance.name):
                             device_route.vrf.create(network_instance.name)
@@ -371,7 +402,22 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
                                 route_vrf = device_route.vrf[network_instance.name]
                                 network = ipaddress.ip_network(static.prefix)
                                 for nh in static.next_hops.next_hop:
-                                    if nh.config.next_hop == 'oc-loc-rt:DROP':
+                                    if verify_ipv4(nh.config.next_hop):
+                                        route = route_vrf.ip_route_forwarding_list.create(str(network.network_address),
+                                                                                          str(network.netmask),
+                                                                                          nh.config.next_hop)
+                                        if nh.config.metric:
+                                            route.metric = nh.config.metric
+                                        if nh.config.oc_loc_rt_ext__global:
+                                            route.ios__global.create()
+                                        if nh.config.oc_loc_rt_ext__global is False:
+                                            if route.ios__global.exists():
+                                                route.ios__global.delete()
+                                        if static.config.description:
+                                            route.name = static.config.description
+                                        if static.config.set_tag:
+                                            route.tag = static.config.set_tag
+                                    elif nh.config.next_hop == 'oc-loc-rt:DROP':
                                         route = route_vrf.ip_route_interface_list.create(str(network.network_address),
                                                                                          str(network.netmask),
                                                                                          'Null0')
@@ -381,16 +427,36 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
                                             route.name = static.config.description
                                         if static.config.set_tag:
                                             route.tag = static.config.set_tag
-                                    else:
-                                        route = route_vrf.ip_route_forwarding_list.create(str(network.network_address),
-                                                                                          str(network.netmask),
-                                                                                          nh.config.next_hop)
+                                    elif nh.config.next_hop == 'oc-loc-rt:LOCAL_LINK':
+                                        if not nh.interface_ref.config.subinterface or nh.interface_ref.config.subinterface == 0:
+                                            next_hop_interface = nh.interface_ref.config.interface
+                                        else:
+                                            next_hop_interface = f"{nh.interface_ref.config.interface}/{str(nh.interface_ref.config.subinterface)}"
+                                        route = route_vrf.ip_route_interface_list.create(str(network.network_address),
+                                                                                         str(network.netmask),
+                                                                                         next_hop_interface)
                                         if nh.config.metric:
                                             route.metric = nh.config.metric
+                                        if nh.config.oc_loc_rt_ext__dhcp_learned == 'ENABLE':
+                                            route.dhcp.create()
+                                        if nh.config.oc_loc_rt_ext__dhcp_learned == 'DISABLE':
+                                            if route.dhcp.exists():
+                                                route.dhcp.delete()
                                         if static.config.description:
                                             route.name = static.config.description
                                         if static.config.set_tag:
                                             route.tag = static.config.set_tag
+                                    elif nh.config.next_hop == 'oc-loc-rt-ext:DHCP':
+                                        route = route_vrf.ip_route_interface_list.create(str(network.network_address),
+                                                                                         str(network.netmask),
+                                                                                         'dhcp')
+                                        if nh.config.metric:
+                                            route.metric = nh.config.metric
+                                        if static.config.description:
+                                            raise ValueError('XE static routes using DHCP next-hop do not support descriptions.')
+                                        if static.config.set_tag:
+                                            raise ValueError('XE static routes using DHCP next-hop do not support tags.')
+
                 if p.identifier == 'oc-pol-types:OSPF':
                     xe_ospf_program_service(self, p, network_instance.config.type, network_instance.config.name)
 

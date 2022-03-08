@@ -15,6 +15,22 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: G2'
+                    enabled: true
+                    name: 'GigabitEthernet2'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet2'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          config:
+                            dhcp-client: true
             openconfig-network-instance:network-instances:
               network-instance:
                 - name: 'default'
@@ -51,6 +67,29 @@
                                       metric: 200
                                       next-hop: 'DROP'
                                     index: 'DROP'
+                            - prefix: '80.0.0.0/8'
+                              config:
+                                prefix: '80.0.0.0/8'
+                              next-hops:
+                                next-hop:
+                                  - config:
+                                      index: 'DHCP'
+                                      next-hop: 'DHCP'
+                                    index: 'DHCP'
+                            - prefix: '100.0.0.0/8'
+                              config:
+                                prefix: '100.0.0.0/8'
+                              next-hops:
+                                next-hop:
+                                  - config:
+                                      index: 'GigabitEthernet2'
+                                      next-hop: 'LOCAL_LINK'
+                                      openconfig-local-routing-ext:dhcp-learned: 'ENABLE'
+                                    index: 'GigabitEthernet2'
+                                    interface-ref:
+                                      config:
+                                        interface: 'GigabitEthernet2'
+                                        subinterface: 0
                 - name: 'abc'
                   config:
                     name: 'abc'
@@ -77,13 +116,36 @@
                                       metric: 200
                                       next-hop: 'DROP'
                                     index: 'DROP'
+                            - prefix: '90.0.0.0/8'
+                              config:
+                                prefix: '90.0.0.0/8'
+                              next-hops:
+                                next-hop:
+                                  - config:
+                                      index: 'DHCP'
+                                      next-hop: 'DHCP'
+                                    index: 'DHCP'
+                            - prefix: '101.0.0.0/8'
+                              config:
+                                prefix: '101.0.0.0/8'
+                              next-hops:
+                                next-hop:
+                                  - config:
+                                      index: '1.1.1.1'
+                                      next-hop: '1.1.1.1'
+                                      openconfig-local-routing-ext:global: true
+                                    index: '1.1.1.1'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
           - "'+ip route 169.0.0.0 255.0.0.0 10.21.21.21 200:' in changes"
           - "'+ip route 60.0.0.0 255.0.0.0 Null0 200:' in changes"
+          - "'+ip route 80.0.0.0 255.0.0.0 dhcp:' in changes"
+          - "'+ip route 100.0.0.0 255.0.0.0 GigabitEthernet2 dhcp:' in changes"
           - "'+ip route vrf abc 70.0.0.0 255.0.0.0 Null0 200:' in changes"
+          - "'+ip route vrf abc 90.0.0.0 255.0.0.0 dhcp:' in changes"
+          - "'+ip route vrf abc 101.0.0.0 255.0.0.0 1.1.1.1 global:' in changes"
     - name: test static_routes_name_tag
       tags:
         - static_routes_name_tag
