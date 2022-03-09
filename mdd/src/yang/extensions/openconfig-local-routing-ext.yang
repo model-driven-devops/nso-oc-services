@@ -1,0 +1,56 @@
+module openconfig-local-routing-ext {
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/openconfig-local-routing-ext";
+
+  prefix "oc-loc-rt-ext";
+
+  import openconfig-local-routing { prefix oc-loc-rt; }
+  import tailf-ncs { prefix ncs; }
+  import tailf-common { prefix tailf; }
+  import mdd { prefix mdd; }
+  import openconfig-network-instance { prefix "oc-netinst"; }
+  import openconfig-policy-types { prefix "oc-pol-types"; }
+  import openconfig-extensions { prefix oc-ext; }
+
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Augmentation to openconfig bgp model.";
+
+  revision "2022-03-07" {
+    description
+      "Initial revision";
+  }
+  identity DHCP {
+    base oc-loc-rt:LOCAL_DEFINED_NEXT_HOP;
+    description
+      "Use DHCP received next hops as the next hop for a static route.";
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:static-routes/oc-netinst:static/oc-netinst:next-hops/oc-netinst:next-hop/oc-netinst:config {
+    leaf dhcp-learned {
+      type enumeration {
+        enum ENABLE {
+          description
+            "Enable static route next-hop from DHCP.";
+        }
+        enum DISABLE {
+          description
+            "Disable static route next-hop from DHCPn.";
+        }
+      }
+    }
+    leaf global {
+      when "../../../../../../../../oc-netinst:config/oc-netinst:type = 'oc-ni-types:L3VRF'";
+      type boolean;
+      description
+        "Next hop address is global.";
+    }
+  }
+}

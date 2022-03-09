@@ -58,3 +58,18 @@ def prefix_to_network_and_mask(prefix: str) -> str:
     """
     network = ipaddress.ip_network(prefix)
     return f'{str(network.network_address)} {str(network.hostmask)}'
+
+
+def verify_ipv4(ip: str) -> bool:
+    """
+    Takes in a string, return true if IP address or False if not
+    :param ip:
+    :return bool:
+    """
+    try:
+        if type(ipaddress.ip_address(ip)) is ipaddress.IPv4Address:
+            return True
+        else:
+            return False
+    except ValueError:
+        return False
