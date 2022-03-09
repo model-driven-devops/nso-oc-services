@@ -396,9 +396,7 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                     service_bgp_peergroup.peer_group_name]
             if not peer_group.peer_group.exists():
                 peer_group.peer_group.create()
-
             xe_bgp_configure_peer_group(service_bgp_peergroup, peer_group)
-            route_reflector_client(peer_group, service_bgp_peergroup)
 
     # If not afi then do below, else create the peer-groups in the appropriate afis
     self.log.info(f'{self.device_name} BGP peer-groups')
@@ -466,21 +464,22 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                             if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
                                 neighbor_object_cdb.send_label.create()
             else:
-                if service_bgp_peergroup.config.send_community and service_bgp_peergroup.config.send_community != 'NONE':
-                    if service_bgp_peergroup.peer_group_name:
-                        if not self.root.devices.device[self.device_name].config.ios__router.bgp[
-                            asn].neighbor_tag.neighbor.exists(
-                                service_bgp_peergroup.peer_group_name):
-                            self.root.devices.device[self.device_name].config.ios__router.bgp[
-                                asn].neighbor_tag.neighbor.create(
-                                service_bgp_peergroup.peer_group_name)
-                        peer_group = \
-                            self.root.devices.device[self.device_name].config.ios__router.bgp[
-                                asn].neighbor_tag.neighbor[
-                                service_bgp_peergroup.peer_group_name]
-                        if not peer_group.peer_group.exists():
-                            peer_group.peer_group.create()
+                if service_bgp_peergroup.peer_group_name:
+                    if not self.root.devices.device[self.device_name].config.ios__router.bgp[
+                        asn].neighbor_tag.neighbor.exists(
+                        service_bgp_peergroup.peer_group_name):
+                        self.root.devices.device[self.device_name].config.ios__router.bgp[
+                            asn].neighbor_tag.neighbor.create(
+                            service_bgp_peergroup.peer_group_name)
+                    peer_group = \
+                        self.root.devices.device[self.device_name].config.ios__router.bgp[
+                            asn].neighbor_tag.neighbor[
+                            service_bgp_peergroup.peer_group_name]
+                    if not peer_group.peer_group.exists():
+                        peer_group.peer_group.create()
+                    if service_bgp_peergroup.config.send_community and service_bgp_peergroup.config.send_community != 'NONE':
                         send_community(peer_group, service_bgp_peergroup)
+                    route_reflector_client(peer_group, service_bgp_peergroup)
             if flag_configure_global_peer_group:  # Flag will be False if peer group used in a VRF
                 configure_global_peer_group()
 
