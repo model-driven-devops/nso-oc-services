@@ -61,6 +61,10 @@ module openconfig-if-ip-mdd-ext{
         "NAT interface commands";
       leaf nat-choice {
         type enumeration {
+          enum disabled {
+            description
+              "Remove NAT interface configuration.";
+          }
           enum inside {
             description
               "Inside interface for address translation.";

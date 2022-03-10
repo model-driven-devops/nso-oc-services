@@ -659,6 +659,69 @@
           - "' interface GigabitEthernet5:' in changes"
           - "'+ mac-address 5254.0099.9999:' in changes"
 
+    - name: test nat-interface
+      tags:
+        -  nat-interface
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 5'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet5'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet5'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.2'
+                                  prefix-length: 24
+                                ip: '10.1.0.2'
+                          config:
+                            openconfig-if-ip-mdd-ext:nat:
+                              nat-choice: 'inside'
+                - config:
+                    description: 'Physical Interface 6'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.6.0.2'
+                                  prefix-length: 24
+                                ip: '10.6.0.2'
+                          config:
+                            openconfig-if-ip-mdd-ext:nat:
+                              nat-choice: 'outside'
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet5:' in changes"
+          - "'+ ip nat inside:' in changes"
+          - "' interface GigabitEthernet6:' in changes"
+          - "'+ ip nat outside:' in changes"
+
     - name: test hold-down-timer
       tags:
         -  hold-down-timer

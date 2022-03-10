@@ -1,0 +1,234 @@
+---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- name: test NAT
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test nat_interface
+      tags:
+        -  nat_interface
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 5'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet5'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet5'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.2'
+                                  prefix-length: 24
+                                ip: '10.1.0.2'
+                          config:
+                            openconfig-if-ip-mdd-ext:nat:
+                              nat-choice: 'inside'
+                - config:
+                    description: 'Physical Interface 6'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.6.0.2'
+                                  prefix-length: 24
+                                ip: '10.6.0.2'
+                          config:
+                            openconfig-if-ip-mdd-ext:nat:
+                              nat-choice: 'outside'
+                - config:
+                    description: 'Physical Interface 7'
+                    enabled: true
+                    mtu: 1500
+                    name: 'GigabitEthernet7'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet7'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.7.0.2'
+                                  prefix-length: 24
+                                ip: '10.7.0.2'
+                          config:
+                            openconfig-if-ip-mdd-ext:nat:
+                              nat-choice: 'outside'
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions: false
+
+    - name: test nat_pools
+      tags:
+        - nat_pools
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:nat:
+                  openconfig-system-ext:pools:
+                    openconfig-system-ext:pool:
+                      - openconfig-system-ext:name: 'POOLONE'
+                        openconfig-system-ext:config:
+                          openconfig-system-ext:name: 'POOLONE'
+                          openconfig-system-ext:start-address: '10.0.0.2' 
+                          openconfig-system-ext:end-address: '10.0.0.254'
+                          openconfig-system-ext:netmask: '255.255.255.0'
+                      - openconfig-system-ext:name: 'POOLTWO'
+                        openconfig-system-ext:config:
+                          openconfig-system-ext:name: 'POOLTWO'
+                          openconfig-system-ext:start-address: '11.0.0.2' 
+                          openconfig-system-ext:end-address: '11.0.0.254'
+                          openconfig-system-ext:prefix-length: 24
+        api_method: PATCH
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip nat pool POOLONE 10.0.0.2 10.0.0.254 netmask 255.255.255.0:' in changes"
+          - "'+ip nat pool POOLTWO 11.0.0.2 11.0.0.254 prefix-length 24:' in changes"
+
+    - name: test nat_inside_source_acl
+      tags:
+        - nat_inside_source_acl
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+            openconfig-acl:acl:
+              acl-sets:
+                acl-set:
+                  - config:
+                      name: 'nat-acl1'
+                      type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    name: 'nat-acl1'
+                    type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    acl-entries:
+                      acl-entry:
+                        - actions:
+                            config:
+                              forwarding-action: 'ACCEPT'
+                              log-action: 'LOG_NONE'
+                          config:
+                            sequence-id: 10
+                          openconfig-acl-ext:ipv4:
+                            source-address: '192.168.1.0/24'
+                          sequence-id: 10
+                        - actions:
+                            config:
+                              forwarding-action: 'ACCEPT'
+                              log-action: 'LOG_NONE'
+                          config:
+                            sequence-id: 20
+                          openconfig-acl-ext:ipv4:
+                            source-address: '192.168.2.0/24'
+                          sequence-id: 20
+                  - config:
+                      name: 'nat-acl2'
+                      type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    name: 'nat-acl2'
+                    type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    acl-entries:
+                      acl-entry:
+                        - actions:
+                            config:
+                              forwarding-action: 'ACCEPT'
+                              log-action: 'LOG_NONE'
+                          config:
+                            sequence-id: 10
+                          openconfig-acl-ext:ipv4:
+                            source-address: '192.168.3.0/24'
+                          sequence-id: 10
+                        - actions:
+                            config:
+                              forwarding-action: 'ACCEPT'
+                              log-action: 'LOG_NONE'
+                          config:
+                            sequence-id: 20
+                          openconfig-acl-ext:ipv4:
+                            source-address: '192.168.4.0/24'
+                          sequence-id: 20
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:nat:
+                  openconfig-system-ext:inside:
+                    openconfig-system-ext:source:
+                      openconfig-system-ext:local-addresses-access-lists:
+                        openconfig-system-ext:local-addresses-access-list:
+                          - openconfig-system-ext:local-addresses-access-list-name: 'nat-acl1'
+                            openconfig-system-ext:config:
+                              openconfig-system-ext:local-addresses-access-list-name: 'nat-acl1'
+                              openconfig-system-ext:global-interface-name: 'GigabitEthernet6'
+                              openconfig-system-ext:overload: true
+                          - openconfig-system-ext:local-addresses-access-list-name: 'nat-acl2'
+                            openconfig-system-ext:config:
+                              openconfig-system-ext:local-addresses-access-list-name: 'nat-acl2'
+                              openconfig-system-ext:global-pool-name: 'POOLONE'
+                              openconfig-system-ext:vrf: 'abc'
+        api_method: PATCH
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip nat inside source list nat-acl1 interface GigabitEthernet6 overload:' in changes"
+          - "'+ip nat inside source list nat-acl2 pool POOLONE vrf abc:' in changes"
+
+
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-load
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"

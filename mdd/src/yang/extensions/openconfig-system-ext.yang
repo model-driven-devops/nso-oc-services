@@ -19,7 +19,7 @@ module openconfig-system-ext{
   import openconfig-aaa-types { prefix oc-aaa-types; }
 
   // Include NAT submodule.
-  //include system-ext-sub-nat;
+  include system-ext-sub-nat;
 
   // meta
   organization "Cisco";
@@ -196,7 +196,7 @@ module openconfig-system-ext{
           }
         }
       }
-      //uses config-ip-nat-grouping;
+      uses config-ip-nat-grouping;
     }
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:config {
