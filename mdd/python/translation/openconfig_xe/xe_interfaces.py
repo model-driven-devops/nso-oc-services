@@ -373,7 +373,16 @@ def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: nc
     elif service_ipv4.config.oc_if_ip_mdd_ext__mask_reply is False:
         if interface_cdb.ip.mask_reply.exists():
             interface_cdb.ip.mask_reply.delete()
-
+    # NAT interface
+    if service_ipv4.config.oc_if_ip_mdd_ext__nat.nat_choice == 'inside':
+        interface_cdb.ip.nat.inside.create()
+    elif service_ipv4.config.oc_if_ip_mdd_ext__nat.nat_choice == 'outside':
+        interface_cdb.ip.nat.outside.create()
+    elif service_ipv4.config.oc_if_ip_mdd_ext__nat.nat_choice == 'disabled':
+        if interface_cdb.ip.nat.inside.exists():
+            interface_cdb.ip.nat.inside.delete()
+        elif interface_cdb.ip.nat.outside.exists():
+            interface_cdb.ip.nat.outside.delete()
     # VRRP
     for a in service_ipv4.addresses.address:
         if hasattr(a, 'vrrp'):

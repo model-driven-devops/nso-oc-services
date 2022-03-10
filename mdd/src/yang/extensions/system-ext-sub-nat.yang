@@ -5,7 +5,10 @@ submodule system-ext-sub-nat {
 
   import openconfig-extensions { prefix "oc-ext"; }
   import openconfig-inet-types { prefix "oc-inet"; }
-
+  import openconfig-interfaces { prefix oc-if; }
+  import openconfig-acl { prefix oc-acl; }
+  import tailf-ncs { prefix ncs; }
+  import mdd { prefix mdd; }
 
   // meta
   organization "Cisco";
@@ -24,7 +27,112 @@ submodule system-ext-sub-nat {
   grouping config-ip-nat-grouping {
     container nat {
       description
-        "NAT configuration commands";
+        "Top level nat for pools.";
+      container pools {
+        description
+          "Top level container for pools.";
+        list pool {
+          description
+            "Define pool of addresses";
+          key "name";
+          leaf name {
+            type string;
+          }
+          container config {
+            leaf name {
+              type string;
+            }
+            leaf start-address {
+              type oc-inet:ipv4-address;
+            }
+            leaf end-address {
+              type oc-inet:ipv4-address;
+            }
+            choice prefix-choice {
+              leaf netmask {
+                description
+                  "Specify the network mask";
+                type oc-inet:ipv4-address;
+              }
+              leaf prefix-length {
+                description
+                  "Specify the prefix length";
+                type uint8 {
+                  range "1..32";
+                }
+              }
+            }
+          }
+        }
+      }
+      container inside {
+        description
+          "Inside address translation";
+        container source {
+          description
+            "Source address translation";
+          container local-addresses-access-lists {
+            list local-addresses-access-list {
+              description
+                "NAT an ACL of addresses";
+              key "local-addresses-access-list-name";
+              leaf local-addresses-access-list-name {
+                type leafref {
+                  path "../config/local-addresses-access-list-name";
+                }
+              }
+              container config {
+                leaf local-addresses-access-list-name {
+                  type leafref {
+                    path "/ncs:devices/ncs:device/mdd:openconfig/oc-acl:acl/oc-acl:acl-sets/oc-acl:acl-set/oc-acl:name";
+                  }
+                }
+                choice pool-or-interface {
+                  case global-pool-choice {
+                    leaf global-pool-name {
+                      description
+                        "Name pool of global addresses";
+                      type leafref {
+                         path "../../../../../../pools/pool/config/name";
+                      }
+                    }
+                  }
+                  case global-interface-choice {
+                    leaf global-interface-name {
+                      description
+                        "Specify interface for global address";
+                      type leafref {
+                          path "/ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-if:name";
+                      }
+                    }
+                  }
+                }
+                leaf overload {
+                  type boolean;
+                  description
+                    "Enables the router to use one global address for many local addresses.
+                    When overloading is configured, the TCP or User Datagram Protocol (UDP) port number of each
+                    inside host distinguishes between the multiple conversations using the same local IP address.";
+                }
+                leaf vrf {
+                  type union {
+                    type string;
+                    type enumeration {
+                      enum NONE {
+                        description
+                          "NAT translation rule is associated with the global table.";
+                      }
+                    }
+                  }
+                  default NONE;
+                  description
+                    "Associates the NAT translation rule with a particular VPN routing and forwarding (VRF) instance.";
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

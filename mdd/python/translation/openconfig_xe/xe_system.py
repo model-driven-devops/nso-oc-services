@@ -49,6 +49,17 @@ def xe_system_program_service(self) -> None:
     """
 
     # helper functions
+    def configure_local_addresses_access_list_nat() -> None:
+        if service_nat_acl.config.global_pool_name:
+            nat_acl_cdb.pool = service_nat_acl.config.global_pool_name
+        elif service_nat_acl.config.global_interface_name:
+            nat_acl_cdb.interface = service_nat_acl.config.global_interface_name
+        if service_nat_acl.config.overload:
+            nat_acl_cdb.overload.create()
+        elif service_nat_acl.config.overload is False:
+            if nat_acl_cdb.overload.exists():
+                nat_acl_cdb.overload.delete()
+
     def populate_accounting_events() -> None:
         for counter, m in enumerate(aaa_accounting_accounting_methods):
             if m == 'TACACS_ALL':
@@ -123,6 +134,27 @@ def xe_system_program_service(self) -> None:
         device_cdb.ios__ip.http.timeout_policy.idle = self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.connection
         device_cdb.ios__ip.http.timeout_policy.life = self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.life
         device_cdb.ios__ip.http.timeout_policy.requests = self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.requests
+    # nat pools
+    if len(self.service.oc_sys__system.services.nat.pools.pool) > 0:
+        for service_pool in self.service.oc_sys__system.services.nat.pools.pool:
+            pool_cdb = device_cdb.ios__ip.nat.pool.create(service_pool.name)
+            pool_cdb.start_address = service_pool.config.start_address
+            pool_cdb.end_address = service_pool.config.end_address
+            if service_pool.config.netmask:
+                pool_cdb.netmask = service_pool.config.netmask
+            elif service_pool.config.prefix_length:
+                pool_cdb.prefix_length = service_pool.config.prefix_length
+    # nat source inside local acl
+    if len(self.service.oc_sys__system.services.nat.inside.source.local_addresses_access_lists.local_addresses_access_list) > 0:
+        for service_nat_acl in self.service.oc_sys__system.services.nat.inside.source.local_addresses_access_lists.local_addresses_access_list:
+            if not service_nat_acl.config.vrf or service_nat_acl.config.vrf == 'NONE':
+                nat_acl_cdb = device_cdb.ios__ip.nat.inside.source.list.create(
+                    service_nat_acl.config.local_addresses_access_list_name)
+                configure_local_addresses_access_list_nat()
+            else:
+                nat_acl_cdb = device_cdb.ios__ip.nat.inside.source.list_vrf.list.create(
+                    service_nat_acl.config.local_addresses_access_list_name, service_nat_acl.config.vrf)
+                configure_local_addresses_access_list_nat()
     # clock
     if self.service.oc_sys__system.clock.config.timezone_name:
         name, hours, minutes = xe_convert_timezone_string(self.service.oc_sys__system.clock.config.timezone_name)
