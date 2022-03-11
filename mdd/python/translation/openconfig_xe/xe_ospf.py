@@ -41,6 +41,23 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
     elif service_protocol.ospfv2.oc_netinst__global.graceful_restart.config.enabled is False:
         if device_ospf_cbd.nsf_ietf.nsf.ietf.exists():
             device_ospf_cbd.nsf_ietf.nsf.ietf.delete()
+    # Default-Information Originate
+    if service_protocol.ospfv2.oc_netinst__global.config.oc_ospfv2_ext__default_information_originate.config.enabled:
+        device_ospf_cbd.default_information.originate.create()
+        if service_protocol.ospfv2.oc_netinst__global.config.oc_ospfv2_ext__default_information_originate.config.always:
+            device_ospf_cbd.default_information.originate.always.create()
+        elif service_protocol.ospfv2.oc_netinst__global.config.oc_ospfv2_ext__default_information_originate.config.always is False:
+            if device_ospf_cbd.default_information.originate.always.exists():
+                device_ospf_cbd.default_information.originate.always.delete()
+        if service_protocol.ospfv2.oc_netinst__global.config.oc_ospfv2_ext__default_information_originate.config.metric:
+            device_ospf_cbd.default_information.originate.metric = service_protocol.ospfv2.oc_netinst__global.config.oc_ospfv2_ext__default_information_originate.config.metric
+        if service_protocol.ospfv2.oc_netinst__global.config.oc_ospfv2_ext__default_information_originate.config.metric_type:
+            device_ospf_cbd.default_information.originate.metric_type = service_protocol.ospfv2.oc_netinst__global.config.oc_ospfv2_ext__default_information_originate.config.metric_type
+        if service_protocol.ospfv2.oc_netinst__global.config.oc_ospfv2_ext__default_information_originate.config.route_map:
+            device_ospf_cbd.default_information.originate.route_map = service_protocol.ospfv2.oc_netinst__global.config.oc_ospfv2_ext__default_information_originate.config.route_map
+    elif service_protocol.ospfv2.oc_netinst__global.config.oc_ospfv2_ext__default_information_originate.config.enabled is False:
+        if device_ospf_cbd.default_information.originate.exists():
+            device_ospf_cbd.default_information.originate.delete()
     # Inter-area propagation policy
     if len(service_protocol.ospfv2.oc_netinst__global.inter_area_propagation_policies.inter_area_propagation_policy) > 0:
         for service_policy in service_protocol.ospfv2.oc_netinst__global.inter_area_propagation_policies.inter_area_propagation_policy:
