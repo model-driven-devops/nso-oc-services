@@ -69,6 +69,11 @@ def xe_bgp_global_program_service(self, service_protocol, network_instance_type,
                 if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
                     if not device_bgp_cbd.address_family.ipv4.exists('unicast'):
                         device_bgp_cbd.address_family.ipv4.create('unicast')
+                    if afi_safi_service.ipv4_unicast.config.send_default_route:
+                        device_bgp_cbd.address_family.ipv4['unicast'].default_information.originate.create()
+                    elif afi_safi_service.ipv4_unicast.config.send_default_route is False:
+                        if device_bgp_cbd.address_family.ipv4['unicast'].default_information.originate.exists():
+                            device_bgp_cbd.address_family.ipv4['unicast'].default_information.originate.delete()
                 elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV4_UNICAST':
                     if not device_bgp_cbd.address_family.vpnv4.exists('unicast'):
                         device_bgp_cbd.address_family.vpnv4.create('unicast')
@@ -83,6 +88,11 @@ def xe_bgp_global_program_service(self, service_protocol, network_instance_type,
                         device_bgp_cbd.address_family.with_vrf.ipv4.create('unicast')
                     if not device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.exists(vrf_name):
                         device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.create(vrf_name)
+                    if afi_safi_service.ipv4_unicast.config.send_default_route:
+                        device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].default_information.originate.create()
+                    elif afi_safi_service.ipv4_unicast.config.send_default_route is False:
+                        if device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].default_information.originate.exists():
+                            device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].default_information.originate.delete()
                 elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
                     pass
 
