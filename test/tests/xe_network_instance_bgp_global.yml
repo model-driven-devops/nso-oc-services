@@ -242,9 +242,9 @@
         assertions:
           - "'+ no bgp default ipv4-unicast:' in changes"
 
-    - name: test ipv4_unicast
+    - name: test ipv4_unicast_default_originate
       tags:
-        - ipv4_unicast
+        - ipv4_unicast_default_originate
       import_role:
         name: nso-openconfig-test
       vars:
@@ -275,11 +275,15 @@
                                   config:
                                     afi-safi-name: 'IPV4_UNICAST'
                                     enabled: true
+                                  ipv4-unicast:
+                                    config:
+                                      send-default-route: True
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
           - "'+ address-family ipv4:' in changes"
+          - "'+  default-information originate:' in changes"
 
     - name: test vpnv4_unicast
       tags:
@@ -320,9 +324,9 @@
         assertions:
           - "'+ address-family vpnv4:' in changes"
 
-    - name: test vrf_ipv4_unicast
+    - name: test vrf_ipv4_unicast_default_originate
       tags:
-        - vrf_ipv4_unicast
+        - vrf_ipv4_unicast_default_originate
       import_role:
         name: nso-openconfig-test
       vars:
@@ -373,11 +377,15 @@
                                   config:
                                     afi-safi-name: 'IPV4_UNICAST'
                                     enabled: true
+                                  ipv4-unicast:
+                                    config:
+                                      send-default-route: True
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
+          - "'+  default-information originate:' in changes"
     - name: test dynamic_peers
       tags:
         - dynamic_peers
