@@ -23,6 +23,10 @@ module openconfig-ospfv2-ext{
   description
     "Augmentation to openconfig ospfv2 model.";
 
+  revision "2022-03-11" {
+    description
+      "Added default-information originate";
+  }
   revision "2021-11-29" {
     description
       "Added stub area options";
@@ -30,6 +34,42 @@ module openconfig-ospfv2-ext{
   revision "2021-11-18" {
     description
       "Initial revision";
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:ospfv2/oc-netinst:global/oc-netinst:config {
+    when "../../../oc-netinst:identifier = 'oc-pol-types:OSPF'";
+    container default-information-originate {
+      container config {
+        leaf enabled {
+          type boolean;
+          description
+            "XE - Enables default routes to be injected into the OSPF routing protocol.";
+        }
+        leaf always {
+          type boolean;
+          description
+            "XE - Enables default-route injection regardless if default route is present in the routing table.";
+        }
+        leaf metric {
+          type uint64 {
+            range "0..16777214";
+          }
+          description
+            "XE - Sets the metric for the injected default-route.";
+        }
+        leaf metric-type {
+          type uint8 {
+            range "1..2";
+          }
+          description
+            "XE - Sets the OSPF metric-type for the injected default-route.";
+        }
+        leaf route-map {
+          type string; 
+          description
+            "XE - Enables conditional default-route injection.";
+        }
+      }
+    }
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:ospfv2/oc-netinst:global/oc-netinst:timers/oc-netinst:spf/oc-netinst:config {
     when "../../../../../oc-netinst:identifier = 'oc-pol-types:OSPF'";

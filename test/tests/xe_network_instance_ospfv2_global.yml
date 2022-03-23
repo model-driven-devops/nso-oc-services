@@ -504,3 +504,80 @@
         assertion_ignore_errors: false
         assertions:
           - "'+router ospf 1 vrf abc:' in changes"
+          
+    - name: test default_information_originate
+      tags:
+        - default_information_originate
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          global:
+                            config:
+                              openconfig-ospfv2-ext:default-information-originate:
+                                openconfig-ospfv2-ext:config:
+                                  openconfig-ospfv2-ext:enabled: True
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ default-information originate:' in changes"
+
+    - name: test default_information_originate_options
+      tags:
+        - default_information_originate
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          global:
+                            config:
+                              openconfig-ospfv2-ext:default-information-originate:
+                                openconfig-ospfv2-ext:config:
+                                  openconfig-ospfv2-ext:enabled: True
+                                  openconfig-ospfv2-ext:always: True
+                                  openconfig-ospfv2-ext:metric: '5'
+                                  openconfig-ospfv2-ext:metric-type: '1'
+                                  openconfig-ospfv2-ext:route-map: 'TEST' 
+
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ default-information originate always metric 5 metric-type 1 route-map TEST:' in changes"
