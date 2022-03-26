@@ -367,7 +367,7 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
                                         if not nh.interface_ref.config.subinterface or nh.interface_ref.config.subinterface == 0:
                                             next_hop_interface = nh.interface_ref.config.interface
                                         else:
-                                            next_hop_interface = f"{nh.interface_ref.config.interface}/{str(nh.interface_ref.config.subinterface)}"
+                                            next_hop_interface = f"{nh.interface_ref.config.interface}.{str(nh.interface_ref.config.subinterface)}"
                                         route = device_route.ip_route_interface_list.create(
                                             str(network.network_address),
                                             str(network.netmask),
@@ -431,7 +431,7 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
                                         if not nh.interface_ref.config.subinterface or nh.interface_ref.config.subinterface == 0:
                                             next_hop_interface = nh.interface_ref.config.interface
                                         else:
-                                            next_hop_interface = f"{nh.interface_ref.config.interface}/{str(nh.interface_ref.config.subinterface)}"
+                                            next_hop_interface = f"{nh.interface_ref.config.interface}.{str(nh.interface_ref.config.subinterface)}"
                                         route = route_vrf.ip_route_interface_list.create(str(network.network_address),
                                                                                          str(network.netmask),
                                                                                          next_hop_interface)
