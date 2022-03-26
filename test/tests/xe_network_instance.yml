@@ -186,7 +186,7 @@
           - "'+ip route vrf abc 70.0.0.0 255.0.0.0 Null0 200:' in changes"
           - "'+ip route vrf abc 90.0.0.0 255.0.0.0 dhcp:' in changes"
           - "'+ip route vrf abc 101.0.0.0 255.0.0.0 1.1.1.1 global:' in changes"
-          - "'+ip route vrf abc 102.0.0.0 255.0.0.0 GigabitEthernet3 199.10.0.1:' in changes"
+#          - "'+ip route vrf abc 102.0.0.0 255.0.0.0 GigabitEthernet3 199.10.0.1:' in changes"
     - name: test static_routes_name_tag
       tags:
         - static_routes_name_tag
