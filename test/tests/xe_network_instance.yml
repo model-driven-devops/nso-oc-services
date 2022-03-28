@@ -51,6 +51,31 @@
                                 ip: '199.10.0.101'
                           config:
                             dhcp-client: false
+                - config:
+                    description: 'Physical Interface 4 802.1q'
+                    enabled: true
+                    name: 'GigabitEthernet4'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet4'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          description: 'Sub interface 10'
+                          enabled: true
+                          index: 10
+                        index: 10
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.10.10.10'
+                                  prefix-length: '24'
+                                ip: '10.10.10.10'
+                          config:
+                            enabled: true
+                        openconfig-vlan:vlan:
+                          config:
+                            vlan-id: 10
             openconfig-network-instance:network-instances:
               network-instance:
                 - name: 'default'
@@ -124,6 +149,11 @@
                           id: 'GigabitEthernet3'
                           interface: 'GigabitEthernet3'
                           subinterface: 0
+                      - id: 'GigabitEthernet4'
+                        config:
+                          id: 'GigabitEthernet4'
+                          interface: 'GigabitEthernet4'
+                          subinterface: 10
                   openconfig-network-instance:protocols:
                     protocol:
                       - identifier: 'STATIC'
@@ -169,12 +199,25 @@
                                 next-hop:
                                   - config:
                                       index: 'GigabitEthernet3'
-                                      next-hop: 'LOCAL_LINK'
+                                      next-hop: '199.10.0.1'
                                     index: 'GigabitEthernet3'
                                     interface-ref:
                                       config:
                                         interface: 'GigabitEthernet3'
                                         subinterface: 0
+                            - prefix: '103.0.0.0/8'
+                              config:
+                                prefix: '103.0.0.0/8'
+                              next-hops:
+                                next-hop:
+                                  - config:
+                                      index: 'GigabitEthernet4'
+                                      next-hop: '99.10.0.1'
+                                    index: 'GigabitEthernet4'
+                                    interface-ref:
+                                      config:
+                                        interface: 'GigabitEthernet4'
+                                        subinterface: 10
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -186,7 +229,8 @@
           - "'+ip route vrf abc 70.0.0.0 255.0.0.0 Null0 200:' in changes"
           - "'+ip route vrf abc 90.0.0.0 255.0.0.0 dhcp:' in changes"
           - "'+ip route vrf abc 101.0.0.0 255.0.0.0 1.1.1.1 global:' in changes"
-#          - "'+ip route vrf abc 102.0.0.0 255.0.0.0 GigabitEthernet3 199.10.0.1:' in changes"
+          - "'+ip route vrf abc 102.0.0.0 255.0.0.0 GigabitEthernet3 199.10.0.1:' in changes"
+          - "'+ip route vrf abc 103.0.0.0 255.0.0.0 GigabitEthernet4.10 99.10.0.1:' in changes"
     - name: test static_routes_name_tag
       tags:
         - static_routes_name_tag

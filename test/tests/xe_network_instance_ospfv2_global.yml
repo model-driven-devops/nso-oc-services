@@ -549,6 +549,20 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              policy-definitions:
+                policy-definition:
+                  - name: 'TEST'
+                    config:
+                      name: 'TEST'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
+                          config:
+                            name: '10'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'
             openconfig-network-instance:network-instances:
               network-instance:
                 - name: 'default'

@@ -339,123 +339,16 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
                     if network_instance.config.type == 'oc-ni-types:DEFAULT_INSTANCE':  # if global table
                         if p.static_routes.static:
                             for static in p.static_routes.static:
-                                network = ipaddress.ip_network(static.prefix)
                                 for nh in static.next_hops.next_hop:
-                                    if verify_ipv4(nh.config.next_hop):
-                                        route = device_route.ip_route_forwarding_list.create(
-                                            str(network.network_address),
-                                            str(network.netmask),
-                                            nh.config.next_hop)
-                                        if nh.config.metric:
-                                            route.metric = nh.config.metric
-                                        if static.config.description:
-                                            route.name = static.config.description
-                                        if static.config.set_tag:
-                                            route.tag = static.config.set_tag
-                                    elif nh.config.next_hop == 'oc-loc-rt:DROP':
-                                        route = device_route.ip_route_interface_list.create(
-                                            str(network.network_address),
-                                            str(network.netmask),
-                                            'Null0')
-                                        if nh.config.metric:
-                                            route.metric = nh.config.metric
-                                        if static.config.description:
-                                            route.name = static.config.description
-                                        if static.config.set_tag:
-                                            route.tag = static.config.set_tag
-                                    elif nh.config.next_hop == 'oc-loc-rt:LOCAL_LINK':
-                                        if not nh.interface_ref.config.subinterface or nh.interface_ref.config.subinterface == 0:
-                                            next_hop_interface = nh.interface_ref.config.interface
-                                        else:
-                                            next_hop_interface = f"{nh.interface_ref.config.interface}.{str(nh.interface_ref.config.subinterface)}"
-                                        route = device_route.ip_route_interface_list.create(
-                                            str(network.network_address),
-                                            str(network.netmask),
-                                            next_hop_interface)
-                                        if nh.config.metric:
-                                            route.metric = nh.config.metric
-                                        if nh.config.oc_loc_rt_ext__dhcp_learned == 'ENABLE':
-                                            route.dhcp.create()
-                                        if nh.config.oc_loc_rt_ext__dhcp_learned == 'DISABLE':
-                                            if route.dhcp.exists():
-                                                route.dhcp.delete()
-                                        if static.config.description:
-                                            route.name = static.config.description
-                                        if static.config.set_tag:
-                                            route.tag = static.config.set_tag
-                                    elif nh.config.next_hop == 'oc-loc-rt-ext:DHCP':
-                                        route = device_route.ip_route_interface_list.create(
-                                            str(network.network_address),
-                                            str(network.netmask),
-                                            'dhcp')
-                                        if nh.config.metric:
-                                            route.metric = nh.config.metric
-                                        if static.config.description:
-                                            raise ValueError('XE static routes using DHCP next-hop do not support descriptions.')
-                                        if static.config.set_tag:
-                                            raise ValueError('XE static routes using DHCP next-hop do not support tags.')
+                                    configure_static_route_main(device_route, static, nh)
                     elif network_instance.config.type == 'oc-ni-types:L3VRF':  # if VRF table
                         if not device_route.vrf.exists(network_instance.name):
                             device_route.vrf.create(network_instance.name)
                         if p.static_routes.static:
                             for static in p.static_routes.static:
                                 route_vrf = device_route.vrf[network_instance.name]
-                                network = ipaddress.ip_network(static.prefix)
                                 for nh in static.next_hops.next_hop:
-                                    if verify_ipv4(nh.config.next_hop):
-                                        route = route_vrf.ip_route_forwarding_list.create(str(network.network_address),
-                                                                                          str(network.netmask),
-                                                                                          nh.config.next_hop)
-                                        if nh.config.metric:
-                                            route.metric = nh.config.metric
-                                        if nh.config.oc_loc_rt_ext__global:
-                                            route.ios__global.create()
-                                        if nh.config.oc_loc_rt_ext__global is False:
-                                            if route.ios__global.exists():
-                                                route.ios__global.delete()
-                                        if static.config.description:
-                                            route.name = static.config.description
-                                        if static.config.set_tag:
-                                            route.tag = static.config.set_tag
-                                    elif nh.config.next_hop == 'oc-loc-rt:DROP':
-                                        route = route_vrf.ip_route_interface_list.create(str(network.network_address),
-                                                                                         str(network.netmask),
-                                                                                         'Null0')
-                                        if nh.config.metric:
-                                            route.metric = nh.config.metric
-                                        if static.config.description:
-                                            route.name = static.config.description
-                                        if static.config.set_tag:
-                                            route.tag = static.config.set_tag
-                                    elif nh.config.next_hop == 'oc-loc-rt:LOCAL_LINK':
-                                        if not nh.interface_ref.config.subinterface or nh.interface_ref.config.subinterface == 0:
-                                            next_hop_interface = nh.interface_ref.config.interface
-                                        else:
-                                            next_hop_interface = f"{nh.interface_ref.config.interface}.{str(nh.interface_ref.config.subinterface)}"
-                                        route = route_vrf.ip_route_interface_list.create(str(network.network_address),
-                                                                                         str(network.netmask),
-                                                                                         next_hop_interface)
-                                        if nh.config.metric:
-                                            route.metric = nh.config.metric
-                                        if nh.config.oc_loc_rt_ext__dhcp_learned == 'ENABLE':
-                                            route.dhcp.create()
-                                        if nh.config.oc_loc_rt_ext__dhcp_learned == 'DISABLE':
-                                            if route.dhcp.exists():
-                                                route.dhcp.delete()
-                                        if static.config.description:
-                                            route.name = static.config.description
-                                        if static.config.set_tag:
-                                            route.tag = static.config.set_tag
-                                    elif nh.config.next_hop == 'oc-loc-rt-ext:DHCP':
-                                        route = route_vrf.ip_route_interface_list.create(str(network.network_address),
-                                                                                         str(network.netmask),
-                                                                                         'dhcp')
-                                        if nh.config.metric:
-                                            route.metric = nh.config.metric
-                                        if static.config.description:
-                                            raise ValueError('XE static routes using DHCP next-hop do not support descriptions.')
-                                        if static.config.set_tag:
-                                            raise ValueError('XE static routes using DHCP next-hop do not support tags.')
+                                    configure_static_route_main(route_vrf, static, nh)
 
                 if p.identifier == 'oc-pol-types:OSPF':
                     xe_ospf_program_service(self, p, network_instance.config.type, network_instance.config.name)
@@ -468,7 +361,6 @@ def xe_configure_protocols(self, table_connections: dict) -> None:
 
     # Configure redistribution into OSPF
     xe_ospf_redistribution_program_service(self, table_connections)
-
 
     # Sort BGP instance information so oc-ni-types:DEFAULT_INSTANCE is first and process
     if instance_bgp_list:
@@ -502,3 +394,120 @@ def xe_get_all_interfaces(self) -> list:
                 except:
                     pass
     return interfaces
+
+
+def create_route_nh_interface(cbd_device_ip_route, service_static_route_object, service_next_hop_object,
+                              cdb_route_next_hop) -> None:
+    """
+    Configures static routes with next-hop interface in global or VRF route tables
+    :param cbd_device_ip_route:
+    :param service_static_route_object:
+    :param service_next_hop_object:
+    :param cdb_route_next_hop:
+    :return:
+    """
+    ipaddress_prefix = ipaddress.ip_network(service_static_route_object.prefix)
+    route = cbd_device_ip_route.ip_route_interface_list.create(
+        str(ipaddress_prefix.network_address),
+        str(ipaddress_prefix.netmask),
+        cdb_route_next_hop)
+    if service_next_hop_object.config.metric:
+        route.metric = service_next_hop_object.config.metric
+    if service_static_route_object.config.description:
+        if cdb_route_next_hop == 'dhcp':
+            raise ValueError('XE static routes using DHCP next-hop do not support descriptions.')
+        else:
+            route.name = service_static_route_object.config.description
+    if service_static_route_object.config.set_tag:
+        if cdb_route_next_hop == 'dhcp':
+            raise ValueError('XE static routes using DHCP next-hop do not support tags.')
+        else:
+            route.tag = service_static_route_object.config.set_tag
+    if service_next_hop_object.config.oc_loc_rt_ext__dhcp_learned == 'ENABLE':
+        route.dhcp.create()
+    if service_next_hop_object.config.oc_loc_rt_ext__dhcp_learned == 'DISABLE':
+        if route.dhcp.exists():
+            route.dhcp.delete()
+
+
+def create_route_nh_interface_and_ip(cbd_device_ip_route, service_static_route_object,
+                                     service_next_hop_object, cdb_route_next_hop,
+                                     cdb_route_next_hop_ip) -> None:
+    """
+    Configures static routes with a next-hop interface and IP in global or VRF route tables
+    :param cbd_device_ip_route:
+    :param service_static_route_object:
+    :param service_next_hop_object:
+    :param cdb_route_next_hop:
+    :param cdb_route_next_hop_ip:
+    :return:
+    """
+    ipaddress_prefix = ipaddress.ip_network(service_static_route_object.prefix)
+    route = cbd_device_ip_route.ip_route_interface_forwarding_list.create(
+        str(ipaddress_prefix.network_address),
+        str(ipaddress_prefix.netmask),
+        cdb_route_next_hop,
+        cdb_route_next_hop_ip)
+    if service_next_hop_object.config.metric:
+        route.metric = service_next_hop_object.config.metric
+    if service_static_route_object.config.description:
+        route.name = service_static_route_object.config.description
+    if service_static_route_object.config.set_tag:
+        route.tag = service_static_route_object.config.set_tag
+
+
+def create_route_nh_ip(cbd_device_ip_route, service_static_route_object, service_next_hop_object) -> None:
+    """
+    Configures static routes with an IP next-hop in global or VRF route tables
+    :param cbd_device_ip_route:
+    :param service_static_route_object:
+    :param service_next_hop_object:
+    :return:
+    """
+    ipaddress_prefix = ipaddress.ip_network(service_static_route_object.prefix)
+    route = cbd_device_ip_route.ip_route_forwarding_list.create(
+        str(ipaddress_prefix.network_address),
+        str(ipaddress_prefix.netmask),
+        service_next_hop_object.config.next_hop)
+    if service_next_hop_object.config.metric:
+        route.metric = service_next_hop_object.config.metric
+    if service_static_route_object.config.description:
+        route.name = service_static_route_object.config.description
+    if service_static_route_object.config.set_tag:
+        route.tag = service_static_route_object.config.set_tag
+    if hasattr(service_next_hop_object.config, 'oc_loc_rt_ext__global'):
+        if service_next_hop_object.config.oc_loc_rt_ext__global:
+            route.ios__global.create()
+        if service_next_hop_object.config.oc_loc_rt_ext__global is False:
+            if route.ios__global.exists():
+                route.ios__global.delete()
+
+
+def configure_static_route_main(cdb_ip_route, static, nh) -> None:
+    """
+    Configure static routes
+    :param cdb_ip_route:
+    :param static:
+    :param nh:
+    :return:
+    """
+    if verify_ipv4(nh.config.next_hop) and not nh.interface_ref.config.interface:
+        create_route_nh_ip(cdb_ip_route, static, nh)
+    elif verify_ipv4(nh.config.next_hop) and nh.interface_ref.config.interface:
+        if not nh.interface_ref.config.subinterface or nh.interface_ref.config.subinterface == 0:
+            next_hop_interface = nh.interface_ref.config.interface
+        else:
+            next_hop_interface = f'{nh.interface_ref.config.interface}.{str(nh.interface_ref.config.subinterface)}'
+        create_route_nh_interface_and_ip(cdb_ip_route, static, nh, next_hop_interface, nh.config.next_hop)
+    elif nh.config.next_hop == 'oc-loc-rt-ext:DHCP':
+        create_route_nh_interface(cdb_ip_route, static, nh, 'dhcp')
+    elif nh.config.next_hop == 'oc-loc-rt:DROP':
+        create_route_nh_interface(cdb_ip_route, static, nh, 'Null0')
+    elif nh.config.next_hop == 'oc-loc-rt:LOCAL_LINK' or not nh.config.next_hop:
+        if not nh.interface_ref.config.subinterface or nh.interface_ref.config.subinterface == 0:
+            next_hop_interface = nh.interface_ref.config.interface
+        else:
+            next_hop_interface = f'{nh.interface_ref.config.interface}.{str(nh.interface_ref.config.subinterface)}'
+        create_route_nh_interface(cdb_ip_route, static, nh, next_hop_interface)
+    else:
+        raise ValueError('Unsupported static route configuration.')
