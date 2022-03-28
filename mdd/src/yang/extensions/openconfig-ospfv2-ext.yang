@@ -12,6 +12,7 @@ module openconfig-ospfv2-ext{
   import mdd { prefix mdd; }
   import openconfig-network-instance { prefix "oc-netinst"; }
   import openconfig-extensions { prefix oc-ext; }
+  import openconfig-routing-policy { prefix oc-rpol; }
 
 
   // meta
@@ -64,7 +65,10 @@ module openconfig-ospfv2-ext{
             "XE - Sets the OSPF metric-type for the injected default-route.";
         }
         leaf route-map {
-          type string; 
+          type leafref {
+            path "/ncs:devices/ncs:device/mdd:openconfig/oc-rpol:routing-policy/oc-rpol:policy-definitions/" +
+              "oc-rpol:policy-definition/oc-rpol:name";
+            }
           description
             "XE - Enables conditional default-route injection.";
         }
