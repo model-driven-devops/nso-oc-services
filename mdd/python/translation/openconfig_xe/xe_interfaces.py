@@ -61,10 +61,31 @@ def xe_update_vlan_db(self) -> None:
             vlan.shutdown.delete()
 
 
+def check_for_ipv6(s):
+    """
+    Is IPv6 being used?
+    """
+    for interface in s.service.oc_if__interfaces.interface:
+        for sub_if in interface.subinterfaces.subinterface:
+            if sub_if.oc_ip__ipv6.addresses.address:
+                return True
+        if interface.oc_tun__tunnel.ipv6.addresses.address:
+            return True
+        if interface.config.type == 'ianaift:ieee8023adLag':
+            if interface.oc_lag__aggregation.oc_ip__ipv6.config.dhcp_client or \
+                    interface.oc_lag__aggregation.oc_ip__ipv6.addresses.address:
+                return True
+    return False
+
+
 def xe_process_interfaces(self) -> None:
     """
     Programs device interfaces as defined in model
     """
+    routing_ipv6 = check_for_ipv6(self)
+    if routing_ipv6:
+        self.root.devices.device[self.device_name].config.ios__ipv6.unicast_routing.create()
+        self.root.devices.device[self.device_name].config.ios__fhrp.version.vrrp = 'v3'
     for interface in self.service.oc_if__interfaces.interface:
         # Layer 3 VLAN interfaces
         if interface.config.type == 'ianaift:l3ipvlan':
@@ -86,6 +107,12 @@ def xe_process_interfaces(self) -> None:
             if interface.config.mtu:
                 vlan.mtu = interface.config.mtu
             xe_configure_ipv4(self, vlan, interface.routed_vlan.ipv4)
+            xe_configure_ipv6(self, vlan, interface.routed_vlan.ipv6)
+            if routing_ipv6:
+                xe_configure_vrrp_v3(self, vlan, interface.routed_vlan.ipv4, 'ipv4')
+                xe_configure_vrrp_v3(self, vlan, interface.routed_vlan.ipv6, 'ipv6')
+            else:
+                xe_configure_vrrp_v2_legacy(self, vlan, interface.routed_vlan.ipv4)
 
         # Layer 2 interfaces
         elif interface.config.type == 'ianaift:l2vlan' or (
@@ -109,7 +136,7 @@ def xe_process_interfaces(self) -> None:
             xe_interface_config(interface, port_channel)
             xe_interface_hold_time(interface, port_channel)
             if len(interface.subinterfaces.subinterface) == 0:
-                xe_interface_aggregation(self, interface, port_channel)
+                xe_interface_aggregation(self, interface, port_channel, routing_ipv6)
             else:
                 for subinterface_service in interface.subinterfaces.subinterface:
                     if subinterface_service.index != 0:
@@ -132,11 +159,18 @@ def xe_process_interfaces(self) -> None:
                                 subinterface_cdb.shutdown.create()
                         subinterface_cdb.encapsulation.dot1Q.vlan_id = subinterface_service.vlan.config.vlan_id
                         xe_configure_ipv4(self, subinterface_cdb, subinterface_service.ipv4)
+                        xe_configure_ipv6(self, subinterface_cdb, subinterface_service.ipv6)
+                        if routing_ipv6:
+                            xe_configure_vrrp_v3(self, subinterface_cdb, subinterface_service.ipv4, 'ipv4')
+                            xe_configure_vrrp_v3(self, subinterface_cdb, subinterface_service.ipv6, 'ipv6')
+                        else:
+                            xe_configure_vrrp_v2_legacy(self, subinterface_cdb, subinterface_service.ipv4)
                     else:  # IPv4 for main interface
                         # Remove switchport
                         if physical_interface.switchport.exists():
                             physical_interface.switchport.delete()
-                        xe_interface_aggregation(self, interface, port_channel)
+                        xe_interface_aggregation(self, interface, port_channel, routing_ipv6)
+
         # Physical and Sub-interfaces
         elif interface.config.type == 'ianaift:ethernetCsmacd':
             interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
@@ -169,11 +203,23 @@ def xe_process_interfaces(self) -> None:
                             subinterface_cdb.shutdown.create()
                     subinterface_cdb.encapsulation.dot1Q.vlan_id = subinterface_service.vlan.config.vlan_id
                     xe_configure_ipv4(self, subinterface_cdb, subinterface_service.ipv4)
+                    xe_configure_ipv6(self, subinterface_cdb, subinterface_service.ipv6)
+                    if routing_ipv6:
+                        xe_configure_vrrp_v3(self, subinterface_cdb, subinterface_service.ipv4, 'ipv4')
+                        xe_configure_vrrp_v3(self, subinterface_cdb, subinterface_service.ipv6, 'ipv6')
+                    else:
+                        xe_configure_vrrp_v2_legacy(self, subinterface_cdb, subinterface_service.ipv4)
                 else:  # IPv4 for main interface
                     # Remove switchport
                     if physical_interface.switchport.exists():
                         physical_interface.switchport.delete()
                     xe_configure_ipv4(self, physical_interface, subinterface_service.ipv4)
+                    xe_configure_ipv6(self, physical_interface, subinterface_service.ipv6)
+                    if routing_ipv6:
+                        xe_configure_vrrp_v3(self, physical_interface, subinterface_service.ipv4, 'ipv4')
+                        xe_configure_vrrp_v3(self, physical_interface, subinterface_service.ipv6, 'ipv6')
+                    else:
+                        xe_configure_vrrp_v2_legacy(self, physical_interface, subinterface_service.ipv4)
 
         # Loopback interfaces
         elif interface.config.type == 'ianaift:softwareLoopback':
@@ -183,6 +229,7 @@ def xe_process_interfaces(self) -> None:
             loopback = self.root.devices.device[self.device_name].config.ios__interface.Loopback[interface_number]
             xe_interface_config(interface, loopback)
             xe_configure_ipv4(self, loopback, interface.subinterfaces.subinterface[0].ipv4)
+            xe_configure_ipv6(self, loopback, interface.subinterfaces.subinterface[0].ipv6)
 
         # VASI interfaces
         elif interface.config.type == 'iftext:vasi':
@@ -194,6 +241,7 @@ def xe_process_interfaces(self) -> None:
             vasi_interface = class_attribute[interface_number]
             xe_interface_config(interface, vasi_interface)
             xe_configure_ipv4(self, vasi_interface, interface.subinterfaces.subinterface[0].ipv4)
+            xe_configure_ipv6(self, vasi_interface, interface.subinterfaces.subinterface[0].ipv6)
 
         # GRE Tunnel interface
         elif interface.config.type == 'ianaift:tunnel':
@@ -206,6 +254,7 @@ def xe_process_interfaces(self) -> None:
             xe_interface_config(interface, tunnel_interface)
             xe_configure_tunnel_interface(interface, tunnel_interface)
             xe_configure_ipv4(self, tunnel_interface, interface.oc_tun__tunnel.ipv4)
+            xe_configure_ipv6(self, tunnel_interface, interface.oc_tun__tunnel.ipv6)
         else:
             raise ValueError(
                 f'Interface type {interface.config.type} not supported by this NSO_OC_Services implementation. Please file an issue at https://github.com/model-driven-devops/nso-oc-services')
@@ -292,7 +341,7 @@ def xe_interface_ethernet(interface_service: ncs.maagic.ListElement, interface_c
 
 
 def xe_interface_aggregation(s, interface_service: ncs.maagic.ListElement,
-                             interface_cdb: ncs.maagic.ListElement) -> None:
+                             interface_cdb: ncs.maagic.ListElement, ipv6: bool) -> None:
     if interface_service.aggregation.config.min_links:
         interface_cdb.port_channel.min_links = int(interface_service.aggregation.config.min_links)
 
@@ -304,6 +353,12 @@ def xe_interface_aggregation(s, interface_service: ncs.maagic.ListElement,
             interface_cdb.switchport.delete()
     if interface_service.aggregation.ipv4.addresses.address:
         xe_configure_ipv4(s, interface_cdb, interface_service.aggregation.ipv4)
+        xe_configure_ipv6(s, interface_cdb, interface_service.aggregation.ipv6)
+        if ipv6:
+            xe_configure_vrrp_v3(s, interface_cdb, interface_service.aggregation.ipv4, 'ipv4')
+            xe_configure_vrrp_v3(s, interface_cdb, interface_service.aggregation.ipv6, 'ipv6')
+        else:
+            xe_configure_vrrp_v2_legacy(s, interface_cdb, interface_service.aggregation.ipv4)
 
 
 def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container) -> None:
@@ -383,7 +438,105 @@ def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: nc
             interface_cdb.ip.nat.inside.delete()
         elif interface_cdb.ip.nat.outside.exists():
             interface_cdb.ip.nat.outside.delete()
+
+
+def xe_configure_ipv6(s, interface_cdb: ncs.maagic.ListElement, service_ipv6: ncs.maagic.Container) -> None:
+    """
+    Configures openconfig-if-ip ipv6-top
+    """
+    # Get current cdb prefixes
+    prefixes_cdb = list()
+    for x in interface_cdb.ipv6.address.prefix_list:
+        prefixes_cdb.append(x.prefix.upper())
+    # Create service config prefixes list
+    prefixes_service = list()
+    if len(service_ipv6.addresses.address) > 0:
+        if interface_cdb.ipv6.address.dhcp.exists():
+            interface_cdb.ipv6.address.dhcp.delete()
+        for a in service_ipv6.addresses.address:
+            prefixes_service.append(f"{a.config.ip.upper()}/{str(a.config.prefix_length)}")
+
+        # Remove unrequested Prefixes from CDB
+        prefixes_to_remove = list()
+        for prefix in prefixes_cdb:
+            if prefix not in prefixes_service[1:]:
+                prefixes_to_remove.append(prefix)
+        for prefix in prefixes_to_remove:
+            del interface_cdb.ipv6.address.prefix_list[prefix]
+
+        # Update/Create needed IP prefixes in CDB
+        for prefix in prefixes_service:
+            interface_cdb.ipv6.address.prefix_list.create(prefix)
+    else:
+        if service_ipv6.config.dhcp_client:
+            interface_cdb.ipv6.address.dhcp.create()
+    if service_ipv6.config.dhcp_client is False:
+        if interface_cdb.ipv6.address.dhcp.exists():
+            interface_cdb.ipv6.address.dhcp.delete()
+    # ip mtu
+    if service_ipv6.config.mtu:
+        interface_cdb.ipv6.mtu = service_ipv6.config.mtu
+    # adjust TCP MSS
+    if service_ipv6.config.oc_if_ip_mdd_ext__tcp_adjust_mss:
+        interface_cdb.ipv6.tcp.adjust_mss = service_ipv6.config.oc_if_ip_mdd_ext__tcp_adjust_mss
+    # no ip redirects
+    if service_ipv6.config.oc_if_ip_mdd_ext__redirects:
+        interface_cdb.ipv6.redirects = True
+    elif service_ipv6.config.oc_if_ip_mdd_ext__redirects is False:
+        interface_cdb.ipv6.redirects = False
+    # no ip unreachables
+    if service_ipv6.config.oc_if_ip_mdd_ext__unreachables:
+        interface_cdb.ipv6.unreachables = True
+    elif service_ipv6.config.oc_if_ip_mdd_ext__unreachables is False:
+        interface_cdb.ipv6.unreachables = False
+
+
+def xe_configure_vrrp_v3(s, interface_cdb: ncs.maagic.ListElement,
+                              service_ip: ncs.maagic.Container,
+                              address_family: str) -> None:
+    """
+    Configures ipv4 vrrp v3 with ipv4 support
+    """
+    for a in service_ip.addresses.address:
+        if hasattr(a, 'vrrp'):
+            if a.vrrp.vrrp_group:
+                for v in a.vrrp.vrrp_group:
+                    if not interface_cdb.vrrv3p_v3.vrrp.exists((v.virtual_router_id, address_family)):
+                        interface_cdb.vrrv3p_v3.vrrp.create(v.virtual_router_id, address_family)
+                    vrrp_group = interface_cdb.vrrv3p_v3.vrrp[v.virtual_router_id, address_family]
+                    # priority
+                    if v.config.priority:
+                        vrrp_group.priority = v.config.priority
+                    # preempt
+                    if v.config.preempt:
+                        if v.config.preempt_delay:
+                            vrrp_group.preempt.delay.minimum = v.config.preempt_delay
+                        else:
+                            vrrp_group.preempt.delay.minimum = 0
+                    # virtual address
+                    if v.config.virtual_address:
+                        for counter, address in enumerate(v.config.virtual_address):
+                            if counter == 0:
+                                address_1 = vrrp_group.address.primary_list.create(address)
+                                if address_family == 'ipv6':
+                                    address_1.primary.create()
+                            # else:  TODO add secondaries
+                            #     vrrp_group.address.secondary_address.create(address)
+                    if v.config.advertisement_interval:  # <100-40950>  Advertisement interval in milliseconds
+                        msec = v.config.advertisement_interval * 10
+                        if 100 < msec < 40950:
+                            vrrp_group.timers.advertise.seconds = msec
+                        else:
+                            raise ValueError('XE VRRPv3 advertisement interval must be between 10 and 4095 centiseconds')
+                    # VRRP interface tracking TODO
+
+
+def xe_configure_vrrp_v2_legacy(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container) -> None:
+    """
+    Configures ipv4 vrrp v2 legacy
+    """
     # VRRP
+    # check for an ipv6 address. if so uses vrrpv3 with vrrpv2 enabled, else below
     for a in service_ipv4.addresses.address:
         if hasattr(a, 'vrrp'):
             if a.vrrp.vrrp_group:
