@@ -77,7 +77,7 @@ module openconfig-ospfv2-ext{
     leaf capability-vrf-lite {
       type boolean;
       description
-        "XE - For routers, disable down-bit and domain tag checks to enable passing OSPF routes from MPLS backbone to CE routers.";
+        "XE - For PE routers, disable down-bit and domain tag checks to enable passing OSPF routes from MPLS backbone to CE routers.";
     }
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:ospfv2/oc-netinst:global/oc-netinst:timers/oc-netinst:spf/oc-netinst:config {
