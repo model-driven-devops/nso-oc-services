@@ -41,6 +41,12 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
     elif service_protocol.ospfv2.oc_netinst__global.graceful_restart.config.enabled is False:
         if device_ospf_cbd.nsf_ietf.nsf.ietf.exists():
             device_ospf_cbd.nsf_ietf.nsf.ietf.delete()
+    # Capability VRF Lite
+    if service_protocol.ospfv2.oc_netinst__global.config.oc_ospfv2_ext__capability_vrf_lite:
+        device_ospf_cbd.capability.vrf_lite.create()
+    elif service_protocol.ospfv2.oc_netinst__global.config.oc_ospfv2_ext__capability_vrf_lite is False:
+        if device_ospf_cbd.capability.vrf_lite.exists():
+            device_ospf_cbd.capability.vrf_lite.delete()
     # Default-Information Originate
     if service_protocol.ospfv2.oc_netinst__global.config.oc_ospfv2_ext__default_information_originate.config.enabled:
         device_ospf_cbd.default_information.originate.create()
