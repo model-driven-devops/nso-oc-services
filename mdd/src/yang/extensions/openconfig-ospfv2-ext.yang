@@ -24,6 +24,10 @@ module openconfig-ospfv2-ext{
   description
     "Augmentation to openconfig ospfv2 model.";
 
+  revision "2022-05-28" {
+    description
+      "Added VRF-Lite capability";
+  }
   revision "2022-03-11" {
     description
       "Added default-information originate";
