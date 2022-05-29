@@ -134,7 +134,7 @@ nodes:
        exit
       netconf ssh
       end
-    image_definition: csr1000v-170303
+    image_definition: ""
     tags: []
     interfaces:
       - id: i0
@@ -237,7 +237,7 @@ nodes:
        exit
       netconf ssh
       end
-    image_definition: iosvl2-2019
+    image_definition: ""
     tags: []
     interfaces:
       - id: i0
@@ -375,7 +375,7 @@ nodes:
       ssh server v2
       ssh server netconf vrf default
       end
-    image_definition: xrv9k-full9-x-7.3.1
+    image_definition: ""
     tags: []
     interfaces:
       - id: i0
@@ -427,7 +427,7 @@ nodes:
     x: 50
     y: 100
     configuration: hostname nx1
-    image_definition: nxosv9000-9-3-3
+    image_definition: ""
     tags: []
     interfaces:
       - id: i0
@@ -471,7 +471,7 @@ nodes:
     x: -100
     y: 350
     configuration: hostname test-network-switch
-    image_definition: iosvl2-2019
+    image_definition: ""
     tags: []
     interfaces:
       - id: i0
