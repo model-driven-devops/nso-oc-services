@@ -81,6 +81,73 @@
         assertions:
           - "'+ distance bgp 21 201 200:' in changes"
 
+    - name: test vrf_ipv4_unicast_admin_distance
+      tags:
+        - vrf_ipv4_unicast_admin_distance
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'  # All interfaces are in default unless listed under other VRF
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'  # oc-ni-types:DEFAULT_INSTANCE
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: BGP
+                        identifier: BGP
+                        config:
+                          enabled: True
+                          identifier: BGP
+                          name: BGP
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                    route-distinguisher: '1:1'
+                  protocols:
+                    protocol:
+                      - name: BGP
+                        identifier: BGP
+                        config:
+                          enabled: True
+                          identifier: BGP
+                          name: BGP
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            default-route-distance:
+                              config:
+                                external-route-distance: 21
+                                internal-route-distance: 201
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                                  ipv4-unicast:
+                                    config:
+                                      send-default-route: True
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ address-family ipv4 vrf abc:' in changes"
+          - "'+  distance bgp 21 201 200:' in changes"
+
     - name: test graceful_restart
       tags:
         - graceful_restart

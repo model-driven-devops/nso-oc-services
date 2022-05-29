@@ -93,6 +93,10 @@ def xe_bgp_global_program_service(self, service_protocol, network_instance_type,
                     elif afi_safi_service.ipv4_unicast.config.send_default_route is False:
                         if device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].default_information.originate.exists():
                             device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].default_information.originate.delete()
+                    if service_bgp_global.default_route_distance.config.external_route_distance and service_bgp_global.default_route_distance.config.internal_route_distance:  # because command needs ex, in, and local
+                        device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].distance.bgp.extern_as = service_bgp_global.default_route_distance.config.external_route_distance
+                        device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].distance.bgp.internal_as = service_bgp_global.default_route_distance.config.internal_route_distance
+                        device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].distance.bgp.local = '200'  # TODO add this to extensions
                 elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
                     pass
 
