@@ -3,7 +3,7 @@ lab:
   notes: ''
   timestamp: 1641910033.2273524
   title: test_lab
-  version: 0.0.4
+  version: 0.0.5
 nodes:
   - id: n0
     label: ext0
@@ -11,7 +11,12 @@ nodes:
     x: -550
     y: 50
     configuration: bridge0
-    tags: []
+    hide_links: false
+    ram: 0
+    cpus: 0
+    cpu_limit: 100
+    data_volume: 0
+    boot_disk_size: 0
     interfaces:
       - id: i0
         slot: 0
@@ -22,7 +27,13 @@ nodes:
     node_definition: unmanaged_switch
     x: -350
     y: 50
-    configuration: ''
+    configuration: ums-92d7583c-b4
+    hide_links: false
+    ram: 0
+    cpus: 0
+    cpu_limit: 100
+    data_volume: 0
+    boot_disk_size: 0
     tags: []
     interfaces:
       - id: i0
@@ -58,38 +69,38 @@ nodes:
         label: port7
         type: physical
   - id: n2
-    label: nso
-    node_definition: NSO
+    label: nso1
+    node_definition: ubuntu
     x: -300
     y: -200
     configuration: |-
       #cloud-config
+      hostname: nso1
+      manage_etc_hosts: True
+      system_info:
+        default_user:
+          name: ubuntu
       password: admin
       chpasswd: { expire: False }
       ssh_pwauth: True
-      hostname: nso
-      apt:
-        preserve_sources_list: false
-        primary:
-          - arches:
-              - default
-            uri: 'http://us.archive.ubuntu.com/ubuntu'
-            search_dns: true
-        security:
-          - arches:
-              - default
-            uri: 'http://us.archive.ubuntu.com/ubuntu'
-            search_dns: true
-    image_definition: NSO5.5.2.7
-    tags: []
+      ssh_authorized_keys:
+         - your-ssh-pubkey-line-goes-here
+    hide_links: false
+    ram: 8192
+    cpus: 4
+    cpu_limit: 100
+    data_volume: 0
+    boot_disk_size: 64
+    tags:
+      - nso
     interfaces:
       - id: i0
         slot: 0
-        label: ens2
+        label: enp0s2
         type: physical
       - id: i1
         slot: 1
-        label: ens3
+        label: enp0s3
         type: physical
   - id: n3
     label: xe1
@@ -134,7 +145,13 @@ nodes:
        exit
       netconf ssh
       end
-    image_definition: ""
+    hide_links: false
+    image_definition: ''
+    ram: 3072
+    cpus: 1
+    cpu_limit: 100
+    data_volume: 0
+    boot_disk_size: 0
     tags: []
     interfaces:
       - id: i0
@@ -237,7 +254,12 @@ nodes:
        exit
       netconf ssh
       end
-    image_definition: ""
+    hide_links: false
+    ram: 768
+    cpus: 1
+    cpu_limit: 100
+    data_volume: 0
+    boot_disk_size: 0
     tags: []
     interfaces:
       - id: i0
@@ -375,7 +397,13 @@ nodes:
       ssh server v2
       ssh server netconf vrf default
       end
-    image_definition: ""
+    hide_links: false
+    image_definition: ''
+    ram: 0
+    cpus: 1
+    cpu_limit: 100
+    data_volume: 0
+    boot_disk_size: 0
     tags: []
     interfaces:
       - id: i0
@@ -426,9 +454,19 @@ nodes:
     node_definition: nxosv9000
     x: 50
     y: 100
-    configuration: hostname nx1
-    image_definition: ""
+    configuration: |-
+      hostname nx1
+      interface mgmt0
+      ip address dhcp
+      vrf member management
+    hide_links: false
+    boot_disk_size: 0
+    cpu_limit: 100
+    cpus: 0
+    data_volume: 0
+    ram: 0
     tags: []
+    image_definition: ''
     interfaces:
       - id: i0
         label: Loopback0
@@ -471,7 +509,12 @@ nodes:
     x: -100
     y: 350
     configuration: hostname test-network-switch
-    image_definition: ""
+    hide_links: false
+    ram: 768
+    cpus: 1
+    cpu_limit: 100
+    data_volume: 0
+    boot_disk_size: 0
     tags: []
     interfaces:
       - id: i0

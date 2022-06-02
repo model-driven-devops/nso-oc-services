@@ -1,5 +1,5 @@
 - set_fact:
-    nso_host: "{{ lookup('env', 'NSO_HOST') }}"
+    nso_host: "{{ lookup('env', 'NSO_HOST') | default(hostvars['nso1'].ansible_host) }}"
     nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
     nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
     apply:

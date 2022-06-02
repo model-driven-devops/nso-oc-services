@@ -20,42 +20,96 @@ jobs:
         run: sudo apt-get update
       - name: install sshpass
         run: sudo apt-get install sshpass -y
+      - name: install git
+        run: sudo apt-get install git -y
+      - name: clone mdd
+        run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
       - name: Install PIP requirements
-        run: pip install -r ./test/requirements.txt
+        run: pip install -r ./mdd_repo/requirements.txt
+      - name: Install PIP virl2_client
+        run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
       - name: Install Collections
-        run: ansible-galaxy collection install -r ./test/requirements.yml
+        run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
       - name: Delete CML
-        run: ansible-playbook ./test/clean-cml.yml
+        run: ansible-playbook cisco.cml.clean
         env:
-          CML_LAB: ${{ secrets.CML_LAB }}
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
       - name: Build CML
-        run: ansible-playbook ./test/build-cml.yml
+        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=${{ github.workspace }}/arch/test_lab.yaml
         env:
-          CML_LAB_FILE: ./arch/test_lab.yaml
-          CML_LAB: ${{ secrets.CML_LAB }}
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
-      - name: Write contents of nso IP file to envars
-        run: |
-          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
-      - name: Write contents of xe1 IP file to envars
-        run: |
-          cat ${{ github.workspace }}/xe1_host.txt >> $GITHUB_ENV
-      - name: Write contents of xeswitch1 IP file to envars
-        run: |
-          cat ${{ github.workspace }}/xeswitch1_host.txt >> $GITHUB_ENV
       - name: Build NSO
-        run: ansible-playbook ./test/build-nso.yml
+        run: ansible-playbook ciscops.mdd.nso_install
         env:
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
-          NSO_OS_USERNAME: ${{ secrets.NSO_OS_USERNAME }}
-          NSO_OS_PASSWORD: ${{ secrets.NSO_OS_PASSWORD }}
+      - name: Install NSO MDD package
+        run: ansible-playbook ./test/install-nso-oc-services.yml
+        env:
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
+      - name: NSO add default auth group
+        run: ansible-playbook ciscops.mdd.nso_init
+        env:
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
+      - name: Inventory CML
+        run: ansible-playbook cisco.cml.inventory
+        env:
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
+      - name: NSO add devices from inventory
+        run: ansible-playbook ciscops.mdd.nso_update_devices -vvv
+        env:
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
+      - name: NSO Re-sync configuration from the devices
+        run: ansible-playbook ciscops.mdd.nso_sync_from
+        env:
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
       - name: Run Tests
         run: |
           cd ./test/tests
@@ -66,22 +120,21 @@ jobs:
           ansible-playbook $PLAYBOOK
           done
         env:
+#          NSO_HOST: ${{ env.NSO_HOST }}
+#          XE1_HOST: ${{ env.XE1_HOST }}
+#          XESWITCH1_HOST: ${{ env.XESWITCH1_HOST }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
-          NSO_HOST: ${{ env.NSO_HOST }}
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
-          NSO_OS_USERNAME: ${{ secrets.NSO_OS_USERNAME }}
-          NSO_OS_PASSWORD: ${{ secrets.NSO_OS_PASSWORD }}
-          XE1_HOST: ${{ env.XE1_HOST }}
-          XESWITCH1_HOST: ${{ env.XESWITCH1_HOST }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
       - name: Delete CML
-        if: always()
-        run: ansible-playbook ./test/clean-cml.yml
+        run: ansible-playbook cisco.cml.clean
         env:
-          CML_LAB: ${{ secrets.CML_LAB }}
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg

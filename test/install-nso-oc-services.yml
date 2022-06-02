@@ -1,0 +1,32 @@
+- name: Install NSO
+  hosts: nso
+  gather_facts: no
+  vars:
+    nso_install_dir: /opt/ncs/current
+    nso_packages_dir: /var/opt/ncs/packages
+    ansible_password:  "{{ lookup('env', 'NSO_PASSWORD') | default ('admin', true) }}"
+    ansible_user: "{{ lookup('env', 'NSO_USERNAME') | default ('ubuntu', true) }}"
+    nso_username: "{{ lookup('env', 'NSO_USERNAME') | default ('ubuntu', true) }}"
+    nso_password: "{{ lookup('env', 'NSO_PASSWORD') | default ('admin', true) }}"
+  tasks:
+    - name: List all hostvars
+      debug:
+        var: hostvars[inventory_hostname]
+    - name: Copy 'mdd.tgz' and unarchive on NSO
+      become: yes
+      ansible.builtin.unarchive:
+        src: "./mdd.tgz"
+        dest: "{{ nso_packages_dir }}"
+    - name: Make packages
+      become: yes
+      command:
+        chdir: '{{ nso_packages_dir }}/mdd/src/'
+        cmd: '/bin/bash -c "source {{ nso_install_dir }}/ncsrc; make"'
+    - name: Reload Packages
+      become: yes
+      cisco.nso.nso_action:
+        url: "http://{{ hostvars[inventory_hostname]['ansible_host'] }}:8080/jsonrpc"
+        username: "{{ nso_username }}"
+        password: "{{ nso_password }}"
+        path: /ncs:packages/reload
+        input: {}
