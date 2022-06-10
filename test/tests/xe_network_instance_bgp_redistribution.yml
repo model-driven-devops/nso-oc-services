@@ -1225,6 +1225,26 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'Loopback10'
+                    type: 'softwareLoopback'
+                    description: 'TEST123'
+                  name: 'Loopback10'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '172.16.1.2'
+                                  prefix-length: 32
+                                ip: '172.16.1.2'
             openconfig-network-instance:network-instances:
               network-instance:
                 - name: 'default'
@@ -1250,9 +1270,9 @@
                                   config:
                                     afi-safi-name: 'IPV4_UNICAST'
                                     enabled: true
-                - name: 'abc'
+                - name: 'xyz'
                   config:
-                    name: 'abc'
+                    name: 'xyz'
                     type: 'L3VRF'
                     enabled: true
                     enabled-address-families:
@@ -1264,8 +1284,21 @@
                     openconfig-network-instance-ext:route-targets-export:
                       - '200:200'
                       - '202:202'
+                  openconfig-network-instance:interfaces:
+                    interface:
+                      - id: 'Loopback10'
+                        config:
+                          id: 'Loopback10'
+                          interface: 'Loopback10'
+                          subinterface: 0
                   openconfig-network-instance:protocols:
                     protocol:
+                      - name: '5'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '5'
                       - name: 'BGP'
                         identifier: 'BGP'
                         config:
@@ -1294,10 +1327,10 @@
                         openconfig-network-instance-ext:src-protocol-process-number: 2
         api_method: PUT
         rollback: true
-        assertion_ignore_errors: true  # this one can randomly error out
+        assertion_ignore_errors: true  # this one can randomly error out!
         assertions:
-          - "'+ address-family ipv4 vrf abc:' in changes"
-          - "'+  redistribute ospf 2:' in changes"
+          - "'+ address-family ipv4 vrf xyz:' in changes"
+          - "'+  redistribute ospf 5:' in changes"
 
     - name: test bgp_ad_ipv4_vrf_ospf_route_map
       tags:

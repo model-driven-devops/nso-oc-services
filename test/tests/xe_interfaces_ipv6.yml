@@ -1,0 +1,280 @@
+---
+- name: test interfaces
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: ipv6_address
+      tags:
+        - ipv6_address
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet5'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet5'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv6:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '2001:DB8:CAFE::1'
+                                  prefix-length: 64
+                                ip: '2001:DB8:CAFE::1'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet5:' in changes"
+          - "'+ ipv6 address 2001:DB8:CAFE::1/64:' in changes"
+
+    - name: ipv6_dhcp
+      tags:
+        - ipv6_dhcp
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 6 VRRP'
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv6:
+                          config:
+                            dhcp-client: true
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet6:' in changes"
+          - "'+ ipv6 address dhcp:' in changes"
+
+    - name: ipv6_services
+      tags:
+        - ipv6_services
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    description: 'Physical Interface 6 VRRP'
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv6:
+                          config:
+                            mtu: 1476
+                            dhcp-client: true
+                            openconfig-if-ip-mdd-ext:redirects: false
+                            openconfig-if-ip-mdd-ext:unreachables: false
+                            openconfig-if-ip-mdd-ext:tcp-adjust-mss: 1440
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet6:' in changes"
+          - "'+ no ipv6 redirects:' in changes"
+          - "'+ no ipv6 unreachables:' in changes"
+          - "'+ ipv6 mtu 1476:' in changes"
+          - "'+ ipv6 tcp adjust-mss 1440:' in changes"
+
+    - name: test vrrp
+      tags:
+        - legacy_vrrp
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet4'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet4'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.2'
+                                  prefix-length: 24
+                                ip: '10.1.0.2'
+                                vrrp:
+                                  vrrp-group:
+                                    - config:
+                                        advertisement-interval: 300  # units "centiseconds"; vrrp 5 timers advertise 3
+                                        preempt: true
+                                        preempt-delay: 10  # vrrp 5 preempt delay minimum 100
+                                        priority: 200  # vrrp 5 priority 200
+                                        virtual-address:  # vrrp 5 ip10.1.0.2
+                                          - '10.1.0.2'
+                                        virtual-router-id: 4  # group number
+                                      virtual-router-id: 4  # group number
+                          config:
+                            dhcp-client: false
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet4:' in changes"
+          - "'+ ip address 10.1.0.2 255.255.255.0:' in changes"
+          - "'+ vrrp 4 ip 10.1.0.2:' in changes"
+          - "'+ vrrp 4 preempt delay minimum 10:' in changes"
+          - "'+ vrrp 4 priority 200:' in changes"
+          - "'+ vrrp 4 timers advertise 3:' in changes"
+
+    - name: vrrp_v3_ipv4
+      tags:
+        - vrrp_v3_ipv4
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet5'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet5'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv6:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '2001:DB8:CAFE::1'
+                                  prefix-length: 64
+                                ip: '2001:DB8:CAFE::1'
+                - config:
+                    description: 'Physical Interface 6 VRRP'
+                    enabled: true
+                    name: 'GigabitEthernet6'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet6'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '10.1.0.2'
+                                  prefix-length: 24
+                                ip: '10.1.0.2'
+                                vrrp:
+                                  vrrp-group:
+                                    - config:
+                                        advertisement-interval: 4000  # units "centiseconds"
+                                        preempt: true
+                                        preempt-delay: 10  # vrrp 5 preempt delay minimum 100
+                                        priority: 200  # vrrp 5 priority 200
+                                        virtual-address:  # vrrp 5 ip10.1.0.2
+                                          - '10.1.0.2'
+                                        virtual-router-id: 6  # group number
+                                      virtual-router-id: 6  # group number
+                          config:
+                            dhcp-client: false
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet6:' in changes"
+          - "'+ vrrp 6 address-family ipv4:' in changes"
+          - "'+  address 10.1.0.2 primary:' in changes"
+          - "'+  priority 200:' in changes"
+          - "'+  timers advertise 40000:' in changes"
+          - "'+  preempt delay minimum 10:' in changes"
+
+    - name: vrrp_v3_ipv6
+      tags:
+        - vrrp_v3_ipv6
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              interface:
+                - config:
+                    enabled: true
+                    name: 'GigabitEthernet5'
+                    type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet5'
+                  subinterfaces:
+                    subinterface:
+                      - config:
+                          index: 0
+                        index: 0
+                        openconfig-if-ip:ipv6:
+                          addresses:
+                            address:
+                              - config:
+                                  ip: '2001:DB8:CAFE::1'
+                                  prefix-length: 64
+                                ip: '2001:DB8:CAFE::1'
+                                vrrp:
+                                  vrrp-group:
+                                    - config:
+                                        advertisement-interval: 4000
+                                        preempt: true
+                                        preempt-delay: 10
+                                        priority: 200
+                                        virtual-address:
+                                          - 'FE80::1'
+                                        virtual-router-id: 6
+                                      virtual-router-id: 6
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet5:' in changes"
+          - "'+ vrrp 6 address-family ipv6:' in changes"
+          - "'+  address FE80::1 primary:' in changes"
+          - "'+  priority 200:' in changes"
+          - "'+  timers advertise 40000:' in changes"
+          - "'+  preempt delay minimum 10:' in changes"

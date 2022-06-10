@@ -1320,13 +1320,25 @@ module openconfig-if-ip {
   // Added for L3 Port Channel
   augment  "/ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-lag:aggregation" {
     description
-      "IPv4 address family configuration for
+      "IPv4 and IPv6 address family configuration for
       port channels";
     uses ipv4-top;
+    uses ipv6-top;
   }
-  // Added for L3 Port Channel
+// Added for IPv4 L3 Port Channel
   augment "/ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-lag:aggregation/" +
     "oc-ip:ipv4/oc-ip:addresses/oc-ip:address" {
+
+    description
+      "Additional IP addr family configuration for
+      interfaces";
+
+    uses ip-vrrp-top;
+
+  }
+  // Added for IPv6 L3 Port Channel
+  augment "/ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-lag:aggregation/" +
+    "oc-ip:ipv6/oc-ip:addresses/oc-ip:address" {
 
     description
       "Additional IP addr family configuration for

@@ -24,6 +24,10 @@ module openconfig-ospfv2-ext{
   description
     "Augmentation to openconfig ospfv2 model.";
 
+  revision "2022-05-28" {
+    description
+      "Added VRF-Lite capability";
+  }
   revision "2022-03-11" {
     description
       "Added default-information originate";
@@ -73,6 +77,11 @@ module openconfig-ospfv2-ext{
             "XE - Enables conditional default-route injection.";
         }
       }
+    }
+    leaf capability-vrf-lite {
+      type boolean;
+      description
+        "XE - For PE routers, disable down-bit and domain tag checks to enable passing OSPF routes from MPLS backbone to CE routers.";
     }
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:ospfv2/oc-netinst:global/oc-netinst:timers/oc-netinst:spf/oc-netinst:config {

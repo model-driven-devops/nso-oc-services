@@ -23,6 +23,11 @@ module openconfig-if-ip-mdd-ext{
 
   description
     "Augmentation to openconfig ip model.";
+
+  revision "2022-05-20" {
+    description
+      "Now generic IP extensions and ipv4 only extensions";
+  }
   revision "2022-02-14" {
     description
       "Added support for L3 LACP IPV4, L3 VLAN IPV4, and better organization";
@@ -51,6 +56,8 @@ module openconfig-if-ip-mdd-ext{
       description
         "Adjusts the maximum segment size (MSS) value of TCP synchronize/start (SYN) packets going through a router in bytes.";
     }
+  }
+  grouping if-ipv4-extensions {
     leaf mask-reply {
       type boolean;
       description
@@ -80,14 +87,30 @@ module openconfig-if-ip-mdd-ext{
 
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-ip:ipv4/oc-ip:config {
     uses if-ip-extensions;
+    uses if-ipv4-extensions;
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-tun:tunnel/oc-tun:ipv4/oc-tun:config {
     uses if-ip-extensions;
+    uses if-ipv4-extensions;
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-lag:aggregation/oc-ip:ipv4/oc-ip:config {
     uses if-ip-extensions;
+    uses if-ipv4-extensions;
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-vlan:routed-vlan/oc-ip:ipv4/oc-ip:config {
+    uses if-ip-extensions;
+    uses if-ipv4-extensions;
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-ip:ipv6/oc-ip:config {
+    uses if-ip-extensions;
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-tun:tunnel/oc-tun:ipv6/oc-tun:config {
+    uses if-ip-extensions;
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-lag:aggregation/oc-ip:ipv6/oc-ip:config {
+    uses if-ip-extensions;
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-vlan:routed-vlan/oc-ip:ipv6/oc-ip:config {
     uses if-ip-extensions;
   }
 }

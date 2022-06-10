@@ -504,7 +504,47 @@
         assertion_ignore_errors: false
         assertions:
           - "'+router ospf 1 vrf abc:' in changes"
-          
+    - name: test process_vrf_capability_vrf_lite
+      tags:
+        - process_vrf_capability_vrf_lite
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                    route-distinguisher: '1:1'
+                  protocols:
+                    protocol:
+                      - name: '1'
+                        identifier: 'OSPF'
+                        config:
+                          enabled: True
+                          identifier: 'OSPF'
+                          name: '1'
+                        ospfv2:
+                          global:
+                            config:
+                              openconfig-ospfv2-ext:capability-vrf-lite: True
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ capability vrf-lite:' in changes"
     - name: test default_information_originate
       tags:
         - default_information_originate
