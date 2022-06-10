@@ -59,6 +59,10 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
+          NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
+          NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
+          NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
+          NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
       - name: Install NSO MDD package
         run: ansible-playbook ./test/install-nso-oc-services.yml
@@ -69,6 +73,10 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
+          NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
+          NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
+          NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
+          NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
       - name: NSO add default auth group
         run: ansible-playbook ciscops.mdd.nso_init
@@ -79,6 +87,10 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
+          NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
+          NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
+          NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
+          NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
@@ -99,6 +111,10 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
+          NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
+          NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
+          NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
+          NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
       - name: NSO Re-sync configuration from the devices
         run: ansible-playbook ciscops.mdd.nso_sync_from
@@ -109,6 +125,10 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
+          NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
+          NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
+          NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
+          NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
