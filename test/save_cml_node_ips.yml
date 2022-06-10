@@ -1,0 +1,22 @@
+- name: Get IPs
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Collect Facts
+      cisco.cml.cml_lab_facts:
+        host: "{{ cml_host }}"
+        user: "{{ cml_username }}"
+        password: "{{ cml_password }}"
+        lab: "{{ cml_lab }}"
+      register: result
+    - copy:
+        content: "NSO_HOST={{ result.cml_facts.nodes.nso1.ansible_host }}"
+        dest: "../nso_host.txt"
+    - copy:
+        content: "XE1_HOST={{ result.cml_facts.nodes.xe1.ansible_host }}"
+        dest: "../xe1_host.txt"
+    - copy:
+        content: "XESWITCH1_HOST={{ result.cml_facts.nodes.xeswitch1.ansible_host }}"
+        dest: "../xeswitch1_host.txt"
+
+

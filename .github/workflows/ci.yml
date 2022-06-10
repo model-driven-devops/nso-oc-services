@@ -91,7 +91,7 @@ jobs:
           CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
       - name: NSO add devices from inventory
-        run: ansible-playbook ciscops.mdd.nso_update_devices -vvv
+        run: ansible-playbook ciscops.mdd.nso_update_devices
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
@@ -110,6 +110,25 @@ jobs:
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
+      - name: Save host IPs
+        run: ansible-playbook ./test/save_cml_node_ips.yml
+        env:
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
+      - name: Write contents of nso IP file to envars
+        run: |
+          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+      - name: Write contents of xe1 IP file to envars
+        run: |
+          cat ${{ github.workspace }}/xe1_host.txt >> $GITHUB_ENV
+      - name: Write contents of xeswitch1 IP file to envars
+        run: |
+          cat ${{ github.workspace }}/xeswitch1_host.txt >> $GITHUB_ENV
       - name: Run Tests
         run: |
           cd ./test/tests
@@ -120,10 +139,10 @@ jobs:
           ansible-playbook $PLAYBOOK
           done
         env:
-#          NSO_HOST: ${{ env.NSO_HOST }}
-#          XE1_HOST: ${{ env.XE1_HOST }}
-#          XESWITCH1_HOST: ${{ env.XESWITCH1_HOST }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
+          NSO_HOST: ${{ env.NSO_HOST }}
+          XE1_HOST: ${{ env.XE1_HOST }}
+          XESWITCH1_HOST: ${{ env.XESWITCH1_HOST }}
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev.cfg
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}

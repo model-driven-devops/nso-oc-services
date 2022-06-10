@@ -4,10 +4,10 @@
   vars:
     nso_install_dir: /opt/ncs/current
     nso_packages_dir: /var/opt/ncs/packages
-    ansible_password:  "{{ lookup('env', 'NSO_PASSWORD') | default ('admin', true) }}"
-    ansible_user: "{{ lookup('env', 'NSO_USERNAME') | default ('ubuntu', true) }}"
-    nso_username: "{{ lookup('env', 'NSO_USERNAME') | default ('ubuntu', true) }}"
-    nso_password: "{{ lookup('env', 'NSO_PASSWORD') | default ('admin', true) }}"
+    ansible_password:  "{{ lookup('env', 'NSO_PASSWORD') | default ('admin', True) }}"
+    ansible_user: "{{ lookup('env', 'NSO_USERNAME') | default ('ubuntu', True) }}"
+    nso_username: "{{ lookup('env', 'NSO_USERNAME') | default ('ubuntu', True) }}"
+    nso_password: "{{ lookup('env', 'NSO_PASSWORD') | default ('admin', True) }}"
   tasks:
     - name: List all hostvars
       debug:
