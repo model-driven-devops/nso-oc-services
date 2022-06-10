@@ -15,7 +15,7 @@
     - name: Copy 'mdd.tgz' and unarchive on NSO
       become: yes
       ansible.builtin.unarchive:
-        src: "./mdd.tgz"
+        src: "../mdd.tgz"
         dest: "{{ nso_packages_dir }}"
     - name: Make packages
       become: yes
