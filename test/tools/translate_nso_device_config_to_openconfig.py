@@ -1,3 +1,20 @@
+"""
+Translate NSO Device config to MDD OpenConfig
+
+This script will pull a device's configuration from an NSO server, convert the NED structured configuration to
+MDD OpenConfig, save the NSO configuration to a file named {device_name}_configuration.json, save the NSO device
+configuration minus parts replaced by OpenConfig to a file named {device_name}_configuration_remaining.json,
+and save the MDD OpenConfig configuration to a file named {nso_device}_openconfig.json.
+
+The script requires the following environment variables:
+NSO_HOST - IP address or hostname for the NSO server
+NSO_USERNAME
+NSO_PASSWORD
+NSO_DEVICE - NSO device name for configuration translation
+TEST - True or False. True enables sending the OpenConfig to the NSO server after generation
+
+This file can also be imported as a module and run using the main() function.
+"""
 import copy
 import json
 import os
@@ -75,10 +92,9 @@ def test_nso_program_oc(host: str, username: str, password: str, device: str, oc
     headers = urllib3.make_headers(basic_auth=f"{username}:{password}")
     headers.update({"Content-Type": "application/yang-data+json",
                     "Accept": "application/yang-data+json"})
-    oc = {"mdd:openconfig": oc_config}
-    body = json.dumps(oc)
+    body = json.dumps(oc_config)
     oc_result = req.request("PATCH", url, headers=headers, body=body)
-    print(f"This is the test_nso_program_oc: {oc_result.status}")
+    print(f"This is the test_nso_program_oc return code: {oc_result.status}")
     if oc_result.status != 204:
         raise Exception("Error in input payload reported by NSO")
 
@@ -194,23 +210,46 @@ nso_host = os.environ.get("NSO_HOST")
 nso_username = os.environ.get("NSO_USERNAME", "ubuntu")
 nso_password = os.environ.get("NSO_PASSWORD", "admin")
 nso_device = os.environ.get("NSO_DEVICE", "xe1")
+test = os.environ.get("TEST", "False")
 
 config_before_dict = nso_get_device_config(nso_host, nso_username, nso_password, nso_device)
 configs_leftover = copy.deepcopy(config_before_dict)
 interface_ip_name_dict = xe_system_get_interface_ip_address(config_before_dict)
 
-xe_system_config()
-xe_system_ssh_server()
-xe_system_ntp()
 
-print(json.dumps(config_before_dict, indent=4))
-print(json.dumps(configs_leftover, indent=4))
+def main():
+    """
+    Translates NSO Device configurations to MDD OpenConfig configurations.
 
-with open(f"{nso_device}_configuration", "w") as b:
-    b.write(json.dumps(config_before_dict, indent=4))
-with open(f"{nso_device}_configuration_remaining", "w") as a:
-    a.write(json.dumps(configs_leftover, indent=4))
-with open(f"{nso_device}_openconfig", "w") as o:
-    o.write(json.dumps(openconfig_system, indent=4))
-test_nso_program_oc(nso_host, nso_username, nso_password, nso_device, openconfig_system)
+    Requires environment variables:
+    NSO_HOST: str
+    NSO_USERNAME: str
+    NSO_PASSWORD: str
+    NSO_DEVICE: str
+    TEST - If True, sends generated OC configuration to NSO Server: str
 
+    NSO configuration, MDD OpenConfig configuration, and NSO remaining configuration files are saved in the working dir.
+    """
+    xe_system_config()
+    xe_system_ssh_server()
+    xe_system_ntp()
+
+    mdd_openconfig = {"mdd:openconfig": openconfig_system }
+
+    print(json.dumps(config_before_dict, indent=4))
+    print(json.dumps(configs_leftover, indent=4))
+    print(json.dumps(mdd_openconfig, indent=4))
+
+    with open(f"{nso_device}_configuration.json", "w") as b:
+        b.write(json.dumps(config_before_dict, indent=4))
+    with open(f"{nso_device}_configuration_remaining.json", "w") as a:
+        a.write(json.dumps(configs_leftover, indent=4))
+    with open(f"{nso_device}_openconfig.json", "w") as o:
+        o.write(json.dumps(openconfig_system, indent=4))
+
+    if test == 'True':
+        test_nso_program_oc(nso_host, nso_username, nso_password, nso_device, mdd_openconfig)
+
+
+if __name__ == '__main__':
+    main()
