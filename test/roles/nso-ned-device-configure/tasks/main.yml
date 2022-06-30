@@ -1,0 +1,28 @@
+- set_fact:
+    nso_host: "{{ lookup('env', 'NSO_HOST') }}"
+    nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
+    nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
+    apply:
+      delegate_to: localhost
+
+- name: Convert string to JSON
+  set_fact:
+    configs: "{{ content | from_yaml | to_json }}"
+    apply:
+      delegate_to: localhost
+
+- name: NSO API call
+  uri:
+    url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/{{ api_path }}"
+    url_username: "{{ nso_username }}"
+    url_password: "{{ nso_password }}"
+    force_basic_auth: yes
+    validate_certs: no
+    status_code: [200,201,204]
+    method: "{{ api_method }}"
+    headers: "{
+      'Content-Type': 'application/yang-data+json',
+      'Accept': 'application/yang-data+json'}"
+    body_format: json
+    body: "{{ configs }}"
+  delegate_to: localhost
