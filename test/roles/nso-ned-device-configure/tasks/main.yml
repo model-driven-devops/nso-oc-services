@@ -26,3 +26,4 @@
     body_format: json
     body: "{{ configs }}"
   delegate_to: localhost
+  ignore_errors: "{{ api_ignore_errors | default(false) }}"

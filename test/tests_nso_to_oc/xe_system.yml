@@ -45,6 +45,7 @@
                 - config:
                     name: 'GigabitEthernet1'
                     type: 'ethernetCsmacd'
+                    enabled: true
                   name: 'GigabitEthernet1'
                   subinterfaces:
                     subinterface:

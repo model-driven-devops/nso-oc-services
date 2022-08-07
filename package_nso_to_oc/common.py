@@ -32,10 +32,16 @@ def xe_system_get_interface_ip_address(config_before: dict) -> dict:
     interface_ip_name = {}
     for if_type in config_before["tailf-ned-cisco-ios:interface"]:
         temp_dict = {}
-        for number in config_before["tailf-ned-cisco-ios:interface"][if_type]:
-            if number.get("ip", {}).get("address", {}).get("primary", {}).get("address"):
-                temp_dict.update({f"{if_type}{number['name']}": f"{number.get('ip', {}).get('address', {}).get('primary', {}).get('address')}"})
-        interface_ip_name.update(temp_dict)
+        if if_type == "Port-channel-subinterface":
+            for number in config_before["tailf-ned-cisco-ios:interface"]["Port-channel-subinterface"]["Port-channel"]:
+                if number.get("ip", {}).get("address", {}).get("primary", {}).get("address"):
+                    temp_dict.update({f"Port-channel{number['name']}": f"{number.get('ip', {}).get('address', {}).get('primary', {}).get('address')}"})
+            interface_ip_name.update(temp_dict)
+        else:
+            for number in config_before["tailf-ned-cisco-ios:interface"][if_type]:
+                if number.get("ip", {}).get("address", {}).get("primary", {}).get("address"):
+                    temp_dict.update({f"{if_type}{number['name']}": f"{number.get('ip', {}).get('address', {}).get('primary', {}).get('address')}"})
+            interface_ip_name.update(temp_dict)
     return interface_ip_name
 
 
@@ -54,9 +60,9 @@ def test_nso_program_oc(host: str, username: str, password: str, device: str, oc
     headers = urllib3.make_headers(basic_auth=f"{username}:{password}")
     headers.update({"Content-Type": "application/yang-data+json",
                     "Accept": "application/yang-data+json"})
-    oc = {"mdd:openconfig": oc_config}
+    oc = {"mdd:openconfig": {}}
+    oc["mdd:openconfig"].update(oc_config)
     body = json.dumps(oc)
     oc_result = req.request("PATCH", url, headers=headers, body=body)
-    print(f"This is the test_nso_program_oc return code: {oc_result.status}")
     if oc_result.status != 204:
         raise Exception("Error in input payload reported by NSO")
