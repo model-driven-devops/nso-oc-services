@@ -17,7 +17,6 @@ TEST - True or False. True enables sending the OpenConfig to the NSO server afte
 """
 import copy
 import json
-import pprint
 
 openconfig_vlans = {
     "openconfig-network-instance:network-instances": {
@@ -78,7 +77,9 @@ def main(before: dict, leftover: dict) -> dict:
     :param leftover: NSO Device configuration minus configs replaced with MDD OC: dict
     :return: MDD Openconfig Network instances with VLANS configuration: dict
     """
+
     xe_create_vlans(before, leftover)
+
     return openconfig_vlans
 
 
@@ -100,7 +101,7 @@ if __name__ == '__main__':
     interface_ip_dict = common.xe_system_get_interface_ip_address(config_before_dict)
     main(config_before_dict, config_leftover_dict)
 
-    pprint.pprint(openconfig_vlans)
+    print(json.dumps(openconfig_vlans, indent=4))
     with open(f"../{nso_device}_ned_configuration_vlans.json", "w") as b:
         b.write(json.dumps(config_before_dict, indent=4))
     with open(f"../{nso_device}_ned_configuration_remaining_vlans.json", "w") as a:

@@ -152,6 +152,23 @@
                           config:
                             dhcp-client: true
         api_method: PUT
+    - name: NSO configure Interfaces
+      tags:
+        - set_up
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:interface
+        content: |
+          interface:
+            GigabitEthernet:
+              - name: 6
+                ip:
+                  address:
+                    primary:
+                      address: 172.60.1.2
+                      mask: 255.255.255.0
+        api_method: PATCH
     - name: NSO configure hostname
       tags:
         - hostname

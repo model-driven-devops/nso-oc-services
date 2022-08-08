@@ -680,8 +680,7 @@ if __name__ == '__main__':
     config_leftover_dict = copy.deepcopy(config_before_dict)
     main(config_before_dict, config_leftover_dict)
 
-    pprint.pprint(openconfig_interfaces)
-
+    print(json.dumps(openconfig_interfaces, indent=4))
     with open(f"../{nso_device}_ned_configuration_interfaces.json", "w") as b:
         b.write(json.dumps(config_before_dict, indent=4))
     with open(f"../{nso_device}_ned_configuration_remaining_interfaces.json", "w") as a:

@@ -199,6 +199,7 @@ if __name__ == '__main__':
     interface_ip_dict = common.xe_system_get_interface_ip_address(config_before_dict)
     main(config_before_dict, config_leftover_dict, interface_ip_dict)
 
+    print(json.dumps(openconfig_system, indent=4))
     with open(f"../{nso_device}_configuration.json", "w") as b:
         b.write(json.dumps(config_before_dict, indent=4))
     with open(f"../{nso_device}_configuration_remaining.json", "w") as a:
