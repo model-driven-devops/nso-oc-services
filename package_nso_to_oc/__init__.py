@@ -26,6 +26,10 @@ from . import common
 from .xe import xe_system
 
 
+if not os.environ.get("NSO_HOST", False):
+    print("environment variable NSO_HOST must be set")
+    exit()
+
 nso_host = os.environ.get("NSO_HOST")
 nso_username = os.environ.get("NSO_USERNAME", "ubuntu")
 nso_password = os.environ.get("NSO_PASSWORD", "admin")
