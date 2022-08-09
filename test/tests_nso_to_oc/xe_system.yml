@@ -1,6 +1,8 @@
 ---
 - hosts: localhost
   gather_facts: no
+  environment:
+    NSO_DEVICE: xe1
   vars:
     nso_host: "{{ lookup('env', 'NSO_HOST') }}"
     nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
@@ -366,7 +368,6 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:absolute-timeout-minutes'] == 1200"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['session-limit'] == 16"
 
-
     - name: NSO configure ntp authenticate
       tags:
         - ntp_authenticate
@@ -458,3 +459,129 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['openconfig-system-ext:ntp-enable-logging'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['ntp-source-address'] == '172.60.1.2'"
           - "ntp_auth_key_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key']"
+
+    - name: NSO configure ntp authenticate
+      tags:
+        - ntp_servers
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:ntp
+        content: |
+          tailf-ned-cisco-ios:ntp:
+            peer:
+              peer-list:
+                - name: 10.0.0.1
+                  key: 1
+                  iburst:
+                    - null
+                  prefer:
+                    - null
+              vrf:
+                - name: abc
+                  peer-list:
+                    - name: 10.0.0.2
+                      key: 2
+                      version: 4
+            server:
+              peer-list:
+                - name: 10.0.0.3
+                - name: 10.0.0.4
+                  key: 1
+                  source:
+                    GigabitEthernet: 6
+                  version: 3
+              vrf:
+                - name: abc
+                  peer-list:
+                    - name: 10.0.0.5
+                      key: 2
+        api_method: PATCH
+    - set_fact:
+        ntp_1:
+          address: 10.0.0.1
+          config:
+            address: 10.0.0.1
+            association-type: PEER
+            iburst: true
+            openconfig-system-ext:ntp-auth-key-id: 1
+            port: 123
+            prefer: true
+            version: 4
+    - set_fact:
+        ntp_2:
+          address: 10.0.0.2
+          config:
+            address: 10.0.0.2
+            association-type: PEER
+            iburst: false
+            openconfig-system-ext:ntp-auth-key-id: 2
+            openconfig-system-ext:ntp-use-vrf: abc
+            port: 123
+            prefer: false
+            version: 4
+    - set_fact:
+        ntp_3:
+          address: 10.0.0.3
+          config:
+            address: 10.0.0.3
+            association-type: SERVER
+            iburst: false
+            port: 123
+            prefer: false
+            version: 4
+    - set_fact:
+        ntp_4:
+          address: 10.0.0.4
+          config:
+            address: 10.0.0.4
+            association-type: SERVER
+            iburst: false
+            openconfig-system-ext:ntp-auth-key-id: 1
+            openconfig-system-ext:ntp-source-address: 172.60.1.2
+            port: 123
+            prefer: false
+            version: 3
+    - set_fact:
+        ntp_5:
+          address: 10.0.0.5
+          config:
+            address: 10.0.0.5
+            association-type: SERVER
+            iburst: false
+            openconfig-system-ext:ntp-auth-key-id: 2
+            openconfig-system-ext:ntp-use-vrf: abc
+            port: 123
+            prefer: false
+            version: 4
+    - name: Execute NSO NED to OC script
+      script: ../../package_nso_to_oc/xe/xe_system.py
+      args:
+        executable: python3
+      register: nso_to_oc_result
+    - debug:
+        msg: "{{nso_to_oc_result}}"
+    - name: NSO API call
+      uri:
+        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url_username: "{{ nso_username }}"
+        url_password: "{{ nso_password }}"
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [ 200,201,204 ]
+        method: GET
+        headers: "{
+      'Content-Type': 'application/yang-data+json',
+      'Accept': 'application/yang-data+json'}"
+        body_format: json
+      delegate_to: localhost
+      register: oc_result
+    - debug:
+        msg: "{{ oc_result }}"
+    - assert:
+        that:
+          - "ntp_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+          - "ntp_2 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+          - "ntp_3 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+          - "ntp_4 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+          - "ntp_5 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"

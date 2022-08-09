@@ -1,6 +1,8 @@
 ---
 - hosts: localhost
   gather_facts: no
+  environment:
+    NSO_DEVICE: xe1
   vars:
     nso_host: "{{ lookup('env', 'NSO_HOST') }}"
     nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
