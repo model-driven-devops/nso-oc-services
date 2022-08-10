@@ -1,0 +1,95 @@
+---
+- hosts: localhost
+  gather_facts: no
+  environment:
+    NSO_DEVICE: xeswitch1
+  vars:
+    nso_host: "{{ lookup('env', 'NSO_HOST') }}"
+    nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
+    nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
+    device: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
+  tasks:
+    - name: Set up service config
+      tags:
+        - set_up
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: mdd:openconfig
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+            openconfig-system:system:
+              config:
+                hostname: 'xeswitch1'
+        api_method: PUT
+    - name: NSO configure VLANs
+      tags:
+        - vlans
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:vlan
+        script: ../../package_nso_to_oc/xe/xe_vlans.py
+        content: |
+          vlan:
+            vlan-list:
+              - id: 1
+                name: default
+              - id: 100
+                name: VLAN100
+              - id: 101
+                name: VLAN101
+                shutdown:
+                  - null
+        api_method: PATCH
+    - name: Execute NSO NED to OC script
+      script: "{{ script }}"
+      args:
+        executable: python3
+      register: nso_to_oc_result
+    - debug:
+        msg: "{{nso_to_oc_result}}"
+    - set_fact:
+        vlan_100:
+          vlan-id: 100
+          config:
+            vlan-id: 100
+            name: VLAN100
+            status: ACTIVE
+    - set_fact:
+        vlan_101:
+          vlan-id: 101
+          config:
+            vlan-id: 101
+            name: VLAN101
+            status: SUSPENDED
+    - name: NSO API call
+      uri:
+        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url_username: "{{ nso_username }}"
+        url_password: "{{ nso_password }}"
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: GET
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+      delegate_to: localhost
+      register: oc_result
+    - debug:
+        msg: "{{ oc_result }}"
+    - debug:
+        msg: "{{ oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] }}"
+    - assert:
+        that:
+          - "vlan_100 in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['vlans']['vlan']"
+          - "vlan_101 in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['vlans']['vlan']"
