@@ -1,3 +1,4 @@
+### Misc ###
 venv/
 .virl/
 .virlrc
@@ -7,3 +8,20 @@ envfile.sh
 *.signed.bin
 .cache/
 collections/
+mdd.tgz
+xe1_host.txt
+xeswitch1_host.txt
+
+### JetBrains products ###
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+*.iws
+
+### VS Code ###
+.vscode/
+
+### Mac ###
+*.DS_Store
