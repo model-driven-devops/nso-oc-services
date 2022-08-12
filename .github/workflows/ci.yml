@@ -102,8 +102,25 @@ jobs:
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
-      - name: NSO add devices from inventory
-        run: ansible-playbook ciscops.mdd.nso_update_devices
+      - name: Sleep while XR1 loads for 6 minutes
+        run: sleep 6m
+        shell: bash
+      - name: NSO add XE devices from inventory
+        run: ansible-playbook ciscops.mdd.nso_update_devices -l "xe1, xeswitch1"
+        env:
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
+          NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
+          NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
+          NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
+          NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
+      - name: NSO add XR devices from inventory
+        run: ansible-playbook ciscops.mdd.nso_update_devices -l "xrrouter" -e "device_ned=cisco-iosxr-cli-7.38"
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
@@ -149,6 +166,9 @@ jobs:
       - name: Write contents of xeswitch1 IP file to envars
         run: |
           cat ${{ github.workspace }}/xeswitch1_host.txt >> $GITHUB_ENV
+      - name: Write contents of xrrouter IP file to envars
+        run: |
+          cat ${{ github.workspace }}/xrrouter_host.txt >> $GITHUB_ENV
       - name: Run NSO Services Tests
         run: |
           cd ./test/tests
@@ -156,7 +176,14 @@ jobs:
           for PLAYBOOK in $FILES
           do
           echo $PLAYBOOK
-          ansible-playbook $PLAYBOOK
+          ansible-playbook $PLAYBOOK --skip-tags="iosxr"
+          done
+          cd ./xr
+          FILES=$(ls ./*.yml)
+          for PLAYBOOK in $FILES
+          do
+          echo $PLAYBOOK
+          ansible-playbook $PLAYBOOK --skip-tags="ios"
           done
         env:
           NSO_HOST: ${{ env.NSO_HOST }}

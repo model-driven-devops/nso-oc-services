@@ -9,11 +9,21 @@
   include_role:
     name: ansible-pyats
 
-- name: collect config (before)
+- name: ios collect config (before)
   ios_command:
     commands:
       - show run
   register: result_before
+  tags:
+    - ios
+
+- name: iosxr collect config (before)
+  iosxr_command:
+    commands:
+      - show run
+  register: result_before
+  tags:
+    - iosxr
 
 - name: Convert string to JSON
   set_fact:
@@ -46,11 +56,21 @@
   include_role:
     name: ansible-pyats
 
-- name: collect config (after)
+- name: ios collect config (after)
   ios_command:
     commands:
       - show run
   register: result_after
+  tags:
+    - ios
+
+- name: iosxr collect config (after)
+  iosxr_command:
+    commands:
+      - show run
+  register: result_after
+  tags:
+    - iosxr
 
 - set_fact:
     exclude_list:

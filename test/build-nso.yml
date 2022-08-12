@@ -10,7 +10,8 @@
     admin_password: "{{ lookup('env', 'NSO_OS_PASSWORD') }}"
     ansible_user: "{{ admin_user }}"
     ansible_password: "{{ admin_password }}"
-    nso_xe_ned_id: cisco-ios-cli-6.74
+    nso_xe_ned_id: cisco-ios-cli-6.77
+    nso_xr_ned_id: cisco-iosxr-cli-7.38
   roles:
     - ansible-nso
   tasks:

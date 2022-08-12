@@ -1,0 +1,60 @@
+---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  tags:
+    - always
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- name: test system
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xrrouter', True) }}"
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xrrouter', True) }}"
+    ansible_network_os: 'cisco.iosxr.iosxr'
+  tasks:
+    - name: test http_server
+      tags:
+        - http_server
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              config:
+                oc-system-ext:enable-secret: 'password'
+                oc-system-ext:console-exec-timeout-seconds: 800
+                domain-name: 'test123.com'
+                hostname: 'rxx'
+                login-banner: |
+                  This is the login-banner.
+                motd-banner: |
+                  This is the motd-banner.
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+hostname rxx:' in changes"
+          - "'+domain name test123.com:' in changes"
+          - "'+banner login ^This is the login-banner.:' in changes"
+          - "'+banner motd ^This is the motd-banner.:' in changes"
+          - "'+line console:' in changes"
+          - "'+ exec-timeout 13 20:' in changes"
+
+- hosts: nso
+  connection: local
+  gather_facts: no
+  tags:
+    - always
+  roles:
+    - nso-rollback-load
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
