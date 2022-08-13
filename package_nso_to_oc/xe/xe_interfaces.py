@@ -218,10 +218,6 @@ def xe_configure_ipv4_interface(nso_before_interface: dict, nso_leftover_interfa
             ipv4_address_structure.update({"openconfig-if-ip:ip": ip,
                                            "openconfig-if-ip:config": {"openconfig-if-ip:ip": ip,
                                                                        "openconfig-if-ip:prefix-length": mask}})
-        # VRRP
-        if nso_before_interface.get("vrrp"):
-            vrrp_dict = xe_configure_vrrp_interfaces(nso_before_interface, nso_leftover_interface)
-            ipv4_address_structure.update(vrrp_dict)
         if len(ipv4_address_structure) > 0:
             openconfig_interface["openconfig-if-ip:ipv4"]["openconfig-if-ip:addresses"][
                 "openconfig-if-ip:address"].append(ipv4_address_structure)
@@ -234,6 +230,14 @@ def xe_configure_ipv4_interface(nso_before_interface: dict, nso_leftover_interfa
         else:
             openconfig_interface["openconfig-if-ip:ipv4"]["openconfig-if-ip:config"][
                 "openconfig-if-ip:dhcp-client"] = False
+        # VRRP
+        if nso_before_interface.get("vrrp"):
+            vrrp_dict = xe_configure_vrrp_interfaces(nso_before_interface, nso_leftover_interface)
+            ipv4_address_structure.update(vrrp_dict)
+        # HSRP
+        if nso_before_interface.get("standby", {}).get("standby-list"):
+            hsrp_dict = xe_configure_hsrp_interfaces(nso_before_interface, nso_leftover_interface)
+            ipv4_address_structure.update(hsrp_dict)
         # IP MTU
         if nso_before_interface.get("ip", {}).get("mtu"):
             openconfig_interface["openconfig-if-ip:ipv4"]["openconfig-if-ip:config"][
@@ -519,6 +523,51 @@ def xe_configure_vrrp_interfaces(nso_before_interface: dict, nso_leftover_interf
                 del nso_leftover_interface["vrrp"][number]["timers"]["advertise"]
             service_vrrp["openconfig-if-ip:vrrp"]["openconfig-if-ip:vrrp-group"].append(service_vrrp_group)
     return service_vrrp
+
+
+def xe_configure_hsrp_interfaces(nso_before_interface: dict, nso_leftover_interface: dict) -> dict:
+    """Configure HSRP"""
+    service_hsrp = {"openconfig-if-ip-mdd-ext:hsrp": {"openconfig-if-ip-mdd-ext:hsrp-group": []}}
+    for number, group in enumerate(nso_before_interface.get("standby", {}).get("standby-list")):
+        if group.get("group-number"):
+            # Group
+            service_hsrp_group = {"openconfig-if-ip-mdd-ext:group-number": group.get("group-number"),
+                                  "openconfig-if-ip-mdd-ext:config": {
+                                      "openconfig-if-ip-mdd-ext:group-number": group.get("group-number")}}
+            del nso_leftover_interface["standby"]["standby-list"][number]["group-number"]
+            # Preempt delay
+            if group.get("preempt", {}).get("delay", {}).get("minimum"):
+                service_hsrp_group["openconfig-if-ip-mdd-ext:config"]["openconfig-if-ip-mdd-ext:preempt-delay"] = group.get("preempt",
+                                                                                                            {}).get(
+                    "delay", {}).get("minimum")
+                del nso_leftover_interface["standby"]["standby-list"][number]["preempt"]["delay"]
+            # Preempt
+            if group.get("preempt"):
+                service_hsrp_group["openconfig-if-ip-mdd-ext:config"]["openconfig-if-ip-mdd-ext:preempt"] = True
+                del nso_leftover_interface["standby"]["standby-list"][number]["preempt"]
+            # Priority
+            if group.get("priority"):
+                service_hsrp_group["openconfig-if-ip-mdd-ext:config"]["openconfig-if-ip-mdd-ext:priority"] = group.get("priority")
+                del nso_leftover_interface["standby"]["standby-list"][number]["priority"]
+            # VRRP Address
+            if group.get("ip", {}).get("address"):
+                service_hsrp_group["openconfig-if-ip-mdd-ext:config"]["openconfig-if-ip-mdd-ext:virtual-address"] = []
+                service_hsrp_group["openconfig-if-ip-mdd-ext:config"]["openconfig-if-ip-mdd-ext:virtual-address"].append(
+                    group.get("ip", {}).get("address"))
+                del nso_leftover_interface["standby"]["standby-list"][number]["ip"]
+            # Timers
+            if group.get("timers", {}).get("hello-interval", {}).get("seconds") and group.get("timers", {}).get(
+                    "hold-time", {}).get("seconds"):
+                service_hsrp_group["openconfig-if-ip-mdd-ext:config"].update({"openconfig-if-ip-mdd-ext:timers": {
+                    "openconfig-if-ip-mdd-ext:hello-interval": int(
+                        group.get("timers", {}).get("hello-interval").get("seconds")),
+                    "openconfig-if-ip-mdd-ext:holdtime": int(group.get("timers", {}).get("hold-time").get("seconds"))
+                }})
+                del nso_leftover_interface["standby"]["standby-list"][number]["timers"]["hello-interval"]
+                del nso_leftover_interface["standby"]["standby-list"][number]["timers"]["hold-time"]
+
+            service_hsrp["openconfig-if-ip-mdd-ext:hsrp"]["openconfig-if-ip-mdd-ext:hsrp-group"].append(service_hsrp_group)
+    return service_hsrp
 
 
 def configure_csmacd(config_before: dict, config_leftover: dict, interface_data: dict) -> None:
