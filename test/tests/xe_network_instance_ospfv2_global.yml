@@ -233,9 +233,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.16.1.2'
+                                  ip: '10.255.10.1'
                                   prefix-length: 32
-                                ip: '172.16.1.2'
+                                ip: '10.255.10.1'
                           config:
                             dhcp-client: false
                 - config:
@@ -259,9 +259,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-routing-policy:routing-policy:

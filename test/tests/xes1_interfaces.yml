@@ -49,9 +49,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.0.2'
+                                  ip: '10.10.0.1'
                                   prefix-length: 24
-                                ip: '10.1.0.2'
+                                ip: '10.10.0.1'
                           config:
                             dhcp-client: false
         api_method: PUT

@@ -32,9 +32,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.16.1.2'
+                                  ip: '10.255.10.1'
                                   prefix-length: 32
-                                ip: '172.16.1.2'
+                                ip: '10.255.10.1'
                           config:
                             dhcp-client: false
                 - config:
@@ -58,9 +58,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -114,8 +114,8 @@
         assertion_ignore_errors: false
         assertions:
           - "'+router ospf 1:' in changes"
-          - "'+ network 172.16.1.2 0.0.0.0 area 1:' in changes"
-          - "'+ network 172.17.0.1 0.0.0.0 area 0:' in changes"
+          - "'+ network 10.255.10.1 0.0.0.0 area 1:' in changes"
+          - "'+ network 10.6.0.1 0.0.0.0 area 0:' in changes"
 
     - name: test network_type
       tags:
@@ -148,9 +148,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -224,9 +224,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -300,9 +300,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -376,9 +376,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -452,9 +452,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -530,9 +530,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -612,9 +612,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -694,9 +694,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -772,9 +772,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -852,9 +852,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -941,9 +941,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -1030,9 +1030,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -1119,9 +1119,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -1208,9 +1208,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -1297,9 +1297,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.17.0.1'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '172.17.0.1'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:

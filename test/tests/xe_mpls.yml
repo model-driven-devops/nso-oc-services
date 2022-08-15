@@ -41,9 +41,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.101.1.1'
+                                  ip: '10.255.0.1'
                                   prefix-length: '32'
-                                ip: '10.101.1.1'
+                                ip: '10.255.0.1'
                 - config:
                     description: 'Physical Interface 5'
                     enabled: true
@@ -60,9 +60,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.2.5.5'
+                                  ip: '10.5.0.1'
                                   prefix-length: 24
-                                ip: '10.2.5.5'
+                                ip: '10.5.0.1'
                 - config:
                     description: 'Physical Interface 6'
                     enabled: true
@@ -79,9 +79,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.2.6.6'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '10.2.6.6'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -129,7 +129,7 @@
                       ldp:
                         global:
                           config:
-                            lsr-id: '10.101.1.1'  # mpls ldp router-id Loopback0
+                            lsr-id: '10.255.0.1'  # mpls ldp router-id Loopback0
                           graceful-restart:
                             config:
                               enabled: true  # if true, mpls ldp graceful-restart
@@ -144,7 +144,7 @@
         assertions:
           - "'+interface Loopback0:' in changes"
           - "'+ description Loopback 0:' in changes"
-          - "'+ ip address 10.101.1.1 255.255.255.255:' in changes"
+          - "'+ ip address 10.255.0.1 255.255.255.255:' in changes"
           - "'+mpls ldp graceful-restart:' in changes"
           - "'+mpls ldp router-id Loopback0 force:' in changes"
           - "'+mpls ldp discovery hello holdtime 30:' in changes"

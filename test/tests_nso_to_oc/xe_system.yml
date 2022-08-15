@@ -118,9 +118,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.60.1.2'
+                                  ip: '10.6.0.1'
                                   prefix-length: 30
-                                ip: '172.60.1.2'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
                 - config:
@@ -136,9 +136,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.50.1.2'
+                                  ip: '10.7.0.1'
                                   prefix-length: 30
-                                ip: '172.50.1.2'
+                                ip: '10.7.0.1'
                           config:
                             dhcp-client: false
                 - config:
@@ -168,7 +168,7 @@
                 ip:
                   address:
                     primary:
-                      address: 172.60.1.2
+                      address: 10.6.0.1
                       mask: 255.255.255.0
         api_method: PATCH
     - name: NSO configure hostname
@@ -457,7 +457,7 @@
         that:
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['enable-ntp-auth'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['openconfig-system-ext:ntp-enable-logging'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['ntp-source-address'] == '172.60.1.2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['ntp-source-address'] == '10.6.0.1'"
           - "ntp_auth_key_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key']"
 
     - name: NSO configure ntp authenticate
@@ -538,7 +538,7 @@
             association-type: SERVER
             iburst: false
             openconfig-system-ext:ntp-auth-key-id: 1
-            openconfig-system-ext:ntp-source-address: 172.60.1.2
+            openconfig-system-ext:ntp-source-address: 10.6.0.1
             port: 123
             prefer: false
             version: 3

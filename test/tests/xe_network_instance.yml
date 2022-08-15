@@ -46,9 +46,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '199.10.0.101'
+                                  ip: '10.3.0.1'
                                   prefix-length: '24'
-                                ip: '199.10.0.101'
+                                ip: '10.3.0.1'
                           config:
                             dhcp-client: false
                 - config:
@@ -68,9 +68,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.10.10.10'
+                                  ip: '10.4.10.1'
                                   prefix-length: '24'
-                                ip: '10.10.10.10'
+                                ip: '10.4.10.1'
                           config:
                             enabled: true
                         openconfig-vlan:vlan:

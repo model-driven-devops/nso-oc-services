@@ -97,9 +97,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.60.1.2'
+                                  ip: '10.6.0.1'
                                   prefix-length: 30
-                                ip: '172.60.1.2'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
                 - config:
@@ -115,9 +115,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.50.1.2'
+                                  ip: '10.7.0.1'
                                   prefix-length: 30
-                                ip: '172.50.1.2'
+                                ip: '10.7.0.1'
                           config:
                             dhcp-client: false
                 - config:

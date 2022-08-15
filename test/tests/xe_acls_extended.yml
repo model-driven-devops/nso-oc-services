@@ -92,9 +92,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.0.1'
+                                  ip: '10.5.0.1'
                                   prefix-length: 24
-                                ip: '10.1.0.1'
+                                ip: '10.5.0.1'
                           config:
                             dhcp-client: false
                 - config:
@@ -121,9 +121,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.1.2'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '10.1.1.2'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
                 - config:
@@ -151,9 +151,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '192.168.100.1'
+                                  ip: '10.7.100.1'
                                   prefix-length: 24
-                                ip: '192.168.100.1'
+                                ip: '10.7.100.1'
                           config:
                             dhcp-client: false
                             enabled: true
@@ -173,9 +173,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '192.168.200.2'
+                                  ip: '10.7.200.1'
                                   prefix-length: 24
-                                ip: '192.168.200.2'
+                                ip: '10.7.200.1'
                           config:
                             dhcp-client: false
                             enabled: true
