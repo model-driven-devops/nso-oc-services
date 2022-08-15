@@ -897,7 +897,7 @@
         assertions:
           - "' interface GigabitEthernet6:' in changes"
           - "'+ ip address 10.6.0.2 255.255.255.0:' in changes"
-          - "'+ standby 3 ip 10.7.0.1:' in changes"
+          - "'+ standby 3 ip 10.6.0.1:' in changes"
           - "'+ standby 3 preempt delay minimum 3500:' in changes"
           - "'+ standby 3 priority 200:' in changes"
           - "'+ standby 3 timers 30 100:' in changes"
