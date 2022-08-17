@@ -72,7 +72,7 @@
                       advertise:
                         seconds: 3
                     ip:
-                      address: 10.5.0.1
+                      address: 10.5.0.100
               - name: 6
                 ip:
                   address:
@@ -237,7 +237,7 @@
                       advertise:
                         seconds: 3
                     ip:
-                      address: 10.8.10.1
+                      address: 10.8.10.100
 
         api_method: PATCH
 
@@ -434,7 +434,7 @@
                   standby-list:
                     - group-number: 3
                       ip:
-                        address: 10.3.0.1
+                        address: 10.3.0.110
                       priority: 200
                       preempt:
                         delay:
@@ -477,7 +477,7 @@
         msg: "{{ oc_result }}"
     - assert:
         that:
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['virtual-address'][0] == '10.3.0.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['virtual-address'][0] == '10.3.0.110'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['group-number'] == 3"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['preempt'] == True"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['preempt-delay'] == 3500"
