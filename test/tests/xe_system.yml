@@ -57,8 +57,8 @@
           mdd:openconfig:
             openconfig-system:system:
               config:
-                oc-system-ext:enable-secret: 'password'
-                oc-system-ext:console-exec-timeout-seconds: 800
+                openconfig-system-ext:enable-secret: 'password'
+                openconfig-system-ext:console-exec-timeout-seconds: 800
                 domain-name: 'test123.com'
                 hostname: 'rxx'
                 login-banner: |
@@ -87,7 +87,7 @@
           mdd:openconfig:
             openconfig-system:system:
               config:
-                oc-system-ext:ip-options: 'DROP'
+                openconfig-system-ext:ip-options: 'DROP'
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -104,7 +104,7 @@
           mdd:openconfig:
             openconfig-system:system:
               config:
-                oc-system-ext:ip-options: 'IGNORE'
+                openconfig-system-ext:ip-options: 'IGNORE'
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -121,7 +121,7 @@
           mdd:openconfig:
             openconfig-system:system:
               config:
-                oc-system-ext:ip-options: 'ENABLE'
+                openconfig-system-ext:ip-options: 'ENABLE'
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -168,9 +168,9 @@
             openconfig-system:system:
               ssh-server:
                 config:
-                  oc-system-ext:absolute-timeout-minutes: 1200
-                  oc-system-ext:ssh-timeout: 55
-                  oc-system-ext:ssh-source-interface: 'GigabitEthernet6'
+                  openconfig-system-ext:absolute-timeout-minutes: 1200
+                  openconfig-system-ext:ssh-timeout: 55
+                  openconfig-system-ext:ssh-source-interface: 'GigabitEthernet6'
                   enable: true
                   protocol-version: 'V2'
                   session-limit: 16
@@ -282,7 +282,7 @@
                 config:
                   enabled: true
                   enable-ntp-auth: true
-                  oc-system-ext:ntp-enable-logging: true
+                  openconfig-system-ext:ntp-enable-logging: true
                   ntp-source-address: '10.6.0.1'
                 ntp-keys:
                   ntp-key:
@@ -300,8 +300,8 @@
                   server:
                     - address: '10.0.0.1'
                       config:
-                        oc-system-ext:ntp-auth-key-id: 1
-                        oc-system-ext:ntp-use-vrf: 'default'
+                        openconfig-system-ext:ntp-auth-key-id: 1
+                        openconfig-system-ext:ntp-use-vrf: 'default'
                         address: '10.0.0.1'
                         association-type: 'SERVER'  # SERVER, PEER, POOL
                         iburst: true
@@ -310,8 +310,8 @@
                         version: 4
                     - address: '10.0.0.2'
                       config:
-                        oc-system-ext:ntp-auth-key-id: 2
-                        oc-system-ext:ntp-use-vrf: 'abc'
+                        openconfig-system-ext:ntp-auth-key-id: 2
+                        openconfig-system-ext:ntp-use-vrf: 'abc'
                         address: '10.0.0.2'
                         association-type: 'PEER'
                         iburst: true
@@ -320,8 +320,8 @@
                         version: 4
                     - address: '10.0.0.3'
                       config:
-                        oc-system-ext:ntp-auth-key-id: 1
-                        oc-system-ext:ntp-source-address: '10.6.0.1'
+                        openconfig-system-ext:ntp-auth-key-id: 1
+                        openconfig-system-ext:ntp-source-address: '10.6.0.1'
                         address: '10.0.0.3'
                         association-type: 'SERVER'  # SERVER, PEER, POOL
                         iburst: true
@@ -454,7 +454,7 @@
                         host: '10.0.0.1'  # logging host x.x.x.x
                         remote-port: 514
                         source-address: '10.7.0.1'
-                        oc-system-ext:use-vrf: 'abc'
+                        openconfig-system-ext:use-vrf: 'abc'
                       host: '10.0.0.1'
                       selectors:
                         selector:
@@ -467,7 +467,7 @@
                         host: '10.0.0.2'  # logging host x.x.x.x
                         remote-port: 514
                         source-address: '10.6.0.1'
-                        oc-system-ext:use-vrf: 'default'
+                        openconfig-system-ext:use-vrf: 'default'
                       host: '10.0.0.2'
                       selectors:
                         selector:
@@ -900,7 +900,7 @@
                             dhcp-client: false
             openconfig-system:system:
               config:
-                oc-system-ext:enable-secret: 'admin'
+                openconfig-system-ext:enable-secret: 'admin'
               aaa:
                 accounting:
                   config:
@@ -1096,7 +1096,7 @@
           mdd:openconfig:
             openconfig-system:system:
               config:
-                oc-system-ext:enable-secret: 'admin'
+                openconfig-system-ext:enable-secret: 'admin'
               aaa:
                 authentication:
                   admin-user:
