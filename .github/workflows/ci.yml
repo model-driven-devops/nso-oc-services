@@ -163,6 +163,12 @@ jobs:
     if: github.event.review.state == 'approved'
     needs: build-lab
     steps:
+      - name: pwd
+        run: pwd
+        shell: bash
+      - name: ls
+        run: ls
+        shell: bash
       - name: Run NSO Services XE Tests
         run: |
           cd ./test/tests/xe
