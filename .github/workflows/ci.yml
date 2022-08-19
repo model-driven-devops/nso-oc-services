@@ -169,6 +169,9 @@ jobs:
       - name: ls
         run: ls
         shell: bash
+      - name: ls ./test/tests
+        run: ls ./test/tests
+        shell: bash
       - name: Run NSO Services XE Tests
         run: |
           cd ./test/tests/xe
