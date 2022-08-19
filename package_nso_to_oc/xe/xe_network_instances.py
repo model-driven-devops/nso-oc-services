@@ -85,6 +85,7 @@ if __name__ == '__main__':
     import sys
 
     sys.path.append('../../')
+    sys.path.append('../../../')
     from package_nso_to_oc import common
 
     nso_host = os.environ.get("NSO_HOST")

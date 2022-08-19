@@ -421,7 +421,7 @@
                                 config:
                                   initial-delay: 1000
                                   maximum-delay: 10000
-                                  oc-ospfv2-ext:hold-time: 5000
+                                  openconfig-ospfv2-ext:hold-time: 5000
         api_method: PUT
         api_ignore_errors: false
         rollback: true
@@ -459,7 +459,7 @@
                                 config:
                                   initial-delay: 10000
                                   maximum-delay: 20000
-                                  oc-ospfv2-ext:hold-time: 20000
+                                  openconfig-ospfv2-ext:hold-time: 20000
         api_method: PUT
         api_ignore_errors: false
         rollback: true

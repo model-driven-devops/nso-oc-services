@@ -43,7 +43,7 @@
         name: nso-ned-device-configure
       vars:
         api_path: config/tailf-ned-cisco-ios:vlan
-        script: ../../package_nso_to_oc/xe/xe_vlans.py
+        script: ../../../package_nso_to_oc/xe/xe_vlans.py
         content: |
           vlan:
             vlan-list:
@@ -137,7 +137,7 @@
     - name: Execute NSO NED to OC script
       tags:
         - interfaces_access_and_trunk
-      script: ../../package_nso_to_oc/xe/xe_interfaces.py
+      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
       args:
         executable: python3
       register: nso_to_oc_result
@@ -221,7 +221,7 @@
     - name: Execute NSO NED to OC script
       tags:
         - interfaces_LACP_trunk
-      script: ../../package_nso_to_oc/xe/xe_interfaces.py
+      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
       args:
         executable: python3
       register: nso_to_oc_result
@@ -328,7 +328,7 @@
     - name: Execute NSO NED to OC script
       tags:
         - interfaces_LACP_access
-      script: ../../package_nso_to_oc/xe/xe_interfaces.py
+      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
       args:
         executable: python3
       register: nso_to_oc_result
@@ -422,7 +422,7 @@
     - name: Execute NSO NED to OC script
       tags:
         - interfaces_LACP_L3
-      script: ../../package_nso_to_oc/xe/xe_interfaces.py
+      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
       args:
         executable: python3
       register: nso_to_oc_result
@@ -524,7 +524,7 @@
     - name: Execute NSO NED to OC script
       tags:
         - interfaces_ipv4
-      script: ../../package_nso_to_oc/xe/xe_interfaces.py
+      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
       args:
         executable: python3
       register: nso_to_oc_result
@@ -625,7 +625,7 @@
     - name: Execute NSO NED to OC script
       tags:
         - interfaces_LACP_L3_SUBIFs
-      script: ../../package_nso_to_oc/xe/xe_interfaces.py
+      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
       args:
         executable: python3
       register: nso_to_oc_result

@@ -4,7 +4,7 @@ on:
     types: [ submitted ]
     branches: [ main ]
 jobs:
-  test:
+  build-lab:
     runs-on: self-hosted
     if: github.event.review.state == 'approved'
     steps:
@@ -149,9 +149,20 @@ jobs:
       - name: Write contents of xeswitch1 IP file to envars
         run: |
           cat ${{ github.workspace }}/xeswitch1_host.txt >> $GITHUB_ENV
-      - name: Run NSO Services Tests
+      - name: Write contents of xr1 IP file to envars
         run: |
-          cd ./test/tests
+          cat ${{ github.workspace }}/xr1_host.txt >> $GITHUB_ENV
+      - name: Write contents of nx1 IP file to envars
+        run: |
+          cat ${{ github.workspace }}/nx1_host.txt >> $GITHUB_ENV
+  test-oc-xe:
+    runs-on: self-hosted
+    if: github.event.review.state == 'approved'
+    needs: build-lab
+    steps:
+      - name: Run NSO Services XE Tests
+        run: |
+          cd ./test/tests/xe
           FILES=$(ls ./*.yml)
           for PLAYBOOK in $FILES
           do
@@ -167,6 +178,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
+  remove-mdd-logic:
+    runs-on: self-hosted
+    if: github.event.review.state == 'approved'
+    needs: [test-oc-xe]
+    steps:
       - name: NSO MDD remove logic for NSO to OC testing
         run: ansible-playbook ./test/remove_mdd_logic.yml
         env:
@@ -181,9 +197,14 @@ jobs:
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
+  test-xe-oc:
+    runs-on: self-hosted
+    if: github.event.review.state == 'approved'
+    needs: remove-mdd-logic
+    steps:
       - name: Run NSO Device NED configuration to Openconfig configuration Tests
         run: |
-          cd ./test/tests_nso_to_oc
+          cd ./test/tests_nso_to_oc/xe
           FILES=$(ls ./*.yml)
           for PLAYBOOK in $FILES
           do
@@ -200,6 +221,11 @@ jobs:
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
           TEST: "True"
+  clean-up:
+    runs-on: self-hosted
+    if: ${{ always() }}
+    needs: [test-oc-xe, test-xe-oc]
+    steps:
       - name: Delete CML
         run: ansible-playbook cisco.cml.clean
         env:

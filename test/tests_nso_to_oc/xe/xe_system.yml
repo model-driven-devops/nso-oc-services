@@ -329,7 +329,7 @@
               last: 4
         api_method: PATCH
     - name: Execute NSO NED to OC script
-      script: ../../package_nso_to_oc/xe/xe_system.py
+      script: ../../../package_nso_to_oc/xe/xe_system.py
       args:
         executable: python3
       register: nso_to_oc_result
@@ -430,7 +430,7 @@
             key-type: openconfig-system:NTP_AUTH_MD5
             key-value: password1
     - name: Execute NSO NED to OC script
-      script: ../../package_nso_to_oc/xe/xe_system.py
+      script: ../../../package_nso_to_oc/xe/xe_system.py
       args:
         executable: python3
       register: nso_to_oc_result
@@ -555,7 +555,7 @@
             prefer: false
             version: 4
     - name: Execute NSO NED to OC script
-      script: ../../package_nso_to_oc/xe/xe_system.py
+      script: ../../../package_nso_to_oc/xe/xe_system.py
       args:
         executable: python3
       register: nso_to_oc_result

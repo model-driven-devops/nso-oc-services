@@ -181,7 +181,7 @@
           name: 'xyz'
 
     - name: Execute NSO NED to OC script
-      script: ../../package_nso_to_oc/xe/xe_network_instances.py
+      script: ../../../package_nso_to_oc/xe/xe_network_instances.py
       args:
         executable: python3
       register: nso_to_oc_result

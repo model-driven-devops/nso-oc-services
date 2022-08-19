@@ -87,7 +87,7 @@
     - name: Execute NSO NED to OC script
       tags:
         - interfaces_ipv4
-      script: ../../package_nso_to_oc/xe/xe_interfaces.py
+      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
       args:
         executable: python3
       register: nso_to_oc_result
@@ -164,7 +164,7 @@
     - name: Execute NSO NED to OC script
       tags:
         - interfaces_loopback
-      script: ../../package_nso_to_oc/xe/xe_interfaces.py
+      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
       args:
         executable: python3
       register: nso_to_oc_result
@@ -244,7 +244,7 @@
     - name: Execute NSO NED to OC script
       tags:
         - interfaces_subinterface
-      script: ../../package_nso_to_oc/xe/xe_interfaces.py
+      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
       args:
         executable: python3
       register: nso_to_oc_result
@@ -310,7 +310,7 @@
     - name: Execute NSO NED to OC script
       tags:
         - tunnel
-      script: ../../package_nso_to_oc/xe/xe_interfaces.py
+      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
       args:
         executable: python3
       register: nso_to_oc_result
@@ -378,7 +378,7 @@
     - name: Execute NSO NED to OC script
       tags:
         - vasi
-      script: ../../package_nso_to_oc/xe/xe_interfaces.py
+      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
       args:
         executable: python3
       register: nso_to_oc_result
@@ -448,7 +448,7 @@
     - name: Execute NSO NED to OC script
       tags:
         - hsrp
-      script: ../../package_nso_to_oc/xe/xe_interfaces.py
+      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
       args:
         executable: python3
       register: nso_to_oc_result

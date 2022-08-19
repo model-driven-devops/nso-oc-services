@@ -13,10 +13,14 @@
         content: "NSO_HOST={{ result.cml_facts.nodes.nso1.ansible_host }}"
         dest: "../nso_host.txt"
     - copy:
+        content: "NX1_HOST={{ result.cml_facts.nodes.nx1.ansible_host }}"
+        dest: "../nx1_host.txt"
+    - copy:
         content: "XE1_HOST={{ result.cml_facts.nodes.xe1.ansible_host }}"
         dest: "../xe1_host.txt"
     - copy:
         content: "XESWITCH1_HOST={{ result.cml_facts.nodes.xeswitch1.ansible_host }}"
         dest: "../xeswitch1_host.txt"
-
-
+    - copy:
+        content: "XR1_HOST={{ result.cml_facts.nodes.xr1.ansible_host }}"
+        dest: "../xr1_host.txt"
