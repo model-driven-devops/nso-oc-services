@@ -163,15 +163,23 @@ jobs:
     if: github.event.review.state == 'approved'
     needs: build-lab
     steps:
-      - name: pwd
-        run: pwd
-        shell: bash
-      - name: ls
-        run: ls
-        shell: bash
-      - name: ls ./test/tests
-        run: ls ./test/tests
-        shell: bash
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: echo "The workflow is now ready to test your code on the runner."
+      - name: update ubuntu
+        run: sudo apt-get update
+      - name: install sshpass
+        run: sudo apt-get install sshpass -y
+      - name: install git
+        run: sudo apt-get install git -y
+      - name: clone mdd
+        run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Install PIP requirements
+        run: pip install -r ./mdd_repo/requirements.txt
+      - name: Install PIP virl2_client
+        run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
+      - name: Install Collections
+        run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
       - name: Run NSO Services XE Tests
         run: |
           cd ./test/tests/xe
@@ -195,6 +203,23 @@ jobs:
     if: github.event.review.state == 'approved'
     needs: [test-oc-xe]
     steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: echo "The workflow is now ready to test your code on the runner."
+      - name: update ubuntu
+        run: sudo apt-get update
+      - name: install sshpass
+        run: sudo apt-get install sshpass -y
+      - name: install git
+        run: sudo apt-get install git -y
+      - name: clone mdd
+        run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Install PIP requirements
+        run: pip install -r ./mdd_repo/requirements.txt
+      - name: Install PIP virl2_client
+        run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
+      - name: Install Collections
+        run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
       - name: NSO MDD remove logic for NSO to OC testing
         run: ansible-playbook ./test/remove_mdd_logic.yml
         env:
@@ -214,6 +239,23 @@ jobs:
     if: github.event.review.state == 'approved'
     needs: remove-mdd-logic
     steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: echo "The workflow is now ready to test your code on the runner."
+      - name: update ubuntu
+        run: sudo apt-get update
+      - name: install sshpass
+        run: sudo apt-get install sshpass -y
+      - name: install git
+        run: sudo apt-get install git -y
+      - name: clone mdd
+        run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Install PIP requirements
+        run: pip install -r ./mdd_repo/requirements.txt
+      - name: Install PIP virl2_client
+        run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
+      - name: Install Collections
+        run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
       - name: Run NSO Device NED configuration to Openconfig configuration Tests
         run: |
           cd ./test/tests_nso_to_oc/xe
@@ -238,6 +280,23 @@ jobs:
     if: ${{ always() }}
     needs: [test-oc-xe, test-xe-oc]
     steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: echo "The workflow is now ready to test your code on the runner."
+      - name: update ubuntu
+        run: sudo apt-get update
+      - name: install sshpass
+        run: sudo apt-get install sshpass -y
+      - name: install git
+        run: sudo apt-get install git -y
+      - name: clone mdd
+        run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Install PIP requirements
+        run: pip install -r ./mdd_repo/requirements.txt
+      - name: Install PIP virl2_client
+        run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
+      - name: Install Collections
+        run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
       - name: Delete CML
         run: ansible-playbook cisco.cml.clean
         env:
