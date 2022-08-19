@@ -103,7 +103,7 @@ jobs:
           CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
       - name: Sleep while XR1 loads for 6 minutes
-        run: sleep 6s
+        run: sleep 6m
         shell: bash
       - name: NSO add devices from inventory
         run: ansible-playbook ciscops.mdd.nso_update_devices
