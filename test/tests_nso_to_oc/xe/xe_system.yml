@@ -179,7 +179,7 @@
       vars:
         api_path: config
         content: |
-          ncs:config:
+          config:
             tailf-ned-cisco-ios:hostname: test123
         api_method: PATCH
     - name: NSO configure banners
