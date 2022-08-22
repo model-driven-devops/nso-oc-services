@@ -459,7 +459,21 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['openconfig-system-ext:ntp-enable-logging'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['ntp-source-address'] == '10.6.0.1'"
           - "ntp_auth_key_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key']"
-
+    - name: NSO configure ntp authenticate
+      tags:
+        - ntp_servers
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:vrf
+        content: |
+          tailf-ned-cisco-ios:vrf:
+            definition:
+              - name: abc
+                address-family:
+                  ipv4: {}
+                  ipv6: {}
+        api_method: PATCH
     - name: NSO configure ntp authenticate
       tags:
         - ntp_servers

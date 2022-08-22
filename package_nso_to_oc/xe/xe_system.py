@@ -148,18 +148,18 @@ def xe_add_oc_ntp_server(before_ntp_server_list: list, after_ntp_server_list: li
             ntp_server_temp["openconfig-system:config"]["openconfig-system:prefer"] = False
         # authentication key
         if ntp_server.get("key"):
-            ntp_server_temp["openconfig-system:config"]["oc-system-ext:ntp-auth-key-id"] = ntp_server.get("key")
+            ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-auth-key-id"] = ntp_server.get("key")
             del after_ntp_server_list[ntp_server_index]["key"]
         # source interface
         if ntp_server.get("source"):
             for k, v in ntp_server.get("source").items():
                 nso_source_interface = f"{k}{v}"
-                ntp_server_temp["openconfig-system:config"]["oc-system-ext:ntp-source-address"] = if_ip.get(
+                ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-source-address"] = if_ip.get(
                     nso_source_interface)
                 del after_ntp_server_list[ntp_server_index]["source"]
         # vrf
         if ntp_vrf:
-            ntp_server_temp["openconfig-system:config"]["oc-system-ext:ntp-use-vrf"] = ntp_vrf
+            ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-use-vrf"] = ntp_vrf
 
         openconfig_ntp_server_list.append(ntp_server_temp)
 
