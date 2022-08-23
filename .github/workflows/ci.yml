@@ -189,6 +189,7 @@ jobs:
           NSO_HOST: ${{ env.NSO_HOST }}
           XE1_HOST: ${{ env.XE1_HOST }}
           XESWITCH1_HOST: ${{ env.XESWITCH1_HOST }}
+          XRROUTER_HOST: ${{ env.XRROUTER_HOST }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev.cfg
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
