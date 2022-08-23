@@ -11,11 +11,11 @@
     rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
 
 - name: test system
-  hosts: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xrrouter', True) }}"
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
   gather_facts: no
   connection: network_cli
   vars:
-    device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xrrouter', True) }}"
+    device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
     ansible_network_os: 'cisco.iosxr.iosxr'
   tasks:
     - name: test http_server

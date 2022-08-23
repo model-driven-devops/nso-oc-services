@@ -19,5 +19,5 @@
         content: "XESWITCH1_HOST={{ result.cml_facts.nodes.xeswitch1.ansible_host }}"
         dest: "../xeswitch1_host.txt"
     - copy:
-        content: "XRROUTER_HOST={{ result.cml_facts.nodes.xrrouter.ansible_host }}"
-        dest: "../xrrouter_host.txt"
+        content: "XR1_HOST={{ result.cml_facts.nodes.xr1.ansible_host }}"
+        dest: "../xr1_host.txt"

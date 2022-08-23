@@ -120,7 +120,7 @@ jobs:
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
       - name: NSO add XR devices from inventory
-        run: ansible-playbook ciscops.mdd.nso_update_devices -l "xrrouter" -e "device_ned=cisco-iosxr-cli-7.38"
+        run: ansible-playbook ciscops.mdd.nso_update_devices -l "xr1" -e "device_ned=cisco-iosxr-cli-7.38"
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
@@ -166,9 +166,9 @@ jobs:
       - name: Write contents of xeswitch1 IP file to envars
         run: |
           cat ${{ github.workspace }}/xeswitch1_host.txt >> $GITHUB_ENV
-      - name: Write contents of xrrouter IP file to envars
+      - name: Write contents of xr1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xrrouter_host.txt >> $GITHUB_ENV
+          cat ${{ github.workspace }}/xr1_host.txt >> $GITHUB_ENV
       - name: Run NSO Services Tests
         run: |
           cd ./test/tests
@@ -189,7 +189,7 @@ jobs:
           NSO_HOST: ${{ env.NSO_HOST }}
           XE1_HOST: ${{ env.XE1_HOST }}
           XESWITCH1_HOST: ${{ env.XESWITCH1_HOST }}
-          XRROUTER_HOST: ${{ env.XRROUTER_HOST }}
+          XR1_HOST: ${{ env.XR1_HOST }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev.cfg
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}

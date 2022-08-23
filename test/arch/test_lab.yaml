@@ -566,14 +566,14 @@ nodes:
     cpus: 1
     data_volume: 0
     hide_links: false
-    label: xrrouter
+    label: xr1
     node_definition: iosxrv9000
     ram: 20480
     tags: []
     x: 250
     y: 350
     configuration: |-
-      hostname xrrouter
+      hostname xr1
       domain name rtp.cisco.com
       username cisco
        group root-lr
@@ -801,16 +801,16 @@ links:
     n2: n8
     i1: i6
     i2: i1
-    label: ext-management-switch-port6<->xrrouter-MgmtEth0/RP0/CPU0/0
+    label: ext-management-switch-port6<->xr1-MgmtEth0/RP0/CPU0/0
   - id: l15
     n1: n8
     n2: n7
     i1: i9
     i2: i9
-    label: xrrouter-GigabitEthernet0/0/0/5<->test-network-switch-GigabitEthernet2/0
+    label: xr1-GigabitEthernet0/0/0/5<->test-network-switch-GigabitEthernet2/0
   - id: l16
     n1: n7
     n2: n8
     i1: i10
     i2: i10
-    label: test-network-switch-GigabitEthernet2/1<->xrrouter-GigabitEthernet0/0/0/6
+    label: test-network-switch-GigabitEthernet2/1<->xr1-GigabitEthernet0/0/0/6
