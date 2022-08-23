@@ -23,6 +23,7 @@ all:
           ansible_host: "{{ lookup('env', 'XE1_HOST') | default('') }}"
         xeswitch1:
           ansible_host: "{{ lookup('env', 'XESWITCH1_HOST') | default('') }}"
-#        xr1:
+        xr1:
+          ansible_host: "{{ lookup('env', 'XR1_HOST') | default('') }}"
 #        nx1:
 #        test-network-switch:

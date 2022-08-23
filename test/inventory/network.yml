@@ -11,3 +11,4 @@ all:
         routers:
           hosts:
             xe1:
+            xr1:

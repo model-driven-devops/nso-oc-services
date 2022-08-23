@@ -267,7 +267,7 @@ def xe_system_program_service(self) -> None:
     if self.service.oc_sys__system.ntp.config.enabled:
         if self.service.oc_sys__system.ntp.config.ntp_source_address:
             ip_name_dict = xe_system_get_interface_ip_address(self)
-            if ip_name_dict[self.service.oc_sys__system.ntp.config.ntp_source_address]:
+            if ip_name_dict.get(self.service.oc_sys__system.ntp.config.ntp_source_address):
                 interface_type, interface_number = xe_get_interface_type_and_number(
                     ip_name_dict.get(self.service.oc_sys__system.ntp.config.ntp_source_address))
                 device_cdb.ios__ntp.source[interface_type] = interface_number
@@ -519,7 +519,7 @@ def xe_system_program_service(self) -> None:
             # add source_address to group
             if source_address:
                 ip_name_dict = xe_system_get_interface_ip_address(self)
-                if ip_name_dict[source_address]:
+                if ip_name_dict.get(source_address):
                     interface_name, interface_number = xe_get_interface_type_and_number(
                         ip_name_dict.get(source_address))
                     if g.get('type') == 'oc-aaa:TACACS':

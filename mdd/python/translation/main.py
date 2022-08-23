@@ -1,24 +1,18 @@
 # -*- mode: python; python-indent: 4 -*-
-import re
+from re import compile
 
-import ncs
-import _ncs
-from ncs.application import Service
-from translation.openconfig_xe.xe_acls import xe_acls_program_service
-from translation.openconfig_xe.xe_acls import xe_acls_interfaces_program_service
-from translation.openconfig_xe.xe_acls import xe_acls_lines_program_service
-from translation.openconfig_xe.xe_acls import xe_acls_ntp_program_service
-from translation.openconfig_xe.xe_routing_policy import xe_routing_policy_program_service
-from translation.openconfig_xe.xe_interfaces import xe_interfaces_program_service
-from translation.openconfig_xe.xe_network_instances import xe_network_instances_program_service
-from translation.openconfig_xe.xe_system import xe_system_program_service
+from _ncs import TransCtxRef
+from ncs.maagic import Root, ListElement
+from ncs.application import Application, Service
 
-regex_device = re.compile(r'device{(.*)}\/')
+from translation.openconfig_xe.xe_main import check_xe_features
+from translation.openconfig_xr.xr_main import check_xr_features
 
+regex_device = compile(r'device{(.*)}\/')
 
 class OCCallback(Service):
     @Service.create
-    def cb_create(self, tctx: _ncs.TransCtxRef, root: ncs.maagic.Root, service: ncs.maagic.ListElement, proplist: list):
+    def cb_create(self, tctx: TransCtxRef, root: Root, service: ListElement, proplist: list):
         self.log.info(f'Service create(service={service._path})')
         self.service = service
         self.root = root
@@ -29,30 +23,9 @@ class OCCallback(Service):
 
         # Each NED may have a template and will have python processing code
         if 'cisco-ios-cli' in self.root.devices.device[self.device_name].device_type.cli.ned_id:
-            # OpenConfig Interfaces
-            if len(service.oc_if__interfaces.interface) > 0:
-                xe_interfaces_program_service(self)
-
-            # OpenConfig ACL
-            if len(service.oc_acl__acl.acl_sets.acl_set) > 0:
-                xe_acls_program_service(self)
-            if len(service.oc_acl__acl.interfaces.interface) > 0:
-                xe_acls_interfaces_program_service(self)
-            if len(service.oc_acl__acl.oc_acl_ext__lines.line) > 0:
-                xe_acls_lines_program_service(self)
-            xe_acls_ntp_program_service(self)
-
-            # OpenConfig routing-policy
-            if service.oc_rpol__routing_policy:
-                xe_routing_policy_program_service(self)
-
-            # OpenConfig Network Instances
-            if len(service.oc_netinst__network_instances.network_instance) > 0:
-                xe_network_instances_program_service(self)
-
-            # OpenConfig System
-            xe_system_program_service(self)
-
+            check_xe_features(self)
+        elif 'cisco-iosxr-cli' in self.root.devices.device[self.device_name].device_type.cli.ned_id:
+            check_xr_features(self)
 
 def update_vars(initial_vars: dict, proplist: list) -> dict:
     """
@@ -68,7 +41,7 @@ def update_vars(initial_vars: dict, proplist: list) -> dict:
     return initial_vars
 
 
-class Main(ncs.application.Application):
+class Main(Application):
     def setup(self):
         self.log.info('Main RUNNING')
         self.register_service('oc-servicepoint', OCCallback)
