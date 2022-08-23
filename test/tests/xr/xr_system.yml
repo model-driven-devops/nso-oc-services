@@ -28,8 +28,8 @@
           mdd:openconfig:
             openconfig-system:system:
               config:
-                oc-system-ext:enable-secret: 'password'
-                oc-system-ext:console-exec-timeout-seconds: 800
+                openconfig-system-ext:enable-secret: 'password'
+                openconfig-system-ext:console-exec-timeout-seconds: 800
                 domain-name: 'test123.com'
                 hostname: 'rxx'
                 login-banner: |
