@@ -197,7 +197,7 @@ jobs:
           for PLAYBOOK in $FILES
           do
           echo $PLAYBOOK
-          ansible-playbook $PLAYBOOK
+          ansible-playbook $PLAYBOOK --skip-tags="iosxr"
           done
         env:
           NSO_HOST: ${{ env.NSO_HOST }}
@@ -265,14 +265,14 @@ jobs:
       - name: Write contents of nx1 IP file to envars
         run: |
           cat ${{ github.workspace }}/nx1_host.txt >> $GITHUB_ENV
-      - name: Run NSO Services XE Tests
+      - name: Run NSO Services XR Tests
         run: |
           cd ./test/tests/xr
           FILES=$(ls ./*.yml)
           for PLAYBOOK in $FILES
           do
           echo $PLAYBOOK
-          ansible-playbook $PLAYBOOK
+          ansible-playbook $PLAYBOOK --skip-tags="ios"
           done
         env:
           NSO_HOST: ${{ env.NSO_HOST }}
