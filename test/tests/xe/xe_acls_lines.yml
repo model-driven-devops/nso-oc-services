@@ -38,9 +38,9 @@
 #                          addresses:
 #                            address:
 #                              - config:
-#                                  ip: '172.27.1.2'
+#                                  ip: '10.6.0.1'
 #                                  prefix-length: 30
-#                                ip: '172.27.1.2'
+#                                ip: '10.6.0.1'
 #                          config:
 #                            dhcp-client: false
 #            openconfig-acl:acl:
@@ -150,9 +150,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.27.1.2'
+                                  ip: '10.6.0.1'
                                   prefix-length: 30
-                                ip: '172.27.1.2'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-acl:acl:
@@ -255,9 +255,9 @@
 #                          addresses:
 #                            address:
 #                              - config:
-#                                  ip: '172.27.1.2'
+#                                  ip: '10.6.0.1'
 #                                  prefix-length: 30
-#                                ip: '172.27.1.2'
+#                                ip: '10.6.0.1'
 #                          config:
 #                            dhcp-client: false
 #            openconfig-network-instance:network-instances:
@@ -394,9 +394,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.27.1.2'
+                                  ip: '10.6.0.1'
                                   prefix-length: 30
-                                ip: '172.27.1.2'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-acl:acl:

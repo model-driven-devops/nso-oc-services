@@ -11,6 +11,7 @@ module openconfig-if-ip-mdd-ext{
   import tailf-common { prefix tailf; }
   import mdd { prefix mdd; }
   import openconfig-interfaces { prefix oc-if; }
+  import openconfig-inet-types { prefix oc-inet; }
   import openconfig-if-ip { prefix oc-ip; }
   import openconfig-if-tunnel { prefix oc-tun; }
   import openconfig-if-aggregate { prefix oc-lag; }
@@ -23,7 +24,10 @@ module openconfig-if-ip-mdd-ext{
 
   description
     "Augmentation to openconfig ip model.";
-
+  revision "2022-08-12" {
+    description
+      "Added support for HSRP";
+  }
   revision "2022-05-20" {
     description
       "Now generic IP extensions and ipv4 only extensions";
@@ -39,6 +43,96 @@ module openconfig-if-ip-mdd-ext{
   revision "2022-02-02" {
     description
       "Initial revision";
+  }
+  grouping hsrp-extensions {
+    description
+      "Top-level grouping for Hot Standby Router Protocol";
+
+    container hsrp {
+      description
+        "Enclosing container for HSRP groups handled by this
+        IP interface";
+
+      list hsrp-group {
+        key "group-number";
+        description
+          "List of HSRP groups, keyed by group-number";
+
+        leaf group-number {
+          type leafref {
+            path "../config/group-number";
+          }
+          description
+            "References the configured virtual router id for this
+            HSRP group";
+        }
+        container config {
+          description
+            "Configuration data for the HSRP group";
+
+          leaf group-number {
+            type uint8 {
+              range 0..255;
+            }
+            description
+              "The group number on the interface for which HSRP is being enabled";
+          }
+          leaf-list virtual-address {
+            type oc-inet:ip-address;
+            description
+              "Configure one or more virtual addresses for the
+              HSSRP group";
+          }
+          leaf priority {
+            type uint8 {
+              range 0..255;
+            }
+            description
+              "Specifies the sending HSRP interface's priority
+              for the virtual router.  Higher values equal higher
+              priority";
+          }
+
+          leaf preempt {
+            type boolean;
+            description
+              "When set to true, enables preemption by a higher
+              priority backup router of a lower priority master router";
+          }
+
+          leaf preempt-delay {
+            type uint16 {
+              range 0..3600;
+            }
+            description
+              "Set the delay the higher priority router waits
+              before preempting";
+          }
+          container timers {
+            description
+              "Configuration timers data for HSRP group";
+
+            leaf hello-interval {
+              type uint8 {
+                range 0..255;
+              }
+              units "seconds";
+              description
+                "Configure the time between hello packets.";
+            }
+            leaf holdtime {
+              type uint8 {
+                range 0..255;
+              }
+              units "seconds";
+              description
+                "Configure time in seconds before the active
+                or standby router is declared down.";
+            }
+          }
+        }
+      }
+    }
   }
   grouping if-ip-extensions {
     leaf redirects {
@@ -112,5 +206,14 @@ module openconfig-if-ip-mdd-ext{
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-vlan:routed-vlan/oc-ip:ipv6/oc-ip:config {
     uses if-ip-extensions;
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-if:subinterfaces/oc-if:subinterface/oc-ip:ipv4/oc-ip:addresses/oc-ip:address {
+    uses hsrp-extensions;
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-lag:aggregation/oc-ip:ipv4/oc-ip:addresses/oc-ip:address {
+    uses hsrp-extensions;
+  }
+    augment /ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-vlan:routed-vlan/oc-ip:ipv4/oc-ip:addresses/oc-ip:address {
+    uses hsrp-extensions;
   }
 }

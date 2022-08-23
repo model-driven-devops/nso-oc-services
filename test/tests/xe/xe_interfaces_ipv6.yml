@@ -52,7 +52,7 @@
             openconfig-interfaces:interfaces:
               interface:
                 - config:
-                    description: 'Physical Interface 6 VRRP'
+                    description: 'Physical Interface 6'
                     enabled: true
                     name: 'GigabitEthernet6'
                     type: 'ethernetCsmacd'
@@ -83,7 +83,7 @@
             openconfig-interfaces:interfaces:
               interface:
                 - config:
-                    description: 'Physical Interface 6 VRRP'
+                    description: 'Physical Interface 6'
                     enabled: true
                     name: 'GigabitEthernet6'
                     type: 'ethernetCsmacd'
@@ -134,9 +134,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.0.2'
+                                  ip: '10.4.0.2'
                                   prefix-length: 24
-                                ip: '10.1.0.2'
+                                ip: '10.4.0.2'
                                 vrrp:
                                   vrrp-group:
                                     - config:
@@ -144,8 +144,8 @@
                                         preempt: true
                                         preempt-delay: 10  # vrrp 5 preempt delay minimum 100
                                         priority: 200  # vrrp 5 priority 200
-                                        virtual-address:  # vrrp 5 ip10.1.0.2
-                                          - '10.1.0.2'
+                                        virtual-address:  # vrrp 5 ip 10.4.0.100
+                                          - '10.4.0.100'
                                         virtual-router-id: 4  # group number
                                       virtual-router-id: 4  # group number
                           config:
@@ -155,8 +155,8 @@
         assertion_ignore_errors: false
         assertions:
           - "' interface GigabitEthernet4:' in changes"
-          - "'+ ip address 10.1.0.2 255.255.255.0:' in changes"
-          - "'+ vrrp 4 ip 10.1.0.2:' in changes"
+          - "'+ ip address 10.4.0.2 255.255.255.0:' in changes"
+          - "'+ vrrp 4 ip 10.4.0.100:' in changes"
           - "'+ vrrp 4 preempt delay minimum 10:' in changes"
           - "'+ vrrp 4 priority 200:' in changes"
           - "'+ vrrp 4 timers advertise 3:' in changes"
@@ -203,9 +203,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.0.2'
+                                  ip: '10.6.0.2'
                                   prefix-length: 24
-                                ip: '10.1.0.2'
+                                ip: '10.6.0.2'
                                 vrrp:
                                   vrrp-group:
                                     - config:
@@ -213,8 +213,8 @@
                                         preempt: true
                                         preempt-delay: 10  # vrrp 5 preempt delay minimum 100
                                         priority: 200  # vrrp 5 priority 200
-                                        virtual-address:  # vrrp 5 ip10.1.0.2
-                                          - '10.1.0.2'
+                                        virtual-address:  # vrrp 5 ip 10.6.0.100
+                                          - '10.6.0.100'
                                         virtual-router-id: 6  # group number
                                       virtual-router-id: 6  # group number
                           config:
@@ -225,7 +225,7 @@
         assertions:
           - "' interface GigabitEthernet6:' in changes"
           - "'+ vrrp 6 address-family ipv4:' in changes"
-          - "'+  address 10.1.0.2 primary:' in changes"
+          - "'+  address 10.6.0.100 primary:' in changes"
           - "'+  priority 200:' in changes"
           - "'+  timers advertise 40000:' in changes"
           - "'+  preempt delay minimum 10:' in changes"

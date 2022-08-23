@@ -1,5 +1,5 @@
 ---
-- name: test network instance bgp peer groups
+- name: test network instance bgp neighbors
   hosts: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
   gather_facts: no
   connection: network_cli
@@ -7,9 +7,9 @@
     device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
     ansible_network_os: 'cisco.ios.ios'
   tasks:
-    - name: test peer_group_create
+    - name: test neighbor_remote_as_test
       tags:
-        - peer_group_create
+        - neighbor_remote_as_test
       import_role:
         name: nso-openconfig-test
       vars:
@@ -24,30 +24,72 @@
                     enabled: true
                   protocols:
                     protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
+                      - name: BGP
+                        identifier: BGP
                         config:
                           enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
+                          identifier: BGP
+                          name: BGP
                         bgp:
                           global:
                             config:
                               as: 1
-                          peer-groups:
-                            peer-group:
+                          neighbors:
+                            neighbor:
                               - config:
-                                  peer-group-name: 'test'
-                                peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test peer-group:' in changes"
+          - "'+ neighbor 10.11.11.2 remote-as 2:' in changes"
 
-    - name: test peer_group_neighbor_test
+    - name: test neighbor_ttl_security
       tags:
-        - peer_group_neighbor_test
+        - neighbor_ttl_security
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: BGP
+                        identifier: BGP
+                        config:
+                          enabled: True
+                          identifier: BGP
+                          name: BGP
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                  openconfig-bgp-ext:ttl-security: 2
+                                neighbor-address: '10.11.11.2'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ neighbor 10.11.11.2 ttl-security hops 2:' in changes"
+
+
+    - name: test neighbor_remote_auth_password
+      tags:
+        - neighbor_remote_auth_password
       import_role:
         name: nso-openconfig-test
       vars:
@@ -74,103 +116,20 @@
                               as: 1
                           neighbors:
                             neighbor:
-                              config:
-                                neighbor-address: '10.11.11.2'
-                                peer-group: 'test'
-                                peer-as: 2
-                              neighbor-address: '10.11.11.2'
-                          peer-groups:
-                            peer-group:
                               - config:
-                                  peer-group-name: 'test'
-                                peer-group-name: 'test'
-        api_method: PUT
-        rollback: true
-        assertion_ignore_errors: false
-        assertions:
-          - "'+ neighbor 10.11.11.2 peer-group test:' in changes"
-
-    - name: test peer_group_peer_as_test
-      tags:
-        - peer_group_peer_as_test
-      import_role:
-        name: nso-openconfig-test
-      vars:
-        content: |
-          mdd:openconfig:
-            openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                          peer-groups:
-                            peer-group:
-                              - config:
-                                  peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
                                   peer-as: 2
-                                peer-group-name: 'test'
-        api_method: PUT
-        rollback: true
-        assertion_ignore_errors: false
-        assertions:
-          - "'+ neighbor test remote-as 2:' in changes"
-
-    - name: test peer_group_auth_test
-      tags:
-        - peer_group_auth_test
-      import_role:
-        name: nso-openconfig-test
-      vars:
-        content: |
-          mdd:openconfig:
-            openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                          peer-groups:
-                            peer-group:
-                              - config:
-                                  peer-group-name: 'test'
                                   auth-password: 'super_secret'
-                                peer-group-name: 'test'
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test password super_secret:' in changes"
+          - "'+ neighbor 10.11.11.2 password super_secret:' in changes"
 
-    - name: test peer_group_description_test
+    - name: test neighbor_description
       tags:
-        - peer_group_description_test
+        - neighbor_description
       import_role:
         name: nso-openconfig-test
       vars:
@@ -195,21 +154,22 @@
                           global:
                             config:
                               as: 1
-                          peer-groups:
-                            peer-group:
+                          neighbors:
+                            neighbor:
                               - config:
-                                  peer-group-name: 'test'
-                                  description: 'my_description'
-                                peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                  description: 'as_2_peer'
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test description my_description:' in changes"
+          - "'+ neighbor 10.11.11.2 description as_2_peer:' in changes"
 
-    - name: test peer_group_local_as_test
+    - name: test neighbor_shutdown_test
       tags:
-        - peer_group_local_as_test
+        - neighbor_shutdown_test
       import_role:
         name: nso-openconfig-test
       vars:
@@ -234,21 +194,62 @@
                           global:
                             config:
                               as: 1
-                          peer-groups:
-                            peer-group:
+                          neighbors:
+                            neighbor:
                               - config:
-                                  peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                  enabled: False
+                                neighbor-address: '10.11.11.2'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ neighbor 10.11.11.2 shutdown:' in changes"
+
+    - name: test neighbor_local_as_test
+      tags:
+        - neighbor_local_as_test
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
                                   local-as: 100
-                                peer-group-name: 'test'
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test local-as 100:' in changes"
+          - "'+ neighbor 10.11.11.2 local-as 100:' in changes"
 
-    - name: test peer_group_remove_private_as_all_test
+    - name: test neighbor_remove_private_as_all_test
       tags:
-        - peer_group_remove_private_as_all_test
+        - neighbor_remove_private_as_all_test
       import_role:
         name: nso-openconfig-test
       vars:
@@ -273,21 +274,22 @@
                           global:
                             config:
                               as: 1
-                          peer-groups:
-                            peer-group:
+                          neighbors:
+                            neighbor:
                               - config:
-                                  peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
                                   remove-private-as: 'PRIVATE_AS_REMOVE_ALL'
-                                peer-group-name: 'test'
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test remove-private-as all:' in changes"
+          - "'+ neighbor 10.11.11.2 remove-private-as all:' in changes"
 
-    - name: test peer_group_remove_private_as_replace_as_test
+    - name: test neighbor_remove_private_as_replace_as_test
       tags:
-        - peer_group_remove_private_as_replace_as_test
+        - neighbor_remove_private_as_replace_as_test
       import_role:
         name: nso-openconfig-test
       vars:
@@ -312,21 +314,22 @@
                           global:
                             config:
                               as: 1
-                          peer-groups:
-                            peer-group:
+                          neighbors:
+                            neighbor:
                               - config:
-                                  peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
                                   remove-private-as: 'PRIVATE_AS_REPLACE_ALL'
-                                peer-group-name: 'test'
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test remove-private-as all replace-as:' in changes"
+          - "'+ neighbor 10.11.11.2 remove-private-as all replace-as:' in changes"
 
-    - name: test peer_group_send_community_standard_test
+    - name: test neighbor_send_community_standard_test
       tags:
-        - peer_group_send_community_standard_test
+        - neighbor_send_community_standard_test
       import_role:
         name: nso-openconfig-test
       vars:
@@ -351,21 +354,22 @@
                           global:
                             config:
                               as: 1
-                          peer-groups:
-                            peer-group:
+                          neighbors:
+                            neighbor:
                               - config:
-                                  peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
                                   send-community: 'STANDARD'
-                                peer-group-name: 'test'
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test send-community:' in changes"
+          - "'+ neighbor 10.11.11.2 send-community:' in changes"
 
-    - name: test peer_group_send_community_extended_test
+    - name: test neighbor_send_community_extended_test
       tags:
-        - peer_group_send_community_extended_test
+        - neighbor_send_community_extended_test
       import_role:
         name: nso-openconfig-test
       vars:
@@ -390,21 +394,22 @@
                           global:
                             config:
                               as: 1
-                          peer-groups:
-                            peer-group:
+                          neighbors:
+                            neighbor:
                               - config:
-                                  peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
                                   send-community: 'EXTENDED'
-                                peer-group-name: 'test'
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test send-community extended:' in changes"
+          - "'+ neighbor 10.11.11.2 send-community extended:' in changes"
 
-    - name: test peer_group_send_community_both_test
+    - name: test neighbor_send_community_both_test
       tags:
-        - peer_group_send_community_both_test
+        - neighbor_send_community_both_test
       import_role:
         name: nso-openconfig-test
       vars:
@@ -429,21 +434,22 @@
                           global:
                             config:
                               as: 1
-                          peer-groups:
-                            peer-group:
+                          neighbors:
+                            neighbor:
                               - config:
-                                  peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
                                   send-community: 'BOTH'
-                                peer-group-name: 'test'
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test send-community both:' in changes"
+          - "'+ neighbor 10.11.11.2 send-community both:' in changes"
 
-    - name: test peer_group_ebgp_multihop_test
+    - name: test neighbor_ebgp_multihop_test
       tags:
-        - peer_group_ebgp_multihop_test
+        - neighbor_ebgp_multihop_test
       import_role:
         name: nso-openconfig-test
       vars:
@@ -468,24 +474,25 @@
                           global:
                             config:
                               as: 1
-                          peer-groups:
-                            peer-group:
+                          neighbors:
+                            neighbor:
                               - config:
-                                  peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
                                 ebgp-multihop:
                                   config:
                                     enabled: True
                                     multihop-ttl: 2
-                                peer-group-name: 'test'
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test ebgp-multihop 2:' in changes"
+          - "'+ neighbor 10.11.11.2 ebgp-multihop 2:' in changes"
 
-    - name: test peer_group_route_reflector_client_test
+    - name: test neighbor_route_reflector_client_test
       tags:
-        - peer_group_route_reflector_client_test
+        - neighbor_route_reflector_client_test
       import_role:
         name: nso-openconfig-test
       vars:
@@ -510,27 +517,26 @@
                           global:
                             config:
                               as: 1
-                          peer-groups:
-                            peer-group:
-                              - peer-group-name: 'test'
-                                config:
-                                  peer-group-name: 'test'
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
                                   peer-as: 1
                                 route-reflector:
                                   config:
                                     route-reflector-client: True
                                     route-reflector-cluster-id: '1.1.1.1'
-
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test route-reflector-client:' in changes"
-          - "'+ neighbor test cluster-id 1.1.1.1:' in changes"
+          - "'+ neighbor 10.11.11.2 route-reflector-client:' in changes"
+          - "'+ neighbor 10.11.11.2 cluster-id 1.1.1.1:' in changes"
 
-    - name: test peer_group_route_reflector_client_test_ad_ipv4
+    - name: test neighbor_route_reflector_client_test_ad_ipv4
       tags:
-        - peer_group_route_reflector_client_test_ad_ipv4
+        - neighbor_route_reflector_client_test_ad_ipv4
       import_role:
         name: nso-openconfig-test
       vars:
@@ -561,16 +567,16 @@
                                   config:
                                     afi-safi-name: 'IPV4_UNICAST'
                                     enabled: true
-                          peer-groups:
-                            peer-group:
-                              - peer-group-name: 'test'
-                                config:
-                                  peer-group-name: 'test'
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
                                   peer-as: 1
                                 route-reflector:
                                   config:
                                     route-reflector-client: True
                                     route-reflector-cluster-id: '1.1.1.1'
+                                neighbor-address: '10.11.11.2'
                                 afi-safis:
                                   afi-safi:
                                     - afi-safi-name: 'IPV4_UNICAST'
@@ -581,13 +587,13 @@
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test cluster-id 1.1.1.1:' in changes"
+          - "'+ neighbor 10.11.11.2 cluster-id 1.1.1.1:' in changes"
           - "'+ address-family ipv4:' in changes"
-          - "'+  neighbor test route-reflector-client:' in changes"
+          - "'+  neighbor 10.11.11.2 route-reflector-client:' in changes"
 
-    - name: test peer_group_route_reflector_client_test_ad_vpnv4
+    - name: test neighbor_route_reflector_client_test_ad_vpnv4
       tags:
-        - peer_group_route_reflector_client_test_ad_vpnv4
+        - neighbor_route_reflector_client_test_ad_vpnv4
       import_role:
         name: nso-openconfig-test
       vars:
@@ -618,16 +624,16 @@
                                   config:
                                     afi-safi-name: 'L3VPN_IPV4_UNICAST'
                                     enabled: true
-                          peer-groups:
-                            peer-group:
-                              - peer-group-name: 'test'
-                                config:
-                                  peer-group-name: 'test'
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
                                   peer-as: 1
                                 route-reflector:
                                   config:
                                     route-reflector-client: True
                                     route-reflector-cluster-id: '1.1.1.1'
+                                neighbor-address: '10.11.11.2'
                                 afi-safis:
                                   afi-safi:
                                     - afi-safi-name: 'L3VPN_IPV4_UNICAST'
@@ -638,13 +644,13 @@
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test cluster-id 1.1.1.1:' in changes"
+          - "'+ neighbor 10.11.11.2 cluster-id 1.1.1.1:' in changes"
           - "'+ address-family vpnv4:' in changes"
-          - "'+  neighbor test route-reflector-client:' in changes"
+          - "'+  neighbor 10.11.11.2 route-reflector-client:' in changes"
 
-    - name: test peer_group_route_reflector_client_test_ad_ipv4_vrf
+    - name: test neighbor_route_reflector_client_test_ad_ipv4_vrf
       tags:
-        - peer_group_route_reflector_client_test_ad_ipv4_vrf
+        - neighbor_route_reflector_client_test_ad_ipv4_vrf
       import_role:
         name: nso-openconfig-test
       vars:
@@ -707,33 +713,34 @@
                                   config:
                                     afi-safi-name: 'IPV4_UNICAST'
                                     enabled: true
-                          peer-groups:
-                            peer-group:
-                              - peer-group-name: 'test'
-                                config:
-                                  peer-group-name: 'test'
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
                                   peer-as: 1
                                 route-reflector:
                                   config:
                                     route-reflector-client: True
                                     route-reflector-cluster-id: '1.1.1.1'
+                                neighbor-address: '10.11.11.2'
                                 afi-safis:
                                   afi-safi:
                                     - afi-safi-name: 'IPV4_UNICAST'
                                       config:
                                         afi-safi-name: 'IPV4_UNICAST'
                                         enabled: true
+
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
-          - "'+  neighbor test route-reflector-client:' in changes"
-          - "'+  neighbor test cluster-id 1.1.1.1:' in changes"
+          - "'+  neighbor 10.11.11.2 route-reflector-client:' in changes"
+          - "'+  neighbor 10.11.11.2 cluster-id 1.1.1.1:' in changes"
 
-    - name: test peer_group_timers_test
+    - name: test neighbor_timers_test
       tags:
-        - peer_group_timers_test
+        - neighbor_timers_test
       import_role:
         name: nso-openconfig-test
       vars:
@@ -758,24 +765,25 @@
                           global:
                             config:
                               as: 1
-                          peer-groups:
-                            peer-group:
-                              - peer-group-name: 'test'
-                                config:
-                                  peer-group-name: 'test'
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
                                 timers:
                                   config:
                                     hold-time: 90
                                     keepalive-interval: 30
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test timers 30 90:' in changes"
+          - "'+ neighbor 10.11.11.2 timers 30 90:' in changes"
 
-    - name: test peer_group_transport_mtud_disable_test
+    - name: test neighbor_transport_mtud_disable_test
       tags:
-        - peer_group_transport_mtud_disable_test
+        - neighbor_transport_mtud_disable_test
       import_role:
         name: nso-openconfig-test
       vars:
@@ -800,64 +808,24 @@
                           global:
                             config:
                               as: 1
-                          peer-groups:
-                            peer-group:
-                              - peer-group-name: 'test'
-                                config:
-                                  peer-group-name: 'test'
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
                                 transport:
                                   config:
                                     mtu-discovery: False
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test transport path-mtu-discovery disable:' in changes"
+          - "'+ neighbor 10.11.11.2 transport path-mtu-discovery disable:' in changes"
 
-#    - name: test peer_group_transport_mtud_enable_test  Doesn't show because default
-#      tags:
-#        - peer_group_transport_mtud_enable_test
-#      import_role:
-#        name: nso-openconfig-test
-#      vars:
-#        content: |
-#          mdd:openconfig:
-#            openconfig-network-instance:network-instances:
-#              network-instance:
-#                - name: 'default'
-#                  config:
-#                    name: 'default'
-#                    type: 'DEFAULT_INSTANCE'
-#                    enabled: true
-#                  protocols:
-#                    protocol:
-#                      - name: 'BGP'
-#                        identifier: 'BGP'
-#                        config:
-#                          enabled: True
-#                          identifier: 'BGP'
-#                          name: 'BGP'
-#                        bgp:
-#                          global:
-#                            config:
-#                              as: 1
-#                          peer-groups:
-#                            peer-group:
-#                              - peer-group-name: 'test'
-#                                config:
-#                                  peer-group-name: 'test'
-#                                transport:
-#                                  config:
-#                                    mtu-discovery: True
-#        api_method: PUT
-#        rollback: true
-#        assertion_ignore_errors: false
-#        assertions:
-#          - "'+ neighbor test transport path-mtu-discovery:' in changes"
-
-    - name: test peer_group_transport_passive_mode_test
+    - name: test neighbor_transport_passive_mode_test
       tags:
-        - peer_group_transport_passive_mode_test
+        - neighbor_transport_passive_mode_test
       import_role:
         name: nso-openconfig-test
       vars:
@@ -882,23 +850,24 @@
                           global:
                             config:
                               as: 1
-                          peer-groups:
-                            peer-group:
-                              - peer-group-name: 'test'
-                                config:
-                                  peer-group-name: 'test'
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
                                 transport:
                                   config:
                                     passive-mode: True
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test transport connection-mode passive:' in changes"
+          - "'+ neighbor 10.11.11.2 transport connection-mode passive:' in changes"
 
-    - name: test peer_group_transport_local_address_test
+    - name: test neighbor_transport_local_address_test
       tags:
-        - peer_group_transport_local_address_test
+        - neighbor_transport_local_address_test
       import_role:
         name: nso-openconfig-test
       vars:
@@ -921,9 +890,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.27.1.2'
+                                  ip: '10.255.10.1'
                                   prefix-length: 32
-                                ip: '172.27.1.2'
+                                ip: '10.255.10.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -945,244 +914,29 @@
                           global:
                             config:
                               as: 1
-                          peer-groups:
-                            peer-group:
-                              - peer-group-name: 'test'
-                                config:
-                                  peer-group-name: 'test'
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
                                 transport:
                                   config:
                                     local-address: 'Loopback10'
+                                neighbor-address: '10.11.11.2'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor test update-source Loopback10:' in changes"
+          - "'+ neighbor 10.11.11.2 update-source Loopback10:' in changes"
 
-    - name: test peer_group_route_map_in
+    - name: test ad-ipv4-activate
       tags:
-        - peer_group_route_map_in
+        - ad-ipv4-activate
       import_role:
         name: nso-openconfig-test
       vars:
         content: |
           mdd:openconfig:
-            openconfig-routing-policy:routing-policy:
-              defined-sets:
-                openconfig-bgp-policy:bgp-defined-sets:
-                  as-path-sets:
-                    as-path-set:
-                      - as-path-set-name: '1'
-                        config:
-                          as-path-set-name: '1'
-                          as-path-set-member:
-                            - "^$"
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
-                      openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            openconfig-bgp-policy:bgp-conditions:
-                              openconfig-bgp-policy:match-as-path-set:
-                                openconfig-bgp-policy:config:
-                                  openconfig-bgp-policy:as-path-set: '1'
-                                  openconfig-bgp-policy:match-set-options: 'ANY'
-                          openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                            openconfig-bgp-policy:bgp-actions:
-                              openconfig-bgp-policy:set-community:
-                                openconfig-bgp-policy:config:
-                                  openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
-                                  openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
-                                openconfig-bgp-policy:inline:
-                                  openconfig-bgp-policy:config:
-                                    openconfig-bgp-policy:communities:
-                                      - '100:100'
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-            openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                          peer-groups:
-                            peer-group:
-                              - config:
-                                  peer-group-name: 'test'
-                                peer-group-name: 'test'
-                                apply-policy:
-                                  config:
-                                    import-policy:
-                                    - 'test'
-        api_method: PUT
-        rollback: true
-        assertion_ignore_errors: false
-        assertions:
-          - "'+ neighbor test route-map test in:' in changes"
-
-    - name: test peer_group_route_map_out
-      tags:
-        - peer_group_route_map_out
-      import_role:
-        name: nso-openconfig-test
-      vars:
-        content: |
-          mdd:openconfig:
-            openconfig-routing-policy:routing-policy:
-              defined-sets:
-                openconfig-bgp-policy:bgp-defined-sets:
-                  as-path-sets:
-                    as-path-set:
-                      - as-path-set-name: '1'
-                        config:
-                          as-path-set-name: '1'
-                          as-path-set-member:
-                            - "^$"
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
-                      openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            openconfig-bgp-policy:bgp-conditions:
-                              openconfig-bgp-policy:match-as-path-set:
-                                openconfig-bgp-policy:config:
-                                  openconfig-bgp-policy:as-path-set: '1'
-                                  openconfig-bgp-policy:match-set-options: 'ANY'
-                          openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                            openconfig-bgp-policy:bgp-actions:
-                              openconfig-bgp-policy:set-community:
-                                openconfig-bgp-policy:config:
-                                  openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
-                                  openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
-                                openconfig-bgp-policy:inline:
-                                  openconfig-bgp-policy:config:
-                                    openconfig-bgp-policy:communities:
-                                      - '100:100'
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-            openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                          peer-groups:
-                            peer-group:
-                              - config:
-                                  peer-group-name: 'test'
-                                peer-group-name: 'test'
-                                apply-policy:
-                                  config:
-                                    export-policy:
-                                    - 'test'
-        api_method: PUT
-        rollback: true
-        assertion_ignore_errors: false
-        assertions:
-          - "'+ neighbor test route-map test out:' in changes"
-
-    - name: test ad-ipv4-route-map-in
-      tags:
-        - ad-ipv4-route-map-in
-      import_role:
-        name: nso-openconfig-test
-      vars:
-        content: |
-          mdd:openconfig:
-            openconfig-routing-policy:routing-policy:
-              defined-sets:
-                openconfig-bgp-policy:bgp-defined-sets:
-                  as-path-sets:
-                    as-path-set:
-                      - as-path-set-name: '1'
-                        config:
-                          as-path-set-name: '1'
-                          as-path-set-member:
-                            - "^$"
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
-                      openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            openconfig-bgp-policy:bgp-conditions:
-                              openconfig-bgp-policy:match-as-path-set:
-                                openconfig-bgp-policy:config:
-                                  openconfig-bgp-policy:as-path-set: '1'
-                                  openconfig-bgp-policy:match-set-options: 'ANY'
-                          openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                            openconfig-bgp-policy:bgp-actions:
-                              openconfig-bgp-policy:set-community:
-                                openconfig-bgp-policy:config:
-                                  openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
-                                  openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
-                                openconfig-bgp-policy:inline:
-                                  openconfig-bgp-policy:config:
-                                    openconfig-bgp-policy:communities:
-                                      - '100:100'
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
             openconfig-network-instance:network-instances:
               network-instance:
                 - name: 'default'
@@ -1208,80 +962,85 @@
                                   config:
                                     afi-safi-name: 'IPV4_UNICAST'
                                     enabled: true
-                          peer-groups:
-                            peer-group:
+                          neighbors:
+                            neighbor:
                               - config:
-                                  peer-group-name: 'test'
-                                peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                neighbor-address: '10.11.11.2'
                                 afi-safis:
                                   afi-safi:
                                     - afi-safi-name: 'IPV4_UNICAST'
                                       config:
                                         afi-safi-name: 'IPV4_UNICAST'
                                         enabled: true
-                                      apply-policy:
-                                        config:
-                                          import-policy:
-                                          - 'test'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
           - "'+ address-family ipv4:' in changes"
-          - "'+  neighbor test route-map test in:' in changes"
+          - "'+  neighbor 10.11.11.2 activate:' in changes"
 
-    - name: test ad-ipv4-route-map-out
+    - name: test ad-vpnv4-activate
       tags:
-        - ad-ipv4-route-map-out
+        - ad-vpnv4-activate
       import_role:
         name: nso-openconfig-test
       vars:
         content: |
           mdd:openconfig:
-            openconfig-routing-policy:routing-policy:
-              defined-sets:
-                openconfig-bgp-policy:bgp-defined-sets:
-                  as-path-sets:
-                    as-path-set:
-                      - as-path-set-name: '1'
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
                         config:
-                          as-path-set-name: '1'
-                          as-path-set-member:
-                            - "^$"
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
-                      openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            openconfig-bgp-policy:bgp-conditions:
-                              openconfig-bgp-policy:match-as-path-set:
-                                openconfig-bgp-policy:config:
-                                  openconfig-bgp-policy:as-path-set: '1'
-                                  openconfig-bgp-policy:match-set-options: 'ANY'
-                          openconfig-routing-policy:actions:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
                             config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                            openconfig-bgp-policy:bgp-actions:
-                              openconfig-bgp-policy:set-community:
-                                openconfig-bgp-policy:config:
-                                  openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
-                                  openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
-                                openconfig-bgp-policy:inline:
-                                  openconfig-bgp-policy:config:
-                                    openconfig-bgp-policy:communities:
-                                      - '100:100'
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                    enabled: true
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                neighbor-address: '10.11.11.2'
+                                afi-safis:
+                                  afi-safi:
+                                    - afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                      config:
+                                        afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                        enabled: true
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ address-family vpnv4:' in changes"
+          - "'+  neighbor 10.11.11.2 activate:' in changes"
+
+    - name: test ad-ipv4-activate-vrf
+      tags:
+        - ad-ipv4-activate-vrf
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
             openconfig-network-instance:network-instances:
               network-instance:
                 - name: 'default'
@@ -1307,225 +1066,57 @@
                                   config:
                                     afi-safi-name: 'IPV4_UNICAST'
                                     enabled: true
-                          peer-groups:
-                            peer-group:
+                - name: 'abc'
+                  config:
+                    name: 'abc'
+                    type: 'L3VRF'
+                    enabled: true
+                    enabled-address-families:
+                      - 'IPV4'
+                    route-distinguisher: '1:1'
+                    openconfig-network-instance-ext:route-targets-import:
+                      - '100:100'
+                      - '101:101'
+                    openconfig-network-instance-ext:route-targets-export:
+                      - '200:200'
+                      - '202:202'
+                  openconfig-network-instance:protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                          neighbors:
+                            neighbor:
                               - config:
-                                  peer-group-name: 'test'
-                                peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                neighbor-address: '10.11.11.2'
                                 afi-safis:
                                   afi-safi:
                                     - afi-safi-name: 'IPV4_UNICAST'
                                       config:
                                         afi-safi-name: 'IPV4_UNICAST'
                                         enabled: true
-                                      apply-policy:
-                                        config:
-                                          export-policy:
-                                          - 'test'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ address-family ipv4:' in changes"
-          - "'+  neighbor test route-map test out:' in changes"
-
-    - name: test ad-vpnv4-activate-route-map-in
-      tags:
-        - ad-vpnv4-activate-route-map-in
-      import_role:
-        name: nso-openconfig-test
-      vars:
-        content: |
-          mdd:openconfig:
-            openconfig-routing-policy:routing-policy:
-              defined-sets:
-                openconfig-bgp-policy:bgp-defined-sets:
-                  as-path-sets:
-                    as-path-set:
-                      - as-path-set-name: '1'
-                        config:
-                          as-path-set-name: '1'
-                          as-path-set-member:
-                            - "^$"
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
-                      openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            openconfig-bgp-policy:bgp-conditions:
-                              openconfig-bgp-policy:match-as-path-set:
-                                openconfig-bgp-policy:config:
-                                  openconfig-bgp-policy:as-path-set: '1'
-                                  openconfig-bgp-policy:match-set-options: 'ANY'
-                          openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                            openconfig-bgp-policy:bgp-actions:
-                              openconfig-bgp-policy:set-community:
-                                openconfig-bgp-policy:config:
-                                  openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
-                                  openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
-                                openconfig-bgp-policy:inline:
-                                  openconfig-bgp-policy:config:
-                                    openconfig-bgp-policy:communities:
-                                      - '100:100'
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-            openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                    enabled: true
-                          peer-groups:
-                            peer-group:
-                              - config:
-                                  peer-group-name: 'test'
-                                peer-group-name: 'test'
-                                afi-safis:
-                                  afi-safi:
-                                    - afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                      config:
-                                        afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                        enabled: true
-                                      apply-policy:
-                                        config:
-                                          import-policy:
-                                          - 'test'
-        api_method: PUT
-        rollback: true
-        assertion_ignore_errors: false
-        assertions:
-          - "'+ address-family vpnv4:' in changes"
-          - "'+  neighbor test route-map test in:' in changes"
-
-    - name: test ad-vpnv4-activate-route-map-out
-      tags:
-        - ad-vpnv4-activate-route-map-out
-      import_role:
-        name: nso-openconfig-test
-      vars:
-        content: |
-          mdd:openconfig:
-            openconfig-routing-policy:routing-policy:
-              defined-sets:
-                openconfig-bgp-policy:bgp-defined-sets:
-                  as-path-sets:
-                    as-path-set:
-                      - as-path-set-name: '1'
-                        config:
-                          as-path-set-name: '1'
-                          as-path-set-member:
-                            - "^$"
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
-                      openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            openconfig-bgp-policy:bgp-conditions:
-                              openconfig-bgp-policy:match-as-path-set:
-                                openconfig-bgp-policy:config:
-                                  openconfig-bgp-policy:as-path-set: '1'
-                                  openconfig-bgp-policy:match-set-options: 'ANY'
-                          openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-                            openconfig-bgp-policy:bgp-actions:
-                              openconfig-bgp-policy:set-community:
-                                openconfig-bgp-policy:config:
-                                  openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
-                                  openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
-                                openconfig-bgp-policy:inline:
-                                  openconfig-bgp-policy:config:
-                                    openconfig-bgp-policy:communities:
-                                      - '100:100'
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
-            openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                    enabled: true
-                          peer-groups:
-                            peer-group:
-                              - config:
-                                  peer-group-name: 'test'
-                                peer-group-name: 'test'
-                                afi-safis:
-                                  afi-safi:
-                                    - afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                      config:
-                                        afi-safi-name: 'L3VPN_IPV4_UNICAST'
-                                        enabled: true
-                                      apply-policy:
-                                        config:
-                                          export-policy:
-                                          - 'test'
-        api_method: PUT
-        rollback: true
-        assertion_ignore_errors: false
-        assertions:
-          - "'+ address-family vpnv4:' in changes"
-          - "'+  neighbor test route-map test out:' in changes"
+          - "'+ address-family ipv4 vrf abc:' in changes"
+          - "'+  neighbor 10.11.11.2 remote-as 2:' in changes"
+          - "'+  neighbor 10.11.11.2 activate:' in changes"
 
     - name: test ad-ipv4-activate-vrf-route-map-in
       tags:
@@ -1636,11 +1227,12 @@
                                   config:
                                     afi-safi-name: 'IPV4_UNICAST'
                                     enabled: true
-                          peer-groups:
-                            peer-group:
+                          neighbors:
+                            neighbor:
                               - config:
-                                  peer-group-name: 'test'
-                                peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                neighbor-address: '10.11.11.2'
                                 afi-safis:
                                   afi-safi:
                                     - afi-safi-name: 'IPV4_UNICAST'
@@ -1656,8 +1248,7 @@
         assertion_ignore_errors: false
         assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
-          - "'+  neighbor test peer-group:' in changes"
-          - "'+  neighbor test route-map test in:' in changes"
+          - "'+  neighbor 10.11.11.2 route-map test in:' in changes"
 
     - name: test ad-ipv4-activate-vrf-route-map-out
       tags:
@@ -1768,11 +1359,12 @@
                                   config:
                                     afi-safi-name: 'IPV4_UNICAST'
                                     enabled: true
-                          peer-groups:
-                            - peer-group:
-                                config:
-                                  peer-group-name: 'test'
-                                peer-group-name: 'test'
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                neighbor-address: '10.11.11.2'
                                 afi-safis:
                                   afi-safi:
                                     - afi-safi-name: 'IPV4_UNICAST'
@@ -1788,12 +1380,211 @@
         assertion_ignore_errors: false
         assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
-          - "'+  neighbor test peer-group:' in changes"
-          - "'+  neighbor test route-map test out:' in changes"
+          - "'+  neighbor 10.11.11.2 route-map test out:' in changes"
 
-    - name: test ad-ipv4-activate-vrf-send-label
+    - name: test ad-vpnv4-activate-route-map-in
       tags:
-        - ad-ipv4-activate-vrf-send-label
+        - ad-vpnv4-activate-route-map-in
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+            mdd:openconfig:
+              openconfig-routing-policy:routing-policy:
+                defined-sets:
+                  openconfig-bgp-policy:bgp-defined-sets:
+                    as-path-sets:
+                      as-path-set:
+                        - as-path-set-name: '1'
+                          config:
+                            as-path-set-name: '1'
+                            as-path-set-member:
+                              - "^$"
+                policy-definitions:
+                  policy-definition:
+                    - name: 'test'
+                      config:
+                        name: 'test'
+                      statements:
+                        openconfig-routing-policy:statement:
+                          - name: '10'
+                            config:
+                              name: '10'
+                            conditions:
+                              openconfig-bgp-policy:bgp-conditions:
+                                openconfig-bgp-policy:match-as-path-set:
+                                  openconfig-bgp-policy:config:
+                                    openconfig-bgp-policy:as-path-set: '1'
+                                    openconfig-bgp-policy:match-set-options: 'ANY'
+                            openconfig-routing-policy:actions:
+                              config:
+                                policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                              openconfig-bgp-policy:bgp-actions:
+                                openconfig-bgp-policy:set-community:
+                                  openconfig-bgp-policy:config:
+                                    openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                                    openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                                  openconfig-bgp-policy:inline:
+                                    openconfig-bgp-policy:config:
+                                      openconfig-bgp-policy:communities:
+                                        - '100:100'
+                          - name: '20'
+                            config:
+                              name: '20'
+                            actions:
+                              config:
+                                policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+              openconfig-network-instance:network-instances:
+                network-instance:
+                  - name: 'default'
+                    config:
+                      name: 'default'
+                      type: 'DEFAULT_INSTANCE'
+                      enabled: true
+                    protocols:
+                      protocol:
+                        - name: 'BGP'
+                          identifier: 'BGP'
+                          config:
+                            enabled: True
+                            identifier: 'BGP'
+                            name: 'BGP'
+                          bgp:
+                            global:
+                              config:
+                                as: 1
+                              afi-safis:
+                                afi-safi:
+                                  - afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                    config:
+                                      afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                      enabled: true
+                            neighbors:
+                              neighbor:
+                                - config:
+                                    neighbor-address: '10.11.11.2'
+                                    peer-as: 2
+                                  neighbor-address: '10.11.11.2'
+                                  afi-safis:
+                                    afi-safi:
+                                      - afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                        config:
+                                          afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                          enabled: true
+                                        apply-policy:
+                                          config:
+                                            import-policy:
+                                            - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ address-family vpnv4:' in changes"
+          - "'+  neighbor 10.11.11.2 route-map test in:' in changes"
+
+    - name: test ad-vpnv4-activate-route-map-out
+      tags:
+        - ad-vpnv4-activate-route-map-out
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                openconfig-bgp-policy:bgp-defined-sets:
+                  as-path-sets:
+                    as-path-set:
+                      - as-path-set-name: '1'
+                        config:
+                          as-path-set-name: '1'
+                          as-path-set-member:
+                            - "^$"
+              policy-definitions:
+                policy-definition:
+                  - name: 'test'
+                    config:
+                      name: 'test'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
+                          config:
+                            name: '10'
+                          conditions:
+                            openconfig-bgp-policy:bgp-conditions:
+                              openconfig-bgp-policy:match-as-path-set:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:as-path-set: '1'
+                                  openconfig-bgp-policy:match-set-options: 'ANY'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
+                              openconfig-bgp-policy:set-community:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                                  openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                                openconfig-bgp-policy:inline:
+                                  openconfig-bgp-policy:config:
+                                    openconfig-bgp-policy:communities:
+                                      - '100:100'
+                        - name: '20'
+                          config:
+                            name: '20'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                    enabled: true
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                neighbor-address: '10.11.11.2'
+                                afi-safis:
+                                  afi-safi:
+                                    - afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                      config:
+                                        afi-safi-name: 'L3VPN_IPV4_UNICAST'
+                                        enabled: true
+                                      apply-policy:
+                                        config:
+                                          export-policy:
+                                          - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ address-family vpnv4:' in changes"
+          - "'+  neighbor 10.11.11.2 route-map test out:' in changes"
+
+    - name: test ad-ipv4-route-map-in
+      tags:
+        - ad-ipv4-route-map-in
       import_role:
         name: nso-openconfig-test
       vars:
@@ -1868,6 +1659,338 @@
                                   config:
                                     afi-safi-name: 'IPV4_UNICAST'
                                     enabled: true
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                neighbor-address: '10.11.11.2'
+                                afi-safis:
+                                  afi-safi:
+                                    - afi-safi-name: 'IPV4_UNICAST'
+                                      config:
+                                        afi-safi-name: 'IPV4_UNICAST'
+                                        enabled: true
+                                      apply-policy:
+                                        config:
+                                          import-policy:
+                                          - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ address-family ipv4:' in changes"
+          - "'+  neighbor 10.11.11.2 route-map test in:' in changes"
+
+    - name: test ad-ipv4-route-map-out
+      tags:
+        - ad-ipv4-route-map-out
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                openconfig-bgp-policy:bgp-defined-sets:
+                  as-path-sets:
+                    as-path-set:
+                      - as-path-set-name: '1'
+                        config:
+                          as-path-set-name: '1'
+                          as-path-set-member:
+                            - "^$"
+              policy-definitions:
+                policy-definition:
+                  - name: 'test'
+                    config:
+                      name: 'test'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
+                          config:
+                            name: '10'
+                          conditions:
+                            openconfig-bgp-policy:bgp-conditions:
+                              openconfig-bgp-policy:match-as-path-set:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:as-path-set: '1'
+                                  openconfig-bgp-policy:match-set-options: 'ANY'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
+                              openconfig-bgp-policy:set-community:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                                  openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                                openconfig-bgp-policy:inline:
+                                  openconfig-bgp-policy:config:
+                                    openconfig-bgp-policy:communities:
+                                      - '100:100'
+                        - name: '20'
+                          config:
+                            name: '20'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                neighbor-address: '10.11.11.2'
+                                afi-safis:
+                                  afi-safi:
+                                    - afi-safi-name: 'IPV4_UNICAST'
+                                      config:
+                                        afi-safi-name: 'IPV4_UNICAST'
+                                        enabled: true
+                                      apply-policy:
+                                        config:
+                                          export-policy:
+                                          - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ address-family ipv4:' in changes"
+          - "'+  neighbor 10.11.11.2 route-map test out:' in changes"
+
+    - name: test neighbor_route_map_in
+      tags:
+        - neighbor_route_map_in
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                openconfig-bgp-policy:bgp-defined-sets:
+                  as-path-sets:
+                    as-path-set:
+                      - as-path-set-name: '1'
+                        config:
+                          as-path-set-name: '1'
+                          as-path-set-member:
+                            - "^$"
+              policy-definitions:
+                policy-definition:
+                  - name: 'test'
+                    config:
+                      name: 'test'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
+                          config:
+                            name: '10'
+                          conditions:
+                            openconfig-bgp-policy:bgp-conditions:
+                              openconfig-bgp-policy:match-as-path-set:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:as-path-set: '1'
+                                  openconfig-bgp-policy:match-set-options: 'ANY'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
+                              openconfig-bgp-policy:set-community:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                                  openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                                openconfig-bgp-policy:inline:
+                                  openconfig-bgp-policy:config:
+                                    openconfig-bgp-policy:communities:
+                                      - '100:100'
+                        - name: '20'
+                          config:
+                            name: '20'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                neighbor-address: '10.11.11.2'
+                                apply-policy:
+                                  config:
+                                    import-policy:
+                                    - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ neighbor 10.11.11.2 route-map test in:' in changes"
+
+    - name: test neighbor_route_map_out
+      tags:
+        - neighbor_route_map_out
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-routing-policy:routing-policy:
+              defined-sets:
+                openconfig-bgp-policy:bgp-defined-sets:
+                  as-path-sets:
+                    as-path-set:
+                      - as-path-set-name: '1'
+                        config:
+                          as-path-set-name: '1'
+                          as-path-set-member:
+                            - "^$"
+              policy-definitions:
+                policy-definition:
+                  - name: 'test'
+                    config:
+                      name: 'test'
+                    statements:
+                      openconfig-routing-policy:statement:
+                        - name: '10'
+                          config:
+                            name: '10'
+                          conditions:
+                            openconfig-bgp-policy:bgp-conditions:
+                              openconfig-bgp-policy:match-as-path-set:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:as-path-set: '1'
+                                  openconfig-bgp-policy:match-set-options: 'ANY'
+                          openconfig-routing-policy:actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-bgp-policy:bgp-actions:
+                              openconfig-bgp-policy:set-community:
+                                openconfig-bgp-policy:config:
+                                  openconfig-bgp-policy:method: 'INLINE'  # INLINE or REFERENCE
+                                  openconfig-bgp-policy:options: 'ADD'  # ADD, REMOVE, REPLACE
+                                openconfig-bgp-policy:inline:
+                                  openconfig-bgp-policy:config:
+                                    openconfig-bgp-policy:communities:
+                                      - '100:100'
+                        - name: '20'
+                          config:
+                            name: '20'
+                          actions:
+                            config:
+                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                          neighbors:
+                            neighbor:
+                              - config:
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                neighbor-address: '10.11.11.2'
+                                apply-policy:
+                                  config:
+                                    export-policy:
+                                    - 'test'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ neighbor 10.11.11.2 route-map test out:' in changes"
+
+    # TODO add all neighbor tests from default rt ipv4 to address-family ipv4 unicast vrf XXX
+
+    - name: test ad-ipv4-activate-vrf-send-label
+      tags:
+        - ad-ipv4-activate-vrf-send-label
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              network-instance:
+                - name: 'default'
+                  config:
+                    name: 'default'
+                    type: 'DEFAULT_INSTANCE'
+                    enabled: true
+                  protocols:
+                    protocol:
+                      - name: 'BGP'
+                        identifier: 'BGP'
+                        config:
+                          enabled: True
+                          identifier: 'BGP'
+                          name: 'BGP'
+                        bgp:
+                          global:
+                            config:
+                              as: 1
+                            afi-safis:
+                              afi-safi:
+                                - afi-safi-name: 'IPV4_UNICAST'
+                                  config:
+                                    afi-safi-name: 'IPV4_UNICAST'
+                                    enabled: true
                 - name: 'abc'
                   config:
                     name: 'abc'
@@ -1900,29 +2023,25 @@
                                   config:
                                     afi-safi-name: 'IPV4_LABELED_UNICAST'
                                     enabled: true
-                          peer-groups:
-                            peer-group:
+                          neighbors:
+                            neighbor:
                               - config:
-                                  peer-group-name: 'test'
-                                peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                neighbor-address: '10.11.11.2'
                                 afi-safis:
                                   afi-safi:
                                     - afi-safi-name: 'IPV4_LABELED_UNICAST'
                                       config:
                                         afi-safi-name: 'IPV4_LABELED_UNICAST'
                                         enabled: true
-                                      apply-policy:
-                                        config:
-                                          export-policy:
-                                          - 'test'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
-          - "'+  neighbor test peer-group:' in changes"
-          - "'+  neighbor test route-map test out:' in changes"
-          - "'+  neighbor test send-label:' in changes"
+          - "'+  neighbor 10.11.11.2 activate:' in changes"
+          - "'+  neighbor 10.11.11.2 send-label:' in changes"
 
     - name: test ad-ipv4-activate-vrf-as-override
       tags:
@@ -1989,11 +2108,12 @@
                                   config:
                                     afi-safi-name: 'IPV4_UNICAST'
                                     enabled: true
-                          peer-groups:
-                            peer-group:
+                          neighbors:
+                            neighbor:
                               - config:
-                                  peer-group-name: 'test'
-                                peer-group-name: 'test'
+                                  neighbor-address: '10.11.11.2'
+                                  peer-as: 2
+                                neighbor-address: '10.11.11.2'
                                 afi-safis:
                                   afi-safi:
                                     - afi-safi-name: 'IPV4_UNICAST'
@@ -2008,5 +2128,4 @@
         assertion_ignore_errors: false
         assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
-          - "'+  neighbor test peer-group:' in changes"
-          - "'+  neighbor test as-override:' in changes"
+          - "'+  neighbor 10.11.11.2 as-override:' in changes"

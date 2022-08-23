@@ -118,9 +118,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.60.1.2'
+                                  ip: '10.6.0.1'
                                   prefix-length: 30
-                                ip: '172.60.1.2'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
                 - config:
@@ -136,9 +136,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.50.1.2'
+                                  ip: '10.7.0.1'
                                   prefix-length: 30
-                                ip: '172.50.1.2'
+                                ip: '10.7.0.1'
                           config:
                             dhcp-client: false
                 - config:
@@ -168,7 +168,7 @@
                 ip:
                   address:
                     primary:
-                      address: 172.60.1.2
+                      address: 10.6.0.1
                       mask: 255.255.255.0
         api_method: PATCH
     - name: NSO configure hostname
@@ -179,7 +179,7 @@
       vars:
         api_path: config
         content: |
-          ncs:config:
+          config:
             tailf-ned-cisco-ios:hostname: test123
         api_method: PATCH
     - name: NSO configure banners
@@ -329,7 +329,7 @@
               last: 4
         api_method: PATCH
     - name: Execute NSO NED to OC script
-      script: ../../package_nso_to_oc/xe/xe_system.py
+      script: ../../../package_nso_to_oc/xe/xe_system.py
       args:
         executable: python3
       register: nso_to_oc_result
@@ -430,7 +430,7 @@
             key-type: openconfig-system:NTP_AUTH_MD5
             key-value: password1
     - name: Execute NSO NED to OC script
-      script: ../../package_nso_to_oc/xe/xe_system.py
+      script: ../../../package_nso_to_oc/xe/xe_system.py
       args:
         executable: python3
       register: nso_to_oc_result
@@ -457,9 +457,23 @@
         that:
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['enable-ntp-auth'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['openconfig-system-ext:ntp-enable-logging'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['ntp-source-address'] == '172.60.1.2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['ntp-source-address'] == '10.6.0.1'"
           - "ntp_auth_key_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key']"
-
+    - name: NSO configure ntp authenticate
+      tags:
+        - ntp_servers
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:vrf
+        content: |
+          tailf-ned-cisco-ios:vrf:
+            definition:
+              - name: abc
+                address-family:
+                  ipv4: {}
+                  ipv6: {}
+        api_method: PATCH
     - name: NSO configure ntp authenticate
       tags:
         - ntp_servers
@@ -538,7 +552,7 @@
             association-type: SERVER
             iburst: false
             openconfig-system-ext:ntp-auth-key-id: 1
-            openconfig-system-ext:ntp-source-address: 172.60.1.2
+            openconfig-system-ext:ntp-source-address: 10.6.0.1
             port: 123
             prefer: false
             version: 3
@@ -555,7 +569,7 @@
             prefer: false
             version: 4
     - name: Execute NSO NED to OC script
-      script: ../../package_nso_to_oc/xe/xe_system.py
+      script: ../../../package_nso_to_oc/xe/xe_system.py
       args:
         executable: python3
       register: nso_to_oc_result

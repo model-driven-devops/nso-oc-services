@@ -18,7 +18,6 @@ import copy
 import json
 import os
 
-
 openconfig_system = {
     "openconfig-system:system": {
         "openconfig-system:aaa": {},
@@ -49,15 +48,18 @@ def xe_system_config(config_before: dict, config_leftover: dict) -> None:
     del config_leftover["tailf-ned-cisco-ios:hostname"]
 
     if config_before.get("tailf-ned-cisco-ios:banner", {}).get("login"):
-        openconfig_system_config["openconfig-system:login-banner"] = config_before.get("tailf-ned-cisco-ios:banner", {}).get("login")
+        openconfig_system_config["openconfig-system:login-banner"] = config_before.get("tailf-ned-cisco-ios:banner",
+                                                                                       {}).get("login")
         del config_leftover["tailf-ned-cisco-ios:banner"]["login"]
 
     if config_before.get("tailf-ned-cisco-ios:banner", {}).get("motd"):
-        openconfig_system_config["openconfig-system:motd-banner"] = config_before.get("tailf-ned-cisco-ios:banner", {}).get("motd")
+        openconfig_system_config["openconfig-system:motd-banner"] = config_before.get("tailf-ned-cisco-ios:banner",
+                                                                                      {}).get("motd")
         del config_leftover["tailf-ned-cisco-ios:banner"]["motd"]
 
     if config_before.get("tailf-ned-cisco-ios:ip", {}).get("domain", {}).get("name"):
-        openconfig_system_config["openconfig-system:domain-name"] = config_before.get("tailf-ned-cisco-ios:ip", {}).get("domain", {}).get("name")
+        openconfig_system_config["openconfig-system:domain-name"] = config_before.get("tailf-ned-cisco-ios:ip", {}).get(
+            "domain", {}).get("name")
         del config_leftover["tailf-ned-cisco-ios:ip"]["domain"]["name"]
 
     if config_before.get("tailf-ned-cisco-ios:ip", {}).get("options", {}).get("drop"):
@@ -70,7 +72,8 @@ def xe_system_config(config_before: dict, config_leftover: dict) -> None:
 
     if (config_before.get("tailf-ned-cisco-ios:enable", {}).get("secret", {}).get("secret")) and \
             (config_before.get("tailf-ned-cisco-ios:enable", {}).get("secret", {}).get("type") == "0"):
-        openconfig_system_config["openconfig-system-ext:enable-secret"] = config_before.get("tailf-ned-cisco-ios:enable", {}).get("secret", {}).get("secret")
+        openconfig_system_config["openconfig-system-ext:enable-secret"] = config_before.get(
+            "tailf-ned-cisco-ios:enable", {}).get("secret", {}).get("secret")
         del config_leftover["tailf-ned-cisco-ios:enable"]
 
     if config_before["tailf-ned-cisco-ios:line"]["console"][0].get("exec-timeout"):
@@ -84,10 +87,12 @@ def xe_system_ssh_server(config_before: dict, config_leftover: dict) -> None:
     """
     Translates NSO XE NED to MDD OpenConfig System SSH Server
     """
-    openconfig_system_ssh_server_config = openconfig_system["openconfig-system:system"]["openconfig-system:ssh-server"]["openconfig-system:config"]
+    openconfig_system_ssh_server_config = openconfig_system["openconfig-system:system"]["openconfig-system:ssh-server"][
+        "openconfig-system:config"]
 
     if config_before.get("tailf-ned-cisco-ios:ip", {}).get("ssh", {}).get("time-out"):
-        openconfig_system_ssh_server_config["openconfig-system-ext:ssh-timeout"] = config_before.get("tailf-ned-cisco-ios:ip", {}).get("ssh", {}).get("time-out")
+        openconfig_system_ssh_server_config["openconfig-system-ext:ssh-timeout"] = config_before.get(
+            "tailf-ned-cisco-ios:ip", {}).get("ssh", {}).get("time-out")
         del config_leftover["tailf-ned-cisco-ios:ip"]["ssh"]["time-out"]
 
     if config_before.get("tailf-ned-cisco-ios:ip", {}).get("ssh", {}).get("version"):
@@ -111,16 +116,18 @@ def xe_system_ssh_server(config_before: dict, config_leftover: dict) -> None:
         del config_leftover["tailf-ned-cisco-ios:line"]["vty"][0]["exec-timeout"]
 
     if config_before["tailf-ned-cisco-ios:line"]["vty"][0].get("absolute-timeout"):
-        openconfig_system_ssh_server_config["openconfig-system-ext:absolute-timeout-minutes"] = config_before["tailf-ned-cisco-ios:line"]["vty"][0]["absolute-timeout"]
+        openconfig_system_ssh_server_config["openconfig-system-ext:absolute-timeout-minutes"] = \
+        config_before["tailf-ned-cisco-ios:line"]["vty"][0]["absolute-timeout"]
         del config_leftover["tailf-ned-cisco-ios:line"]["vty"][0]["absolute-timeout"]
 
     if config_before["tailf-ned-cisco-ios:line"]["vty"][0].get("session-limit"):
-        openconfig_system_ssh_server_config["session-limit"] = config_before["tailf-ned-cisco-ios:line"]["vty"][0].get("session-limit")
+        openconfig_system_ssh_server_config["session-limit"] = config_before["tailf-ned-cisco-ios:line"]["vty"][0].get(
+            "session-limit")
         del config_leftover["tailf-ned-cisco-ios:line"]["vty"][0]["session-limit"]
 
 
 def xe_add_oc_ntp_server(before_ntp_server_list: list, after_ntp_server_list: list, openconfig_ntp_server_list: list,
-                     ntp_type: str, ntp_vrf: str, if_ip: dict) -> None:
+                         ntp_type: str, ntp_vrf: str, if_ip: dict) -> None:
     """Generate Openconfig NTP server configurations"""
     for ntp_server_index, ntp_server in enumerate(before_ntp_server_list):
         ntp_server_temp = {"openconfig-system:address": ntp_server["name"],
@@ -148,18 +155,18 @@ def xe_add_oc_ntp_server(before_ntp_server_list: list, after_ntp_server_list: li
             ntp_server_temp["openconfig-system:config"]["openconfig-system:prefer"] = False
         # authentication key
         if ntp_server.get("key"):
-            ntp_server_temp["openconfig-system:config"]["oc-system-ext:ntp-auth-key-id"] = ntp_server.get("key")
+            ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-auth-key-id"] = ntp_server.get("key")
             del after_ntp_server_list[ntp_server_index]["key"]
         # source interface
         if ntp_server.get("source"):
             for k, v in ntp_server.get("source").items():
                 nso_source_interface = f"{k}{v}"
-                ntp_server_temp["openconfig-system:config"]["oc-system-ext:ntp-source-address"] = if_ip.get(
+                ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-source-address"] = if_ip.get(
                     nso_source_interface)
                 del after_ntp_server_list[ntp_server_index]["source"]
         # vrf
         if ntp_vrf:
-            ntp_server_temp["openconfig-system:config"]["oc-system-ext:ntp-use-vrf"] = ntp_vrf
+            ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-use-vrf"] = ntp_vrf
 
         openconfig_ntp_server_list.append(ntp_server_temp)
 
@@ -182,7 +189,8 @@ def xe_system_ntp(config_before: dict, config_leftover: dict, if_ip: dict) -> No
         for i, n in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source").items():
             source_interface = f"{i}{n}"
             source_interface_ip = if_ip.get(source_interface)
-            openconfig_system_ntp["openconfig-system:config"]["openconfig-system:ntp-source-address"] = source_interface_ip
+            openconfig_system_ntp["openconfig-system:config"][
+                "openconfig-system:ntp-source-address"] = source_interface_ip
         del config_leftover["tailf-ned-cisco-ios:ntp"]["source"]
 
     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key") and config_before.get(
@@ -210,13 +218,13 @@ def xe_system_ntp(config_before: dict, config_leftover: dict, if_ip: dict) -> No
         # NTP SERVER
         if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("server", {}).get("peer-list"):
             xe_add_oc_ntp_server(config_before["tailf-ned-cisco-ios:ntp"]["server"]["peer-list"],
-                             config_leftover["tailf-ned-cisco-ios:ntp"]["server"]["peer-list"],
-                             openconfig_system_ntp_server_list, "SERVER", "", if_ip)
+                                 config_leftover["tailf-ned-cisco-ios:ntp"]["server"]["peer-list"],
+                                 openconfig_system_ntp_server_list, "SERVER", "", if_ip)
         # NTP PEER
         if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer", {}).get("peer-list"):
             xe_add_oc_ntp_server(config_before["tailf-ned-cisco-ios:ntp"]["peer"]["peer-list"],
-                             config_leftover["tailf-ned-cisco-ios:ntp"]["peer"]["peer-list"],
-                             openconfig_system_ntp_server_list, "PEER", "", if_ip)
+                                 config_leftover["tailf-ned-cisco-ios:ntp"]["peer"]["peer-list"],
+                                 openconfig_system_ntp_server_list, "PEER", "", if_ip)
         # VRF SERVER
         if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("server", {}).get("vrf"):
             for nso_vrf_index, vrf in enumerate(
@@ -245,7 +253,7 @@ def main(before: dict, leftover: dict, if_ip: dict) -> dict:
     NSO_PASSWORD: str
     NSO_DEVICE: str
     TEST - If True, sends generated OC configuration to NSO Server: str
-    
+
     :param before: Original NSO Device configuration: dict
     :param leftover: NSO Device configuration minus configs replaced with MDD OC: dict
     :param if_ip: Map of interface names to IP addresses: dict
@@ -255,13 +263,15 @@ def main(before: dict, leftover: dict, if_ip: dict) -> dict:
     xe_system_config(before, leftover)
     xe_system_ssh_server(before, leftover)
     xe_system_ntp(before, leftover, if_ip)
-    
+
     return openconfig_system
 
 
 if __name__ == '__main__':
     import sys
+
     sys.path.append('../../')
+    sys.path.append('../../../')
     from package_nso_to_oc import common
 
     nso_host = os.environ.get("NSO_HOST")

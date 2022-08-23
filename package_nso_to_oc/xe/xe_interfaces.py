@@ -203,7 +203,7 @@ def xe_configure_ipv4_interface(nso_before_interface: dict, nso_leftover_interfa
     oc_ipv4_structure = {"openconfig-if-ip:ipv4": {"openconfig-if-ip:addresses": {"openconfig-if-ip:address": []},
                                                    "openconfig-if-ip:config": {}}}
     if (nso_before_interface.get("ip") and not nso_before_interface.get("ip", {}).get("no-address")) or (
-    nso_before_interface.get("vrrp")):
+            nso_before_interface.get("vrrp")):
         openconfig_interface.update(oc_ipv4_structure)
         ipv4_address_structure = {}
         if (nso_before_interface["ip"].get(
@@ -218,10 +218,6 @@ def xe_configure_ipv4_interface(nso_before_interface: dict, nso_leftover_interfa
             ipv4_address_structure.update({"openconfig-if-ip:ip": ip,
                                            "openconfig-if-ip:config": {"openconfig-if-ip:ip": ip,
                                                                        "openconfig-if-ip:prefix-length": mask}})
-        # VRRP
-        if nso_before_interface.get("vrrp"):
-            vrrp_dict = xe_configure_vrrp_interfaces(nso_before_interface, nso_leftover_interface)
-            ipv4_address_structure.update(vrrp_dict)
         if len(ipv4_address_structure) > 0:
             openconfig_interface["openconfig-if-ip:ipv4"]["openconfig-if-ip:addresses"][
                 "openconfig-if-ip:address"].append(ipv4_address_structure)
@@ -234,6 +230,14 @@ def xe_configure_ipv4_interface(nso_before_interface: dict, nso_leftover_interfa
         else:
             openconfig_interface["openconfig-if-ip:ipv4"]["openconfig-if-ip:config"][
                 "openconfig-if-ip:dhcp-client"] = False
+        # VRRP
+        if nso_before_interface.get("vrrp"):
+            vrrp_dict = xe_configure_vrrp_interfaces(nso_before_interface, nso_leftover_interface)
+            ipv4_address_structure.update(vrrp_dict)
+        # HSRP
+        if nso_before_interface.get("standby", {}).get("standby-list"):
+            hsrp_dict = xe_configure_hsrp_interfaces(nso_before_interface, nso_leftover_interface)
+            ipv4_address_structure.update(hsrp_dict)
         # IP MTU
         if nso_before_interface.get("ip", {}).get("mtu"):
             openconfig_interface["openconfig-if-ip:ipv4"]["openconfig-if-ip:config"][
@@ -388,7 +392,8 @@ def configure_port_channel(config_before: dict, config_leftover: dict, interface
 
             path_oc_subif = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
                              interface_directory["oc_interface_index"], "openconfig-interfaces:subinterfaces",
-                             "openconfig-interfaces:subinterface", interface_directory["oc_sub_interface_place_counter"]]
+                             "openconfig-interfaces:subinterface",
+                             interface_directory["oc_sub_interface_place_counter"]]
 
             openconfig_interface_subif = return_nested_dict(openconfig_interfaces, path_oc_subif)
 
@@ -411,7 +416,8 @@ def configure_software_tunnel(config_before: dict, config_leftover: dict, interf
         xe_interface_config(nso_before_interface, nso_leftover_interface, openconfig_interface_physical)
 
         openconfig_interface_physical["openconfig-if-tunnel:tunnel"] = {"openconfig-if-tunnel:config": {}}
-        path_oc_tunnel = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface", interface_directory["oc_interface_index"], "openconfig-if-tunnel:tunnel"]
+        path_oc_tunnel = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
+                          interface_directory["oc_interface_index"], "openconfig-if-tunnel:tunnel"]
         openconfig_interface_tunnel = return_nested_dict(openconfig_interfaces, path_oc_tunnel)
 
         # TODO: Fix prefix issue
@@ -419,23 +425,33 @@ def configure_software_tunnel(config_before: dict, config_leftover: dict, interf
 
         # source IP
         if nso_before_interface.get("tunnel", {}).get("source"):
-            openconfig_interface_tunnel["openconfig-if-tunnel:config"]["openconfig-if-tunnel:src"] = nso_before_interface.get("tunnel", {}).get("source")
+            openconfig_interface_tunnel["openconfig-if-tunnel:config"][
+                "openconfig-if-tunnel:src"] = nso_before_interface.get("tunnel", {}).get("source")
             del nso_leftover_interface["tunnel"]["source"]
         # destination IP
         if nso_before_interface.get("tunnel", {}).get("destination"):
-            openconfig_interface_tunnel["openconfig-if-tunnel:config"]["openconfig-if-tunnel:dst"] = nso_before_interface.get("tunnel", {}).get("destination")
+            openconfig_interface_tunnel["openconfig-if-tunnel:config"][
+                "openconfig-if-tunnel:dst"] = nso_before_interface.get("tunnel", {}).get("destination")
             del nso_leftover_interface["tunnel"]["destination"]
         # key
         if nso_before_interface.get("tunnel", {}).get("key"):
-            openconfig_interface_tunnel["openconfig-if-tunnel:config"]["openconfig-if-tunnel:gre-key"] = nso_before_interface.get("tunnel", {}).get("key")
+            openconfig_interface_tunnel["openconfig-if-tunnel:config"][
+                "openconfig-if-tunnel:gre-key"] = nso_before_interface.get("tunnel", {}).get("key")
             del nso_leftover_interface["tunnel"]["key"]
         # PMTUD
         if type(nso_before_interface.get("tunnel", {}).get("path-mtu-discovery", "")) is dict:
-            openconfig_interface_tunnel["openconfig-if-tunnel:config"]["openconfig-if-tunnel-ext:tunnel-path-mtu-discovery"] = True
+            openconfig_interface_tunnel["openconfig-if-tunnel:config"][
+                "openconfig-if-tunnel-ext:tunnel-path-mtu-discovery"] = True
             del nso_leftover_interface["tunnel"]["path-mtu-discovery"]
         # keepalives
-        if nso_before_interface.get("keepalive-period-retries", {}).get("keepalive", {}).get("period") and nso_before_interface.get("keepalive-period-retries", {}).get("keepalive", {}).get("retries"):
-            openconfig_interface_tunnel["openconfig-if-tunnel:config"]["openconfig-if-tunnel-ext:keepalives"] = {"openconfig-if-tunnel-ext:period": nso_before_interface.get("keepalive-period-retries", {}).get("keepalive", {}).get("period"), "openconfig-if-tunnel-ext:retries": nso_before_interface.get("keepalive-period-retries", {}).get("keepalive", {}).get("retries")}
+        if nso_before_interface.get("keepalive-period-retries", {}).get("keepalive", {}).get(
+                "period") and nso_before_interface.get("keepalive-period-retries", {}).get("keepalive", {}).get(
+                "retries"):
+            openconfig_interface_tunnel["openconfig-if-tunnel:config"]["openconfig-if-tunnel-ext:keepalives"] = {
+                "openconfig-if-tunnel-ext:period": nso_before_interface.get("keepalive-period-retries", {}).get(
+                    "keepalive", {}).get("period"),
+                "openconfig-if-tunnel-ext:retries": nso_before_interface.get("keepalive-period-retries", {}).get(
+                    "keepalive", {}).get("retries")}
             del nso_leftover_interface["keepalive-period-retries"]
 
 
@@ -519,6 +535,55 @@ def xe_configure_vrrp_interfaces(nso_before_interface: dict, nso_leftover_interf
                 del nso_leftover_interface["vrrp"][number]["timers"]["advertise"]
             service_vrrp["openconfig-if-ip:vrrp"]["openconfig-if-ip:vrrp-group"].append(service_vrrp_group)
     return service_vrrp
+
+
+def xe_configure_hsrp_interfaces(nso_before_interface: dict, nso_leftover_interface: dict) -> dict:
+    """Configure HSRP"""
+    service_hsrp = {"openconfig-if-ip-mdd-ext:hsrp": {"openconfig-if-ip-mdd-ext:hsrp-group": []}}
+    for number, group in enumerate(nso_before_interface.get("standby", {}).get("standby-list")):
+        if group.get("group-number"):
+            # Group
+            service_hsrp_group = {"openconfig-if-ip-mdd-ext:group-number": group.get("group-number"),
+                                  "openconfig-if-ip-mdd-ext:config": {
+                                      "openconfig-if-ip-mdd-ext:group-number": group.get("group-number")}}
+            del nso_leftover_interface["standby"]["standby-list"][number]["group-number"]
+            # Preempt delay
+            if group.get("preempt", {}).get("delay", {}).get("minimum"):
+                service_hsrp_group["openconfig-if-ip-mdd-ext:config"][
+                    "openconfig-if-ip-mdd-ext:preempt-delay"] = group.get("preempt",
+                                                                          {}).get(
+                    "delay", {}).get("minimum")
+                del nso_leftover_interface["standby"]["standby-list"][number]["preempt"]["delay"]
+            # Preempt
+            if group.get("preempt"):
+                service_hsrp_group["openconfig-if-ip-mdd-ext:config"]["openconfig-if-ip-mdd-ext:preempt"] = True
+                del nso_leftover_interface["standby"]["standby-list"][number]["preempt"]
+            # Priority
+            if group.get("priority"):
+                service_hsrp_group["openconfig-if-ip-mdd-ext:config"]["openconfig-if-ip-mdd-ext:priority"] = group.get(
+                    "priority")
+                del nso_leftover_interface["standby"]["standby-list"][number]["priority"]
+            # VRRP Address
+            if group.get("ip", {}).get("address"):
+                service_hsrp_group["openconfig-if-ip-mdd-ext:config"]["openconfig-if-ip-mdd-ext:virtual-address"] = []
+                service_hsrp_group["openconfig-if-ip-mdd-ext:config"][
+                    "openconfig-if-ip-mdd-ext:virtual-address"].append(
+                    group.get("ip", {}).get("address"))
+                del nso_leftover_interface["standby"]["standby-list"][number]["ip"]
+            # Timers
+            if group.get("timers", {}).get("hello-interval", {}).get("seconds") and group.get("timers", {}).get(
+                    "hold-time", {}).get("seconds"):
+                service_hsrp_group["openconfig-if-ip-mdd-ext:config"].update({"openconfig-if-ip-mdd-ext:timers": {
+                    "openconfig-if-ip-mdd-ext:hello-interval": int(
+                        group.get("timers", {}).get("hello-interval").get("seconds")),
+                    "openconfig-if-ip-mdd-ext:holdtime": int(group.get("timers", {}).get("hold-time").get("seconds"))
+                }})
+                del nso_leftover_interface["standby"]["standby-list"][number]["timers"]["hello-interval"]
+                del nso_leftover_interface["standby"]["standby-list"][number]["timers"]["hold-time"]
+
+            service_hsrp["openconfig-if-ip-mdd-ext:hsrp"]["openconfig-if-ip-mdd-ext:hsrp-group"].append(
+                service_hsrp_group)
+    return service_hsrp
 
 
 def configure_csmacd(config_before: dict, config_leftover: dict, interface_data: dict) -> None:
@@ -606,7 +671,8 @@ def xe_interfaces(config_before: dict, config_leftover: dict, interfaces: dict) 
     for interface_type in interfaces:
         for interface in interfaces[interface_type]:
             # Assign default interface types
-            interfaces[interface_type][interface]["oc_type"] = nso_to_oc_interface_types.get(interface_type, "unsupported")
+            interfaces[interface_type][interface]["oc_type"] = nso_to_oc_interface_types.get(interface_type,
+                                                                                             "unsupported")
             openconfig_interfaces["openconfig-interfaces:interfaces"]["openconfig-interfaces:interface"][
                 interfaces[interface_type][interface]["oc_interface_index"]]["openconfig-interfaces:config"][
                 "openconfig-interfaces:type"] = nso_to_oc_interface_types[interface_type]
@@ -652,7 +718,7 @@ def main(before: dict, leftover: dict) -> dict:
     NSO_PASSWORD: str
     NSO_DEVICE: str
     TEST - If True, sends generated OC configuration to NSO Server: str
-    
+
     :param before: Original NSO Device configuration: dict
     :param leftover: NSO Device configuration minus configs replaced with MDD OC: dict
     :return: MDD Openconfig Interfaces configuration: dict
@@ -668,6 +734,7 @@ if __name__ == '__main__':
     import sys
 
     sys.path.append('../../')
+    sys.path.append('../../../')
     from package_nso_to_oc import common
 
     nso_host = os.environ.get("NSO_HOST")

@@ -1242,9 +1242,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.16.1.2'
+                                  ip: '10.255.10.1'
                                   prefix-length: 32
-                                ip: '172.16.1.2'
+                                ip: '10.255.10.1'
             openconfig-network-instance:network-instances:
               network-instance:
                 - name: 'default'
