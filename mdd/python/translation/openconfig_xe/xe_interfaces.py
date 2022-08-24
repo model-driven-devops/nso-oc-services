@@ -107,6 +107,7 @@ def xe_process_interfaces(self) -> None:
             if interface.config.mtu:
                 vlan.mtu = interface.config.mtu
             xe_configure_ipv4(self, vlan, interface.routed_vlan.ipv4)
+            xe_configure_hsrp_v1(self, vlan, interface.routed_vlan.ipv4)
             xe_configure_ipv6(self, vlan, interface.routed_vlan.ipv6)
             if routing_ipv6:
                 xe_configure_vrrp_v3(self, vlan, interface.routed_vlan.ipv4, 'ipv4')
@@ -123,7 +124,7 @@ def xe_process_interfaces(self) -> None:
             l2_interface = class_attribute[interface_number]
             xe_interface_config(interface, l2_interface)
             xe_interface_hold_time(interface, l2_interface)
-            xe_interface_ethernet(interface, l2_interface)
+            xe_interface_ethernet(self, interface, l2_interface)
 
         # Port channels
         elif interface.config.type == 'ianaift:ieee8023adLag':
@@ -140,7 +141,8 @@ def xe_process_interfaces(self) -> None:
             else:
                 for subinterface_service in interface.subinterfaces.subinterface:
                     if subinterface_service.index != 0:
-                        class_attribute_sub_if = self.root.devices.device[self.device_name].config.ios__interface.Port_channel_subinterface.Port_channel
+                        class_attribute_sub_if = self.root.devices.device[
+                            self.device_name].config.ios__interface.Port_channel_subinterface.Port_channel
                         if not class_attribute_sub_if.exists(f'{interface_number}.{subinterface_service.index}'):
                             class_attribute_sub_if.create(f'{interface_number}.{subinterface_service.index}')
                         subinterface_cdb = class_attribute_sub_if[f'{interface_number}.{subinterface_service.index}']
@@ -159,6 +161,7 @@ def xe_process_interfaces(self) -> None:
                                 subinterface_cdb.shutdown.create()
                         subinterface_cdb.encapsulation.dot1Q.vlan_id = subinterface_service.vlan.config.vlan_id
                         xe_configure_ipv4(self, subinterface_cdb, subinterface_service.ipv4)
+                        xe_configure_hsrp_v1(self, subinterface_cdb, subinterface_service.ipv4)
                         xe_configure_ipv6(self, subinterface_cdb, subinterface_service.ipv6)
                         if routing_ipv6:
                             xe_configure_vrrp_v3(self, subinterface_cdb, subinterface_service.ipv4, 'ipv4')
@@ -179,7 +182,12 @@ def xe_process_interfaces(self) -> None:
             physical_interface = class_attribute[interface_number]
             xe_interface_config(interface, physical_interface)
             xe_interface_hold_time(interface, physical_interface)
-            xe_interface_ethernet(interface, physical_interface)
+            if interface.ethernet.switched_vlan.config.interface_mode:
+                raise ValueError(
+                    f"Interface {interface_type}{interface_number} is configured a type \
+                    'ethernetCSMACD'. It should be type 'l2vlan' when configured as a \
+                    {interface.ethernet.switched_vlan.config.interface_mode} port.")
+            xe_interface_ethernet(self, interface, physical_interface)
             for subinterface_service in interface.subinterfaces.subinterface:
                 if subinterface_service.index != 0:
                     if not class_attribute.exists(f'{interface_number}.{subinterface_service.index}'):
@@ -203,6 +211,7 @@ def xe_process_interfaces(self) -> None:
                             subinterface_cdb.shutdown.create()
                     subinterface_cdb.encapsulation.dot1Q.vlan_id = subinterface_service.vlan.config.vlan_id
                     xe_configure_ipv4(self, subinterface_cdb, subinterface_service.ipv4)
+                    xe_configure_hsrp_v1(self, subinterface_cdb, subinterface_service.ipv4)
                     xe_configure_ipv6(self, subinterface_cdb, subinterface_service.ipv6)
                     if routing_ipv6:
                         xe_configure_vrrp_v3(self, subinterface_cdb, subinterface_service.ipv4, 'ipv4')
@@ -214,6 +223,7 @@ def xe_process_interfaces(self) -> None:
                     if physical_interface.switchport.exists():
                         physical_interface.switchport.delete()
                     xe_configure_ipv4(self, physical_interface, subinterface_service.ipv4)
+                    xe_configure_hsrp_v1(self, physical_interface, subinterface_service.ipv4)
                     xe_configure_ipv6(self, physical_interface, subinterface_service.ipv6)
                     if routing_ipv6:
                         xe_configure_vrrp_v3(self, physical_interface, subinterface_service.ipv4, 'ipv4')
@@ -298,7 +308,7 @@ def xe_get_subinterfaces(self) -> list:
     return interfaces
 
 
-def xe_interface_ethernet(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
+def xe_interface_ethernet(s, interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
     # auto-negotiate
     if interface_service.ethernet.config.auto_negotiate:
         interface_cdb.negotiation.auto = interface_service.ethernet.config.auto_negotiate
@@ -330,7 +340,7 @@ def xe_interface_ethernet(interface_service: ncs.maagic.ListElement, interface_c
 
     # switched-vlan interface-mode
     if interface_service.ethernet.switched_vlan.config.interface_mode:
-        xe_configure_switched_vlan(interface_cdb, interface_service.ethernet.switched_vlan)
+        xe_configure_switched_vlan(s, interface_cdb, interface_service.ethernet.switched_vlan)
     else:
         if interface_cdb.switchport.exists():
             interface_cdb.switchport.delete()
@@ -347,12 +357,13 @@ def xe_interface_aggregation(s, interface_service: ncs.maagic.ListElement,
 
     # switched-vlan interface-mode
     if interface_service.aggregation.switched_vlan.config.interface_mode:
-        xe_configure_switched_vlan(interface_cdb, interface_service.aggregation.switched_vlan)
+        xe_configure_switched_vlan(s, interface_cdb, interface_service.aggregation.switched_vlan)
     else:
         if interface_cdb.switchport.exists():
             interface_cdb.switchport.delete()
     if interface_service.aggregation.ipv4.addresses.address:
         xe_configure_ipv4(s, interface_cdb, interface_service.aggregation.ipv4)
+        xe_configure_hsrp_v1(s, interface_cdb, interface_service.aggregation.ipv4)
         xe_configure_ipv6(s, interface_cdb, interface_service.aggregation.ipv6)
         if ipv6:
             xe_configure_vrrp_v3(s, interface_cdb, interface_service.aggregation.ipv4, 'ipv4')
@@ -566,7 +577,44 @@ def xe_configure_vrrp_v2_legacy(s, interface_cdb: ncs.maagic.ListElement, servic
                     # VRRP interface tracking TODO
 
 
-def xe_configure_switched_vlan(interface_cdb: ncs.maagic.ListElement,
+def xe_configure_hsrp_v1(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container) -> None:
+    """
+    Configures ipv4 hsrp
+    """
+    for a in service_ipv4.addresses.address:
+        if hasattr(a, 'hsrp'):
+            if a.hsrp.hsrp_group:
+                for v in a.hsrp.hsrp_group:
+                    if not interface_cdb.standby.standby_list.exists(v.group_number):
+                        interface_cdb.standby.standby_list.create(v.group_number)
+                    hsrp_group = interface_cdb.standby.standby_list[v.group_number]
+                    # priority
+                    if v.config.priority:
+                        hsrp_group.priority = v.config.priority
+                    # preempt
+                    if v.config.preempt:
+                        if not hsrp_group.preempt.exists():
+                            hsrp_group.preempt.create()
+                        if v.config.preempt_delay:
+                            hsrp_group.preempt.delay.minimum = v.config.preempt_delay
+                        else:
+                            hsrp_group.preempt.delay.minimum = 0
+                    # virtual address
+                    if v.config.virtual_address:
+                        if not hsrp_group.ip.exists():
+                            hsrp_group.ip.create()
+                        for counter, address in enumerate(v.config.virtual_address):
+                            if counter == 0:
+                                hsrp_group.ip.address = address
+                            # else:  TODO add secondaries
+                            #     hsrp_group.ip.secondary_address.create(address)
+                    if v.config.timers:
+                        hsrp_group.timers.hello_interval.seconds = v.config.timers.hello_interval
+                        hsrp_group.timers.hold_time.seconds = v.config.timers.holdtime
+
+
+def xe_configure_switched_vlan(self,
+                               interface_cdb: ncs.maagic.ListElement,
                                service_switched_vlan: ncs.maagic.Container) -> None:
     """
     Configures openconfig-vlan vlan-switched-top
@@ -575,7 +623,13 @@ def xe_configure_switched_vlan(interface_cdb: ncs.maagic.ListElement,
     if service_switched_vlan.config.interface_mode == 'TRUNK':
         if not interface_cdb.switchport.exists():
             interface_cdb.switchport.create()
-        interface_cdb.switchport.trunk.encapsulation = 'dot1q'
+        if len(self.root.devices.device[self.device_name].config.ios__switch.list) > 0:
+            if 'c9k' in self.root.devices.device[self.device_name].config.ios__switch.list[1].provision:
+                pass
+            else:
+                interface_cdb.switchport.trunk.encapsulation = 'dot1q'
+        else:
+            interface_cdb.switchport.trunk.encapsulation = 'dot1q'
         if not interface_cdb.switchport.mode.trunk.exists():
             interface_cdb.switchport.mode.trunk.create()
         if service_switched_vlan.config.native_vlan:

@@ -2,8 +2,6 @@
 - hosts: nso
   connection: local
   gather_facts: no
-  tags:
-    - always
   roles:
     - nso-rollback-save
   run_once: true
@@ -59,8 +57,8 @@
           mdd:openconfig:
             openconfig-system:system:
               config:
-                oc-system-ext:enable-secret: 'password'
-                oc-system-ext:console-exec-timeout-seconds: 800
+                openconfig-system-ext:enable-secret: 'password'
+                openconfig-system-ext:console-exec-timeout-seconds: 800
                 domain-name: 'test123.com'
                 hostname: 'rxx'
                 login-banner: |
@@ -89,7 +87,7 @@
           mdd:openconfig:
             openconfig-system:system:
               config:
-                oc-system-ext:ip-options: 'DROP'
+                openconfig-system-ext:ip-options: 'DROP'
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -106,7 +104,7 @@
           mdd:openconfig:
             openconfig-system:system:
               config:
-                oc-system-ext:ip-options: 'IGNORE'
+                openconfig-system-ext:ip-options: 'IGNORE'
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -123,7 +121,7 @@
           mdd:openconfig:
             openconfig-system:system:
               config:
-                oc-system-ext:ip-options: 'ENABLE'
+                openconfig-system-ext:ip-options: 'ENABLE'
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -162,17 +160,17 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.27.1.2'
+                                  ip: '10.6.0.1'
                                   prefix-length: 30
-                                ip: '172.27.1.2'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-system:system:
               ssh-server:
                 config:
-                  oc-system-ext:absolute-timeout-minutes: 1200
-                  oc-system-ext:ssh-timeout: 55
-                  oc-system-ext:ssh-source-interface: 'GigabitEthernet6'
+                  openconfig-system-ext:absolute-timeout-minutes: 1200
+                  openconfig-system-ext:ssh-timeout: 55
+                  openconfig-system-ext:ssh-source-interface: 'GigabitEthernet6'
                   enable: true
                   protocol-version: 'V2'
                   session-limit: 16
@@ -220,9 +218,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.60.1.2'
+                                  ip: '10.6.0.1'
                                   prefix-length: 30
-                                ip: '172.60.1.2'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
                 - config:
@@ -246,9 +244,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.50.1.2'
+                                  ip: '10.7.0.1'
                                   prefix-length: 30
-                                ip: '172.50.1.2'
+                                ip: '10.7.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -284,8 +282,8 @@
                 config:
                   enabled: true
                   enable-ntp-auth: true
-                  oc-system-ext:ntp-enable-logging: true
-                  ntp-source-address: '172.60.1.2'
+                  openconfig-system-ext:ntp-enable-logging: true
+                  ntp-source-address: '10.6.0.1'
                 ntp-keys:
                   ntp-key:
                     - config:
@@ -302,8 +300,8 @@
                   server:
                     - address: '10.0.0.1'
                       config:
-                        oc-system-ext:ntp-auth-key-id: 1
-                        oc-system-ext:ntp-use-vrf: 'default'
+                        openconfig-system-ext:ntp-auth-key-id: 1
+                        openconfig-system-ext:ntp-use-vrf: 'default'
                         address: '10.0.0.1'
                         association-type: 'SERVER'  # SERVER, PEER, POOL
                         iburst: true
@@ -312,8 +310,8 @@
                         version: 4
                     - address: '10.0.0.2'
                       config:
-                        oc-system-ext:ntp-auth-key-id: 2
-                        oc-system-ext:ntp-use-vrf: 'abc'
+                        openconfig-system-ext:ntp-auth-key-id: 2
+                        openconfig-system-ext:ntp-use-vrf: 'abc'
                         address: '10.0.0.2'
                         association-type: 'PEER'
                         iburst: true
@@ -322,8 +320,8 @@
                         version: 4
                     - address: '10.0.0.3'
                       config:
-                        oc-system-ext:ntp-auth-key-id: 1
-                        oc-system-ext:ntp-source-address: '172.60.1.2'
+                        openconfig-system-ext:ntp-auth-key-id: 1
+                        openconfig-system-ext:ntp-source-address: '10.6.0.1'
                         address: '10.0.0.3'
                         association-type: 'SERVER'  # SERVER, PEER, POOL
                         iburst: true
@@ -379,9 +377,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.60.1.2'
+                                  ip: '10.6.0.1'
                                   prefix-length: 30
-                                ip: '172.60.1.2'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
                 - config:
@@ -405,9 +403,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.50.1.2'
+                                  ip: '10.7.0.1'
                                   prefix-length: 30
-                                ip: '172.50.1.2'
+                                ip: '10.7.0.1'
                           config:
                             dhcp-client: false
             openconfig-network-instance:network-instances:
@@ -455,8 +453,8 @@
                     - config:
                         host: '10.0.0.1'  # logging host x.x.x.x
                         remote-port: 514
-                        source-address: '172.50.1.2'
-                        oc-system-ext:use-vrf: 'abc'
+                        source-address: '10.7.0.1'
+                        openconfig-system-ext:use-vrf: 'abc'
                       host: '10.0.0.1'
                       selectors:
                         selector:
@@ -468,8 +466,8 @@
                     - config:
                         host: '10.0.0.2'  # logging host x.x.x.x
                         remote-port: 514
-                        source-address: '172.60.1.2'
-                        oc-system-ext:use-vrf: 'default'
+                        source-address: '10.6.0.1'
+                        openconfig-system-ext:use-vrf: 'default'
                       host: '10.0.0.2'
                       selectors:
                         selector:
@@ -481,7 +479,7 @@
                     - config:
                         host: '10.0.0.3'  # logging host x.x.x.x
                         remote-port: 514
-                        source-address: '172.60.1.2'
+                        source-address: '10.6.0.1'
                       host: '10.0.0.3'
                       selectors:
                         selector:
@@ -895,14 +893,14 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.27.1.2'
+                                  ip: '10.6.0.1'
                                   prefix-length: 30
-                                ip: '172.27.1.2'
+                                ip: '10.6.0.1'
                           config:
                             dhcp-client: false
             openconfig-system:system:
               config:
-                oc-system-ext:enable-secret: 'admin'
+                openconfig-system-ext:enable-secret: 'admin'
               aaa:
                 accounting:
                   config:
@@ -974,7 +972,7 @@
                               config:
                                 port: 49
                                 secret-key: 'Password123'
-                                source-address: '172.27.1.2'  # For each group, sources must be the same
+                                source-address: '10.6.0.1'  # For each group, sources must be the same
                           - address: '10.2.2.2'
                             config:
                               address: '10.2.2.2'
@@ -984,7 +982,7 @@
                               config:
                                 port: 49
                                 secret-key: 'Password123'
-                                source-address: '172.27.1.2'  # For each group, sources must be the same
+                                source-address: '10.6.0.1'  # For each group, sources must be the same
                     - config:
                         name: 'TACACS-GROUP-2'
                         type: 'TACACS'
@@ -1000,7 +998,7 @@
                               config:
                                 port: 49
                                 secret-key: 'Password123'
-                                source-address: '172.27.1.2'  # For each group, sources must be the same
+                                source-address: '10.6.0.1'  # For each group, sources must be the same
                           - address: '10.4.4.4'
                             config:
                               address: '10.4.4.4'
@@ -1010,7 +1008,7 @@
                               config:
                                 port: 49
                                 secret-key: 'Password123'
-                                source-address: '172.27.1.2'  # For each group, sources must be the same
+                                source-address: '10.6.0.1'  # For each group, sources must be the same
                     - config:
                         name: 'RADIUS-GROUP-1'
                         type: 'RADIUS'
@@ -1027,7 +1025,7 @@
                                 acct-port: 1853
                                 auth-port: 1852
                                 secret-key: 'Password123'
-                                source-address: '172.27.1.2'  # For each group, sources must be the same
+                                source-address: '10.6.0.1'  # For each group, sources must be the same
                           - address: '10.6.6.6'
                             config:
                               address: '10.6.6.6'
@@ -1038,7 +1036,7 @@
                                 acct-port: 1853
                                 auth-port: 1852
                                 secret-key: 'Password123'
-                                source-address: '172.27.1.2'  # For each group, sources must be the same
+                                source-address: '10.6.0.1'  # For each group, sources must be the same
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -1098,7 +1096,7 @@
           mdd:openconfig:
             openconfig-system:system:
               config:
-                oc-system-ext:enable-secret: 'admin'
+                openconfig-system-ext:enable-secret: 'admin'
               aaa:
                 authentication:
                   admin-user:
@@ -1248,8 +1246,6 @@
 - hosts: nso
   connection: local
   gather_facts: no
-  tags:
-    - always
   roles:
     - nso-rollback-load
   run_once: true

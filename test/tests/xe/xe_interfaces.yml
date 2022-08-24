@@ -41,9 +41,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.0.2'
+                                  ip: '10.6.0.2'
                                   prefix-length: 24
-                                ip: '10.1.0.2'
+                                ip: '10.6.0.2'
                                 vrrp:
                                   vrrp-group:
                                     - config:
@@ -51,8 +51,8 @@
                                         preempt: true
                                         preempt-delay: 10  # vrrp 5 preempt delay minimum 100
                                         priority: 200  # vrrp 5 priority 200
-                                        virtual-address:  # vrrp 5 ip10.1.0.2
-                                          - '10.1.0.2'
+                                        virtual-address:  # vrrp 5 ip 10.6.0.100
+                                          - '10.6.0.100'
                                         virtual-router-id: 6  # group number
                                       virtual-router-id: 6  # group number
                           config:
@@ -63,8 +63,8 @@
         assertions:
           - "' interface GigabitEthernet6:' in changes"
           - "'+ description Physical Interface 6 VRRP:' in changes"
-          - "'+ ip address 10.1.0.2 255.255.255.0:' in changes"
-          - "'+ vrrp 6 ip 10.1.0.2:' in changes"
+          - "'+ ip address 10.6.0.2 255.255.255.0:' in changes"
+          - "'+ vrrp 6 ip 10.6.0.100:' in changes"
           - "'+ vrrp 6 preempt delay minimum 10:' in changes"
           - "'+ vrrp 6 priority 200:' in changes"
           - "'+ vrrp 6 timers advertise 3:' in changes"
@@ -96,9 +96,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.5.5.5'
+                                  ip: '10.7.5.1'
                                   prefix-length: '24'
-                                ip: '10.5.5.5'
+                                ip: '10.7.5.1'
                           config:
                             dhcp-client: false
                             enabled: true
@@ -114,9 +114,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.6.6.6'
+                                  ip: '10.7.6.1'
                                   prefix-length: '24'
-                                ip: '10.6.6.6'
+                                ip: '10.7.6.1'
                           config:
                             dhcp-client: false
                             enabled: true
@@ -132,11 +132,11 @@
           - "'+interface GigabitEthernet7.5:' in changes"
           - "'+ description Sub interface 5:' in changes"
           - "'+ encapsulation dot1Q 5:' in changes"
-          - "'+ ip address 10.5.5.5 255.255.255.0:' in changes"
+          - "'+ ip address 10.7.5.1 255.255.255.0:' in changes"
           - "'+interface GigabitEthernet7.6:' in changes"
           - "'+ description Sub interface 6:' in changes"
           - "'+ encapsulation dot1Q 6:' in changes"
-          - "'+ ip address 10.6.6.6 255.255.255.0:' in changes"
+          - "'+ ip address 10.7.6.1 255.255.255.0:' in changes"
 
     - name: test loopback interface
       tags:
@@ -163,9 +163,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.10.0.101'
+                                  ip: '10.255.0.1'
                                   prefix-length: '32'
-                                ip: '10.10.0.101'
+                                ip: '10.255.0.1'
                           config:
                             dhcp-client: false
         api_method: PUT
@@ -174,7 +174,7 @@
         assertions:
           - "'+interface Loopback0:' in changes"
           - "'+ description Loopback 0:' in changes"
-          - "'+ ip address 10.10.0.101 255.255.255.255:' in changes"
+          - "'+ ip address 10.255.0.1 255.255.255.255:' in changes"
 
     - name: test vasi interfaces
       tags:
@@ -295,9 +295,9 @@
 #                          addresses:
 #                            address:
 #                              - config:
-#                                  ip: '10.1.0.1'
+#                                  ip: '10.5.0.1'
 #                                  prefix-length: 24
-#                                ip: '10.1.0.1'
+#                                ip: '10.5.0.1'
 #        api_method: PUT
 #        rollback: false
 #        assertion_ignore_errors: false
@@ -333,9 +333,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.0.2'
+                                  ip: '10.5.0.1'
                                   prefix-length: 24
-                                ip: '10.1.0.2'
+                                ip: '10.5.0.1'
                           config:
                             dhcp-client: false
                           proxy-arp:
@@ -374,9 +374,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.0.2'
+                                  ip: '10.5.0.1'
                                   prefix-length: 24
-                                ip: '10.1.0.2'
+                                ip: '10.5.0.1'
                           config:
                             dhcp-client: false
                           proxy-arp:
@@ -414,9 +414,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.0.1'
+                                  ip: '10.5.0.1'
                                   prefix-length: 24
-                                ip: '10.1.0.1'
+                                ip: '10.5.0.1'
                           config:
                             dhcp-client: false
                             openconfig-if-ip-mdd-ext:redirects: false
@@ -453,9 +453,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.0.1'
+                                  ip: '10.5.0.1'
                                   prefix-length: 24
-                                ip: '10.1.0.1'
+                                ip: '10.5.0.1'
                           config:
                             dhcp-client: false
                             openconfig-if-ip-mdd-ext:redirects: true
@@ -492,9 +492,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.0.1'
+                                  ip: '10.5.0.1'
                                   prefix-length: 24
-                                ip: '10.1.0.1'
+                                ip: '10.5.0.1'
                           config:
                             dhcp-client: false
                             openconfig-if-ip-mdd-ext:mask-reply: true
@@ -529,9 +529,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.0.1'
+                                  ip: '10.5.0.1'
                                   prefix-length: 24
-                                ip: '10.1.0.1'
+                                ip: '10.5.0.1'
                           config:
                             dhcp-client: false
                             openconfig-if-ip-mdd-ext:mask-reply: false
@@ -566,9 +566,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '172.16.1.2'
+                                  ip: '10.255.10.1'
                                   prefix-length: 32
-                                ip: '172.16.1.2'
+                                ip: '10.255.10.1'
                           config:
                             dhcp-client: false
                 - config:
@@ -579,7 +579,7 @@
                   name: 'Tunnel1'
                   openconfig-if-tunnel:tunnel:
                     config:
-                      src: '172.16.1.2'
+                      src: '10.255.10.1'
                       dst: '192.168.1.1'
                       gre-key: 1
                       openconfig-if-tunnel-ext:tunnel-path-mtu-discovery: true
@@ -594,21 +594,21 @@
                       addresses:
                         address:
                           - config:
-                              ip: '10.222.0.1'
+                              ip: '10.254.1.1'
                               prefix-length: 24
-                            ip: '10.222.0.1'
+                            ip: '10.254.1.1'
 
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+interface Tunnel1:' in changes"
-          - "'+ tunnel source 172.16.1.2:' in changes"
+          - "'+ tunnel source 10.255.10.1:' in changes"
           - "'+ tunnel destination 192.168.1.1:' in changes"
           - "'+ tunnel key 1:' in changes"
           - "'+ tunnel path-mtu-discovery:' in changes"
           - "'+ keepalive 5 3:' in changes"
-          - "'+ ip address 10.222.0.1 255.255.255.0:' in changes"
+          - "'+ ip address 10.254.1.1 255.255.255.0:' in changes"
           - "'+ ip mtu 1476:' in changes"
           - "'+ ip tcp adjust-mss 1460:' in changes"
 #          - "'+ tunnel ttl 255:' in changes"  # not available in NSO XE NED
@@ -647,9 +647,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.0.2'
+                                  ip: '10.5.0.1'
                                   prefix-length: 24
-                                ip: '10.1.0.2'
+                                ip: '10.5.0.1'
                           config:
                             dhcp-client: false
         api_method: PUT
@@ -685,9 +685,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.0.2'
+                                  ip: '10.5.0.1'
                                   prefix-length: 24
-                                ip: '10.1.0.2'
+                                ip: '10.5.0.1'
                           config:
                             openconfig-if-ip-mdd-ext:nat:
                               nat-choice: 'inside'
@@ -707,9 +707,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.6.0.2'
+                                  ip: '10.6.0.1'
                                   prefix-length: 24
-                                ip: '10.6.0.2'
+                                ip: '10.6.0.1'
                           config:
                             openconfig-if-ip-mdd-ext:nat:
                               nat-choice: 'outside'
@@ -752,9 +752,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.1.0.2'
+                                  ip: '10.5.0.1'
                                   prefix-length: 24
-                                ip: '10.1.0.2'
+                                ip: '10.5.0.1'
                           config:
                             dhcp-client: false
         api_method: PUT
@@ -795,9 +795,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.105.105.105'
+                                  ip: '172.10.105.1'
                                   prefix-length: 24
-                                ip: '10.105.105.105'
+                                ip: '172.10.105.1'
                         openconfig-vlan:vlan:
                           config:
                             vlan-id: 105
@@ -810,9 +810,9 @@
                           addresses:
                             address:
                               - config:
-                                  ip: '10.106.106.106'
+                                  ip: '172.10.106.1'
                                   prefix-length: 24
-                                ip: '10.106.106.106'
+                                ip: '172.10.106.1'
                         openconfig-vlan:vlan:
                           config:
                             vlan-id: 106
@@ -825,11 +825,11 @@
           - "'+interface Port-channel10.105:' in changes"
           - "'+ description Sub interface 105:' in changes"
           - "'+ encapsulation dot1Q 105:' in changes"
-          - "'+ ip address 10.105.105.105 255.255.255.0:' in changes"
+          - "'+ ip address 172.10.105.1 255.255.255.0:' in changes"
           - "'+interface Port-channel10.106:' in changes"
           - "'+ description Sub interface 106:' in changes"
           - "'+ encapsulation dot1Q 106:' in changes"
-          - "'+ ip address 10.106.106.106 255.255.255.0:' in changes"
+          - "'+ ip address 172.10.106.1 255.255.255.0:' in changes"
 
 - hosts: nso
   connection: local
@@ -839,3 +839,64 @@
   run_once: true
   vars:
     rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- name: test interfaces
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test hsrp
+      tags:
+        - hsrp
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 6 HSRP'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  name: 'GigabitEthernet6'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
+                        index: 0
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.2'
+                                  openconfig-if-ip:prefix-length: 24
+                                ip: '10.6.0.2'
+                                openconfig-if-ip-mdd-ext:hsrp:
+                                  openconfig-if-ip-mdd-ext:hsrp-group:
+                                    - openconfig-if-ip-mdd-ext:config:
+                                        openconfig-if-ip-mdd-ext:preempt: true
+                                        openconfig-if-ip-mdd-ext:preempt-delay: 3500  # hsrp 5 preempt delay mi
+                                        openconfig-if-ip-mdd-ext:priority: 200  # hsrp 7 priority 200
+                                        openconfig-if-ip-mdd-ext:virtual-address:  # hsrp 3 ip 10.6.0.110
+                                          - '10.6.0.110'
+                                        openconfig-if-ip-mdd-ext:group-number: 3  # group number
+                                        openconfig-if-ip-mdd-ext:timers:
+                                          openconfig-if-ip-mdd-ext:hello-interval: 30
+                                          openconfig-if-ip-mdd-ext:holdtime: 100
+                                      group-number: 3  # group number
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet6:' in changes"
+          - "'+ standby 3 ip 10.6.0.110:' in changes"
+          - "'+ standby 3 preempt delay minimum 3500:' in changes"
+          - "'+ standby 3 priority 200:' in changes"
+          - "'+ standby 3 timers 30 100:' in changes"

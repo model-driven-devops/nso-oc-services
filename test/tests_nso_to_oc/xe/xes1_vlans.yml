@@ -36,7 +36,7 @@
         name: nso-ned-device-configure
       vars:
         api_path: config/tailf-ned-cisco-ios:vlan
-        script: ../../package_nso_to_oc/xe/xe_vlans.py
+        script: ../../../package_nso_to_oc/xe/xe_vlans.py
         content: |
           vlan:
             vlan-list:
