@@ -2,6 +2,9 @@
 import json
 import urllib3
 
+# Different device OS
+XE = "xe"
+XR = "xr"
 
 def nso_get_device_config(host: str, username: str, password: str, device: str) -> dict:
     """
