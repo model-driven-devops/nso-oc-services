@@ -14,6 +14,7 @@ nso_host.txt
 xe1_host.txt
 xeswitch1_host.txt
 xr1_host.txt
+nx1_host.txt
 *rollback.yaml
 # drop local scripts here that are only meant for your environment.
 misc-tools/

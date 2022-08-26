@@ -1,0 +1,125 @@
+---
+- hosts: localhost
+  gather_facts: no
+  environment:
+    NSO_DEVICE: xr1
+  vars:
+    nso_host: "{{ lookup('env', 'NSO_HOST') }}"
+    nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
+    nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
+    device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
+  tasks:
+    - name: Set up service config
+      tags:
+        - set_up
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: mdd:openconfig
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              config:
+                hostname: 'test'
+        api_method: PUT
+    - name: NSO configure hostname
+      tags:
+        - hostname
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config
+        content: |
+          config:
+            tailf-ned-cisco-ios-xr:hostname: test123
+        api_method: PATCH
+    - name: NSO configure banners
+      tags:
+        - banners
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:banner
+        content: |
+          tailf-ned-cisco-ios-xr:banner:
+            login: 
+              start-marker: ^
+              message: login-banner
+              end-marker: ^
+            motd: 
+              start-marker: ^
+              message: motd-banner
+              end-marker: ^
+        api_method: PATCH
+    - name: NSO configure domain name
+      tags:
+        - domain_name
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:domain
+        content: |
+          tailf-ned-cisco-ios-xr:domain:
+            name: test.com
+        api_method: PATCH
+    - name: NSO configure enable secret
+      tags:
+        - enable_secret
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:line
+        content: |
+          tailf-ned-cisco-ios-xr:line:
+            default:
+              secret:
+                secret: admin
+                type: 0
+        api_method: PATCH
+    - name: NSO configure console exec timeout
+      tags:
+        - exec_timeout
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:line
+        content: |
+          tailf-ned-cisco-ios-xr:line:
+            console:
+              exec-timeout:
+                minutes: 13
+                seconds: 20
+        api_method: PATCH
+    
+    - name: Execute NSO NED to OC script
+      script: ../../../package_nso_to_oc/xr/xr_system.py
+      args:
+        executable: python3
+      register: nso_to_oc_result
+    - debug:
+        msg: "{{nso_to_oc_result}}"
+    - name: NSO API call
+      uri:
+        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url_username: "{{ nso_username }}"
+        url_password: "{{ nso_password }}"
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: GET
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+      delegate_to: localhost
+      register: oc_result
+    - debug:
+        msg: "{{ oc_result }}"
+    - assert:
+        that:
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['hostname'] == 'test123'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['login-banner'] == 'login-banner'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['motd-banner'] == 'motd-banner'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['domain-name'] == 'test.com'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:enable-secret'] == 'VALUE_SPECIFIED_IN_NO_LOG_PARAMETER'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:console-exec-timeout-seconds'] == 800"
