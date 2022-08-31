@@ -32,7 +32,7 @@ if not os.environ.get("NSO_HOST", False):
 nso_host = os.environ.get("NSO_HOST")
 nso_username = os.environ.get("NSO_USERNAME", "ubuntu")
 nso_password = os.environ.get("NSO_PASSWORD", "admin")
-nso_device = os.environ.get("NSO_DEVICE", common.XE1)
+nso_device = os.environ.get("NSO_DEVICE", "xe1")
 device_os = os.environ.get("DEVICE_OS", common.XE)
 test = os.environ.get("TEST", "False")
 

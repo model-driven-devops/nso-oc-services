@@ -3,6 +3,7 @@
   gather_facts: no
   environment:
     NSO_DEVICE: xr1
+    DEVICE_OS: xr
   vars:
     nso_host: "{{ lookup('env', 'NSO_HOST') }}"
     nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
