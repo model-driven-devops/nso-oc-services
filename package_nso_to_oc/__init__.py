@@ -25,7 +25,6 @@ import os
 from . import common
 from .xe import xe_system
 
-
 if not os.environ.get("NSO_HOST", False):
     print("environment variable NSO_HOST must be set")
     exit()
@@ -34,8 +33,11 @@ nso_host = os.environ.get("NSO_HOST")
 nso_username = os.environ.get("NSO_USERNAME", "ubuntu")
 nso_password = os.environ.get("NSO_PASSWORD", "admin")
 nso_device = os.environ.get("NSO_DEVICE", "xe1")
+device_os = os.environ.get("DEVICE_OS", common.XE)
 test = os.environ.get("TEST", "False")
 
 config_before_dict = common.nso_get_device_config(nso_host, nso_username, nso_password, nso_device)
 configs_leftover = copy.deepcopy(config_before_dict)
-interface_ip_name_dict = common.xe_system_get_interface_ip_address(config_before_dict)
+
+if device_os == common.XE:
+    interface_ip_name_dict = common.xe_system_get_interface_ip_address(config_before_dict)
