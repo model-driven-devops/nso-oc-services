@@ -294,6 +294,103 @@ def xe_configure_ipv4_interface(nso_before_interface: dict, nso_leftover_interfa
             del nso_leftover_interface["ip"]["nat"]["outside"]
 
 
+def xe_configure_tunnel_ipv4_interface(nso_before_interface: dict, nso_leftover_interface: dict,
+                                openconfig_interface: dict) -> None:
+    """Tunnel IPv4 interface configurations"""
+    oc_ipv4_structure = {"openconfig-if-tunnel:ipv4": {"openconfig-if-tunnel:addresses": {"openconfig-if-tunnel:address": []},
+                                                   "openconfig-if-tunnel:config": {}}}
+    if (nso_before_interface.get("ip") and not nso_before_interface.get("ip", {}).get("no-address")) or (
+            nso_before_interface.get("vrrp")):
+        openconfig_interface.update(oc_ipv4_structure)
+        ipv4_address_structure = {}
+        if (nso_before_interface["ip"].get(
+                "address", {}).get("primary", {}).get("address") and nso_before_interface["ip"].get("address", {}).get(
+            "primary", {}).get("mask")):
+            prefix = ipaddress.IPv4Network(
+                f'{nso_before_interface["ip"].get("address", {}).get("primary", {}).get("address")}/{nso_before_interface["ip"].get("address", {}).get("primary", {}).get("mask")}',
+                strict=False)
+            mask = prefix.prefixlen
+            ip = nso_before_interface["ip"].get("address", {}).get("primary", {}).get("address")
+            del nso_leftover_interface["ip"]["address"]["primary"]
+            ipv4_address_structure.update({"openconfig-if-tunnel:ip": ip,
+                                           "openconfig-if-tunnel:config": {"openconfig-if-tunnel:ip": ip,
+                                                                       "openconfig-if-tunnel:prefix-length": mask}})
+        if len(ipv4_address_structure) > 0:
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:addresses"][
+                "openconfig-if-tunnel:address"].append(ipv4_address_structure)
+        if type(nso_before_interface["ip"].get(
+                "address", {}).get("dhcp", "")) is dict:
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"][
+                "openconfig-if-tunnel:dhcp-client"] = True
+            del \
+                nso_before_interface["ip"]["address"]
+        else:
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"][
+                "openconfig-if-tunnel:dhcp-client"] = False
+        # VRRP
+        if nso_before_interface.get("vrrp"):
+            vrrp_dict = xe_configure_vrrp_interfaces(nso_before_interface, nso_leftover_interface)
+            ipv4_address_structure.update(vrrp_dict)
+        # HSRP
+        if nso_before_interface.get("standby", {}).get("standby-list"):
+            hsrp_dict = xe_configure_hsrp_interfaces(nso_before_interface, nso_leftover_interface)
+            ipv4_address_structure.update(hsrp_dict)
+        # IP MTU
+        if nso_before_interface.get("ip", {}).get("mtu"):
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"][
+                "openconfig-if-tunnel:mtu"] = nso_before_interface.get("ip", {}).get("mtu")
+
+            del nso_leftover_interface["ip"]["mtu"]
+        # adjust TCP MSS
+        if nso_before_interface.get("ip", {}).get("tcp", {}).get("adjust-mss"):
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"][
+                "openconfig-if-ip-mdd-ext:tcp-adjust-mss"] = nso_before_interface["ip"]["tcp"]["adjust-mss"]
+
+            del nso_leftover_interface["ip"]["tcp"]["adjust-mss"]
+        # IP redirects
+        if nso_before_interface.get("ip", {}).get("redirects"):
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"][
+                "openconfig-if-ip-mdd-ext:redirects"] = True
+            del nso_leftover_interface["ip"]["redirects"]
+        elif nso_before_interface.get("ip", {}).get("redirects") is False:
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"][
+                "openconfig-if-ip-mdd-ext:redirects"] = False
+            del nso_leftover_interface["ip"]["redirects"]
+        # IP unreachables
+        if nso_before_interface.get("ip", {}).get("unreachables"):
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"][
+                "openconfig-if-ip-mdd-ext:unreachables"] = True
+            del nso_leftover_interface["ip"]["unreachables"]
+        elif nso_before_interface.get("ip", {}).get(
+                "unreachables") is False:
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"][
+                "openconfig-if-ip-mdd-ext:unreachables"] = False
+            del nso_leftover_interface["ip"]["unreachables"]
+        # Proxy-ARP
+        if nso_before_interface.get("ip", {}).get("proxy-arp"):
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:proxy-arp"] = {
+                "openconfig-if-tunnel:config": {"openconfig-if-tunnel:mode": "REMOTE_ONLY"}}
+            del nso_leftover_interface["ip"]["proxy-arp"]
+        elif nso_before_interface.get("ip", {}).get("proxy-arp") is False:
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:proxy-arp"] = {
+                "openconfig-if-tunnel:config": {"openconfig-if-tunnel:mode": "DISABLE"}}
+            del nso_leftover_interface["ip"]["proxy-arp"]
+        # reply-mask
+        if nso_before_interface.get("ip", {}).get("mask-reply"):
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"][
+                "openconfig-if-ip-mdd-ext:mask-reply"] = True
+            del nso_leftover_interface["ip"]["mask-reply"]
+        # NAT interface
+        if nso_before_interface.get("ip", {}).get("nat", {}).get("inside"):
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"]["openconfig-if-ip-mdd-ext:nat"] = {
+                "openconfig-if-ip-mdd-ext:nat-choice": "inside"}
+            del nso_leftover_interface["ip"]["nat"]["inside"]
+        elif nso_before_interface.get("ip", {}).get("nat", {}).get("outside"):
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"]["openconfig-if-ip-mdd-ext:nat"] = {
+                "openconfig-if-ip-mdd-ext:nat-choice": "outside"}
+            del nso_leftover_interface["ip"]["nat"]["outside"]
+
+
 def configure_software_loopback(config_before: dict, config_leftover: dict, interface_data: dict) -> None:
     """Configure Loopbacks"""
     for interface_directory in interface_data.values():
@@ -420,8 +517,7 @@ def configure_software_tunnel(config_before: dict, config_leftover: dict, interf
                           interface_directory["oc_interface_index"], "openconfig-if-tunnel:tunnel"]
         openconfig_interface_tunnel = return_nested_dict(openconfig_interfaces, path_oc_tunnel)
 
-        # TODO: Fix prefix issue
-        # xe_configure_ipv4_interface(nso_before_interface, nso_leftover_interface, openconfig_interface_tunnel)
+        xe_configure_tunnel_ipv4_interface(nso_before_interface, nso_leftover_interface, openconfig_interface_tunnel)
 
         # source IP
         if nso_before_interface.get("tunnel", {}).get("source"):

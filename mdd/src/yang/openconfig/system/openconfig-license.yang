@@ -145,17 +145,6 @@ module openconfig-license {
 
           uses license-config;
         }
-
-        container state {
-
-          config false;
-
-          description
-            "Operational state data for license.";
-
-          uses license-config;
-          uses license-state;
-        }
       }
     }
 

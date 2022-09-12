@@ -66,71 +66,6 @@ module openconfig-messages {
     }
   }
 
-  grouping messages-state {
-    description
-      "Operational state data for Syslog messages.";
-
-    container message {
-      oc-ext:telemetry-atomic;
-      config false;
-      description
-        "Syslog messages the client is Subscribing to. This is all
-        messages currently configured to be sent according to
-        syslog-severity.";
-      reference
-        "IETF RFC 5424 - The Syslog Protocol";
-
-      // Decide if it is OK to include ALL in this leaf.
-      leaf msg {
-        type string;
-        description
-          "Message payload. If other leafs within this container not
-          supported, this leaf MAY include the entire message,
-          inclding pri, procid, app-name etc..";
-      }
-
-      leaf priority {
-        type uint8;
-        description
-          "The Priority value (PRIVAL) represents both the
-          Facility and Severity.";
-        reference
-          "IETF RFC 5424, Section 6.2.1";
-        }
-
-      leaf app-name {
-        type string;
-        description
-          "The APP-NAME field SHOULD identify the device or
-          application that originated the message.";
-        reference
-          "IETF RFC 5424, Section 6.2.5.";
-      }
-
-      leaf procid {
-        type string;
-        description
-          "PROCID is a value that is included in the message, having
-          no interoperable meaning, except that a change in the value
-          indicates there has been a discontinuity in syslog
-          reporting.";
-        reference
-          "IETF RFC 5424, Section 6.2.6.";
-        }
-
-      leaf msgid {
-        type string;
-        description
-          "The MSGID SHOULD identify the type of message. For
-          example, a firewall might use the MSGID 'TCPIN' for
-          incoming TCP traffic and the MSGID 'TCPOUT' for outgoing
-          TCP traffic.";
-        reference
-          "IETF RFC 5424, Section 6.2.7.";
-      }
-    }
-  }
-
   grouping debug-messages-config {
     description
       "Configuration data for enabling debug messages.";
@@ -180,13 +115,6 @@ module openconfig-messages {
 
           uses debug-messages-config;
         }
-
-        container state {
-          config false;
-          description
-            "Operational state data for enabled debugs.";
-        uses debug-messages-config;
-        }
       }
     }
   }
@@ -204,15 +132,6 @@ module openconfig-messages {
           "Configuration data for Syslog messages.";
 
         uses messages-config;
-      }
-
-      container state {
-        config false;
-        description
-          "Operational state data for a Syslog messages.";
-
-        uses messages-config;
-        uses messages-state;
       }
     uses debug-messages-top;
     }

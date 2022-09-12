@@ -89,11 +89,6 @@ module openconfig-system-terminal {
     }
   }
 
-  grouping system-terminal-common-state {
-    description
-      "Common operational state data for terminal services";
-  }
-
   grouping system-terminal-common-top {
     description
       "Top-level grouping for common terminal service data";
@@ -107,17 +102,6 @@ module openconfig-system-terminal {
           "Configuration data for terminal services";
 
         uses system-terminal-common-config;
-      }
-
-      container state {
-
-        config false;
-
-        description
-          "Operational state data ";
-
-        uses system-terminal-common-config;
-        uses system-terminal-common-state;
       }
     }
   }
@@ -157,11 +141,6 @@ module openconfig-system-terminal {
     uses system-terminal-common-config;
   }
 
-  grouping system-ssh-server-state {
-    description
-      "Operational state data for ssh server";
-  }
-
   grouping system-ssh-server-top {
     description
       "Top-level grouping for ssh server data";
@@ -175,17 +154,6 @@ module openconfig-system-terminal {
           "Configuration data for the system ssh server";
 
         uses system-ssh-server-config;
-      }
-
-      container state {
-
-        config false;
-
-        description
-          "Operational state data for the system ssh server";
-
-        uses system-ssh-server-config;
-        uses system-ssh-server-state;
       }
     }
   }
@@ -205,11 +173,6 @@ module openconfig-system-terminal {
 
   }
 
-  grouping system-telnet-server-state {
-    description
-      "Operational state data for telnet server";
-  }
-
   grouping system-telnet-server-top {
     description
       "Top-level grouping for telnet server ";
@@ -223,17 +186,6 @@ module openconfig-system-terminal {
           "Configuration data for telnet";
 
         uses system-telnet-server-config;
-      }
-
-      container state {
-
-        config false;
-
-        description
-          "Operational state data for telnet";
-
-        uses system-telnet-server-config;
-        uses system-telnet-server-state;
       }
     }
   }

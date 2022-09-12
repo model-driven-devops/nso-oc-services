@@ -178,11 +178,6 @@ module openconfig-system {
     }
   }
 
-  grouping system-clock-state {
-    description
-      "Operational state data for system-wide clock configuration";
-  }
-
   grouping system-clock-top {
     description
       "Top-level grouping for system-wide clock configuration";
@@ -196,17 +191,6 @@ module openconfig-system {
           "Configuration data for system clock";
 
         uses system-clock-config;
-      }
-
-      container state {
-
-        config false;
-
-        description
-          "Operational state data for system clock";
-
-        uses system-clock-config;
-        uses system-clock-state;
       }
     }
   }
@@ -245,44 +229,17 @@ module openconfig-system {
     }
   }
 
-  grouping system-global-state {
-    description
-      "Global operational state data for the system";
-
-    leaf current-datetime {
-        type oc-yang:date-and-time;
-        description
-          "The current system date and time.";
-    }
-
-    leaf boot-time {
-        type oc-types:timeticks64;
-        units "nanoseconds";
-        description
-          "This timestamp indicates the time that the system was last
-          restarted.  The value is the timestamp in nanoseconds relative
-          to the Unix Epoch (Jan 1, 1970 00:00:00 UTC).";
-    }
-
-  }
-
-  grouping system-dns-config {
-    description "DNS / resolver related configuration data";
-
-    leaf-list search {
-      type oc-inet:domain-name;
-      ordered-by user;
-      description
-        "An ordered list of domains to search when resolving
-        a host name.";
-    }
-  }
-
-  grouping system-dns-state {
-    description
-      "Operational state data for system DNS resolver";
-
-  }
+//  grouping system-dns-config {
+//    description "DNS / resolver related configuration data";
+//
+//    leaf-list search {
+//      type oc-inet:domain-name;
+//      ordered-by user;
+//      description
+//        "An ordered list of domains to search when resolving
+//        a host name.";
+//    }
+//  }
 
   grouping system-dns-servers-config {
     description
@@ -341,11 +298,6 @@ module openconfig-system {
     }
   }
 
-  grouping system-dns-static-state {
-    description
-      "Operational state data for static host entries";
-  }
-
   grouping system-dns-static-top {
     description
       "Top-level grouping for static DNS host entries";
@@ -373,25 +325,8 @@ module openconfig-system {
 
           uses system-dns-static-config;
         }
-
-        container state {
-
-          config false;
-
-          description
-            "Operational state data for static host entries";
-
-          uses system-dns-static-config;
-          uses system-dns-static-state;
-        }
       }
     }
-  }
-
-  grouping system-dns-servers-state {
-    description
-      "Operational state data for DNS resolvers";
-
   }
 
   grouping system-dns-servers-top {
@@ -435,18 +370,6 @@ module openconfig-system {
 
           uses system-dns-servers-config;
         }
-
-        container state {
-
-          config false;
-
-          description
-            "Operational state data for each DNS resolver";
-
-          uses system-dns-servers-config;
-          uses system-dns-servers-state;
-        }
-
       }
     }
   }
@@ -464,19 +387,7 @@ module openconfig-system {
         description
           "Configuration data for the DNS resolver";
 
-        uses system-dns-config;
-
-      }
-
-      container state {
-
-        config false;
-
-        description
-          "Operational state data for the DNS resolver";
-
-        uses system-dns-config;
-        uses system-dns-state;
+//        uses system-dns-config;
 
       }
 
@@ -554,73 +465,6 @@ module openconfig-system {
     }
   }
 
-  grouping system-ntp-server-state {
-    description
-      "Operational state data for NTP servers";
-
-    leaf stratum {
-      type uint8;
-      description
-        "Indicates the level of the server in the NTP hierarchy. As
-        stratum number increases, the accuracy is degraded.  Primary
-        servers are stratum while a maximum value of 16 indicates
-        unsynchronized.  The values have the following specific
-        semantics:
-
-        | 0      | unspecified or invalid
-        | 1      | primary server (e.g., equipped with a GPS receiver)
-        | 2-15   | secondary server (via NTP)
-        | 16     | unsynchronized
-        | 17-255 | reserved";
-      reference
-        "RFC 5905 - Network Time Protocol Version 4: Protocol and
-        Algorithms Specification";
-    }
-
-    leaf root-delay {
-      type uint32;
-      // TODO: reconsider units for these values -- the spec defines
-      // rootdelay and rootdisperson as 2 16-bit integers for seconds
-      // and fractional seconds, respectively.  This gives a
-      // precision of ~15 us (2^-16).  Using milliseconds here based
-      // on what implementations typically provide and likely lack
-      // of utility for less than millisecond precision with NTP
-      // time sync.
-      units "milliseconds";
-      description
-        "The round-trip delay to the server, in milliseconds.";
-      reference
-        "RFC 5905 - Network Time Protocol Version 4: Protocol and
-        Algorithms Specification";
-    }
-
-    leaf root-dispersion {
-      type uint64;
-      units "milliseconds";
-      description
-        "Dispersion (epsilon) represents the maximum error inherent
-        in the measurement";
-      reference
-        "RFC 5905 - Network Time Protocol Version 4: Protocol and
-        Algorithms Specification";
-    }
-
-    leaf offset {
-      type uint64;
-      units "milliseconds";
-      description
-        "Estimate of the current time offset from the peer.  This is
-        the time difference between the local and reference clock.";
-    }
-
-    leaf poll-interval {
-      type uint32;
-      units "seconds";
-      description
-        "Polling interval of the peer";
-    }
-  }
-
   grouping system-ntp-server-top {
     description
       "Top-level grouping for the list of NTP servers";
@@ -652,18 +496,6 @@ module openconfig-system {
 
           uses system-ntp-server-config;
         }
-
-        container state {
-
-          config false;
-
-          description
-            "Operational state data for an NTP server.";
-
-          uses system-ntp-server-config;
-          uses system-ntp-server-state;
-        }
-
       }
     }
   }
@@ -695,11 +527,6 @@ module openconfig-system {
     }
   }
 
-  grouping system-ntp-auth-keys-state {
-    description
-      "Operational state data for NTP auth key data";
-  }
-
   grouping system-ntp-auth-keys-top {
     description
       "Top-level grouping for NTP auth key data";
@@ -726,17 +553,6 @@ module openconfig-system {
             "Configuration data for NTP auth keys";
 
           uses system-ntp-auth-keys-config;
-        }
-
-        container state {
-
-          config false;
-
-          description
-            "Operational state data for NTP auth keys";
-
-          uses system-ntp-auth-keys-config;
-          uses system-ntp-auth-keys-state;
         }
       }
     }
@@ -771,18 +587,6 @@ module openconfig-system {
     }
   }
 
-  grouping system-ntp-state {
-    description
-      "Operational state data for system-wide NTP operation.";
-
-    leaf auth-mismatch {
-      type oc-yang:counter64;
-      description
-        "Count of the number of NTP packets received that were not
-        processed due to authentication mismatch.";
-    }
-  }
-
   grouping system-ntp-top {
     description
       "Top-level grouping for configuration and state data for NTP";
@@ -797,15 +601,6 @@ module openconfig-system {
 
         uses system-ntp-config;
       }
-
-      container state {
-        config false;
-        description
-          "Operational state data for NTP services.";
-
-        uses system-ntp-config;
-        uses system-ntp-state;
-      }
       uses system-ntp-auth-keys-top;
       uses system-ntp-server-top;
     }
@@ -814,27 +609,6 @@ module openconfig-system {
   grouping system-memory-config {
     description
       "Configuration data for system memory";
-  }
-
-  grouping system-memory-state {
-    description
-      "Operational state data for system memory";
-
-    leaf physical {
-      type uint64;
-      units bytes;
-      // TODO: consider making units in megabytes
-      description
-        "Reports the total physical memory available on the
-        system.";
-    }
-
-    leaf reserved {
-      type uint64;
-      units bytes;
-      description
-        "Memory reserved for system use";
-    }
   }
 
   grouping system-memory-top {
@@ -851,94 +625,6 @@ module openconfig-system {
 
         uses system-memory-config;
       }
-
-      container state {
-        config false;
-        description
-          "Operational state data for system memory";
-
-        uses system-memory-config;
-        uses system-memory-state;
-      }
-    }
-  }
-
-  grouping system-cpu-state {
-    description
-      "Operational state data for the system CPU(s)";
-
-    leaf index {
-      type union {
-        type enumeration {
-          enum ALL {
-            description
-              "Index value indicating all CPUs in the system";
-          }
-        }
-        type uint32;
-      }
-      description
-        "The CPU index for each processor core on the system.  On a
-        single-core system, the index should be zero.  The ALL
-        index signifies an aggregation of the CPU utilization
-        statistics over all cores in the system.";
-    }
-
-    container total {
-      description
-        "Total CPU utilization.";
-
-      uses oc-types:avg-min-max-instant-stats-pct;
-    }
-
-    container user {
-      description
-        "Percentage of CPU time spent running in user space.";
-
-      uses oc-types:avg-min-max-instant-stats-pct;
-    }
-
-    container kernel {
-      description
-        "Percentage of CPU time spent running in kernel space.";
-
-      uses oc-types:avg-min-max-instant-stats-pct;
-    }
-
-    container nice {
-      description
-        "Percentage of CPU time spent running low-priority (niced)
-        user processes.";
-
-      uses oc-types:avg-min-max-instant-stats-pct;
-    }
-
-    container idle {
-      description
-        "Percentage of CPU time spent idle.";
-
-      uses oc-types:avg-min-max-instant-stats-pct;
-    }
-
-    container wait {
-      description
-        "Percentage of CPU time spent waiting for I/O.";
-
-      uses oc-types:avg-min-max-instant-stats-pct;
-    }
-
-    container hardware-interrupt {
-      description
-        "Percentage of CPU time spent servicing hardware interrupts.";
-
-      uses oc-types:avg-min-max-instant-stats-pct;
-    }
-
-    container software-interrupt {
-      description
-        "Percentage of CPU time spent servicing software interrupts";
-
-      uses oc-types:avg-min-max-instant-stats-pct;
     }
   }
 
@@ -967,14 +653,6 @@ module openconfig-system {
           description
             "Reference to list key";
         }
-
-        container state {
-
-          description
-            "Operational state data for the system CPU(s)";
-
-          uses system-cpu-state;
-        }
       }
     }
   }
@@ -995,27 +673,19 @@ module openconfig-system {
 
       }
 
-      container state {
-        config false;
-        description "Global operational state data for the system";
-
-        uses system-global-config;
-        uses system-global-state;
-      }
-
       uses system-clock-top;
       uses system-dns-top;
       uses system-ntp-top;
       uses oc-sys-term:system-ssh-server-top;
-      uses oc-sys-term:system-telnet-server-top;
+//      uses oc-sys-term:system-telnet-server-top;
       uses oc-log:logging-top;
       uses oc-aaa:aaa-top;
-      uses system-memory-top;
-      uses system-cpu-top;
-      uses oc-proc:procmon-processes-top;
-      uses oc-alarms:alarms-top;
-      uses oc-messages:messages-top;
-      uses oc-license:license-top;
+//      uses system-memory-top;
+//      uses system-cpu-top;
+//      uses oc-proc:procmon-processes-top;
+//      uses oc-alarms:alarms-top;
+//      uses oc-messages:messages-top;
+//      uses oc-license:license-top;
     }
   }
 

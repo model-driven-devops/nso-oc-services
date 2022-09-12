@@ -15,7 +15,7 @@ module openconfig-mpls {
   import openconfig-types { prefix oc-types; }
   import openconfig-interfaces { prefix oc-if; }
   import openconfig-extensions { prefix oc-ext; }
-  import openconfig-segment-routing { prefix oc-sr; }
+//  import openconfig-segment-routing { prefix oc-sr; }
 
   // include submodules
   include openconfig-mpls-te;
@@ -726,7 +726,7 @@ module openconfig-mpls {
 
         uses oc-rsvp:rsvp-global;
         uses oc-ldp:ldp-global;
-        uses oc-sr:sr-mpls-top;
+//        uses oc-sr:sr-mpls-top;
       }
 
       container lsps {

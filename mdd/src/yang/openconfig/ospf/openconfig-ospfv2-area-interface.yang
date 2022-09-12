@@ -108,25 +108,25 @@ submodule openconfig-ospfv2-area-interface {
         router";
     }
 
-    leaf multi-area-adjacency-primary {
-      type boolean;
-      //default true;
-      description
-        "When the specified interface is included in more than one
-        area's configuration, this leaf marks whether the area should
-        be considered the primary (when the value is true). In the
-        case that this value is false, the area is considered a
-        secondary area.";
-    }
+//    leaf multi-area-adjacency-primary {
+//      type boolean;
+//      //default true;
+//      description
+//        "When the specified interface is included in more than one
+//        area's configuration, this leaf marks whether the area should
+//        be considered the primary (when the value is true). In the
+//        case that this value is false, the area is considered a
+//        secondary area.";
+//    }
 
-    leaf authentication-type {
-      type string;
-      // rjs TODO: discuss with bogdanov@ what the approach for auth
-      // links should be.
-      description
-        "The type of authentication that should be used on this
-        interface";
-    }
+//    leaf authentication-type {
+//      type string;
+//      // rjs TODO: discuss with bogdanov@ what the approach for auth
+//      // links should be.
+//      description
+//        "The type of authentication that should be used on this
+//        interface";
+//    }
 
     leaf metric {
       type oc-ospf-types:ospf-metric;
@@ -142,15 +142,15 @@ submodule openconfig-ospfv2-area-interface {
         not be established over the interface";
     }
 
-    leaf hide-network {
-      type boolean;
-      description
-        "When this leaf is set to true, the network connected to
-        the interface should be hidden from OSPFv2 advertisements
-        per the procedure described in RFC6860.";
-      reference
-        "RFC6860 - Hiding Transit-Only Networks in OSFF";
-    }
+//    leaf hide-network {
+//      type boolean;
+//      description
+//        "When this leaf is set to true, the network connected to
+//        the interface should be hidden from OSPFv2 advertisements
+//        per the procedure described in RFC6860.";
+//      reference
+//        "RFC6860 - Hiding Transit-Only Networks in OSFF";
+//    }
   }
 
   grouping ospfv2-area-interface-timers-config {
@@ -188,13 +188,13 @@ submodule openconfig-ospfv2-area-interface {
     description
       "Configuration parameters relating to MPLS extensions for OSPF";
 
-    leaf traffic-engineering-metric {
-      type uint32;
-      description
-        "A link metric that should only be considered for traffic
-        engineering purposes.";
-      reference "RFC3630, §2.5.5";
-    }
+//    leaf traffic-engineering-metric {
+//      type uint32;
+//      description
+//        "A link metric that should only be considered for traffic
+//        engineering purposes.";
+//      reference "RFC3630, §2.5.5";
+//    }
   }
 
   grouping ospfv2-area-interface-neighbor-config {
@@ -217,82 +217,82 @@ submodule openconfig-ospfv2-area-interface {
     }
   }
 
-  grouping ospfv2-area-interface-neighbor-state {
-    description
-      "Operational state parameters relating an individual neighbor
-      system on an interface within an OSPF area";
-
-    leaf priority {
-      type uint8;
-      description
-        "The remote system's priority to become the designated
-        router";
-    }
-
-    leaf dead-time {
-      type oc-types:timeticks64;
-      description
-        "The time at which this neighbor's adjacency will be
-        considered dead. The value is expressed relative to
-        the Unix Epoch (Jan 1, 1970 00:00:00 UTC).";
-    }
-
-    leaf designated-router {
-      type yang:dotted-quad;
-      description
-        "The designated router for the adjacency. This device
-        advertises the Network LSA for broadcast and NBMA networks.";
-    }
-
-    leaf backup-designated-router {
-      type yang:dotted-quad;
-      description
-        "The backup designated router for the adjacency.";
-    }
-
-    leaf optional-capabilities {
-      // rjs TODO: should this be anything more than the hex-string
-      // this is currently what is shown in IOS/JUNOS
-      type yang:hex-string;
-      description
-        "The optional capabilities field received in the Hello
-        message from the neighbor";
-    }
-
-    leaf last-established-time {
-      type oc-types:timeticks64;
-      // rjs TODO: check implementations - is FULL considered 'up'
-      // since the adjacency is probably up since ExStart
-      description
-        "The time at which the adjacency was last established with
-        the neighbor. That is to say the time at which the
-        adjacency last transitioned into the FULL state. The
-        value is expressed relative to the Unix Epoch (Jan 1 1970
-        00:00:00 UTC).";
-    }
-
-    leaf adjacency-state {
-      type identityref {
-        base "oc-ospf-types:OSPF_NEIGHBOR_STATE";
-      }
-      description
-        "The state of the adjacency with the neighbor.";
-    }
-
-    leaf state-changes {
-      type uint32;
-      description
-        "The number of transitions out of the FULL state that this
-        neighbor has been through";
-    }
-
-    leaf retranmission-queue-length {
-      type uint32;
-      description
-        "The number of LSAs that are currently in the queue to be
-        retransmitted to the neighbor";
-    }
-  }
+//  grouping ospfv2-area-interface-neighbor-state {
+//    description
+//      "Operational state parameters relating an individual neighbor
+//      system on an interface within an OSPF area";
+//
+//    leaf priority {
+//      type uint8;
+//      description
+//        "The remote system's priority to become the designated
+//        router";
+//    }
+//
+//    leaf dead-time {
+//      type oc-types:timeticks64;
+//      description
+//        "The time at which this neighbor's adjacency will be
+//        considered dead. The value is expressed relative to
+//        the Unix Epoch (Jan 1, 1970 00:00:00 UTC).";
+//    }
+//
+//    leaf designated-router {
+//      type yang:dotted-quad;
+//      description
+//        "The designated router for the adjacency. This device
+//        advertises the Network LSA for broadcast and NBMA networks.";
+//    }
+//
+//    leaf backup-designated-router {
+//      type yang:dotted-quad;
+//      description
+//        "The backup designated router for the adjacency.";
+//    }
+//
+//    leaf optional-capabilities {
+//      // rjs TODO: should this be anything more than the hex-string
+//      // this is currently what is shown in IOS/JUNOS
+//      type yang:hex-string;
+//      description
+//        "The optional capabilities field received in the Hello
+//        message from the neighbor";
+//    }
+//
+//    leaf last-established-time {
+//      type oc-types:timeticks64;
+//      // rjs TODO: check implementations - is FULL considered 'up'
+//      // since the adjacency is probably up since ExStart
+//      description
+//        "The time at which the adjacency was last established with
+//        the neighbor. That is to say the time at which the
+//        adjacency last transitioned into the FULL state. The
+//        value is expressed relative to the Unix Epoch (Jan 1 1970
+//        00:00:00 UTC).";
+//    }
+//
+//    leaf adjacency-state {
+//      type identityref {
+//        base "oc-ospf-types:OSPF_NEIGHBOR_STATE";
+//      }
+//      description
+//        "The state of the adjacency with the neighbor.";
+//    }
+//
+//    leaf state-changes {
+//      type uint32;
+//      description
+//        "The number of transitions out of the FULL state that this
+//        neighbor has been through";
+//    }
+//
+//    leaf retranmission-queue-length {
+//      type uint32;
+//      description
+//        "The number of LSAs that are currently in the queue to be
+//        retransmitted to the neighbor";
+//    }
+//  }
 
   grouping ospfv2-area-interface-lsa-filter-config {
     description
@@ -309,21 +309,6 @@ submodule openconfig-ospfv2-area-interface {
 
     // NB: this container can be augmented to add additional
     // filtering options which exist in some implementations.
-  }
-
-  grouping ospfv2-area-interface-mpls-igp-ldp-sync-state {
-    description
-      "Operational state parameters relating to MPLS LDP/IGP
-      synchronization on a per-neighbor basis";
-
-    leaf synchronized {
-      type boolean;
-      description
-        "When the value of this leaf is set to true, the
-        LDP neighbors reachable via this interface are considered
-        to be synchronized, and hence the link is considered
-        usable by the IGP.";
-    }
   }
 
   grouping ospfv2-area-interfaces-structure {
@@ -358,14 +343,6 @@ submodule openconfig-ospfv2-area-interface {
           uses ospfv2-area-interface-config;
         }
 
-        container state {
-          config false;
-          description
-            "Operational state parameters for the interface on which
-            OSPFv2 is enabled";
-          uses ospfv2-area-interface-config;
-        }
-
         uses oc-if:interface-ref;
 
         container timers {
@@ -376,15 +353,6 @@ submodule openconfig-ospfv2-area-interface {
             description
               "Configuration parameters for OSPFv2 timers on the
               interface";
-            uses ospfv2-area-interface-timers-config;
-          }
-
-          container state {
-            config false;
-            description
-              "Operational state parameters for OSPFv2 timers on
-              the interface";
-
             uses ospfv2-area-interface-timers-config;
           }
         }
@@ -401,14 +369,6 @@ submodule openconfig-ospfv2-area-interface {
             uses ospfv2-area-interface-mpls-config;
           }
 
-          container state {
-            config false;
-            description
-              "Operational state for OSPFv2 extensions relating to
-              MPLS for the interface";
-            uses ospfv2-area-interface-mpls-config;
-          }
-
           container igp-ldp-sync {
             description
               "OSPFv2 parameters relating to LDP/IGP synchronization";
@@ -418,15 +378,6 @@ submodule openconfig-ospfv2-area-interface {
                 "Configuration parameters relating to LDP/IG
                 synchronization.";
               uses ospfv2-common-mpls-igp-ldp-sync-config;
-            }
-
-            container state {
-              config false;
-              description
-                "Operational state variables relating to LDP/IGP
-                synchronization";
-              uses ospfv2-common-mpls-igp-ldp-sync-config;
-              uses ospfv2-area-interface-mpls-igp-ldp-sync-state;
             }
           }
         }
@@ -440,14 +391,6 @@ submodule openconfig-ospfv2-area-interface {
             description
               "Configuration parameters relating to filtering LSAs
               on the specified interface.";
-            uses ospfv2-area-interface-lsa-filter-config;
-          }
-
-          container state {
-            config false;
-            description
-              "Operational state parameters relating to filtering
-              LSAs on the specified interface";
             uses ospfv2-area-interface-lsa-filter-config;
           }
         }
@@ -477,15 +420,6 @@ submodule openconfig-ospfv2-area-interface {
                 "Configuration parameters relating to the adjacent
                 system";
               uses ospfv2-area-interface-neighbor-config;
-            }
-
-            container state {
-              config false;
-              description
-                "Operational state parameters relating to the adjacent
-                system";
-              uses ospfv2-area-interface-neighbor-config;
-              uses ospfv2-area-interface-neighbor-state;
             }
           }
         }

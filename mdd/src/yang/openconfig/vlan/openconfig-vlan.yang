@@ -110,13 +110,6 @@ module openconfig-vlan {
 
   }
 
-  grouping vlan-state {
-    description "State variables for VLANs";
-
-    // placeholder
-
-  }
-
   grouping vlan-tpid-config {
     description
       "TPID configuration for dot1q-enabled interfaces";
@@ -129,33 +122,6 @@ module openconfig-vlan {
       description
         "Optionally set the tag protocol identifier field (TPID) that
         is accepted on the VLAN";
-    }
-  }
-
-  grouping vlan-tpid-state {
-    description
-      "TPID opstate for dot1q-enabled interfaces";
-
-    // placeholder
-
-  }
-
-  grouping vlan-members-state {
-    description
-      "List of interfaces / subinterfaces belonging to the VLAN.";
-
-    container members {
-      description
-        "Enclosing container for list of member interfaces";
-
-      list member {
-        config false;
-        description
-          "List of references to interfaces / subinterfaces
-          associated with the VLAN.";
-
-        uses oc-if:base-interface-ref-state;
-      }
     }
   }
 
@@ -214,15 +180,6 @@ module openconfig-vlan {
     }
   }
 
-  grouping vlan-switched-state {
-    description
-      "VLAN related operational state that is part of Ethernet
-      interface state data";
-
-    //TODO: placeholder for operational state related to VLANs
-    //on the physical interface
-  }
-
   grouping vlan-switched-top {
     description
       "Top-level grouping for VLAN data associated with an
@@ -238,15 +195,6 @@ module openconfig-vlan {
           description "Configuration parameters for VLANs";
 
           uses vlan-switched-config;
-      }
-
-      container state {
-
-        config false;
-        description "State variables for VLANs";
-
-        uses vlan-switched-config;
-        uses vlan-switched-state;
       }
     }
   }
@@ -285,15 +233,6 @@ module openconfig-vlan {
       // and also allow implementors to adequately use deviations to model
       // their capabilities.
     }
-  }
-
-  grouping vlan-logical-state {
-    description
-      "VLAN related operational state that is part of logical
-      interface state data";
-
-    //TODO: placeholder to add VLAN-specific state variables on
-    //the subinterface
   }
 
   grouping vlan-logical-single-tagged-config {
@@ -511,13 +450,6 @@ module openconfig-vlan {
              VLAN identifier.";
           uses vlan-logical-single-tagged-config;
         }
-        container state {
-          config false;
-          description
-            "State for matching single-tagged packets with an exact VLAN
-             identifier.";
-          uses vlan-logical-single-tagged-config;
-        }
       }
 
       container single-tagged-list {
@@ -530,13 +462,6 @@ module openconfig-vlan {
              VLAN identifiers.";
           uses vlan-logical-single-tagged-list-config;
         }
-        container state {
-          config false;
-          description
-            "State for matching single-tagged packets with a list of VLAN
-             identifiers.";
-          uses vlan-logical-single-tagged-list-config;
-        }
       }
 
       container single-tagged-range {
@@ -547,13 +472,6 @@ module openconfig-vlan {
           description
             "Configuration for matching single-tagged packets with a range of
              VLAN identifiers.";
-          uses vlan-logical-single-tagged-range-config;
-        }
-        container state {
-          config false;
-          description
-            "State for matching single-tagged packets with a range of VLAN
-             identifiers.";
           uses vlan-logical-single-tagged-range-config;
         }
       }
@@ -569,13 +487,6 @@ module openconfig-vlan {
              exact and outer exact VLAN identifiers.";
           uses vlan-logical-double-tagged-config;
         }
-        container state {
-          config false;
-          description
-            "State for matching double-tagged packets against inner exact
-             and outer exact VLAN identifiers.";
-          uses vlan-logical-double-tagged-config;
-        }
       }
 
       container double-tagged-inner-list {
@@ -587,13 +498,6 @@ module openconfig-vlan {
           description
             "Configuration for matching double-tagged packets against an
              inner list and outer exact VLAN identifiers.";
-          uses vlan-logical-double-tagged-inner-list-config;
-        }
-        container state {
-          config false;
-          description
-            "State for matching double-tagged packets against an inner list
-             and outer exact VLAN identifiers.";
           uses vlan-logical-double-tagged-inner-list-config;
         }
       }
@@ -609,13 +513,6 @@ module openconfig-vlan {
              inner exact and outer list of VLAN identifiers.";
           uses vlan-logical-double-tagged-outer-list-config;
         }
-        container state {
-          config false;
-          description
-            "State for matching double-tagged packets against an inner
-             exact and outer list of VLAN identifiers.";
-          uses vlan-logical-double-tagged-outer-list-config;
-        }
       }
 
       container double-tagged-inner-range {
@@ -627,13 +524,6 @@ module openconfig-vlan {
           description
             "Configuration for matching double-tagged packets against an
              inner range and outer exact VLAN identifiers.";
-          uses vlan-logical-double-tagged-inner-range-config;
-        }
-        container state {
-          config false;
-          description
-            "State for matching double-tagged packets against an inner
-             range and outer exact VLAN identifiers.";
           uses vlan-logical-double-tagged-inner-range-config;
         }
       }
@@ -649,13 +539,6 @@ module openconfig-vlan {
              inner exact and an outer range of VLAN identifiers.";
           uses vlan-logical-double-tagged-outer-range-config;
         }
-        container state {
-          config false;
-          description
-            "State for matching double-tagged packets against an inner
-             exact and an outer range of VLAN identifiers.";
-          uses vlan-logical-double-tagged-outer-range-config;
-        }
       }
 
       container double-tagged-inner-outer-range {
@@ -666,13 +549,6 @@ module openconfig-vlan {
           description
             "Configuration for matching double-tagged packets against an
              inner range and an outer range of VLAN identifiers.";
-          uses vlan-logical-double-tagged-inner-outer-range-config;
-        }
-        container state {
-          config false;
-          description
-            "State for matching double-tagged packets against an inner
-             range and an outer range of VLAN identifiers.";
           uses vlan-logical-double-tagged-inner-outer-range-config;
         }
       }
@@ -734,14 +610,6 @@ module openconfig-vlan {
 
         uses vlan-logical-ingress-mapping-config;
       }
-      container state {
-        config false;
-        description
-          "State for ingress VLAN and label behaviors for packets
-           that arrive on this subinterface.";
-
-        uses vlan-logical-ingress-mapping-config;
-      }
     }
   }
 
@@ -794,14 +662,6 @@ module openconfig-vlan {
 
         uses vlan-logical-egress-mapping-config;
       }
-      container state {
-        config false;
-        description
-          "State for engress VLAN stack behaviors for packets
-           that are destined for output via this subinterface.";
-
-        uses vlan-logical-egress-mapping-config;
-      }
     }
   }
 
@@ -829,16 +689,6 @@ module openconfig-vlan {
 
           uses vlan-config;
         }
-
-        container state {
-
-          config false;
-          description "State variables for VLANs";
-
-          uses vlan-config;
-          uses vlan-state;
-        }
-        uses vlan-members-state;
       }
     }
   }
@@ -857,14 +707,6 @@ module openconfig-vlan {
         description "Configuration parameters for VLANs";
 
           uses vlan-logical-config;
-      }
-
-      container state {
-        config false;
-        description "State variables for VLANs";
-
-        uses vlan-logical-config;
-        uses vlan-logical-state;
       }
 
       uses vlan-logical-match-top;
@@ -894,11 +736,6 @@ module openconfig-vlan {
 
   }
 
-  grouping vlan-routed-state {
-    description
-      "Operational state data for routed vlan interfaces.";
-  }
-
   grouping vlan-routed-top {
     description
       "Top-level grouping for routed vlan logical interfaces";
@@ -915,17 +752,6 @@ module openconfig-vlan {
           "Configuration data for routed vlan interfaces";
 
         uses vlan-routed-config;
-      }
-
-      container state {
-
-        config false;
-
-        description
-          "Operational state data ";
-
-        uses vlan-routed-config;
-        uses vlan-routed-state;
       }
     }
   }
@@ -947,14 +773,6 @@ module openconfig-vlan {
       "Adds TPID / ethertype setting for the base interface";
 
     uses vlan-tpid-config;
-  }
-
-  augment "/ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-if:state" {
-    description
-      "Adds TPID / ethertype opstate for the base interface";
-
-    uses vlan-tpid-config;
-    uses vlan-tpid-state;
   }
 
   augment "/ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-eth:ethernet" {
