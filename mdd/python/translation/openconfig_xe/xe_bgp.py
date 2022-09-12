@@ -78,9 +78,9 @@ def xe_bgp_global_program_service(self, service_protocol, network_instance_type,
                     if not device_bgp_cbd.address_family.vpnv4.exists('unicast'):
                         device_bgp_cbd.address_family.vpnv4.create('unicast')
                 elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
-                    pass
+                    raise NotImplementedError('oc-bgp-types:IPV6_UNICAST has not yet been implemented for XE')
                 elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
-                    pass
+                    raise NotImplementedError('oc-bgp-types:L3VPN_IPV6_UNICAST has not yet been implemented for XE')
             elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi_service.config.enabled:
                 if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST' or \
                         afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
@@ -98,7 +98,7 @@ def xe_bgp_global_program_service(self, service_protocol, network_instance_type,
                         device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].distance.bgp.internal_as = service_bgp_global.default_route_distance.config.internal_route_distance
                         device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].distance.bgp.local = '200'  # TODO add this to extensions
                 elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
-                    pass
+                    raise NotImplementedError('oc-bgp-types:IPV6_UNICAST has not yet been implemented for XE')
 
 
 def xe_bgp_redistribution_program_service(self, service_protocol, network_instance_type, vrf_name,
@@ -131,7 +131,7 @@ def xe_bgp_redistribution_program_service(self, service_protocol, network_instan
                         if protocol['import-policy']:
                             device_bgp_cbd.redistribute.ospf[protocol['src-protocol-process-number']].route_map = protocol['import-policy']
                 elif protocol['src-protocol'] == 'oc-pol-types:OSPF3' and protocol['address-family'] == 'oc-types:IPV4':
-                    pass
+                    raise NotImplementedError('oc-pol-types:OSPF3 has not yet been implemented for XE')
                 elif protocol['src-protocol'] == 'oc-pol-types:STATIC' and protocol['address-family'] == 'oc-types:IPV4':
                     if service_protocol.bgp.oc_netinst__global.afi_safis.afi_safi:
                         if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE':  # address-family ipv4 unicast
@@ -167,7 +167,7 @@ def xe_bgp_redistribution_program_service(self, service_protocol, network_instan
                         if protocol['import-policy']:
                             device_bgp_cbd.redistribute.connected.route_map = protocol['import-policy']
                 elif protocol['src-protocol'] == 'oc-pol-types:ISIS' and protocol['address-family'] == 'oc-types:IPV4':
-                    pass
+                    raise NotImplementedError('oc-pol-types:ISIS has not yet been implemented for XE')
 
 
 def apply_policy(neighbor_object_cdb, afi_safi_service) -> None:
@@ -316,9 +316,9 @@ def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_ty
                                 if service_bgp_neighbor.config.send_community and service_bgp_neighbor.config.send_community != 'NONE':
                                     send_community(neighbor_object_cdb, service_bgp_neighbor)
                             elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
-                                pass
+                                raise NotImplementedError('oc-bgp-types:IPV6_UNICAST has not yet been implemented for XE')
                             elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
-                                pass
+                                raise NotImplementedError('oc-bgp-types:L3VPN_IPV6_UNICAST has not yet been implemented for XE')
                         elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi_service.config.enabled:
                             if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST' or \
                                     afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
@@ -447,9 +447,9 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                             if service_bgp_peergroup.config.send_community and service_bgp_peergroup.config.send_community != 'NONE':
                                 send_community(neighbor_object_cdb, service_bgp_peergroup)
                         elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
-                            pass
+                            raise NotImplementedError('oc-bgp-types:IPV6_UNICAST has not yet been implemented for XE')
                         elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
-                            pass
+                            raise NotImplementedError('oc-bgp-types:L3VPN_IPV6_UNICAST has not yet been implemented for XE')
                     elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi_service.config.enabled:
                         if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST' or \
                                 afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':

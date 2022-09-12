@@ -123,13 +123,6 @@ submodule openconfig-ospfv2-area {
       uses ospfv2-area-config;
     }
 
-    container state {
-      config false;
-      description
-        "Operational state parameters relating to an OSPFv2 area";
-      uses ospfv2-area-config;
-    }
-
     container mpls {
       description
         "Configuration and operational state parameters for OSPFv2
@@ -139,14 +132,6 @@ submodule openconfig-ospfv2-area {
         description
           "Configuration parameters relating to MPLS extensions for
           OSPFv2";
-        uses ospfv2-area-mpls-config;
-      }
-
-      container state {
-        config false;
-        description
-          "Operational state parameters relating to MPLS extensions
-          for OSPFv2";
         uses ospfv2-area-mpls-config;
       }
     }
@@ -178,14 +163,6 @@ submodule openconfig-ospfv2-area {
           description
             "Configuration parameters relating to the OSPF virtual link";
           uses ospfv2-area-virtual-link-config;
-        }
-
-        container state {
-          config false;
-          description
-            "State parameters relating to the OSPF virtual link";
-          uses ospfv2-area-virtual-link-config;
-          uses ospfv2-area-interface-neighbor-state;
         }
       }
     }

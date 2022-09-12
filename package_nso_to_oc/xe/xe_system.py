@@ -121,7 +121,7 @@ def xe_system_ssh_server(config_before: dict, config_leftover: dict) -> None:
         del config_leftover["tailf-ned-cisco-ios:line"]["vty"][0]["absolute-timeout"]
 
     if config_before["tailf-ned-cisco-ios:line"]["vty"][0].get("session-limit"):
-        openconfig_system_ssh_server_config["session-limit"] = config_before["tailf-ned-cisco-ios:line"]["vty"][0].get(
+        openconfig_system_ssh_server_config["openconfig-system:session-limit"] = config_before["tailf-ned-cisco-ios:line"]["vty"][0].get(
             "session-limit")
         del config_leftover["tailf-ned-cisco-ios:line"]["vty"][0]["session-limit"]
 

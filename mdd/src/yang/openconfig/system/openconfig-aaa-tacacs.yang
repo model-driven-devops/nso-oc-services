@@ -97,23 +97,18 @@ submodule openconfig-aaa-tacacs {
         server and the device.";
     }
 
-    leaf secret-key-hashed {
-      type oc-aaa-types:crypt-password-type;
-      description
-        "The hashed shared key used between the authentication
-        server and the device.";
-    }
+//    leaf secret-key-hashed {
+//      type oc-aaa-types:crypt-password-type;
+//      description
+//        "The hashed shared key used between the authentication
+//        server and the device.";
+//    }
 
     leaf source-address {
       type oc-inet:ip-address;
       description
         "Source IP address to use in messages to the TACACS server";
     }
-  }
-
-  grouping aaa-tacacs-server-state {
-    description
-      "Operational state data for a TACACS+ server";
   }
 
   grouping aaa-tacacs-server-top {
@@ -129,17 +124,6 @@ submodule openconfig-aaa-tacacs {
           "Configuration data for TACACS+ server";
 
         uses aaa-tacacs-server-config;
-      }
-
-      container state {
-
-        config false;
-
-        description
-          "Operational state data for TACACS+ server";
-
-        uses aaa-tacacs-server-config;
-        uses aaa-tacacs-server-state;
       }
     }
   }

@@ -67,7 +67,19 @@ module openconfig-rib-bgp {
     eligible for sending (advertising) to the neighbor after output
     policy rules have been applied.";
 
-  oc-ext:openconfig-version "0.7.0";
+  oc-ext:openconfig-version "0.8.1";
+
+  revision "2022-06-06" {
+    description
+      "Revert IETF types in favor of oc-inet types";
+    reference "0.8.1";
+  }
+
+  revision "2021-06-21" {
+    description
+      "Add L2VPN-EVPN BGP RIB Support";
+    reference "0.8.0";
+  }
 
   revision "2019-10-15" {
     description
@@ -120,111 +132,10 @@ module openconfig-rib-bgp {
 
 
 
-  grouping bgp-rib-state {
-    description
-      "Operational state data for the top level BGP RIB";
-
-    leaf afi-safi-name {
-      type identityref {
-        base oc-bgpt:AFI_SAFI_TYPE;
-      }
-      description "AFI,SAFI";
-    }
-  }
-
   grouping bgp-rib-top {
     description
       "Top-level grouping for the BGP RIB";
 
-    container rib {
-      config false;
-      description
-        "Top level container for BGP RIBs";
-
-      uses attribute-sets-top;
-      uses community-sets-top;
-      uses ext-community-sets-top;
-
-      container afi-safis {
-        config false;
-        description
-          "Enclosing container for address family list";
-
-        list afi-safi {
-          key "afi-safi-name";
-          description
-            "list of afi-safi types";
-
-          leaf afi-safi-name {
-            type leafref {
-              path "../state/afi-safi-name";
-            }
-            description
-              "Reference to the list key";
-          }
-
-          container state {
-            config false;
-            description
-              "Operational state data for the BGP list";
-
-            uses bgp-rib-state;
-          }
-
-          container ipv4-unicast {
-            when "../afi-safi-name = 'oc-bgpt:IPV4_UNICAST'" {
-              description
-                "Include this container for IPv4 unicast RIB";
-            }
-            description
-              "Routing tables for IPv4 unicast -- active when the
-              afi-safi name is ipv4-unicast";
-
-            uses ipv4-loc-rib-top;
-            uses ipv4-adj-rib-top;
-          }
-
-          container ipv6-unicast {
-            when "../afi-safi-name = 'oc-bgpt:IPV6_UNICAST'" {
-              description
-                "Include this container for IPv6 unicast RIB";
-            }
-            description
-              "Routing tables for IPv6 unicast -- active when the
-              afi-safi name is ipv6-unicast";
-
-            uses ipv6-loc-rib-top;
-            uses ipv6-adj-rib-top;
-          }
-
-          container ipv4-srte-policy {
-            when "../afi-safi-name = 'oc-bgpt:SRTE_POLICY_IPV4'" {
-              description
-                "Include this container only for the IPv4 AFI, SR-TE Policy
-                SAFI.";
-            }
-            description
-              "Routing tables for the IPv4 Unicast, SR-TE Policy SAFI.";
-
-            uses ipvX-srte-policy-locrib-top;
-            uses ipvX-srte-policy-adjrib-top;
-          }
-
-          container ipv6-srte-policy {
-            when "../afi-safi-name = 'oc-bgpt:SRTE_POLICY_IPV6'" {
-              description
-                "Include this container only for the IPv6 AFI, SR-TE Policy
-                SAFI.";
-            }
-            description
-              "Routing tables for the IPv6 Unicast, SR-TE Policy SAFI.";
-
-            uses ipvX-srte-policy-locrib-top;
-            uses ipvX-srte-policy-adjrib-top;
-          }
-        }
-      }
-    }
   }
 
 

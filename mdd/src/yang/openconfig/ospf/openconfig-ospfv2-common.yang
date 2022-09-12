@@ -80,14 +80,14 @@ submodule openconfig-ospfv2-common {
         the neighbor(s) over the link are established.";
     }
 
-    leaf post-session-up-delay {
-      type uint32;
-      units milliseconds;
-      description
-        "This leaf specifies a delay, expressed in units of milliseconds,
-        between the LDP session to the IGP neighbor being established, and
-        it being considered synchronized by the IGP.";
-    }
+//    leaf post-session-up-delay {
+//      type uint32;
+//      units milliseconds;
+//      description
+//        "This leaf specifies a delay, expressed in units of milliseconds,
+//        between the LDP session to the IGP neighbor being established, and
+//        it being considered synchronized by the IGP.";
+//    }
   }
 
   grouping ospfv2-common-timers {
