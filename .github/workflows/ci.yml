@@ -396,35 +396,35 @@ jobs:
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
           TEST: "True"
-  clean-up:
-    runs-on: self-hosted
-    if: ${{ always() }}
-    needs: [test-oc-xe, test-xe-oc]
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
-      - run: echo "The workflow is now ready to test your code on the runner."
-      - name: update ubuntu
-        run: sudo apt-get update
-      - name: install sshpass
-        run: sudo apt-get install sshpass -y
-      - name: install git
-        run: sudo apt-get install git -y
-      - name: clone mdd
-        run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
-      - name: Install PIP requirements
-        run: pip install -r ./mdd_repo/requirements.txt
-      - name: Install PIP virl2_client
-        run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
-      - name: Install Collections
-        run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
-      - name: Delete CML
-        run: ansible-playbook cisco.cml.clean
-        env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
-          CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ secrets.CML_LAB }}
-          CML_USERNAME: ${{ secrets.CML_USERNAME }}
-          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
-          CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
+#  clean-up:
+#    runs-on: self-hosted
+#    if: ${{ always() }}
+#    needs: [test-oc-xe, test-xe-oc]
+#    steps:
+#      - name: Check out repository code
+#        uses: actions/checkout@v2
+#      - run: echo "The workflow is now ready to test your code on the runner."
+#      - name: update ubuntu
+#        run: sudo apt-get update
+#      - name: install sshpass
+#        run: sudo apt-get install sshpass -y
+#      - name: install git
+#        run: sudo apt-get install git -y
+#      - name: clone mdd
+#        run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+#      - name: Install PIP requirements
+#        run: pip install -r ./mdd_repo/requirements.txt
+#      - name: Install PIP virl2_client
+#        run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
+#      - name: Install Collections
+#        run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+#      - name: Delete CML
+#        run: ansible-playbook cisco.cml.clean
+#        env:
+#          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+#          CML_HOST: ${{ secrets.CML_HOST }}
+#          CML_LAB: ${{ secrets.CML_LAB }}
+#          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+#          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+#          CML_VERIFY_CERT: "false"
+#          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
