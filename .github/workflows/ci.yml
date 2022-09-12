@@ -474,7 +474,7 @@ jobs:
 #  clean-up:
 #    runs-on: self-hosted
 #    if: ${{ always() }}
-#    needs: [test-oc-xe, test-xe-oc]
+#    needs: [test-xe-oc, test-xr-oc]
 #    steps:
 #      - name: Check out repository code
 #        uses: actions/checkout@v2
