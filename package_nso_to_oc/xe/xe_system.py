@@ -32,8 +32,7 @@ openconfig_system = {
             "openconfig-system:servers": {
                 "openconfig-system:server": []}
         },
-        "openconfig-system:ssh-server": {"openconfig-system:config": {}},
-        "openconfig-system:telnet-server": {}
+        "openconfig-system:ssh-server": {"openconfig-system:config": {}}
     }
 }
 
@@ -121,7 +120,7 @@ def xe_system_ssh_server(config_before: dict, config_leftover: dict) -> None:
         del config_leftover["tailf-ned-cisco-ios:line"]["vty"][0]["absolute-timeout"]
 
     if config_before["tailf-ned-cisco-ios:line"]["vty"][0].get("session-limit"):
-        openconfig_system_ssh_server_config["session-limit"] = config_before["tailf-ned-cisco-ios:line"]["vty"][0].get(
+        openconfig_system_ssh_server_config["openconfig-system:session-limit"] = config_before["tailf-ned-cisco-ios:line"]["vty"][0].get(
             "session-limit")
         del config_leftover["tailf-ned-cisco-ios:line"]["vty"][0]["session-limit"]
 
@@ -259,7 +258,6 @@ def main(before: dict, leftover: dict, if_ip: dict) -> dict:
     :param if_ip: Map of interface names to IP addresses: dict
     :return: MDD Openconfig System configuration: dict
     """
-
     xe_system_config(before, leftover)
     xe_system_ssh_server(before, leftover)
     xe_system_ntp(before, leftover, if_ip)

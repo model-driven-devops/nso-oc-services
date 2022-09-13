@@ -109,13 +109,13 @@ submodule openconfig-ospfv2-global {
         described in RFC2328 should be utilised";
     }
 
-    leaf igp-shortcuts {
-      type boolean;
-      description
-        "When this leaf is set to true, OSPFv2 will route traffic to
-        a remote system via any LSP to the system that is marked as
-        shortcut eligible.";
-    }
+//    leaf igp-shortcuts {
+//      type boolean;
+//      description
+//        "When this leaf is set to true, OSPFv2 will route traffic to
+//        a remote system via any LSP to the system that is marked as
+//        shortcut eligible.";
+//    }
 
     leaf log-adjacency-changes {
       type boolean;
@@ -224,15 +224,15 @@ submodule openconfig-ospfv2-global {
         neighbors.";
     }
 
-    leaf helper-only {
-      type boolean;
-      description
-        "Operate graceful-restart only in helper mode. When this leaf
-        is set to true, the local system does not use Grace-LSAs to
-        indicate that it is restarting, but will accept Grace-LSAs
-        from remote systems, and suppress withdrawl of adjacencies
-        of the system for the grace period specified";
-    }
+//    leaf helper-only {
+//      type boolean;
+//      description
+//        "Operate graceful-restart only in helper mode. When this leaf
+//        is set to true, the local system does not use Grace-LSAs to
+//        indicate that it is restarting, but will accept Grace-LSAs
+//        from remote systems, and suppress withdrawl of adjacencies
+//        of the system for the grace period specified";
+//    }
   }
 
   grouping ospfv2-global-mpls-config {
@@ -277,58 +277,58 @@ submodule openconfig-ospfv2-global {
     uses oc-rpol:apply-policy-import-config;
   }
 
-  grouping ospfv2-global-max-metric-config {
-    description
-      "Configuration paramters relating to setting the OSPFv2
-      maximum metric.";
-
-    leaf set {
-      type boolean;
-      description
-        "When this leaf is set to true, all non-stub interfaces of
-        the local system are advertised with the maximum metric,
-        such that the router does not act as a transit system,
-        (similarly to the IS-IS overload functionality).";
-      reference
-        "RFC3137 - OSPF Stub Router Advertisement";
-    }
-
-    leaf timeout {
-      type uint64;
-      units "seconds";
-      description
-        "The delay, in seconds, after which the advertisement of
-        entities with the maximum metric should be cleared, and
-        the system reverts to the default, or configured, metrics.";
-    }
-
-    leaf-list include {
-      type identityref {
-        base "oc-ospft:MAX_METRIC_INCLUDE";
-      }
-      description
-        "By default, the maximum metric is advertised for all
-        non-stub interfaces of a device. When identities are
-        specified within this leaf-list, additional entities
-        are also advertised with the maximum metric according
-        to the values within the list.";
-    }
-
-    leaf-list trigger {
-      type identityref {
-        base "oc-ospft:MAX_METRIC_TRIGGER";
-      }
-      description
-        "By default, the maximum metric is only advertised
-        when the max-metric/set leaf is specified as true.
-        In the case that identities are specified within this
-        list, they provide additional triggers (e.g., system
-        boot) that may cause the max-metric to be set. In this
-        case, the system should still honour the timeout specified
-        by the max-metric/timeout leaf, and clear the max-metric
-        advertisements after the expiration of this timer.";
-    }
-  }
+//  grouping ospfv2-global-max-metric-config {
+//    description
+//      "Configuration paramters relating to setting the OSPFv2
+//      maximum metric.";
+//
+//    leaf set {
+//      type boolean;
+//      description
+//        "When this leaf is set to true, all non-stub interfaces of
+//        the local system are advertised with the maximum metric,
+//        such that the router does not act as a transit system,
+//        (similarly to the IS-IS overload functionality).";
+//      reference
+//        "RFC3137 - OSPF Stub Router Advertisement";
+//    }
+//
+//    leaf timeout {
+//      type uint64;
+//      units "seconds";
+//      description
+//        "The delay, in seconds, after which the advertisement of
+//        entities with the maximum metric should be cleared, and
+//        the system reverts to the default, or configured, metrics.";
+//    }
+//
+//    leaf-list include {
+//      type identityref {
+//        base "oc-ospft:MAX_METRIC_INCLUDE";
+//      }
+//      description
+//        "By default, the maximum metric is advertised for all
+//        non-stub interfaces of a device. When identities are
+//        specified within this leaf-list, additional entities
+//        are also advertised with the maximum metric according
+//        to the values within the list.";
+//    }
+//
+//    leaf-list trigger {
+//      type identityref {
+//        base "oc-ospft:MAX_METRIC_TRIGGER";
+//      }
+//      description
+//        "By default, the maximum metric is only advertised
+//        when the max-metric/set leaf is specified as true.
+//        In the case that identities are specified within this
+//        list, they provide additional triggers (e.g., system
+//        boot) that may cause the max-metric to be set. In this
+//        case, the system should still honour the timeout specified
+//        by the max-metric/timeout leaf, and clear the max-metric
+//        advertisements after the expiration of this timer.";
+//    }
+//  }
 
   grouping ospfv2-global-structural {
     description
@@ -342,13 +342,6 @@ submodule openconfig-ospfv2-global {
       container config {
         description
           "Global configuration parameters for OSPFv2";
-        uses ospfv2-global-config;
-      }
-
-      container state {
-        config false;
-        description
-          "Operational state parameters for OSPFv2";
         uses ospfv2-global-config;
       }
 
@@ -368,37 +361,20 @@ submodule openconfig-ospfv2-global {
               SPF timers";
             uses ospfv2-global-spf-timers-config;
           }
-
-          container state {
-            config false;
-            description
-              "Operational state parameters relating to the global
-              OSPFv2 SPF timers";
-            uses ospfv2-global-spf-timers-config;
-            uses ospfv2-global-spf-timers-state;
-          }
         }
 
-        container max-metric {
-          description
-            "Configuration and operational state parameters relating
-            to setting the OSPFv2 maximum metric.";
-
-          container config {
-            description
-              "Configuration parameters relating to setting the OSPFv2
-              maximum metric for a set of advertised entities.";
-            uses ospfv2-global-max-metric-config;
-          }
-
-          container state {
-            config false;
-            description
-              "Operational state parameters relating to setting the
-              OSPFv2 maximum metric for a set of advertised entities.";
-            uses ospfv2-global-max-metric-config;
-          }
-        }
+//        container max-metric {
+//          description
+//            "Configuration and operational state parameters relating
+//            to setting the OSPFv2 maximum metric.";
+//
+//          container config {
+//            description
+//              "Configuration parameters relating to setting the OSPFv2
+//              maximum metric for a set of advertised entities.";
+//            uses ospfv2-global-max-metric-config;
+//          }
+//        }
 
         container lsa-generation {
           description
@@ -411,15 +387,6 @@ submodule openconfig-ospfv2-global {
               "Configuration parameters relating to the generation of
               LSAs by the local system";
             uses ospfv2-global-lsa-generation-timers-config;
-          }
-
-          container state {
-            config false;
-            description
-              "Operational state parameters relating to the generation
-              of LSAs by the local system";
-            uses ospfv2-global-lsa-generation-timers-config;
-            uses ospfv2-global-lsa-generation-timers-state;
           }
         }
       }
@@ -435,14 +402,6 @@ submodule openconfig-ospfv2-global {
             restart";
           uses ospfv2-global-graceful-restart-config;
         }
-
-        container state {
-          config false;
-          description
-            "Operational state parameters relating to OSPFv2 graceful
-            restart";
-          uses ospfv2-global-graceful-restart-config;
-        }
       }
 
       container mpls {
@@ -455,14 +414,6 @@ submodule openconfig-ospfv2-global {
           uses ospfv2-global-mpls-config;
         }
 
-        container state {
-          config false;
-          description
-            "Operational state parameters relating to MPLS for
-            OSPFv2";
-          uses ospfv2-global-mpls-config;
-        }
-
         container igp-ldp-sync {
           description
             "OSPFv2 parameters relating to LDP/IGP synchronization";
@@ -471,14 +422,6 @@ submodule openconfig-ospfv2-global {
             description
               "Configuration parameters relating to LDP/IG
               synchronization.";
-            uses ospfv2-common-mpls-igp-ldp-sync-config;
-          }
-
-          container state {
-            config false;
-            description
-              "Operational state variables relating to LDP/IGP
-              synchronization";
             uses ospfv2-common-mpls-igp-ldp-sync-config;
           }
         }
@@ -515,14 +458,6 @@ submodule openconfig-ospfv2-global {
           container config {
             description
               "Configuration parameters relating to the inter-area
-              propagation policy";
-            uses ospfv2-global-inter-areapp-config;
-          }
-
-          container state {
-            config false;
-            description
-              "Operational state parameters relating to the inter-area
               propagation policy";
             uses ospfv2-global-inter-areapp-config;
           }

@@ -124,7 +124,6 @@ module openconfig-ospfv2 {
             description
               "A reference to the identifier for the area.";
           }
-
           uses ospfv2-area-structure;
         }
       }

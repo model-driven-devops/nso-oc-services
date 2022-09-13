@@ -354,17 +354,6 @@ module openconfig-system-logging {
 
           uses logging-selectors-config;
         }
-
-        container state {
-
-          config false;
-
-          description
-            "Operational state data ";
-
-          uses logging-selectors-config;
-          uses logging-selectors-state;
-        }
       }
     }
   }
@@ -372,11 +361,6 @@ module openconfig-system-logging {
   grouping logging-console-config {
     description
       "Configuration data for console logging";
-  }
-
-  grouping logging-console-state {
-    description
-      "Operational state data for console logging";
   }
 
   grouping logging-console-top {
@@ -393,17 +377,6 @@ module openconfig-system-logging {
           "Configuration data for console logging";
 
         uses logging-console-config;
-      }
-
-      container state {
-
-        config false;
-
-        description
-          "Operational state data for console logging";
-
-        uses logging-console-config;
-        uses logging-console-state;
       }
 
       uses logging-selectors-top;
@@ -435,11 +408,6 @@ module openconfig-system-logging {
     }
   }
 
-  grouping logging-remote-state {
-    description
-      "Operational state data for remote log servers";
-  }
-
   grouping logging-remote-top {
     description
       "Top-level grouping for remote log servers";
@@ -466,17 +434,6 @@ module openconfig-system-logging {
             "Configuration data for remote log servers";
 
           uses logging-remote-config;
-        }
-
-        container state {
-
-          config false;
-
-          description
-            "Operational state data for remote log servers";
-
-          uses logging-remote-config;
-          uses logging-remote-state;
         }
         uses logging-selectors-top;
       }

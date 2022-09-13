@@ -32,8 +32,7 @@ openconfig_system = {
             "openconfig-system:servers": {
                 "openconfig-system:server": []}
         },
-        "openconfig-system:ssh-server": {"openconfig-system:config": {}},
-        "openconfig-system:telnet-server": {}
+        "openconfig-system:ssh-server": {"openconfig-system:config": {}}
     }
 }
 
