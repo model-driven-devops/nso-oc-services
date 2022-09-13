@@ -68,4 +68,7 @@ def test_nso_program_oc(host: str, username: str, password: str, device: str, oc
     body = json.dumps(oc)
     oc_result = req.request("PATCH", url, headers=headers, body=body)
     if oc_result.status != 204:
-        raise Exception("Error in input payload reported by NSO")
+        if hasattr(oc_result, 'data'):
+            raise Exception(f"Error in input payload reported by NSO: {oc_result.data}")
+        else:
+            raise Exception(f"Error in input payload reported by NSO")
