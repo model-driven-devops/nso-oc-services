@@ -18,6 +18,8 @@ nx1_host.txt
 *rollback.yaml
 # drop local scripts here that are only meant for your environment.
 misc-tools/
+# data and other configs we don't want being committed.
+output_data/
 
 ### JetBrains products ###
 .idea/**/workspace.xml

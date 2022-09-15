@@ -14,9 +14,10 @@ NSO_PASSWORD
 NSO_DEVICE - NSO device name for configuration translation
 TEST - True or False. True enables sending the OpenConfig to the NSO server after generation
 """
-import copy
-import json
-import os
+
+import sys
+from pathlib import Path
+from importlib.util import find_spec
 
 openconfig_system = {
     "openconfig-system:system": {
@@ -35,7 +36,6 @@ openconfig_system = {
         "openconfig-system:ssh-server": {"openconfig-system:config": {}}
     }
 }
-
 
 def xr_system_config(config_before: dict, config_leftover: dict) -> None:
     """
@@ -95,7 +95,6 @@ def main(before: dict, leftover: dict) -> dict:
 
     :param before: Original NSO Device configuration: dict
     :param leftover: NSO Device configuration minus configs replaced with MDD OC: dict
-    :param if_ip: Map of interface names to IP addresses: dict
     :return: MDD Openconfig System configuration: dict
     """
 
@@ -105,29 +104,24 @@ def main(before: dict, leftover: dict) -> dict:
 
 
 if __name__ == "__main__":
-    import sys
-
     sys.path.append("../../")
     sys.path.append("../../../")
-    from package_nso_to_oc import common
 
-    nso_host = os.environ.get("NSO_HOST")
-    nso_username = os.environ.get("NSO_USERNAME", "ubuntu")
-    nso_password = os.environ.get("NSO_PASSWORD", "admin")
-    nso_device = os.environ.get("NSO_DEVICE", "xr1")
-    test = os.environ.get("TEST", "False")
+    if (find_spec("package_nso_to_oc") is not None):
+        from package_nso_to_oc.xr import common_xr
+        from package_nso_to_oc import common
+    else:
+        import common_xr
+        import common
 
-    config_before_dict = common.nso_get_device_config(nso_host, nso_username, nso_password, nso_device)
-    config_leftover_dict = copy.deepcopy(config_before_dict)
+    (config_before_dict, config_leftover_dict) = common_xr.init_xr_configs()
     main(config_before_dict, config_leftover_dict)
-
-    print(json.dumps(openconfig_system, indent=4))
-    with open(f"../{nso_device}_configuration.json", "w") as b:
-        b.write(json.dumps(config_before_dict, indent=4))
-    with open(f"../{nso_device}_configuration_remaining.json", "w") as a:
-        a.write(json.dumps(config_leftover_dict, indent=4))
-    with open(f"../{nso_device}_openconfig_system.json", "w") as o:
-        o.write(json.dumps(openconfig_system, indent=4))
-
-    if test == "True":
-        common.test_nso_program_oc(nso_host, nso_username, nso_password, nso_device, openconfig_system)
+    config_name = "configuration"
+    config_remaining_name = "configuration_remaining"
+    oc_name = "openconfig_system"
+    common.print_and_test_configs("xr1", config_before_dict, config_leftover_dict, openconfig_system, config_name, config_remaining_name, oc_name)
+else:
+    if (find_spec("package_nso_to_oc") is not None):
+        from package_nso_to_oc.xr import common_xr
+    else:
+        from xr import common_xr

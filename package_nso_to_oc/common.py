@@ -1,10 +1,23 @@
 #! /usr/bin/env python3
+
+import os
 import json
 import urllib3
+from pathlib import Path, os as path_os
+
+if not os.environ.get("NSO_HOST", False):
+    print("environment variable NSO_HOST must be set")
+    exit()
 
 # Different device OS
 XE = "xe"
 XR = "xr"
+
+# Determine the project root dir, where we will create our output_data dir (if it doesn't exist).
+# output_data_dir is meant to contain data/config files that we don't want in version control.
+project_path = str(Path(__file__).resolve().parents[1])
+output_data_dir = f"{project_path}{path_os.sep}output_data{path_os.sep}"
+Path(output_data_dir).mkdir(parents=True, exist_ok=True)
 
 def nso_get_device_config(host: str, username: str, password: str, device: str) -> dict:
     """
@@ -72,3 +85,26 @@ def test_nso_program_oc(host: str, username: str, password: str, device: str, oc
             raise Exception(f"Error in input payload reported by NSO: {oc_result.data}")
         else:
             raise Exception(f"Error in input payload reported by NSO")
+
+def print_and_test_configs(device_name, config_before_dict, config_leftover_dict, oc, config_name, config_remaining_name, oc_name):
+    (nso_host, nso_username, nso_password) = get_nso_creds()
+    nso_device = os.environ.get("NSO_DEVICE", device_name)
+    test = os.environ.get("TEST", "False")
+
+    print(json.dumps(oc, indent=4))
+    with open(f"{output_data_dir}{nso_device}_{config_name}.json", "w") as b:
+        b.write(json.dumps(config_before_dict, indent=4))
+    with open(f"{output_data_dir}{nso_device}_{config_remaining_name}.json", "w") as a:
+        a.write(json.dumps(config_leftover_dict, indent=4))
+    with open(f"{output_data_dir}{nso_device}_{oc_name}.json", "w") as o:
+        o.write(json.dumps(oc, indent=4))
+
+    if test == "True":
+        test_nso_program_oc(nso_host, nso_username, nso_password, nso_device, oc)
+
+def get_nso_creds():
+    nso_host = os.environ.get("NSO_HOST")
+    nso_username = os.environ.get("NSO_USERNAME", "ubuntu")
+    nso_password = os.environ.get("NSO_PASSWORD", "admin")
+
+    return (nso_host, nso_username, nso_password)

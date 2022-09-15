@@ -21,6 +21,7 @@ print(openconfig_json)
 """
 import copy
 import os
+import sys
 
 from . import common
 from .xe import xe_system
