@@ -15,9 +15,10 @@ NSO_PASSWORD
 NSO_DEVICE - NSO device name for configuration translation
 TEST - True or False. True enables sending the OpenConfig to the NSO server after generation
 """
-import copy
-import json
-import pprint
+
+import sys
+from pathlib import Path
+from importlib.util import find_spec
 
 openconfig_network_instances = {
     "openconfig-network-instance:network-instances": {
@@ -79,33 +80,28 @@ def main(before: dict, leftover: dict) -> dict:
 
     return openconfig_network_instances
 
+if __name__ == "__main__":
+    sys.path.append("../../")
+    sys.path.append("../../../")
 
-if __name__ == '__main__':
-    import os
-    import sys
+    if (find_spec("package_nso_to_oc") is not None):
+        from package_nso_to_oc.xe import common_xe
+        from package_nso_to_oc import common
+    else:
+        import common_xe
+        import common
 
-    sys.path.append('../../')
-    sys.path.append('../../../')
-    from package_nso_to_oc import common
-
-    nso_host = os.environ.get("NSO_HOST")
-    nso_username = os.environ.get("NSO_USERNAME", "ubuntu")
-    nso_password = os.environ.get("NSO_PASSWORD", "admin")
-    nso_device = os.environ.get("NSO_DEVICE", "xe1")
-    test = os.environ.get("TEST", "False")
-
-    config_before_dict = common.nso_get_device_config(nso_host, nso_username, nso_password, nso_device)
-    config_leftover_dict = copy.deepcopy(config_before_dict)
-    interface_ip_dict = common.xe_system_get_interface_ip_address(config_before_dict)
+    (config_before_dict, config_leftover_dict, interface_ip_dict) = common_xe.init_xe_configs()
     main(config_before_dict, config_leftover_dict)
-
-    print(json.dumps(openconfig_network_instances, indent=4))
-    with open(f"../{nso_device}_ned_configuration_network_instances.json", "w") as b:
-        b.write(json.dumps(config_before_dict, indent=4))
-    with open(f"../{nso_device}_ned_configuration_remaining_network_instances.json", "w") as a:
-        a.write(json.dumps(config_leftover_dict, indent=4))
-    with open(f"../{nso_device}_openconfig_network_instances.json", "w") as o:
-        o.write(json.dumps(openconfig_network_instances, indent=4))
-
-    if test == 'True':
-        common.test_nso_program_oc(nso_host, nso_username, nso_password, nso_device, openconfig_network_instances)
+    config_name = "ned_configuration_network_instances"
+    config_remaining_name = "ned_configuration_remaining_network_instances"
+    oc_name = "openconfig_network_instances"
+    common.print_and_test_configs(
+        "xe1", config_before_dict, config_leftover_dict, openconfig_network_instances, 
+        config_name, config_remaining_name, oc_name)
+else:
+    # This is needed for now due to top level __init__.py. We need to determine if contents in __init__.py is still necessary.
+    if (find_spec("package_nso_to_oc") is not None):
+        from package_nso_to_oc.xe import common_xe
+    else:
+        from xe import common_xe

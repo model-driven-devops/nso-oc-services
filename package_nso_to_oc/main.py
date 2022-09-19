@@ -18,54 +18,28 @@ TEST - True or False. True enables sending the OpenConfig to the NSO server afte
 import copy
 import json
 import os
-import sys
-
-sys.path.append('../../package_nso_to_oc')
 
 import common
-
-# TODO Move OS specific logic to respective modules
-from xe import xe_network_instances
-from xe import xe_vlans
-from xe import xe_interfaces
-from xe import xe_system
-from xr import xr_system
+from xe import main_xe
+from xr import main_xr
 
 nso_host = os.environ.get("NSO_HOST")
 nso_username = os.environ.get("NSO_USERNAME", "ubuntu")
 nso_password = os.environ.get("NSO_PASSWORD", "admin")
-nso_device = os.environ.get("NSO_DEVICE", "xe1")
-device_os = os.environ.get("DEVICE_OS", common.XE)
+nso_device = os.environ.get("NSO_DEVICE", "xr1")
+device_os = os.environ.get("DEVICE_OS", common.XR)
 test = os.environ.get("TEST", "False")
 
 config_before_dict = common.nso_get_device_config(nso_host, nso_username, nso_password, nso_device)
 configs_leftover = copy.deepcopy(config_before_dict)
+oc = {"mdd:openconfig": {}}
 
 if device_os == common.XE:
-    interface_ip_name_dict = common.xe_system_get_interface_ip_address(config_before_dict)
-    openconfig_network_instances = xe_network_instances.main(config_before_dict, configs_leftover)
-    openconfig_network_instance_default_vlans = xe_vlans.main(config_before_dict, configs_leftover)
-    openconfig_network_instances["openconfig-network-instance:network-instances"][
-        "openconfig-network-instance:network-instance"][0].update(
-        openconfig_network_instance_default_vlans["openconfig-network-instance:network-instances"][
-            "openconfig-network-instance:network-instance"][0]["openconfig-network-instance:vlans"])
-    openconfig_interfaces = xe_interfaces.main(config_before_dict, configs_leftover)
-    openconfig_system = xe_system.main(config_before_dict, configs_leftover, interface_ip_name_dict)
+    main_xe.build_xe_to_oc(config_before_dict, configs_leftover, oc)
 elif device_os == common.XR:
-    openconfig_system = xr_system.main(config_before_dict, configs_leftover)
+    main_xr.build_xr_to_oc(config_before_dict, configs_leftover, oc)
 
-oc = {"mdd:openconfig": {}}
-oc['mdd:openconfig'].update(openconfig_system)
-
-if device_os != common.XR:
-    oc['mdd:openconfig'].update(openconfig_network_instances)
-    oc['mdd:openconfig'].update(openconfig_interfaces)
-
-print(json.dumps(oc, indent=4))
-
-with open(f"{nso_device}_full_ned_configuration.json", "w") as before:
-    before.write(json.dumps(config_before_dict, indent=4))
-with open(f"{nso_device}_full_ned_configuration_remaining.json", "w") as after:
-    after.write(json.dumps(configs_leftover, indent=4))
-with open(f"{nso_device}_full_openconfig.json", "w") as o:
-    o.write(json.dumps(oc, indent=4))
+config_name = "full_ned_configuration"
+config_remaining_name = "full_ned_configuration_remaining"
+oc_name = "full_openconfig"
+common.print_and_test_configs(nso_device, config_before_dict, configs_leftover, oc, config_name, config_remaining_name, oc_name)
