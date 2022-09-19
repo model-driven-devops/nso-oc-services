@@ -126,9 +126,9 @@ def create_interface_dict(config_before: dict) -> dict:
                     old_nso_index = nso_index
                     oc_interface_index += 1  # Do not increase oc_interface_index for sub-interfaces
                 nso_old_physical_interface_number = physical_interface_number
-            # When finished processing sub-ifs, increase oc_interface_index for next main/physical interface
-            if oc_sub_interface_number > 0:
-                oc_interface_index += 1
+                # When finished processing sub-ifs, increase oc_interface_index for next main/physical interface
+                if oc_sub_interface_number > 0:
+                    oc_interface_index += 1
 
         if interface_type == "Port-channel-subinterface" and config_before["tailf-ned-cisco-ios:interface"][
             interface_type].get("Port-channel") and nso_to_oc_interface_types.get(interface_type):
@@ -624,7 +624,7 @@ def xe_configure_vrrp_interfaces(nso_before_interface: dict, nso_leftover_interf
                     group.get("ip", {}).get("address"))
                 del nso_leftover_interface["vrrp"][number]["ip"]
             # Timers advertise
-            if group.get("timers", {}).get("advertise").get("seconds"):
+            if group.get("timers", {}).get("advertise", {}).get("seconds"):
                 service_vrrp_group["openconfig-if-ip:config"]["openconfig-if-ip:advertisement-interval"] = int(
                     group.get("timers", {}).get("advertise").get("seconds")) * 100
                 del nso_leftover_interface["vrrp"][number]["timers"]["advertise"]
