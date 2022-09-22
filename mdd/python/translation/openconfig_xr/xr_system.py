@@ -111,6 +111,12 @@ def xr_system_program_service(self) -> None:
         raise NotImplementedError('openconfig-system-aaa-accounting-config has not yet been implemented for XR')
     if self.service.oc_sys__system.aaa.accounting.events.event:
         raise NotImplementedError('openconfig-system-aaa-accounting-config has not yet been implemented for XR')
+    # service domain lookup disable (no ip domain lookup)
+    if self.service.oc_sys__system.services.ip_domain_lookup is False:
+        device_cdb.cisco_ios_xr__domain.lookup.disable.create()
+    elif self.service.oc_sys__system.services.ip_domain_lookup is True:
+        if device_cdb.cisco_ios_xr__domain.lookup.disable.exists():
+            device_cdb.cisco_ios_xr__domain.lookup.disable.delete()
     # service finger
     if self.service.oc_sys__system.services.finger:
         raise NotImplementedError('openconfig-system-service-finger has not yet been implemented for XR')

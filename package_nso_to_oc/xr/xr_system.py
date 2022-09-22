@@ -33,22 +33,36 @@ openconfig_system = {
             "openconfig-system:servers": {
                 "openconfig-system:server": []}
         },
-        "openconfig-system:ssh-server": {"openconfig-system:config": {}}
+        "openconfig-system:ssh-server": {"openconfig-system:config": {}},
+        "openconfig-system-ext:services": {}
     }
 }
+
+
+def xr_system_services(config_before: dict, config_leftover: dict) -> None:
+    """
+    Translates NSO XR NED to MDD OpenConfig System Services
+    """
+    openconfig_system_services = openconfig_system["openconfig-system:system"]["openconfig-system-ext:services"]
+    if type(config_before.get("tailf-ned-cisco-ios-xr:domain", {}).get("lookup", {}).get("disable", "")) is list:
+        openconfig_system_services["openconfig-system-ext:ip-domain-lookup"] = False
+        del config_leftover["tailf-ned-cisco-ios-xr:domain"]["lookup"]
+    else:
+        openconfig_system_services["openconfig-system-ext:ip-domain-lookup"] = True
+
 
 def xr_system_config(config_before: dict, config_leftover: dict) -> None:
     """
     Translates NSO XE NED to MDD OpenConfig System Config
     """
     openconfig_system_config = openconfig_system["openconfig-system:system"]["openconfig-system:config"]
-    defualt_secret = config_before.get("tailf-ned-cisco-ios-xr:line", {}).get("default", {}).get("secret", {})
-    console_exec_timeout = config_before["tailf-ned-cisco-ios-xr:line"].get("console", {}).get("exec-timeout", {})
+    default_secret = config_before.get("tailf-ned-cisco-ios-xr:line", {}).get("default", {}).get("secret", {})
+    console_exec_timeout = config_before.get("tailf-ned-cisco-ios-xr:line", {}).get("console", {}).get("exec-timeout", {})
 
     openconfig_system_config["openconfig-system:hostname"] = config_before["tailf-ned-cisco-ios-xr:hostname"]
     del config_leftover["tailf-ned-cisco-ios-xr:hostname"]
 
-    if config_before.get("tailf-ned-cisco-ios-xr:banner", {}).get("login").get("message"):
+    if config_before.get("tailf-ned-cisco-ios-xr:banner", {}).get("login", {}).get("message"):
         openconfig_system_config["openconfig-system:login-banner"] = (
             config_before.get("tailf-ned-cisco-ios-xr:banner",{})
             .get("login")
@@ -56,7 +70,7 @@ def xr_system_config(config_before: dict, config_leftover: dict) -> None:
         )
         del config_leftover["tailf-ned-cisco-ios-xr:banner"]["login"]
 
-    if config_before.get("tailf-ned-cisco-ios-xr:banner", {}).get("motd").get("message"):
+    if config_before.get("tailf-ned-cisco-ios-xr:banner", {}).get("motd", {}).get("message"):
         openconfig_system_config["openconfig-system:motd-banner"] = (
             config_before.get("tailf-ned-cisco-ios-xr:banner",{})
             .get("motd")
@@ -71,9 +85,8 @@ def xr_system_config(config_before: dict, config_leftover: dict) -> None:
         )
         del config_leftover["tailf-ned-cisco-ios-xr:domain"]["name"]
 
-
-    if defualt_secret.get("secret") and defualt_secret.get("type") == "0":
-        openconfig_system_config["openconfig-system-ext:enable-secret"] = defualt_secret.get("secret")
+    if default_secret.get("secret") and default_secret.get("type") == "0":
+        openconfig_system_config["openconfig-system-ext:enable-secret"] = default_secret.get("secret")
         del config_leftover["tailf-ned-cisco-ios-xr:line"]["default"]["secret"]
 
     if console_exec_timeout.get('minutes') or console_exec_timeout.get('seconds'):
@@ -99,6 +112,7 @@ def main(before: dict, leftover: dict) -> dict:
     """
 
     xr_system_config(before, leftover)
+    xr_system_services(before, leftover)
 
     return openconfig_system
 

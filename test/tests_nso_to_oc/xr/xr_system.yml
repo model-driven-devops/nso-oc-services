@@ -63,6 +63,19 @@
           tailf-ned-cisco-ios-xr:domain:
             name: test.com
         api_method: PATCH
+    - name: NSO configure no ip domain lookup
+      tags:
+        - ip_domain_lookup
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:domain
+        content: |
+          tailf-ned-cisco-ios-xr:domain:
+            lookup:
+              disable:
+                - null
+        api_method: PATCH
     - name: NSO configure enable secret
       tags:
         - enable_secret
@@ -91,7 +104,7 @@
                 minutes: 13
                 seconds: 20
         api_method: PATCH
-    
+
     - name: Execute NSO NED to OC script
       script: ../../../package_nso_to_oc/xr/xr_system.py
       args:
@@ -124,3 +137,4 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['domain-name'] == 'test.com'"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:enable-secret'] == 'VALUE_SPECIFIED_IN_NO_LOG_PARAMETER'"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:console-exec-timeout-seconds'] == 800"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['openconfig-system-ext:ip-domain-lookup'] == false"

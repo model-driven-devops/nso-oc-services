@@ -18,24 +18,26 @@
     device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
     ansible_network_os: 'cisco.iosxr.iosxr'
   tasks:
-    - name: test http_server
+    - name: test config
       tags:
-        - http_server
+        - config
       import_role:
         name: nso-openconfig-test
       vars:
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              config:
+              openconfig-system:config:
                 openconfig-system-ext:enable-secret: 'password'
                 openconfig-system-ext:console-exec-timeout-seconds: 800
-                domain-name: 'test123.com'
-                hostname: 'rxx'
-                login-banner: |
+                openconfig-system:domain-name: 'test123.com'
+                openconfig-system:hostname: 'rxx'
+                openconfig-system:login-banner: |
                   This is the login-banner.
-                motd-banner: |
+                openconfig-system:motd-banner: |
                   This is the motd-banner.
+              openconfig-system-ext:services:
+                openconfig-system-ext:ip-domain-lookup: false
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -43,6 +45,7 @@
         assertions:
           - "'+hostname rxx:' in changes"
           - "'+domain name test123.com:' in changes"
+          - "'+domain lookup disable:' in changes"
           - "'+banner login ^This is the login-banner.:' in changes"
           - "'+banner motd ^This is the motd-banner.:' in changes"
           - "'+line console:' in changes"

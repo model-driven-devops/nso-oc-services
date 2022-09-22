@@ -33,9 +33,23 @@ openconfig_system = {
             "openconfig-system:servers": {
                 "openconfig-system:server": []}
         },
-        "openconfig-system:ssh-server": {"openconfig-system:config": {}}
+        "openconfig-system:ssh-server": {"openconfig-system:config": {}},
+        "openconfig-system-ext:services": {}
     }
 }
+
+
+def xe_system_services(config_before: dict, config_leftover: dict) -> None:
+    """
+    Translates NSO XE NED to MDD OpenConfig System Services
+    """
+    openconfig_system_services = openconfig_system["openconfig-system:system"]["openconfig-system-ext:services"]
+    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("domain", {}).get("lookup-conf", {}).get("lookup",
+                                                                                                    True) is False:
+        openconfig_system_services["openconfig-system-ext:ip-domain-lookup"] = False
+        del config_leftover["tailf-ned-cisco-ios:ip"]["domain"]["lookup-conf"]
+    else:
+        openconfig_system_services["openconfig-system-ext:ip-domain-lookup"] = True
 
 
 def xe_system_config(config_before: dict, config_leftover: dict) -> None:
@@ -260,6 +274,7 @@ def main(before: dict, leftover: dict, if_ip: dict) -> dict:
     :return: MDD Openconfig System configuration: dict
     """
     xe_system_config(before, leftover)
+    xe_system_services(before, leftover)
     xe_system_ssh_server(before, leftover)
     xe_system_ntp(before, leftover, if_ip)
 

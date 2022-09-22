@@ -86,6 +86,11 @@ def xe_system_program_service(self) -> None:
 
     device_cdb = self.root.devices.device[self.device_name].config
     # Services
+    # service ip domain lookup
+    if self.service.oc_sys__system.services.ip_domain_lookup is False:
+        device_cdb.ios__ip.domain.lookup_conf.lookup = False
+    elif self.service.oc_sys__system.services.ip_domain_lookup is True:
+        device_cdb.ios__ip.domain.lookup_conf.lookup = True
     # service finger
     if self.service.oc_sys__system.services.finger:
         if not device_cdb.ios__ip.finger.exists():
