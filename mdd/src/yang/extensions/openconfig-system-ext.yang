@@ -29,7 +29,10 @@ module openconfig-system-ext{
 
   description
     "Augmentation to openconfig system model.";
-
+  revision "2022-09-22" {
+    description
+      "Added no ip domain lookup";
+  }
   revision "2021-08-08" {
     description
       "Initial revision";
@@ -111,6 +114,12 @@ module openconfig-system-ext{
     container services {
       description
         "Minor network device services";
+      leaf ip-domain-lookup {
+          type boolean;
+          //default true;
+          description
+            "Disable or enable ip domain-lookup.";
+      }
       leaf finger {
           type boolean;
           //default false;

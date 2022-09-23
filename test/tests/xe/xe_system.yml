@@ -1243,6 +1243,24 @@
         assertions:
           - "'+no logging console:' in changes"
 
+    - name: test no_ip_domain_lookup
+      tags:
+        - no_ip_domain_lookup
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:ip-domain-lookup: false
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+no ip domain lookup:' in changes"
+
 - hosts: nso
   connection: local
   gather_facts: no
