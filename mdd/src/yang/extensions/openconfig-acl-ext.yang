@@ -21,6 +21,10 @@ module openconfig-acl-ext{
   description
     "Augmentation to openconfig acl model.";
 
+  revision "2022-09-27" {
+    description
+      "Added config container and fixed typo";
+  }
   revision "2021-10-26" {
     description
       "Initial revision";
@@ -32,13 +36,15 @@ module openconfig-acl-ext{
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-acl:acl/oc-acl:acl-sets/oc-acl:acl-set/oc-acl:acl-entries/oc-acl:acl-entry {
     container ipv4 {
-      leaf source-address {
-        type oc-inet:ipv4-prefix;
-        description
-          "Source IPv4 address prefix.";
+      container config {
+        leaf source-address {
+          type oc-inet:ipv4-prefix;
+          description
+            "Source IPv4 address prefix.";
+          when "../../../../../oc-acl:config/oc-acl:type='oc-acl-ext:ACL_IPV4_STANDARD'" ;
+          }
         when "../../../../oc-acl:config/oc-acl:type='oc-acl-ext:ACL_IPV4_STANDARD'" ;
         }
-      when "../../../oc-acl:config/oc-acl:type='oc-acl-ext:ACL_IPV4_STANDARD'" ;
      }
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-acl:acl {
@@ -46,21 +52,29 @@ module openconfig-acl-ext{
       description
         "Container for NTP ACL application.";
       container peer {
-        leaf peer-acl-set {
-          type leafref {
-            path "../../../oc-acl:acl-sets/oc-acl:acl-set/oc-acl:config/oc-acl:name";
-          }
+        container config {
           description
-            "Name of standard ACL to apply to peer.";
+            "Configuration for ACL for NTP peer";
+          leaf peer-acl-set {
+            type leafref {
+              path "../../../../oc-acl:acl-sets/oc-acl:acl-set/oc-acl:config/oc-acl:name";
+            }
+            description
+              "Name of standard ACL to apply to peer.";
+          }
         }
       }
-      container serve {
-        leaf serve-acl-set {
-          type leafref {
-            path "../../../oc-acl:acl-sets/oc-acl:acl-set/oc-acl:config/oc-acl:name";
-          }
+      container server {
+        container config {
           description
-            "Name of standard ACL to apply to serve.";
+            "Configuration for ACL for NTP server";
+          leaf server-acl-set {
+            type leafref {
+              path "../../../../oc-acl:acl-sets/oc-acl:acl-set/oc-acl:config/oc-acl:name";
+            }
+            description
+              "Name of standard ACL to apply to server.";
+          }
         }
       }
     }

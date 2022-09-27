@@ -106,10 +106,10 @@ def xe_acls_program_service(self) -> None:
             rules_oc_config = list()  # {'10 permit any'}
             for i in service_acl.acl_entries.acl_entry:
                 rule = str(i.sequence_id) + ' ' + actions_oc_to_xe[i.actions.config.forwarding_action] + ' '
-                if i.oc_acl_ext__ipv4.source_address == '0.0.0.0/0':
+                if i.oc_acl_ext__ipv4.config.source_address == '0.0.0.0/0':
                     rule += 'any '
                 else:
-                    rule += prefix_to_network_and_mask(i.oc_acl_ext__ipv4.source_address) + ' '
+                    rule += prefix_to_network_and_mask(i.oc_acl_ext__ipv4.config.source_address) + ' '
                 if i.actions.config.log_action:
                     if i.actions.config.log_action == 'oc-acl:LOG_SYSLOG':
                         rule += 'log-input'
@@ -202,13 +202,13 @@ def xe_acls_ntp_program_service(self) -> None:
     Apply NTP ACLs
     """
     device = self.root.devices.device[self.device_name].config
-    # Serve
-    if self.service.oc_acl__acl.oc_acl_ext__ntp.serve.serve_acl_set:
-        device.ios__ntp.access_group.serve.access_list = self.service.oc_acl__acl.oc_acl_ext__ntp.serve.serve_acl_set
+    # Server
+    if self.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set:
+        device.ios__ntp.access_group.serve.access_list = self.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set
     else:
         device.ios__ntp.access_group.serve.access_list = None
     # Peer
-    if self.service.oc_acl__acl.oc_acl_ext__ntp.peer.peer_acl_set:
-        device.ios__ntp.access_group.peer.access_list = self.service.oc_acl__acl.oc_acl_ext__ntp.peer.peer_acl_set
+    if self.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set:
+        device.ios__ntp.access_group.peer.access_list = self.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set
     else:
         device.ios__ntp.access_group.peer.access_list = None

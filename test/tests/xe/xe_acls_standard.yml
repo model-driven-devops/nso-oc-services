@@ -51,8 +51,8 @@
                       type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
                     name: '11'
                     type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    acl-entries:
-                      acl-entry:
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
                         - actions:
                             config:
                               forwarding-action: 'ACCEPT'
@@ -60,7 +60,8 @@
                           config:
                             sequence-id: 10
                           openconfig-acl-ext:ipv4:
-                            source-address: '10.0.0.0/8'
+                            openconfig-acl-ext:config:
+                              source-address: '10.0.0.0/8'
                           sequence-id: 10
                         - actions:
                             config:
@@ -69,7 +70,8 @@
                           config:
                             sequence-id: 20
                           openconfig-acl-ext:ipv4:
-                            source-address: '0.0.0.0/0'
+                            openconfig-acl-ext:config:
+                              source-address: '0.0.0.0/0'
                           sequence-id: 20
               interfaces:
                 interface:
@@ -137,8 +139,8 @@
                       type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
                     name: '11'
                     type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    acl-entries:
-                      acl-entry:
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
                         - actions:
                             config:
                               forwarding-action: 'ACCEPT'
@@ -146,7 +148,8 @@
                           config:
                             sequence-id: 10
                           openconfig-acl-ext:ipv4:
-                            source-address: '10.0.0.0/8'
+                            openconfig-acl-ext:config:
+                              source-address: '10.0.0.0/8'
                           sequence-id: 10
                         - actions:
                             config:
@@ -155,7 +158,8 @@
                           config:
                             sequence-id: 20
                           openconfig-acl-ext:ipv4:
-                            source-address: '0.0.0.0/0'
+                            openconfig-acl-ext:config:
+                              source-address: '0.0.0.0/0'
                           sequence-id: 20
               interfaces:
                 interface:
@@ -223,8 +227,8 @@
 #                      type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
 #                    name: '11'
 #                    type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-#                    acl-entries:
-#                      acl-entry:
+#                    openconfig-acl:acl-entries:
+#                      openconfig-acl:acl-entry:
 #                        - actions:
 #                            config:
 #                              forwarding-action: 'ACCEPT'
@@ -232,7 +236,8 @@
 #                          config:
 #                            sequence-id: 10
 #                          openconfig-acl-ext:ipv4:
-#                            source-address: '0.0.0.0/0'
+#                            openconfig-acl-ext:config:
+#                              source-address: '0.0.0.0/0'
 #                          sequence-id: 10
 #              openconfig-acl-ext:lines:
 #                line:
@@ -295,8 +300,8 @@
                       type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
                     name: '11'
                     type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    acl-entries:
-                      acl-entry:
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
                         - actions:
                             config:
                               forwarding-action: 'ACCEPT'
@@ -304,7 +309,8 @@
                           config:
                             sequence-id: 10
                           openconfig-acl-ext:ipv4:
-                            source-address: '0.0.0.0/0'
+                            openconfig-acl-ext:config:
+                              source-address: '0.0.0.0/0'
                           sequence-id: 10
               openconfig-acl-ext:lines:
                 line:

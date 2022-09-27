@@ -61,7 +61,8 @@
                           config:
                             sequence-id: 10
                           openconfig-acl-ext:ipv4:
-                            source-address: '0.0.0.0/0'
+                            openconfig-acl-ext:config:
+                              source-address: '0.0.0.0/0'
                           sequence-id: 10
             openconfig-routing-policy:routing-policy:
               defined-sets:

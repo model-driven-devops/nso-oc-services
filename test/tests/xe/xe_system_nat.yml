@@ -147,15 +147,15 @@
                     enabled-address-families:
                       - 'IPV4'
             openconfig-acl:acl:
-              acl-sets:
-                acl-set:
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
                   - config:
                       name: 'nat-acl1'
                       type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
                     name: 'nat-acl1'
                     type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    acl-entries:
-                      acl-entry:
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
                         - actions:
                             config:
                               forwarding-action: 'ACCEPT'
@@ -163,7 +163,8 @@
                           config:
                             sequence-id: 10
                           openconfig-acl-ext:ipv4:
-                            source-address: '192.168.1.0/24'
+                            openconfig-acl-ext:config:
+                              source-address: '192.168.1.0/24'
                           sequence-id: 10
                         - actions:
                             config:
@@ -172,15 +173,16 @@
                           config:
                             sequence-id: 20
                           openconfig-acl-ext:ipv4:
-                            source-address: '192.168.2.0/24'
+                            openconfig-acl-ext:config:
+                              source-address: '192.168.2.0/24'
                           sequence-id: 20
                   - config:
                       name: 'nat-acl2'
                       type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
                     name: 'nat-acl2'
                     type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    acl-entries:
-                      acl-entry:
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
                         - actions:
                             config:
                               forwarding-action: 'ACCEPT'
@@ -188,7 +190,8 @@
                           config:
                             sequence-id: 10
                           openconfig-acl-ext:ipv4:
-                            source-address: '192.168.3.0/24'
+                            openconfig-acl-ext:config:
+                              source-address: '192.168.3.0/24'
                           sequence-id: 10
                         - actions:
                             config:
@@ -197,7 +200,8 @@
                           config:
                             sequence-id: 20
                           openconfig-acl-ext:ipv4:
-                            source-address: '192.168.4.0/24'
+                            openconfig-acl-ext:config:
+                              source-address: '192.168.4.0/24'
                           sequence-id: 20
             openconfig-system:system:
               openconfig-system-ext:services:

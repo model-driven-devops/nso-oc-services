@@ -32,11 +32,13 @@
                           config:
                             sequence-id: 10
                           openconfig-acl-ext:ipv4:
-                            source-address: '0.0.0.0/0'
+                            openconfig-acl-ext:config:
+                              source-address: '0.0.0.0/0'
                           sequence-id: 10
               openconfig-acl-ext:ntp:
-                openconfig-acl-ext:serve:
-                  openconfig-acl-ext:serve-acl-set: '11'
+                openconfig-acl-ext:server:
+                  openconfig-acl-ext:config:
+                    openconfig-acl-ext:server-acl-set: '11'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -67,11 +69,13 @@
                           config:
                             sequence-id: 10
                           openconfig-acl-ext:ipv4:
-                            source-address: '0.0.0.0/0'
+                            openconfig-acl-ext:config:
+                              source-address: '0.0.0.0/0'
                           sequence-id: 10
               openconfig-acl-ext:ntp:
                 openconfig-acl-ext:peer:
-                  openconfig-acl-ext:peer-acl-set: '11'
+                  openconfig-acl-ext:config:
+                    openconfig-acl-ext:peer-acl-set: '11'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false

@@ -29,6 +29,10 @@ module openconfig-system-ext{
 
   description
     "Augmentation to openconfig system model.";
+  revision "2022-09-26" {
+    description
+      "organized to OC standard";
+  }
   revision "2022-09-22" {
     description
       "Added no ip domain lookup";
@@ -111,69 +115,134 @@ module openconfig-system-ext{
       "Encryption type tls_rsa_with_aes_gcm_sha2(TLS1.2 & above) ciphersuite.";
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system {
+    container timestamps {
+      description
+        "Configure logging and debugging time-stamps messages.";
+      container logging {
+        description
+          "Configure logging time-stamps messages.";
+         container config {
+          leaf enabled {
+            type boolean;
+            description
+              "Enables timestamps for logging.";
+           }
+          leaf datetime {
+            type boolean;
+            description
+              "Time stamp with the date and time.";
+           }
+           leaf localtime {
+            type boolean;
+            description
+              "Time stamp relative to the local time zone.";
+           }
+           leaf uptime {
+            type boolean;
+            description
+              "Time stamp with time since the system was rebooted.";
+           }
+         }
+       }
+      container debugging {
+        description
+          "Configure debugging time-stamps messages.";
+        container config {
+          leaf enabled {
+            type boolean;
+            description
+              "Enables timestamps for debugging.";
+           }
+          leaf datetime {
+            type boolean;
+            description
+              "Time stamp with the date and time.";
+           }
+           leaf localtime {
+            type boolean;
+            description
+              "Time stamp relative to the local time zone.";
+           }
+           leaf msec {
+            type boolean;
+            description
+              "Include milliseconds in the date and time stamp.";
+           }
+           leaf uptime {
+            type boolean;
+            description
+              "Time stamp with time since the system was rebooted.";
+           }
+         }
+       }
+     }
     container services {
       description
         "Minor network device services";
-      leaf ip-domain-lookup {
+      container config {
+        leaf ip-domain-lookup {
+            type boolean;
+            //default true;
+            description
+              "Disable or enable ip domain-lookup.";
+        }
+        leaf finger {
+            type boolean;
+            //default false;
+            description
+              "Configure a system to accept Finger protocol requests.";
+        }
+        leaf ip-gratuitous-arps {
           type boolean;
-          //default true;
           description
-            "Disable or enable ip domain-lookup.";
-      }
-      leaf finger {
+            "Enable the transmission of gratuitous Address Resolution Protocol (ARP) messages.";
+        }
+        leaf service-password-encryption {
           type boolean;
-          //default false;
           description
-            "Configure a system to accept Finger protocol requests.";
-      }
-      leaf ip-gratuitous-arps {
-        type boolean;
-        description
-          "Enable the transmission of gratuitous Address Resolution Protocol (ARP) messages.";
-      }
-      leaf service-password-encryption {
-        type boolean;
-        description
-          "Converts unencrypted passwords to encrypted passwords.";
-      }
-      leaf service-tcp-small-servers {
-        type boolean;
-        description
-          "Enables small TCP servers such as the ECHO.";
-      }
-      leaf service-udp-small-servers {
-        type boolean;
-        description
-          "Enables small User Datagram Protocol (UDP) servers such as the ECHO.";
+            "Converts unencrypted passwords to encrypted passwords.";
+        }
+        leaf service-tcp-small-servers {
+          type boolean;
+          description
+            "Enables small TCP servers such as the ECHO.";
+        }
+        leaf service-udp-small-servers {
+          type boolean;
+          description
+            "Enables small User Datagram Protocol (UDP) servers such as the ECHO.";
+        }
       }
       container http {
         description
           "HTTP server configurations";
-        leaf http-enabled {
-            type boolean;
-            //default false;
-            description
-              "Enable HTTP Server.";
-        }
-        leaf https-enabled {
-            type boolean;
-            //default false;
-            description
-              "Enable HTTPS Server.";
-        }
-        leaf ip-http-max-connections {
-          type uint16;
-          tailf:info "ios: ip http max connections";
-          description
-            "Sets the maximum number of concurrent connections allowed for the HTTP server.";
-        }
-        leaf-list ip-http-secure-ciphersuite {
-          type identityref {
-            base oc-system-ext:CIPHERSUITE_TYPE;
+        container config {
+          leaf http-enabled {
+              type boolean;
+              //default false;
+              description
+                "Enable HTTP Server.";
           }
-          tailf:info "ios: ip http secure-ciphersuite";
-          description
-            "Specifies the CipherSuites that should be used by the secure HTTP server when negotiating a connection with a remote client.";
+          leaf https-enabled {
+              type boolean;
+              //default false;
+              description
+                "Enable HTTPS Server.";
+          }
+          leaf ip-http-max-connections {
+            type uint16;
+            tailf:info "ios: ip http max connections";
+            description
+              "Sets the maximum number of concurrent connections allowed for the HTTP server.";
+          }
+          leaf-list ip-http-secure-ciphersuite {
+            type identityref {
+              base oc-system-ext:CIPHERSUITE_TYPE;
+            }
+            tailf:info "ios: ip http secure-ciphersuite";
+            description
+              "Specifies the CipherSuites that should be used by the secure HTTP server when negotiating a connection with a remote client.";
+          }
         }
         container ip-http-timeout-policy {
           description
@@ -181,26 +250,28 @@ module openconfig-system-ext{
           container idle {
             description
               "Specifies the maximum number of seconds that a connection will be kept open if no data is received or response data cannot be sent out.";
-            leaf connection {
-              type uint16 {
-                range "0 .. 600";
+            container config {
+              leaf connection {
+                type uint16 {
+                  range "0 .. 600";
+                }
+                description
+                  "Connection idle time-out value in seconds.";
               }
-              description
-                "Connection idle time-out value in seconds.";
-            }
-            leaf life {
-              type uint32 {
-                range "0 .. 86400";
+              leaf life {
+                type uint32 {
+                  range "0 .. 86400";
+                }
+                description
+                  "Specifies the maximum number of seconds that a connection will be kept open from the time the connection is established.";
               }
-              description
-                "Specifies the maximum number of seconds that a connection will be kept open from the time the connection is established.";
-            }
-            leaf requests {
-              type uint32 {
-                range "0 .. 86400";
+              leaf requests {
+                type uint32 {
+                  range "0 .. 86400";
+                }
+                description
+                  "Specifies that a maximum limit is set on the number of requests processed on a persistent connection before it is closed.";
               }
-              description
-                "Specifies that a maximum limit is set on the number of requests processed on a persistent connection before it is closed.";
             }
           }
         }
@@ -229,63 +300,6 @@ module openconfig-system-ext{
         "Sets a local password to control access to various privilege levels.
         At this time, only encryption-type 0 is supported.";
     }
-    container timestamps {
-      description
-        "Configure logging and debugging time-stamps messages.";
-      container logging {
-        description
-          "Configure logging time-stamps messages.";
-        leaf enabled {
-          type boolean;
-          description
-            "Enables timestamps for logging.";
-         }
-        leaf datetime {
-          type boolean;
-          description
-            "Time stamp with the date and time.";
-         }
-         leaf localtime {
-          type boolean;
-          description
-            "Time stamp relative to the local time zone.";
-         }
-         leaf uptime {
-          type boolean;
-          description
-            "Time stamp with time since the system was rebooted.";
-         }
-       }
-      container debugging {
-        description
-          "Configure debugging time-stamps messages.";
-        leaf enabled {
-          type boolean;
-          description
-            "Enables timestamps for debugging.";
-         }
-        leaf datetime {
-          type boolean;
-          description
-            "Time stamp with the date and time.";
-         }
-         leaf localtime {
-          type boolean;
-          description
-            "Time stamp relative to the local time zone.";
-         }
-         leaf msec {
-          type boolean;
-          description
-            "Include milliseconds in the date and time stamp.";
-         }
-         leaf uptime {
-          type boolean;
-          description
-            "Time stamp with time since the system was rebooted.";
-         }
-       }
-     }
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ntp/oc-sys:config {
     leaf ntp-enable-logging {
@@ -384,10 +398,6 @@ module openconfig-system-ext{
       container selectors {
         description
           "Enclosing container ";
-        container config {
-          description
-            "Configuration data for terminal-monitor logging";
-        }
         list selector {
           key "facility severity";
           description

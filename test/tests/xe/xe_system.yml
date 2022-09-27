@@ -47,9 +47,9 @@
     device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
     ansible_network_os: 'cisco.ios.ios'
   tasks:
-    - name: test http_server
+    - name: test system_config
       tags:
-        - http_server
+        - system_config
       import_role:
         name: nso-openconfig-test
       vars:
@@ -588,12 +588,13 @@
             openconfig-system:system:
               openconfig-system-ext:services:
                 openconfig-system-ext:http:
-                  openconfig-system-ext:http-enabled: true
-                  openconfig-system-ext:https-enabled: true
-                  openconfig-system-ext:ip-http-max-connections: 4
-                  openconfig-system-ext:ip-http-secure-ciphersuite:
-                    - 'aes-256-cbc-sha'
-                    - 'aes-128-cbc-sha'
+                  openconfig-system-ext:config:
+                    openconfig-system-ext:http-enabled: true
+                    openconfig-system-ext:https-enabled: true
+                    openconfig-system-ext:ip-http-max-connections: 4
+                    openconfig-system-ext:ip-http-secure-ciphersuite:
+                      - 'aes-256-cbc-sha'
+                      - 'aes-128-cbc-sha'
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -614,8 +615,9 @@
             openconfig-system:system:
               openconfig-system-ext:services:
                 openconfig-system-ext:http:
-                  openconfig-system-ext:http-enabled: false
-                  openconfig-system-ext:https-enabled: false
+                  openconfig-system-ext:config:
+                    openconfig-system-ext:http-enabled: false
+                    openconfig-system-ext:https-enabled: false
         api_method: PATCH
         api_ignore_errors: false
         rollback: false
@@ -633,7 +635,8 @@
           mdd:openconfig:
             openconfig-system:system:
               openconfig-system-ext:services:
-                finger: true
+                openconfig-system-ext:config:
+                  finger: true
         api_method: PATCH
         api_ignore_errors: false
         rollback: false
@@ -650,7 +653,8 @@
           mdd:openconfig:
             openconfig-system:system:
               openconfig-system-ext:services:
-                finger: false
+                openconfig-system-ext:config:
+                  finger: false
         api_method: PATCH
         api_ignore_errors: false
         rollback: false
@@ -679,9 +683,10 @@
                 openconfig-system-ext:http:
                   openconfig-system-ext:ip-http-timeout-policy:
                     openconfig-system-ext:idle:
-                      openconfig-system-ext:connection: 240
-                      openconfig-system-ext:life: 240
-                      openconfig-system-ext:requests: 3
+                      openconfig-system-ext:config:
+                        openconfig-system-ext:connection: 240
+                        openconfig-system-ext:life: 240
+                        openconfig-system-ext:requests: 3
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -698,14 +703,15 @@
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              openconfig-system:config:
-                openconfig-system-ext:timestamps:
-                  openconfig-system-ext:logging:
+              openconfig-system-ext:timestamps:
+                openconfig-system-ext:logging:
+                  openconfig-system-ext:config:
                     openconfig-system-ext:enabled: true
                     openconfig-system-ext:datetime: true
                     openconfig-system-ext:uptime: false
                     openconfig-system-ext:localtime: true
-                  openconfig-system-ext:debugging:
+                openconfig-system-ext:debugging:
+                  openconfig-system-ext:config:
                     openconfig-system-ext:enabled: true
                     openconfig-system-ext:datetime: true
                     openconfig-system-ext:uptime: false
@@ -727,14 +733,15 @@
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              openconfig-system:config:
-                openconfig-system-ext:timestamps:
-                  openconfig-system-ext:logging:
+              openconfig-system-ext:timestamps:
+                openconfig-system-ext:logging:
+                  openconfig-system-ext:config:
                     openconfig-system-ext:enabled: true
                     openconfig-system-ext:datetime: false
                     openconfig-system-ext:uptime: true
                     openconfig-system-ext:localtime: true
-                  openconfig-system-ext:debugging:
+                openconfig-system-ext:debugging:
+                  openconfig-system-ext:config:
                     openconfig-system-ext:enabled: true
                     openconfig-system-ext:datetime: false
                     openconfig-system-ext:uptime: true
@@ -1136,10 +1143,11 @@
           mdd:openconfig:
             openconfig-system:system:
               openconfig-system-ext:services:
-                ip-gratuitous-arps: true
-                service-password-encryption: true
-                service-tcp-small-servers: true
-                service-udp-small-servers: true
+                openconfig-system-ext:config:
+                  ip-gratuitous-arps: true
+                  service-password-encryption: true
+                  service-tcp-small-servers: true
+                  service-udp-small-servers: true
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -1167,11 +1175,12 @@
           mdd:openconfig:
             openconfig-system:system:
               openconfig-system-ext:services:
-                ip-gratuitous-arps: false
-                service-password-encryption: false
-                service-tcp-small-servers: false
-                service-udp-small-servers: false
-                finger: true
+                openconfig-system-ext:config:
+                  ip-gratuitous-arps: false
+                  service-password-encryption: false
+                  service-tcp-small-servers: false
+                  service-udp-small-servers: false
+                  finger: true
         api_method: PATCH
         rollback: false
         assertion_ignore_errors: false
@@ -1253,7 +1262,8 @@
           mdd:openconfig:
             openconfig-system:system:
               openconfig-system-ext:services:
-                openconfig-system-ext:ip-domain-lookup: false
+                openconfig-system-ext:config:
+                  openconfig-system-ext:ip-domain-lookup: false
         api_method: PUT
         api_ignore_errors: false
         rollback: false

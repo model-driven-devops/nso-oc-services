@@ -87,58 +87,58 @@ def xe_system_program_service(self) -> None:
     device_cdb = self.root.devices.device[self.device_name].config
     # Services
     # service ip domain lookup
-    if self.service.oc_sys__system.services.ip_domain_lookup is False:
+    if self.service.oc_sys__system.services.config.ip_domain_lookup is False:
         device_cdb.ios__ip.domain.lookup_conf.lookup = False
-    elif self.service.oc_sys__system.services.ip_domain_lookup is True:
+    elif self.service.oc_sys__system.services.config.ip_domain_lookup is True:
         device_cdb.ios__ip.domain.lookup_conf.lookup = True
     # service finger
-    if self.service.oc_sys__system.services.finger:
+    if self.service.oc_sys__system.services.config.finger:
         if not device_cdb.ios__ip.finger.exists():
             device_cdb.ios__ip.finger.create()
-    elif self.service.oc_sys__system.services.finger is False:
+    elif self.service.oc_sys__system.services.config.finger is False:
         if device_cdb.ios__ip.finger.exists():
             device_cdb.ios__ip.finger.delete()
     # ip gratuitous arps
-    if self.service.oc_sys__system.services.ip_gratuitous_arps:
+    if self.service.oc_sys__system.services.config.ip_gratuitous_arps:
         device_cdb.ios__ip.gratuitous_arps_conf.gratuitous_arps = True
-    elif self.service.oc_sys__system.services.ip_gratuitous_arps is False:
+    elif self.service.oc_sys__system.services.config.ip_gratuitous_arps is False:
         device_cdb.ios__ip.gratuitous_arps_conf.gratuitous_arps = None
     # service password-encryption
-    if self.service.oc_sys__system.services.service_password_encryption:
+    if self.service.oc_sys__system.services.config.service_password_encryption:
         device_cdb.ios__service.password_encryption.create()
-    elif self.service.oc_sys__system.services.service_password_encryption is False:
+    elif self.service.oc_sys__system.services.config.service_password_encryption is False:
         if device_cdb.ios__service.password_encryption.exists():
             device_cdb.ios__service.password_encryption.delete()
     # service-tcp-small-servers
-    if self.service.oc_sys__system.services.service_tcp_small_servers:
+    if self.service.oc_sys__system.services.config.service_tcp_small_servers:
         device_cdb.ios__service.tcp_small_servers.create()
-    elif self.service.oc_sys__system.services.service_tcp_small_servers is False:
+    elif self.service.oc_sys__system.services.config.service_tcp_small_servers is False:
         if device_cdb.ios__service.tcp_small_servers.exists():
             device_cdb.ios__service.tcp_small_servers.delete()
     # service-udp-small-servers
-    if self.service.oc_sys__system.services.service_udp_small_servers:
+    if self.service.oc_sys__system.services.config.service_udp_small_servers:
         device_cdb.ios__service.udp_small_servers.create()
-    elif self.service.oc_sys__system.services.service_udp_small_servers is False:
+    elif self.service.oc_sys__system.services.config.service_udp_small_servers is False:
         if device_cdb.ios__service.udp_small_servers.exists():
             device_cdb.ios__service.udp_small_servers.delete()
     # service http
-    if self.service.oc_sys__system.services.http.http_enabled:
+    if self.service.oc_sys__system.services.http.config.http_enabled:
         device_cdb.ios__ip.http.server = True
-    elif self.service.oc_sys__system.services.http.http_enabled is False:
+    elif self.service.oc_sys__system.services.http.config.http_enabled is False:
         device_cdb.ios__ip.http.server = False
-    if self.service.oc_sys__system.services.http.https_enabled:
+    if self.service.oc_sys__system.services.http.config.https_enabled:
         device_cdb.ios__ip.http.secure_server = True
-    elif self.service.oc_sys__system.services.http.https_enabled is False:
+    elif self.service.oc_sys__system.services.http.config.https_enabled is False:
         device_cdb.ios__ip.http.secure_server = False
-    if self.service.oc_sys__system.services.http.ip_http_max_connections:
-        device_cdb.ios__ip.http.max_connections = self.service.oc_sys__system.services.http.ip_http_max_connections
-    if self.service.oc_sys__system.services.http.ip_http_secure_ciphersuite:
-        for suite in self.service.oc_sys__system.services.http.ip_http_secure_ciphersuite:
+    if self.service.oc_sys__system.services.http.config.ip_http_max_connections:
+        device_cdb.ios__ip.http.max_connections = self.service.oc_sys__system.services.http.config.ip_http_max_connections
+    if self.service.oc_sys__system.services.http.config.ip_http_secure_ciphersuite:
+        for suite in self.service.oc_sys__system.services.http.config.ip_http_secure_ciphersuite:
             device_cdb.ios__ip.http.secure_ciphersuite.create(suite.replace('oc-system-ext:', ''))
-    if self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.connection and self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.life and self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.requests:
-        device_cdb.ios__ip.http.timeout_policy.idle = self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.connection
-        device_cdb.ios__ip.http.timeout_policy.life = self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.life
-        device_cdb.ios__ip.http.timeout_policy.requests = self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.requests
+    if self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.connection and self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.life and self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.requests:
+        device_cdb.ios__ip.http.timeout_policy.idle = self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.connection
+        device_cdb.ios__ip.http.timeout_policy.life = self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.life
+        device_cdb.ios__ip.http.timeout_policy.requests = self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.requests
     # nat pools
     if len(self.service.oc_sys__system.services.nat.pools.pool) > 0:
         for service_pool in self.service.oc_sys__system.services.nat.pools.pool:
@@ -196,31 +196,31 @@ def xe_system_program_service(self) -> None:
             if device_cdb.ios__ip.options.drop.exists():
                 device_cdb.ios__ip.options.drop.delete()
             device_cdb.ios__ip.options.ignore.create()
-    if self.service.oc_sys__system.config.timestamps.logging.enabled and (
-            self.service.oc_sys__system.config.timestamps.logging.datetime or self.service.oc_sys__system.config.timestamps.logging.uptime):
-        if self.service.oc_sys__system.config.timestamps.logging.datetime:
+    if self.service.oc_sys__system.timestamps.logging.config.enabled and (
+            self.service.oc_sys__system.timestamps.logging.config.datetime or self.service.oc_sys__system.timestamps.logging.config.uptime):
+        if self.service.oc_sys__system.timestamps.logging.config.datetime:
             dt = device_cdb.ios__service.timestamps.log.datetime.create()
-            if self.service.oc_sys__system.config.timestamps.logging.localtime:
+            if self.service.oc_sys__system.timestamps.logging.config.localtime:
                 dt.localtime.create()
         else:
             device_cdb.ios__service.timestamps.log.uptime.create()
-    elif self.service.oc_sys__system.config.timestamps.logging.datetime and self.service.oc_sys__system.config.timestamps.logging.uptime:
+    elif self.service.oc_sys__system.timestamps.logging.config.datetime and self.service.oc_sys__system.timestamps.logging.config.uptime:
         raise ValueError('Can not use timestamp logging with both uptime and datetime')
-    elif self.service.oc_sys__system.config.timestamps.logging.enabled and (
-            not self.service.oc_sys__system.config.timestamps.logging.datetime or not self.service.oc_sys__system.config.timestamps.logging.uptime):
+    elif self.service.oc_sys__system.timestamps.logging.config.enabled and (
+            not self.service.oc_sys__system.timestamps.logging.config.datetime or not self.service.oc_sys__system.timestamps.logging.config.uptime):
         raise ValueError('Logging timestamps must use datetime or uptime')
-    if self.service.oc_sys__system.config.timestamps.debugging.enabled and (
-            self.service.oc_sys__system.config.timestamps.debugging.datetime or self.service.oc_sys__system.config.timestamps.debugging.uptime):
-        if self.service.oc_sys__system.config.timestamps.debugging.datetime:
+    if self.service.oc_sys__system.timestamps.debugging.config.enabled and (
+            self.service.oc_sys__system.timestamps.debugging.config.datetime or self.service.oc_sys__system.timestamps.debugging.config.uptime):
+        if self.service.oc_sys__system.timestamps.debugging.config.datetime:
             dt = device_cdb.ios__service.timestamps.debug.datetime.create()
-            if self.service.oc_sys__system.config.timestamps.debugging.localtime:
+            if self.service.oc_sys__system.timestamps.debugging.config.localtime:
                 dt.localtime.create()
         else:
             device_cdb.ios__service.timestamps.debug.uptime.create()
-    elif self.service.oc_sys__system.config.timestamps.debugging.datetime and self.service.oc_sys__system.config.timestamps.debugging.uptime:
+    elif self.service.oc_sys__system.timestamps.debugging.config.datetime and self.service.oc_sys__system.timestamps.debugging.config.uptime:
         raise ValueError('Can not use timestamp debugging with both uptime and datetime')
-    elif self.service.oc_sys__system.config.timestamps.debugging.enabled and (
-            not self.service.oc_sys__system.config.timestamps.debugging.datetime or not self.service.oc_sys__system.config.timestamps.debugging.uptime):
+    elif self.service.oc_sys__system.timestamps.debugging.config.enabled and (
+            not self.service.oc_sys__system.timestamps.debugging.config.datetime or not self.service.oc_sys__system.timestamps.debugging.config.uptime):
         raise ValueError('Debugging timestamps must use datetime or uptime')
     # DNS servers
     if self.service.oc_sys__system.dns:
