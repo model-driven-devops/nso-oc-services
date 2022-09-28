@@ -1,8 +1,10 @@
 #! /usr/bin/env python3
 
 import os
+import sys
 import json
 import urllib3
+import re
 from pathlib import Path, os as path_os
 
 if not os.environ.get("NSO_HOST", False):
