@@ -26,8 +26,8 @@ from xr import main_xr
 nso_host = os.environ.get("NSO_HOST")
 nso_username = os.environ.get("NSO_USERNAME", "ubuntu")
 nso_password = os.environ.get("NSO_PASSWORD", "admin")
-nso_device = os.environ.get("NSO_DEVICE", "xr1")
-device_os = os.environ.get("DEVICE_OS", common.XR)
+nso_device = os.environ.get("NSO_DEVICE", "xe1")
+device_os = os.environ.get("DEVICE_OS", common.XE)
 test = os.environ.get("TEST", "False")
 
 config_before_dict = common.nso_get_device_config(nso_host, nso_username, nso_password, nso_device)
