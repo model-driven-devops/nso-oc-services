@@ -17,7 +17,7 @@ def check_xr_features(self) -> None:
         raise NotImplementedError('openconfig-acl-interfaces has not yet been implemented for XR')
     if len(self.service.oc_acl__acl.oc_acl_ext__lines.line) > 0:
         raise NotImplementedError('openconfig-acl-lines has not yet been implemented for XR')
-    if (self.service.oc_acl__acl.oc_acl_ext__ntp.serve.serve_acl_set or 
+    if (self.service.oc_acl__acl.oc_acl_ext__ntp.server.server_acl_set or
         self.service.oc_acl__acl.oc_acl_ext__ntp.peer.peer_acl_set):
         raise NotImplementedError('openconfig-acl-ntp has not yet been implemented for XR')
 
