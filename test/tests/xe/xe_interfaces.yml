@@ -25,38 +25,38 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Physical Interface 6 VRRP'
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 6 VRRP'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.2'
-                                  prefix-length: 24
-                                ip: '10.6.0.2'
-                                vrrp:
-                                  vrrp-group:
-                                    - config:
-                                        advertisement-interval: 300  # units "centiseconds"; vrrp 5 timers advertise 3
-                                        preempt: true
-                                        preempt-delay: 10  # vrrp 5 preempt delay minimum 100
-                                        priority: 200  # vrrp 5 priority 200
-                                        virtual-address:  # vrrp 5 ip 10.6.0.100
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.2'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.2'
+                                  openconfig-if-ip:prefix-length: 24
+                                openconfig-if-ip:vrrp:
+                                  openconfig-if-ip:vrrp-group:
+                                    - openconfig-if-ip:virtual-router-id: 6  # group number
+                                      openconfig-if-ip:config:
+                                        openconfig-if-ip:advertisement-interval: 300  # units "centiseconds"; vrrp 5 timers advertise 3
+                                        openconfig-if-ip:preempt: true
+                                        openconfig-if-ip:preempt-delay: 10  # vrrp 5 preempt delay minimum 100
+                                        openconfig-if-ip:priority: 200  # vrrp 5 priority 200
+                                        openconfig-if-ip:virtual-address:  # vrrp 5 ip 10.6.0.100
                                           - '10.6.0.100'
-                                        virtual-router-id: 6  # group number
-                                      virtual-router-id: 6  # group number
-                          config:
-                            dhcp-client: false
+                                        openconfig-if-ip:virtual-router-id: 6  # group number
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -78,51 +78,51 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Physical Interface 7 802.1q'
-                    enabled: true
-                    name: 'GigabitEthernet7'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet7'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          description: 'Sub interface 5'
-                          enabled: true
-                          index: 5
-                        index: 5
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet7'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 7 802.1q'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet7'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 5
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:description: 'Sub interface 5'
+                          openconfig-interfaces:enabled: true
+                          openconfig-interfaces:index: 5
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.7.5.1'
-                                  prefix-length: '24'
-                                ip: '10.7.5.1'
-                          config:
-                            dhcp-client: false
-                            enabled: true
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.7.5.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.7.5.1'
+                                  openconfig-if-ip:prefix-length: '24'
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+                            openconfig-if-ip:enabled: true
                         openconfig-vlan:vlan:
-                          config:
-                            vlan-id: 5
-                      - config:
-                          description: 'Sub interface 6'
-                          enabled: true
-                          index: '6'
-                        index: '6'
+                          openconfig-vlan:config:
+                            openconfig-vlan:vlan-id: 5
+                      - openconfig-interfaces:index: '6'
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:description: 'Sub interface 6'
+                          openconfig-interfaces:enabled: true
+                          openconfig-interfaces:index: '6'
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.7.6.1'
-                                  prefix-length: '24'
-                                ip: '10.7.6.1'
-                          config:
-                            dhcp-client: false
-                            enabled: true
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.7.6.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.7.6.1'
+                                  openconfig-if-ip:prefix-length: '24'
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+                            openconfig-if-ip:enabled: true
                         openconfig-vlan:vlan:
-                          config:
-                            vlan-id: 6
+                          openconfig-vlan:config:
+                            openconfig-vlan:vlan-id: 6
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -147,27 +147,27 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Loopback 0'
-                    enabled: true
-                    name: 'Loopback0'
-                    type: 'softwareLoopback'
-                  name: 'Loopback0'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'Loopback0'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Loopback 0'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'Loopback0'
+                    openconfig-interfaces:type: 'softwareLoopback'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.255.0.1'
-                                  prefix-length: '32'
-                                ip: '10.255.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.255.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.255.0.1'
+                                  openconfig-if-ip:prefix-length: '32'
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -185,73 +185,73 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'vasi left1'
-                    enabled: true
-                    name: 'vasileft1'
-                    type: 'vasi'
-                  name: 'vasileft1'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'vasileft1'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'vasi left1'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'vasileft1'
+                    openconfig-interfaces:type: 'vasi'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '192.168.1.1'
-                                  prefix-length: '30'
-                                ip: '192.168.1.1'
-                - config:
-                    description: 'vasi right1'
-                    enabled: true
-                    name: 'vasiright1'
-                    type: 'vasi'
-                  name: 'vasiright1'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '192.168.1.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '192.168.1.1'
+                                  openconfig-if-ip:prefix-length: '30'
+                - openconfig-interfaces:name: 'vasiright1'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'vasi right1'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'vasiright1'
+                    openconfig-interfaces:type: 'vasi'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '192.168.1.2'
-                                  prefix-length: '30'
-                                ip: '192.168.1.2'
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '192.168.1.2'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '192.168.1.2'
+                                  openconfig-if-ip:prefix-length: '30'
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'abc'
-                  config:
-                    name: 'abc'
-                    type: 'L3VRF'
-                    enabled: true
-                    enabled-address-families:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'abc'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'abc'
+                    openconfig-network-instance:type: 'L3VRF'
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:enabled-address-families:
                       - 'IPV4'
-                  interfaces:
-                    interface:
-                      - id: 'vasileft1'
-                        config:
-                          id: 'vasileft1'
-                          interface: 'vasileft1'
-                          subinterface: 0
-                - name: 'xyz'
-                  config:
-                    name: 'xyz'
-                    type: 'L3VRF'
-                    enabled: true
-                    enabled-address-families:
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'vasileft1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'vasileft1'
+                          openconfig-network-instance:interface: 'vasileft1'
+                          openconfig-network-instance:subinterface: 0
+                - openconfig-network-instance:name: 'xyz'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'xyz'
+                    openconfig-network-instance:type: 'L3VRF'
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:enabled-address-families:
                       - 'IPV4'
-                  interfaces:
-                    interface:
-                      - id: 'vasiright1'
-                        config:
-                          id: 'vasiright1'
-                          interface: 'vasiright1'
-                          subinterface: 0
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'vasiright1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'vasiright1'
+                          openconfig-network-instance:interface: 'vasiright1'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -316,31 +316,31 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Physical Interface 5'
-                    enabled: true
-                    mtu: 1500
-                    name: 'GigabitEthernet5'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet5'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet5'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 5'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet5'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.5.0.1'
-                                  prefix-length: 24
-                                ip: '10.5.0.1'
-                          config:
-                            dhcp-client: false
-                          proxy-arp:
-                            config:
-                              mode: REMOTE_ONLY  # Default is DISABLE other option is REMOTE_ONLY for IOS
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.5.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.5.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+                          openconfig-if-ip:proxy-arp:
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:mode: REMOTE_ONLY  # Default is DISABLE other option is REMOTE_ONLY for IOS
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -357,31 +357,31 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Physical Interface 5'
-                    enabled: true
-                    mtu: 1500
-                    name: 'GigabitEthernet5'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet5'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet5'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 5'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet5'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.5.0.1'
-                                  prefix-length: 24
-                                ip: '10.5.0.1'
-                          config:
-                            dhcp-client: false
-                          proxy-arp:
-                            config:
-                              mode: DISABLE  # Default is DISABLE other option is REMOTE_ONLY for IOS
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.5.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.5.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+                          openconfig-if-ip:proxy-arp:
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:mode: DISABLE  # Default is DISABLE other option is REMOTE_ONLY for IOS
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -398,27 +398,27 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Physical Interface 5'
-                    enabled: true
-                    name: 'GigabitEthernet5'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet5'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet5'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 5'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet5'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.5.0.1'
-                                  prefix-length: 24
-                                ip: '10.5.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.5.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.5.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
                             openconfig-if-ip-mdd-ext:redirects: false
                             openconfig-if-ip-mdd-ext:unreachables: false
         api_method: PUT
@@ -437,27 +437,27 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Physical Interface 5'
-                    enabled: true
-                    name: 'GigabitEthernet5'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet5'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet5'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 5'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet5'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.5.0.1'
-                                  prefix-length: 24
-                                ip: '10.5.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.5.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.5.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
                             openconfig-if-ip-mdd-ext:redirects: true
                             openconfig-if-ip-mdd-ext:unreachables: true
         api_method: PATCH
@@ -466,7 +466,7 @@
         assertions:
           - "'- no ip redirects:' in changes"
           - "'- no ip unreachables:' in changes"
-   
+
     - name: test ip_mask_reply configuration
       tags:
         - ip_mask_reply
@@ -476,27 +476,27 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Physical Interface 5'
-                    enabled: true
-                    name: 'GigabitEthernet5'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet5'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet5'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 5'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet5'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.5.0.1'
-                                  prefix-length: 24
-                                ip: '10.5.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.5.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.5.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
                             openconfig-if-ip-mdd-ext:mask-reply: true
         api_method: PUT
         rollback: false
@@ -513,27 +513,27 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Physical Interface 5'
-                    enabled: true
-                    name: 'GigabitEthernet5'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet5'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet5'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 5'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet5'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.5.0.1'
-                                  prefix-length: 24
-                                ip: '10.5.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.5.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.5.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
                             openconfig-if-ip-mdd-ext:mask-reply: false
         api_method: PUT
         rollback: false
@@ -550,53 +550,53 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'Loopback10'
-                    type: 'softwareLoopback'
-                    description: 'TEST123'
-                  name: 'Loopback10'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'Loopback10'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'Loopback10'
+                    openconfig-interfaces:type: 'softwareLoopback'
+                    openconfig-interfaces:description: 'TEST123'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.255.10.1'
-                                  prefix-length: 32
-                                ip: '10.255.10.1'
-                          config:
-                            dhcp-client: false
-                - config:
-                    description: 'GRE Tunnel Interface'
-                    enabled: true
-                    name: 'Tunnel1'
-                    type: 'tunnel'
-                  name: 'Tunnel1'
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.255.10.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.255.10.1'
+                                  openconfig-if-ip:prefix-length: 32
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+                - openconfig-interfaces:name: 'Tunnel1'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'GRE Tunnel Interface'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'Tunnel1'
+                    openconfig-interfaces:type: 'tunnel'
                   openconfig-if-tunnel:tunnel:
-                    config:
-                      src: '10.255.10.1'
-                      dst: '192.168.1.1'
-                      gre-key: 1
+                    openconfig-if-tunnel:config:
+                      openconfig-if-tunnel:src: '10.255.10.1'
+                      openconfig-if-tunnel:dst: '192.168.1.1'
+                      openconfig-if-tunnel:gre-key: 1
                       openconfig-if-tunnel-ext:tunnel-path-mtu-discovery: true
                       openconfig-if-tunnel-ext:keepalives:
                         openconfig-if-tunnel-ext:period: 5
                         openconfig-if-tunnel-ext:retries: 3
-                    ipv4:
-                      config:
-                        mtu: 1476
-                        dhcp-client: false
+                    openconfig-if-tunnel:ipv4:
+                      openconfig-if-tunnel:config:
+                        openconfig-if-tunnel:mtu: 1476
+                        openconfig-if-tunnel:dhcp-client: false
                         openconfig-if-ip-mdd-ext:tcp-adjust-mss: 1460
-                      addresses:
-                        address:
-                          - config:
-                              ip: '10.254.1.1'
-                              prefix-length: 24
-                            ip: '10.254.1.1'
+                      openconfig-if-tunnel:addresses:
+                        openconfig-if-tunnel:address:
+                          - openconfig-if-tunnel:ip: '10.254.1.1'
+                            openconfig-if-tunnel:config:
+                              openconfig-if-tunnel:ip: '10.254.1.1'
+                              openconfig-if-tunnel:prefix-length: 24
 
         api_method: PUT
         rollback: false
@@ -623,35 +623,35 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Physical Interface 5'
-                    enabled: true
-                    mtu: 1500
-                    name: 'GigabitEthernet5'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet5'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 5'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet5'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      mac-address: '52:54:00:99:99:99'
-                  hold-time:
-                    config:
-                      down: 0
-                      up: 0  # not in xe
-                  name: 'GigabitEthernet5'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:mac-address: '52:54:00:99:99:99'
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 0
+                      openconfig-interfaces:up: 0  # not in xe
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.5.0.1'
-                                  prefix-length: 24
-                                ip: '10.5.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.5.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.5.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -668,51 +668,51 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Physical Interface 5'
-                    enabled: true
-                    mtu: 1500
-                    name: 'GigabitEthernet5'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet5'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet5'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 5'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet5'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.5.0.1'
-                                  prefix-length: 24
-                                ip: '10.5.0.1'
-                          config:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.5.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.5.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
                             openconfig-if-ip-mdd-ext:nat:
-                              nat-choice: 'inside'
-                - config:
-                    description: 'Physical Interface 6'
-                    enabled: true
-                    mtu: 1500
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                              openconfig-if-ip-mdd-ext:nat-choice: 'inside'
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 6'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
                             openconfig-if-ip-mdd-ext:nat:
-                              nat-choice: 'outside'
+                              openconfig-if-ip-mdd-ext:nat-choice: 'outside'
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -731,32 +731,32 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Physical Interface 5'
-                    enabled: true
-                    mtu: 1500
-                    name: 'GigabitEthernet5'
-                    type: 'ethernetCsmacd'
-                  hold-time:
-                    config:
-                      down: 10
-                      up: 0  # not in xe
-                  name: 'GigabitEthernet5'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet5'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 5'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet5'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                      openconfig-interfaces:up: 0  # not in xe
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.5.0.1'
-                                  prefix-length: 24
-                                ip: '10.5.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.5.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.5.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -773,49 +773,50 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - openconfig-if-aggregate:aggregation:
-                    config:
-                      lag-type: 'LACP'
-                  config:
-                    description: 'LACP Example PO10'
-                    enabled: true
-                    mtu: 1500
-                    name: 'Port-channel10'
-                    type: 'ieee8023adLag'
-                  name: 'Port-channel10'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          description: 'Sub interface 105'
-                          enabled: true
-                          index: 105
-                        index: 105
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'Port-channel10'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'LACP Example PO10'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'Port-channel10'
+                    openconfig-interfaces:type: 'ieee8023adLag'
+                  openconfig-if-aggregate:aggregation:
+                    openconfig-if-aggregate:config:
+                      openconfig-if-aggregate:lag-type: 'LACP'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 105
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:description: 'Sub interface 105'
+                          openconfig-interfaces:enabled: true
+                          openconfig-interfaces:index: 105
+                        openconfig-interfaces:index: 105
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '172.10.105.1'
-                                  prefix-length: 24
-                                ip: '172.10.105.1'
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '172.10.105.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '172.10.105.1'
+                                  openconfig-if-ip:prefix-length: 24
                         openconfig-vlan:vlan:
-                          config:
-                            vlan-id: 105
-                      - config:
-                          description: 'Sub interface 106'
-                          enabled: true
-                          index: 106
-                        index: 106
+                          openconfig-vlan:config:
+                            openconfig-vlan:vlan-id: 105
+                      - openconfig-interfaces:index: 106
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:description: 'Sub interface 106'
+                          openconfig-interfaces:enabled: true
+                          openconfig-interfaces:index: 106
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '172.10.106.1'
-                                  prefix-length: 24
-                                ip: '172.10.106.1'
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '172.10.106.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '172.10.106.1'
+                                  openconfig-if-ip:prefix-length: 24
                         openconfig-vlan:vlan:
-                          config:
-                            vlan-id: 106
+                          openconfig-vlan:config:
+                            openconfig-vlan:vlan-id: 106
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -858,27 +859,28 @@
           mdd:openconfig:
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
-                - openconfig-interfaces:config:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Physical Interface 6 HSRP'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:name: 'GigabitEthernet6'
                     openconfig-interfaces:type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet6'
                   openconfig-interfaces:subinterfaces:
                     openconfig-interfaces:subinterface:
-                      - openconfig-interfaces:config:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
                           openconfig-interfaces:index: 0
-                        index: 0
                         openconfig-if-ip:ipv4:
                           openconfig-if-ip:addresses:
                             openconfig-if-ip:address:
-                              - openconfig-if-ip:config:
+                              - openconfig-if-ip:ip: '10.6.0.2'
+                                openconfig-if-ip:config:
                                   openconfig-if-ip:ip: '10.6.0.2'
                                   openconfig-if-ip:prefix-length: 24
-                                ip: '10.6.0.2'
                                 openconfig-if-ip-mdd-ext:hsrp:
                                   openconfig-if-ip-mdd-ext:hsrp-group:
-                                    - openconfig-if-ip-mdd-ext:config:
+                                    - openconfig-if-ip-mdd-ext:group-number: 3  # group number
+                                      openconfig-if-ip-mdd-ext:config:
                                         openconfig-if-ip-mdd-ext:preempt: true
                                         openconfig-if-ip-mdd-ext:preempt-delay: 3500  # hsrp 5 preempt delay mi
                                         openconfig-if-ip-mdd-ext:priority: 200  # hsrp 7 priority 200
@@ -888,7 +890,6 @@
                                         openconfig-if-ip-mdd-ext:timers:
                                           openconfig-if-ip-mdd-ext:hello-interval: 30
                                           openconfig-if-ip-mdd-ext:holdtime: 100
-                                      group-number: 3  # group number
                           openconfig-if-ip:config:
                             openconfig-if-ip:dhcp-client: false
         api_method: PUT

@@ -56,14 +56,14 @@
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              config:
+              openconfig-system:config:
                 openconfig-system-ext:enable-secret: 'password'
                 openconfig-system-ext:console-exec-timeout-seconds: 800
-                domain-name: 'test123.com'
-                hostname: 'rxx'
-                login-banner: |
+                openconfig-system:domain-name: 'test123.com'
+                openconfig-system:hostname: 'rxx'
+                openconfig-system:login-banner: |
                   This is the login-banner.
-                motd-banner: |
+                openconfig-system:motd-banner: |
                   This is the motd-banner.
         api_method: PUT
         api_ignore_errors: false
@@ -86,7 +86,7 @@
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              config:
+              openconfig-system:config:
                 openconfig-system-ext:ip-options: 'DROP'
         api_method: PUT
         api_ignore_errors: false
@@ -103,7 +103,7 @@
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              config:
+              openconfig-system:config:
                 openconfig-system-ext:ip-options: 'IGNORE'
         api_method: PUT
         api_ignore_errors: false
@@ -120,7 +120,7 @@
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              config:
+              openconfig-system:config:
                 openconfig-system-ext:ip-options: 'ENABLE'
         api_method: PUT
         api_ignore_errors: false
@@ -138,43 +138,43 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 30
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 30
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-system:system:
-              ssh-server:
-                config:
+              openconfig-system:ssh-server:
+                openconfig-system:config:
                   openconfig-system-ext:absolute-timeout-minutes: 1200
                   openconfig-system-ext:ssh-timeout: 55
                   openconfig-system-ext:ssh-source-interface: 'GigabitEthernet6'
-                  enable: true
-                  protocol-version: 'V2'
-                  session-limit: 16
-                  timeout: 1800
+                  openconfig-system:enable: true
+                  openconfig-system:protocol-version: 'V2'
+                  openconfig-system:session-limit: 16
+                  openconfig-system:timeout: 1800
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -196,138 +196,138 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 30
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet7'
-                    type: 'ethernetCsmacd'
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 30
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+                - openconfig-interfaces:name: 'GigabitEthernet7'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet7'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet7'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.7.0.1'
-                                  prefix-length: 30
-                                ip: '10.7.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.7.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.7.0.1'
+                                  openconfig-if-ip:prefix-length: 30
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'  # All interfaces are in default unless listed under other VRF
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
-                - name: 'abc'
-                  config:
-                    name: 'abc'
-                    type: 'L3VRF'  # oc-ni-types:DEFAULT_INSTANCE
-                    enabled: true  # not in IOS
-                    enabled-address-families:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'  # All interfaces are in default unless listed under other VRF
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
+                - openconfig-network-instance:name: 'abc'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'abc'
+                    openconfig-network-instance:type: 'L3VRF'  # oc-ni-types:DEFAULT_INSTANCE
+                    openconfig-network-instance:enabled: true  # not in IOS
+                    openconfig-network-instance:enabled-address-families:
                       - 'IPV4'
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet7'
-                        config:
-                          id: 'GigabitEthernet7'
-                          interface: 'GigabitEthernet7'
-                          subinterface: 0
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet7'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet7'
+                          openconfig-network-instance:interface: 'GigabitEthernet7'
+                          openconfig-network-instance:subinterface: 0
             openconfig-system:system:
-              ntp:
-                config:
-                  enabled: true
-                  enable-ntp-auth: true
+              openconfig-system:ntp:
+                openconfig-system:config:
+                  openconfig-system:enabled: true
+                  openconfig-system:enable-ntp-auth: true
                   openconfig-system-ext:ntp-enable-logging: true
-                  ntp-source-address: '10.6.0.1'
-                ntp-keys:
-                  ntp-key:
-                    - config:
-                        key-id: 1
-                        key-type: 'NTP_AUTH_MD5'
-                        key-value: 'password1'
-                      key-id: 1
-                    - config:
-                        key-id: 2
-                        key-type: 'NTP_AUTH_MD5'
-                        key-value: 'password2'
-                      key-id: 2
-                servers:
-                  server:
-                    - address: '10.0.0.1'
-                      config:
+                  openconfig-system:ntp-source-address: '10.6.0.1'
+                openconfig-system:ntp-keys:
+                  openconfig-system:ntp-key:
+                    - openconfig-system:key-id: 1
+                      openconfig-system:config:
+                        openconfig-system:key-id: 1
+                        openconfig-system:key-type: 'NTP_AUTH_MD5'
+                        openconfig-system:key-value: 'password1'
+                    - openconfig-system:key-id: 2
+                      openconfig-system:config:
+                        openconfig-system:key-id: 2
+                        openconfig-system:key-type: 'NTP_AUTH_MD5'
+                        openconfig-system:key-value: 'password2'
+                openconfig-system:servers:
+                  openconfig-system:server:
+                    - openconfig-system:address: '10.0.0.1'
+                      openconfig-system:config:
                         openconfig-system-ext:ntp-auth-key-id: 1
                         openconfig-system-ext:ntp-use-vrf: 'default'
-                        address: '10.0.0.1'
-                        association-type: 'SERVER'  # SERVER, PEER, POOL
-                        iburst: true
-                        port: 123  # always 123 for ios
-                        prefer: false
-                        version: 4
-                    - address: '10.0.0.2'
-                      config:
+                        openconfig-system:address: '10.0.0.1'
+                        openconfig-system:association-type: 'SERVER'  # SERVER, PEER, POOL
+                        openconfig-system:iburst: true
+                        openconfig-system:port: 123  # always 123 for ios
+                        openconfig-system:prefer: false
+                        openconfig-system:version: 4
+                    - openconfig-system:address: '10.0.0.2'
+                      openconfig-system:config:
                         openconfig-system-ext:ntp-auth-key-id: 2
                         openconfig-system-ext:ntp-use-vrf: 'abc'
-                        address: '10.0.0.2'
-                        association-type: 'PEER'
-                        iburst: true
-                        port: 123  # always 123 for ios
-                        prefer: false
-                        version: 4
-                    - address: '10.0.0.3'
-                      config:
+                        openconfig-system:address: '10.0.0.2'
+                        openconfig-system:association-type: 'PEER'
+                        openconfig-system:iburst: true
+                        openconfig-system:port: 123  # always 123 for ios
+                        openconfig-system:prefer: false
+                        openconfig-system:version: 4
+                    - openconfig-system:address: '10.0.0.3'
+                      openconfig-system:config:
                         openconfig-system-ext:ntp-auth-key-id: 1
                         openconfig-system-ext:ntp-source-address: '10.6.0.1'
-                        address: '10.0.0.3'
-                        association-type: 'SERVER'  # SERVER, PEER, POOL
-                        iburst: true
-                        port: 123  # always 123 for ios
-                        prefer: true
-                        version: 3
+                        openconfig-system:address: '10.0.0.3'
+                        openconfig-system:association-type: 'SERVER'  # SERVER, PEER, POOL
+                        openconfig-system:iburst: true
+                        openconfig-system:port: 123  # always 123 for ios
+                        openconfig-system:prefer: true
+                        openconfig-system:version: 3
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -355,139 +355,139 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 30
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet7'
-                    type: 'ethernetCsmacd'
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 30
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+                - openconfig-interfaces:name: 'GigabitEthernet7'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet7'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet7'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.7.0.1'
-                                  prefix-length: 30
-                                ip: '10.7.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.7.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.7.0.1'
+                                  openconfig-if-ip:prefix-length: 30
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'  # All interfaces are in default unless listed under other VRF
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                - name: 'abc'
-                  config:
-                    name: 'abc'
-                    type: 'L3VRF'  # oc-ni-types:DEFAULT_INSTANCE
-                    enabled: true  # not in IOS
-                    enabled-address-families:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'  # All interfaces are in default unless listed under other VRF
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                - openconfig-network-instance:name: 'abc'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'abc'
+                    openconfig-network-instance:type: 'L3VRF'  # oc-ni-types:DEFAULT_INSTANCE
+                    openconfig-network-instance:enabled: true  # not in IOS
+                    openconfig-network-instance:enabled-address-families:
                       - 'IPV4'
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet7'
-                        config:
-                          id: 'GigabitEthernet7'
-                          interface: 'GigabitEthernet7'
-                          subinterface: 0
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet7'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet7'
+                          openconfig-network-instance:interface: 'GigabitEthernet7'
+                          openconfig-network-instance:subinterface: 0
             openconfig-system:system:
-              logging:  # facility must be same for all in IOS
-                console:  # set console
-                  config: { }
-                  selectors:
-                    selector:
-                      - config:
-                          facility: 'SYSLOG'
-                          severity: 'INFORMATIONAL'  # logging console
-                        facility: 'SYSLOG'
-                        severity: 'INFORMATIONAL'
+              openconfig-system:logging:  # facility must be same for all in IOS
+                openconfig-system:console:  # set console
+                  openconfig-system:config: { }
+                  openconfig-system:selectors:
+                    openconfig-system:selector:
+                      - openconfig-system:facility: 'SYSLOG'
+                        openconfig-system:severity: 'INFORMATIONAL'
+                        openconfig-system:config:
+                          openconfig-system:facility: 'SYSLOG'
+                          openconfig-system:severity: 'INFORMATIONAL'  # logging console
                 openconfig-system-ext:terminal-monitor: # set monitor
-                  selectors:
-                    selector:
-                      - config:
-                          facility: 'SYSLOG'
-                          severity: 'ALERT'  # logging monitor
-                        facility: 'SYSLOG'
-                        severity: 'ALERT'
-                remote-servers:
-                  remote-server:
-                    - config:
-                        host: '10.0.0.1'  # logging host x.x.x.x
-                        remote-port: 514
-                        source-address: '10.7.0.1'
+                  openconfig-system-ext:selectors:
+                    openconfig-system-ext:selector:
+                      - openconfig-system-ext:facility: 'SYSLOG'
+                        openconfig-system-ext:severity: 'ALERT'
+                        openconfig-system-ext:config:
+                          openconfig-system-ext:facility: 'SYSLOG'
+                          openconfig-system-ext:severity: 'ALERT'  # logging monitor
+                openconfig-system:remote-servers:
+                  openconfig-system:remote-server:
+                    - openconfig-system:host: '10.0.0.1'
+                      openconfig-system:config:
+                        openconfig-system:host: '10.0.0.1'  # logging host x.x.x.x
+                        openconfig-system:remote-port: 514
+                        openconfig-system:source-address: '10.7.0.1'
                         openconfig-system-ext:use-vrf: 'abc'
-                      host: '10.0.0.1'
-                      selectors:
-                        selector:
-                          - config:
-                              facility: 'SYSLOG'
-                              severity: 'CRITICAL'
-                            facility: 'SYSLOG'
-                            severity: 'CRITICAL'
-                    - config:
-                        host: '10.0.0.2'  # logging host x.x.x.x
-                        remote-port: 514
-                        source-address: '10.6.0.1'
+                      openconfig-system:selectors:
+                        openconfig-system:selector:
+                          - openconfig-system:facility: 'SYSLOG'
+                            openconfig-system:severity: 'CRITICAL'
+                            openconfig-system:config:
+                              openconfig-system:facility: 'SYSLOG'
+                              openconfig-system:severity: 'CRITICAL'
+                    - openconfig-system:host: '10.0.0.2'
+                      openconfig-system:config:
+                        openconfig-system:host: '10.0.0.2'  # logging host x.x.x.x
+                        openconfig-system:remote-port: 514
+                        openconfig-system:source-address: '10.6.0.1'
                         openconfig-system-ext:use-vrf: 'default'
-                      host: '10.0.0.2'
-                      selectors:
-                        selector:
-                          - config:
-                              facility: 'SYSLOG'
-                              severity: 'CRITICAL'
-                            facility: 'SYSLOG'
-                            severity: 'CRITICAL'
-                    - config:
-                        host: '10.0.0.3'  # logging host x.x.x.x
-                        remote-port: 514
-                        source-address: '10.6.0.1'
-                      host: '10.0.0.3'
-                      selectors:
-                        selector:
-                          - config:
-                              facility: 'SYSLOG'
-                              severity: 'CRITICAL'
-                            facility: 'SYSLOG'
-                            severity: 'CRITICAL'
+                      openconfig-system:selectors:
+                        openconfig-system:selector:
+                          - openconfig-system:facility: 'SYSLOG'
+                            openconfig-system:severity: 'CRITICAL'
+                            openconfig-system:config:
+                              openconfig-system:facility: 'SYSLOG'
+                              openconfig-system:severity: 'CRITICAL'
+                    - openconfig-system:host: '10.0.0.3'
+                      openconfig-system:config:
+                        openconfig-system:host: '10.0.0.3'  # logging host x.x.x.x
+                        openconfig-system:remote-port: 514
+                        openconfig-system:source-address: '10.6.0.1'
+                      openconfig-system:selectors:
+                        openconfig-system:selector:
+                          - openconfig-system:facility: 'SYSLOG'
+                            openconfig-system:severity: 'CRITICAL'
+                            openconfig-system:config:
+                              openconfig-system:facility: 'SYSLOG'
+                              openconfig-system:severity: 'CRITICAL'
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -512,35 +512,35 @@
         content: |
           mdd:openconfig:
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'  # All interfaces are in default unless listed under other VRF
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                - name: 'abc'
-                  config:
-                    name: 'abc'
-                    type: 'L3VRF'  # oc-ni-types:DEFAULT_INSTANCE
-                    enabled: true  # not in IOS
-                    enabled-address-families:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'  # All interfaces are in default unless listed under other VRF
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                - openconfig-network-instance:name: 'abc'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'abc'
+                    openconfig-network-instance:type: 'L3VRF'  # oc-ni-types:DEFAULT_INSTANCE
+                    openconfig-network-instance:enabled: true  # not in IOS
+                    openconfig-network-instance:enabled-address-families:
                       - 'IPV4'
             openconfig-system:system:
-              dns:
-                servers:
-                  server:
-                    - address: '8.8.8.8'
-                      config:
-                        address: '8.8.8.8'
-                        port: 53  # always 53 for ios
-                    - address: '8.8.4.4'
-                      config:
-                        address: '8.8.4.4'
-                        port: 53  # always 53 for ios
-                    - address: '8.8.5.5'
-                      config:
-                        address: '8.8.5.5'
-                        port: 53  # always 53 for ios
+              openconfig-system:dns:
+                openconfig-system:servers:
+                  openconfig-system:server:
+                    - openconfig-system:address: '8.8.8.8'
+                      openconfig-system:config:
+                        openconfig-system:address: '8.8.8.8'
+                        openconfig-system:port: 53  # always 53 for ios
+                    - openconfig-system:address: '8.8.4.4'
+                      openconfig-system:config:
+                        openconfig-system:address: '8.8.4.4'
+                        openconfig-system:port: 53  # always 53 for ios
+                    - openconfig-system:address: '8.8.5.5'
+                      openconfig-system:config:
+                        openconfig-system:address: '8.8.5.5'
+                        openconfig-system:port: 53  # always 53 for ios
                         openconfig-system-ext:use-vrf: 'abc'
         api_method: PUT
         api_ignore_errors: false
@@ -559,9 +559,9 @@
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              clock:
-                config:
-                  timezone-name: 'CST -6 0'
+              openconfig-system:clock:
+                openconfig-system:config:
+                  openconfig-system:timezone-name: 'CST -6 0'
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -636,7 +636,7 @@
             openconfig-system:system:
               openconfig-system-ext:services:
                 openconfig-system-ext:config:
-                  finger: true
+                  openconfig-system-ext:finger: true
         api_method: PATCH
         api_ignore_errors: false
         rollback: false
@@ -654,7 +654,7 @@
             openconfig-system:system:
               openconfig-system-ext:services:
                 openconfig-system-ext:config:
-                  finger: false
+                  openconfig-system-ext:finger: false
         api_method: PATCH
         api_ignore_errors: false
         rollback: false
@@ -763,24 +763,24 @@
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              logging:  # facility must be same for all in IOS
-                console:  # set console and monitor
-                  config: { }
-                  selectors:
-                    selector:
-                      - config:
-                          facility: 'SYSLOG'
-                          severity: 'EMERGENCY'
-                        facility: 'SYSLOG'
-                        severity: 'EMERGENCY'
+              openconfig-system:logging:  # facility must be same for all in IOS
+                openconfig-system:console:  # set console and monitor
+                  openconfig-system:config: { }
+                  openconfig-system:selectors:
+                    openconfig-system:selector:
+                      - openconfig-system:facility: 'SYSLOG'
+                        openconfig-system:severity: 'EMERGENCY'
+                        openconfig-system:config:
+                          openconfig-system:facility: 'SYSLOG'
+                          openconfig-system:severity: 'EMERGENCY'
                 openconfig-system-ext:terminal-monitor:
-                  selectors:
-                    selector:
-                      - config:
-                          facility: 'SYSLOG'
-                          severity: 'EMERGENCY'
-                        facility: 'SYSLOG'
-                        severity: 'EMERGENCY'
+                  openconfig-system-ext:selectors:
+                    openconfig-system-ext:selector:
+                      - openconfig-system-ext:facility: 'SYSLOG'
+                        openconfig-system-ext:severity: 'EMERGENCY'
+                        openconfig-system-ext:config:
+                          openconfig-system-ext:facility: 'SYSLOG'
+                          openconfig-system-ext:severity: 'EMERGENCY'
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -799,20 +799,20 @@
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              logging:  # facility must be same for all in IOS
-                remote-servers:
-                  remote-server:
-                    - config:
-                        host: '10.0.0.1'  # logging host x.x.x.x
-                        remote-port: 514
-                      host: '10.0.0.1'
-                      selectors:
-                        selector:
-                          - config:
-                              facility: 'SYSLOG'
-                              severity: 'EMERGENCY'
-                            facility: 'SYSLOG'
-                            severity: 'EMERGENCY'
+              openconfig-system:logging:  # facility must be same for all in IOS
+                openconfig-system:remote-servers:
+                  openconfig-system:remote-server:
+                    - openconfig-system:host: '10.0.0.1'
+                      openconfig-system:config:
+                        openconfig-system:host: '10.0.0.1'  # logging host x.x.x.x
+                        openconfig-system:remote-port: 514
+                      openconfig-system:selectors:
+                        openconfig-system:selector:
+                          - openconfig-system:facility: 'SYSLOG'
+                            openconfig-system:severity: 'EMERGENCY'
+                            openconfig-system:config:
+                              openconfig-system:facility: 'SYSLOG'
+                              openconfig-system:severity: 'EMERGENCY'
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -829,37 +829,37 @@
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              logging:  # facility must be same for all in IOS
-                console:  # set console and monitor
-                  config: { }
-                  selectors:
-                    selector:
-                      - config:
-                          facility: 'SYSLOG'
-                          severity: 'CRITICAL'
-                        facility: 'SYSLOG'
-                        severity: 'CRITICAL'
+              openconfig-system:logging:  # facility must be same for all in IOS
+                openconfig-system:console:  # set console and monitor
+                  openconfig-system:config: { }
+                  openconfig-system:selectors:
+                    openconfig-system:selector:
+                      - openconfig-system:facility: 'SYSLOG'
+                        openconfig-system:severity: 'CRITICAL'
+                        openconfig-system:config:
+                          openconfig-system:facility: 'SYSLOG'
+                          openconfig-system:severity: 'CRITICAL'
                 openconfig-system-ext:terminal-monitor:  # set console and monitor
-                  selectors:
-                    selector:
-                      - config:
-                          facility: 'SYSLOG'
-                          severity: 'CRITICAL'
-                        facility: 'SYSLOG'
-                        severity: 'CRITICAL'
-                remote-servers:
-                  remote-server:
-                    - config:
-                        host: '10.0.0.1'  # logging host x.x.x.x
-                        remote-port: 514
-                      host: '10.0.0.1'
-                      selectors:
-                        selector:
-                          - config:
-                              facility: 'SYSLOG'
-                              severity: 'ERROR'
-                            facility: 'SYSLOG'
-                            severity: 'ERROR'
+                  openconfig-system-ext:selectors:
+                    openconfig-system-ext:selector:
+                      - openconfig-system-ext:facility: 'SYSLOG'
+                        openconfig-system-ext:severity: 'CRITICAL'
+                        openconfig-system-ext:config:
+                          openconfig-system-ext:facility: 'SYSLOG'
+                          openconfig-system-ext:severity: 'CRITICAL'
+                openconfig-system:remote-servers:
+                  openconfig-system:remote-server:
+                    - openconfig-system:host: '10.0.0.1'
+                      openconfig-system:config:
+                        openconfig-system:host: '10.0.0.1'  # logging host x.x.x.x
+                        openconfig-system:remote-port: 514
+                      openconfig-system:selectors:
+                        openconfig-system:selector:
+                          - openconfig-system:facility: 'SYSLOG'
+                            openconfig-system:severity: 'ERROR'
+                            openconfig-system:config:
+                              openconfig-system:facility: 'SYSLOG'
+                              openconfig-system:severity: 'ERROR'
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -878,172 +878,172 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 30
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 30
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-system:system:
-              config:
+              openconfig-system:config:
                 openconfig-system-ext:enable-secret: 'admin'
-              aaa:
-                accounting:
-                  config:
-                    accounting-method:  # group name, TACACS_ALL
+              openconfig-system:aaa:
+                openconfig-system:accounting:
+                  openconfig-system:config:
+                    openconfig-system:accounting-method:  # group name, TACACS_ALL
                       - 'TACACS-GROUP-1'
                       - 'TACACS_ALL'
-                  events:
-                    event:  # OC supports command and login
-                      - config:
-                          event-type: 'AAA_ACCOUNTING_EVENT_LOGIN'  # IOS aaa accounting exec for ios
-                          record: 'STOP'  # or START_STOP
-                        event-type: 'AAA_ACCOUNTING_EVENT_LOGIN'
-                      - config:
-                          event-type: 'AAA_ACCOUNTING_EVENT_COMMAND'  # IOS aaa accounting commanda and priv 15
-                          record: 'STOP'  # or START_STOP
-                        event-type: 'AAA_ACCOUNTING_EVENT_COMMAND'
-                authentication:
-                  admin-user:
-                    config:
-                      admin-password: 'admin'
-                      admin-password-hashed: ''
-                  config:
-                    authentication-method:
+                  openconfig-system:events:
+                    openconfig-system:event:  # OC supports command and login
+                      - openconfig-system:event-type: 'AAA_ACCOUNTING_EVENT_LOGIN'
+                        openconfig-system:config:
+                          openconfig-system:event-type: 'AAA_ACCOUNTING_EVENT_LOGIN'  # IOS aaa accounting exec for ios
+                          openconfig-system:record: 'STOP'  # or START_STOP
+                      - openconfig-system:event-type: 'AAA_ACCOUNTING_EVENT_COMMAND'
+                        openconfig-system:config:
+                          openconfig-system:event-type: 'AAA_ACCOUNTING_EVENT_COMMAND'  # IOS aaa accounting commanda and priv 15
+                          openconfig-system:record: 'STOP'  # or START_STOP
+                openconfig-system:authentication:
+                  openconfig-system:admin-user:
+                    openconfig-system:config:
+                      openconfig-system:admin-password: 'admin'
+                      openconfig-system:admin-password-hashed: ''
+                  openconfig-system:config:
+                    openconfig-system:authentication-method:
                       - 'LOCAL'
-                  users:
-                    user:
-                      - config:
-                          username: 'user1'
-                          password: 'Password123'
-                          password-hashed: ''
-                          role: 'SYSTEM_ROLE_ADMIN'  # This is the one role in model
-                          ssh-key: ''
-                        username: 'user1'
-                      - config:
-                          username: 'user2'
-                          password: 'Password123'
-                          password-hashed: ''
-                          role: 'SYSTEM_ROLE_ADMIN'  # This is the one role in model
-                          ssh-key: ''
-                        username: 'user2'
-                authorization:
-                  config:
-                    authorization-method:
+                  openconfig-system:users:
+                    openconfig-system:user:
+                      - openconfig-system:username: 'user1'
+                        openconfig-system:config:
+                          openconfig-system:username: 'user1'
+                          openconfig-system:password: 'Password123'
+                          openconfig-system:password-hashed: ''
+                          openconfig-system:role: 'SYSTEM_ROLE_ADMIN'  # This is the one role in model
+                          openconfig-system:ssh-key: ''
+                      - openconfig-system:username: 'user2'
+                        openconfig-system:config:
+                          openconfig-system:username: 'user2'
+                          openconfig-system:password: 'Password123'
+                          openconfig-system:password-hashed: ''
+                          openconfig-system:role: 'SYSTEM_ROLE_ADMIN'  # This is the one role in model
+                          openconfig-system:ssh-key: ''
+                openconfig-system:authorization:
+                  openconfig-system:config:
+                    openconfig-system:authorization-method:
           #                - 'TACACS_ALL'
                       - 'LOCAL'
-                  events:
-                    event:
-                      - config:
-                          event-type: 'AAA_AUTHORIZATION_EVENT_CONFIG'  # Specifies configuration (e.g., EXEC) events for AAA
-                        event-type: 'AAA_AUTHORIZATION_EVENT_CONFIG'
-          #                - config:
-          #                    event-type: 'AAA_AUTHORIZATION_EVENT_COMMAND'  # Specifies interactive command events for AAA authorization
-          #                  event-type: 'AAA_AUTHORIZATION_EVENT_COMMAND'
-                config: { }
-                server-groups:
-                  server-group:
-                    - config:
-                        name: 'TACACS-GROUP-1'
-                        type: 'TACACS'
-                      name: 'TACACS-GROUP-1'
-                      servers:
-                        server:
-                          - address: '10.1.1.1'
-                            config:
-                              address: '10.1.1.1'
-                              name: 'TACACSSVR1'
-                              timeout: 10
-                            tacacs:
-                              config:
-                                port: 49
-                                secret-key: 'Password123'
-                                source-address: '10.6.0.1'  # For each group, sources must be the same
-                          - address: '10.2.2.2'
-                            config:
-                              address: '10.2.2.2'
-                              name: 'TACACSSVR2'
-                              timeout: 10
-                            tacacs:
-                              config:
-                                port: 49
-                                secret-key: 'Password123'
-                                source-address: '10.6.0.1'  # For each group, sources must be the same
-                    - config:
-                        name: 'TACACS-GROUP-2'
-                        type: 'TACACS'
-                      name: 'TACACS-GROUP-2'
-                      servers:
-                        server:
-                          - address: '10.3.3.3'
-                            config:
-                              address: '10.3.3.3'
-                              name: 'TACACSSVR3'
-                              timeout: 10
-                            tacacs:
-                              config:
-                                port: 49
-                                secret-key: 'Password123'
-                                source-address: '10.6.0.1'  # For each group, sources must be the same
-                          - address: '10.4.4.4'
-                            config:
-                              address: '10.4.4.4'
-                              name: 'TACACSSVR4'
-                              timeout: 10
-                            tacacs:
-                              config:
-                                port: 49
-                                secret-key: 'Password123'
-                                source-address: '10.6.0.1'  # For each group, sources must be the same
-                    - config:
-                        name: 'RADIUS-GROUP-1'
-                        type: 'RADIUS'
-                      name: 'RADIUS-GROUP-1'
-                      servers:
-                        server:
-                          - address: '10.5.5.5'
-                            config:
-                              address: '10.5.5.5'
-                              name: 'RADIUSSVR1'
-                              timeout: 10
-                            radius:
-                              config:
-                                acct-port: 1853
-                                auth-port: 1852
-                                secret-key: 'Password123'
-                                source-address: '10.6.0.1'  # For each group, sources must be the same
-                          - address: '10.6.6.6'
-                            config:
-                              address: '10.6.6.6'
-                              name: 'RADIUSSVR2'
-                              timeout: 10
-                            radius:
-                              config:
-                                acct-port: 1853
-                                auth-port: 1852
-                                secret-key: 'Password123'
-                                source-address: '10.6.0.1'  # For each group, sources must be the same
+                  openconfig-system:events:
+                    openconfig-system:event:
+                      - openconfig-system:event-type: 'AAA_AUTHORIZATION_EVENT_CONFIG'
+                        openconfig-system:config:
+                          openconfig-system:event-type: 'AAA_AUTHORIZATION_EVENT_CONFIG'  # Specifies configuration (e.g., EXEC) events for AAA
+          #                - openconfig-system:config:
+          #                    openconfig-system:event-type: 'AAA_AUTHORIZATION_EVENT_COMMAND'  # Specifies interactive command events for AAA authorization
+          #                  openconfig-system:event-type: 'AAA_AUTHORIZATION_EVENT_COMMAND'
+                openconfig-system:config: { }
+                openconfig-system:server-groups:
+                  openconfig-system:server-group:
+                    - openconfig-system:name: 'TACACS-GROUP-1'
+                      openconfig-system:config:
+                        openconfig-system:name: 'TACACS-GROUP-1'
+                        openconfig-system:type: 'TACACS'
+                      openconfig-system:servers:
+                        openconfig-system:server:
+                          - openconfig-system:address: '10.1.1.1'
+                            openconfig-system:config:
+                              openconfig-system:address: '10.1.1.1'
+                              openconfig-system:name: 'TACACSSVR1'
+                              openconfig-system:timeout: 10
+                            openconfig-system:tacacs:
+                              openconfig-system:config:
+                                openconfig-system:port: 49
+                                openconfig-system:secret-key: 'Password123'
+                                openconfig-system:source-address: '10.6.0.1'  # For each group, sources must be the same
+                          - openconfig-system:address: '10.2.2.2'
+                            openconfig-system:config:
+                              openconfig-system:address: '10.2.2.2'
+                              openconfig-system:name: 'TACACSSVR2'
+                              openconfig-system:timeout: 10
+                            openconfig-system:tacacs:
+                              openconfig-system:config:
+                                openconfig-system:port: 49
+                                openconfig-system:secret-key: 'Password123'
+                                openconfig-system:source-address: '10.6.0.1'  # For each group, sources must be the same
+                    - openconfig-system:name: 'TACACS-GROUP-2'
+                      openconfig-system:config:
+                        openconfig-system:name: 'TACACS-GROUP-2'
+                        openconfig-system:type: 'TACACS'
+                      openconfig-system:servers:
+                        openconfig-system:server:
+                          - openconfig-system:address: '10.3.3.3'
+                            openconfig-system:config:
+                              openconfig-system:address: '10.3.3.3'
+                              openconfig-system:name: 'TACACSSVR3'
+                              openconfig-system:timeout: 10
+                            openconfig-system:tacacs:
+                              openconfig-system:config:
+                                openconfig-system:port: 49
+                                openconfig-system:secret-key: 'Password123'
+                                openconfig-system:source-address: '10.6.0.1'  # For each group, sources must be the same
+                          - openconfig-system:address: '10.4.4.4'
+                            openconfig-system:config:
+                              openconfig-system:address: '10.4.4.4'
+                              openconfig-system:name: 'TACACSSVR4'
+                              openconfig-system:timeout: 10
+                            openconfig-system:tacacs:
+                              openconfig-system:config:
+                                openconfig-system:port: 49
+                                openconfig-system:secret-key: 'Password123'
+                                openconfig-system:source-address: '10.6.0.1'  # For each group, sources must be the same
+                    - openconfig-system:name: 'RADIUS-GROUP-1'
+                      openconfig-system:config:
+                        openconfig-system:name: 'RADIUS-GROUP-1'
+                        openconfig-system:type: 'RADIUS'
+                      openconfig-system:servers:
+                        openconfig-system:server:
+                          - openconfig-system:address: '10.5.5.5'
+                            openconfig-system:config:
+                              openconfig-system:address: '10.5.5.5'
+                              openconfig-system:name: 'RADIUSSVR1'
+                              openconfig-system:timeout: 10
+                            openconfig-system:radius:
+                              openconfig-system:config:
+                                openconfig-system:acct-port: 1853
+                                openconfig-system:auth-port: 1852
+                                openconfig-system:secret-key: 'Password123'
+                                openconfig-system:source-address: '10.6.0.1'  # For each group, sources must be the same
+                          - openconfig-system:address: '10.6.6.6'
+                            openconfig-system:config:
+                              openconfig-system:address: '10.6.6.6'
+                              openconfig-system:name: 'RADIUSSVR2'
+                              openconfig-system:timeout: 10
+                            openconfig-system:radius:
+                              openconfig-system:config:
+                                openconfig-system:acct-port: 1853
+                                openconfig-system:auth-port: 1852
+                                openconfig-system:secret-key: 'Password123'
+                                openconfig-system:source-address: '10.6.0.1'  # For each group, sources must be the same
         api_method: PUT
         api_ignore_errors: false
         rollback: false
@@ -1102,16 +1102,16 @@
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              config:
+              openconfig-system:config:
                 openconfig-system-ext:enable-secret: 'admin'
-              aaa:
-                authentication:
-                  admin-user:
-                    config:
-                      admin-password: 'admin'
-                      admin-password-hashed: ''
-                  config:
-                    authentication-method:
+              openconfig-system:aaa:
+                openconfig-system:authentication:
+                  openconfig-system:admin-user:
+                    openconfig-system:config:
+                      openconfig-system:admin-password: 'admin'
+                      openconfig-system:admin-password-hashed: ''
+                  openconfig-system:config:
+                    openconfig-system:authentication-method:
                       - 'LOCAL'
                   openconfig-system-ext:authentication-lists-login:
                     openconfig-system-ext:config:
@@ -1144,10 +1144,10 @@
             openconfig-system:system:
               openconfig-system-ext:services:
                 openconfig-system-ext:config:
-                  ip-gratuitous-arps: true
-                  service-password-encryption: true
-                  service-tcp-small-servers: true
-                  service-udp-small-servers: true
+                  openconfig-system-ext:ip-gratuitous-arps: true
+                  openconfig-system-ext:service-password-encryption: true
+                  openconfig-system-ext:service-tcp-small-servers: true
+                  openconfig-system-ext:service-udp-small-servers: true
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -1176,11 +1176,11 @@
             openconfig-system:system:
               openconfig-system-ext:services:
                 openconfig-system-ext:config:
-                  ip-gratuitous-arps: false
-                  service-password-encryption: false
-                  service-tcp-small-servers: false
-                  service-udp-small-servers: false
-                  finger: true
+                  openconfig-system-ext:ip-gratuitous-arps: false
+                  openconfig-system-ext:service-password-encryption: false
+                  openconfig-system-ext:service-tcp-small-servers: false
+                  openconfig-system-ext:service-udp-small-servers: false
+                  openconfig-system-ext:finger: true
         api_method: PATCH
         rollback: false
         assertion_ignore_errors: false
@@ -1199,7 +1199,7 @@
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              logging:
+              openconfig-system:logging:
                openconfig-system-ext:buffered:
                   openconfig-system-ext:config:
                       openconfig-system-ext:enabled: true
@@ -1221,7 +1221,7 @@
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              logging:
+              openconfig-system:logging:
                openconfig-system-ext:buffered:
                   openconfig-system-ext:config:
                       openconfig-system-ext:enabled: false
@@ -1241,9 +1241,9 @@
         content: |
           mdd:openconfig:
             openconfig-system:system:
-              logging:
-               console:
-                 config:
+              openconfig-system:logging:
+               openconfig-system:console:
+                 openconfig-system:config:
                    openconfig-system-ext:enabled: false
         api_method: PUT
         api_ignore_errors: false

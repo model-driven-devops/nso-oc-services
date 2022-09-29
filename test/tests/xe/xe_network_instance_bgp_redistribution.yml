@@ -16,33 +16,33 @@
         content: |
           mdd:openconfig:
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                  table-connections:
-                    table-connection:
-                      - address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'DIRECTLY_CONNECTED'
-                        config:
-                          address-family: 'IPV4'
-                          dst-protocol: 'BGP'
-                          src-protocol: 'DIRECTLY_CONNECTED'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -58,75 +58,75 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
-                prefix-sets:
-                  prefix-set:
-                    - name: prefix_test
-                      config:
-                        name: prefix_test
-                        mode: IPV4
-                      prefixes:
-                        prefix:
-                          - ip-prefix: '192.133.184.0/22'
-                            masklength-range: exact
-                            config:
-                              ip-prefix: '192.133.184.0/22'
-                              masklength-range: exact
+              openconfig-routing-policy:defined-sets:
+                openconfig-routing-policy:prefix-sets:
+                  openconfig-routing-policy:prefix-set:
+                    - openconfig-routing-policy:name: prefix_test
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: prefix_test
+                        openconfig-routing-policy:mode: IPV4
+                      openconfig-routing-policy:prefixes:
+                        openconfig-routing-policy:prefix:
+                          - openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                            openconfig-routing-policy:masklength-range: exact
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                              openconfig-routing-policy:masklength-range: exact
                               openconfig-routing-policy-ext:seq: 10
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
+              openconfig-routing-policy:policy-definitions:
+                openconfig-routing-policy:policy-definition:
+                  - openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:config:
+                      openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:statements:
                       openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            match-prefix-set:
-                              config:
-                                prefix-set: 'prefix_test'
-                                match-set-options: 'ANY'
+                        - openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:conditions:
+                            openconfig-routing-policy:match-prefix-set:
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:prefix-set: 'prefix_test'
+                                openconfig-routing-policy:match-set-options: 'ANY'
                           openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:actions:
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                  table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'DIRECTLY_CONNECTED'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'DIRECTLY_CONNECTED'
-                        import-policy:
-                        - 'test'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
+                          openconfig-network-instance:import-policy:
+                            - 'test'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -142,39 +142,39 @@
         content: |
           mdd:openconfig:
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
-                  table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'DIRECTLY_CONNECTED'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'DIRECTLY_CONNECTED'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -191,81 +191,81 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
-                prefix-sets:
-                  prefix-set:
-                    - name: prefix_test
-                      config:
-                        name: prefix_test
-                        mode: IPV4
-                      prefixes:
-                        prefix:
-                          - ip-prefix: '192.133.184.0/22'
-                            masklength-range: exact
-                            config:
-                              ip-prefix: '192.133.184.0/22'
-                              masklength-range: exact
+              openconfig-routing-policy:defined-sets:
+                openconfig-routing-policy:prefix-sets:
+                  openconfig-routing-policy:prefix-set:
+                    - openconfig-routing-policy:name: prefix_test
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: prefix_test
+                        openconfig-routing-policy:mode: IPV4
+                      openconfig-routing-policy:prefixes:
+                        openconfig-routing-policy:prefix:
+                          - openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                            openconfig-routing-policy:masklength-range: exact
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                              openconfig-routing-policy:masklength-range: exact
                               openconfig-routing-policy-ext:seq: 10
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
+              openconfig-routing-policy:policy-definitions:
+                openconfig-routing-policy:policy-definition:
+                  - openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:config:
+                      openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:statements:
                       openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            match-prefix-set:
-                              config:
-                                prefix-set: 'prefix_test'
-                                match-set-options: 'ANY'
+                        - openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:conditions:
+                            openconfig-routing-policy:match-prefix-set:
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:prefix-set: 'prefix_test'
+                                openconfig-routing-policy:match-set-options: 'ANY'
                           openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:actions:
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
-                  table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'DIRECTLY_CONNECTED'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'DIRECTLY_CONNECTED'
-                        import-policy:
-                        - 'test'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
+                          openconfig-network-instance:import-policy:
+                            - 'test'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -282,38 +282,38 @@
         content: |
           mdd:openconfig:
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
-                - name: 'abc'
-                  config:
-                    name: 'abc'
-                    type: 'L3VRF'
-                    enabled: true
-                    enabled-address-families:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
+                - openconfig-network-instance:name: 'abc'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'abc'
+                    openconfig-network-instance:type: 'L3VRF'
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:enabled-address-families:
                       - 'IPV4'
-                    route-distinguisher: '1:1'
+                    openconfig-network-instance:route-distinguisher: '1:1'
                     openconfig-network-instance-ext:route-targets-import:
                       - '100:100'
                       - '101:101'
@@ -321,32 +321,32 @@
                       - '200:200'
                       - '202:202'
                   openconfig-network-instance:protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
                   openconfig-network-instance:table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'DIRECTLY_CONNECTED'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'DIRECTLY_CONNECTED'
+                    openconfig-network-instance:table-connection:
+                    - openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
+                      openconfig-network-instance:dst-protocol: 'BGP'
+                      openconfig-network-instance:address-family: 'IPV4'
+                      openconfig-network-instance:config:
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -363,78 +363,78 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
-                prefix-sets:
-                  prefix-set:
-                    - name: prefix_test
-                      config:
-                        name: prefix_test
-                        mode: IPV4
-                      prefixes:
-                        prefix:
-                          - ip-prefix: '192.133.184.0/22'
-                            masklength-range: 'exact'
-                            config:
-                              ip-prefix: '192.133.184.0/22'
-                              masklength-range: 'exact'
+              openconfig-routing-policy:defined-sets:
+                openconfig-routing-policy:prefix-sets:
+                  openconfig-routing-policy:prefix-set:
+                    - openconfig-routing-policy:name: prefix_test
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: prefix_test
+                        openconfig-routing-policy:mode: IPV4
+                      openconfig-routing-policy:prefixes:
+                        openconfig-routing-policy:prefix:
+                          - openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                            openconfig-routing-policy:masklength-range: 'exact'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                              openconfig-routing-policy:masklength-range: 'exact'
                               openconfig-routing-policy-ext:seq: 10
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
+              openconfig-routing-policy:policy-definitions:
+                openconfig-routing-policy:policy-definition:
+                  - openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:config:
+                      openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:statements:
                       openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            match-prefix-set:
-                              config:
-                                prefix-set: 'prefix_test'
-                                match-set-options: 'ANY'
+                        - openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:conditions:
+                            openconfig-routing-policy:match-prefix-set:
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:prefix-set: 'prefix_test'
+                                openconfig-routing-policy:match-set-options: 'ANY'
                           openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:actions:
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
-                - name: 'abc'
-                  config:
-                    name: 'abc'
-                    type: 'L3VRF'
-                    enabled: true
-                    enabled-address-families:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
+                - openconfig-network-instance:name: 'abc'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'abc'
+                    openconfig-network-instance:type: 'L3VRF'
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:enabled-address-families:
                       - 'IPV4'
-                    route-distinguisher: '1:1'
+                    openconfig-network-instance:route-distinguisher: '1:1'
                     openconfig-network-instance-ext:route-targets-import:
                       - '100:100'
                       - '101:101'
@@ -442,34 +442,34 @@
                       - '200:200'
                       - '202:202'
                   openconfig-network-instance:protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
                   openconfig-network-instance:table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'DIRECTLY_CONNECTED'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'DIRECTLY_CONNECTED'
-                        import-policy:
-                        - 'test'
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
+                          openconfig-network-instance:import-policy:
+                            - 'test'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -486,33 +486,33 @@
         content: |
           mdd:openconfig:
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                  table-connections:
-                    table-connection:
-                      - address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'STATIC'
-                        config:
-                          address-family: 'IPV4'
-                          dst-protocol: 'BGP'
-                          src-protocol: 'STATIC'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'STATIC'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'STATIC'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -528,75 +528,75 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
-                prefix-sets:
-                  prefix-set:
-                    - name: 'prefix_test'
-                      config:
-                        name: 'prefix_test'
-                        mode: 'IPV4'
-                      prefixes:
-                        prefix:
-                          - ip-prefix: '192.133.184.0/22'
-                            masklength-range: 'exact'
-                            config:
-                              ip-prefix: '192.133.184.0/22'
-                              masklength-range: 'exact'
+              openconfig-routing-policy:defined-sets:
+                openconfig-routing-policy:prefix-sets:
+                  openconfig-routing-policy:prefix-set:
+                    - openconfig-routing-policy:name: 'prefix_test'
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: 'prefix_test'
+                        openconfig-routing-policy:mode: 'IPV4'
+                      openconfig-routing-policy:prefixes:
+                        openconfig-routing-policy:prefix:
+                          - openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                            openconfig-routing-policy:masklength-range: 'exact'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                              openconfig-routing-policy:masklength-range: 'exact'
                               openconfig-routing-policy-ext:seq: 10
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
+              openconfig-routing-policy:policy-definitions:
+                openconfig-routing-policy:policy-definition:
+                  - openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:config:
+                      openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:statements:
                       openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            match-prefix-set:
-                              config:
-                                prefix-set: 'prefix_test'
-                                match-set-options: 'ANY'
+                        - openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:conditions:
+                            openconfig-routing-policy:match-prefix-set:
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:prefix-set: 'prefix_test'
+                                openconfig-routing-policy:match-set-options: 'ANY'
                           openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:actions:
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                  table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'STATIC'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'STATIC'
-                        import-policy:
-                        - 'test'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'STATIC'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'STATIC'
+                          openconfig-network-instance:import-policy:
+                            - 'test'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -612,39 +612,39 @@
         content: |
           mdd:openconfig:
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
-                  table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'STATIC'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'STATIC'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'STATIC'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'STATIC'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -661,81 +661,81 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
-                prefix-sets:
-                  prefix-set:
-                    - name: prefix_test
-                      config:
-                        name: prefix_test
-                        mode: IPV4
-                      prefixes:
-                        prefix:
-                          - ip-prefix: '192.133.184.0/22'
-                            masklength-range: 'exact'
-                            config:
-                              ip-prefix: '192.133.184.0/22'
-                              masklength-range: 'exact'
+              openconfig-routing-policy:defined-sets:
+                openconfig-routing-policy:prefix-sets:
+                  openconfig-routing-policy:prefix-set:
+                    - openconfig-routing-policy:name: prefix_test
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: prefix_test
+                        openconfig-routing-policy:mode: IPV4
+                      openconfig-routing-policy:prefixes:
+                        openconfig-routing-policy:prefix:
+                          - openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                            openconfig-routing-policy:masklength-range: 'exact'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                              openconfig-routing-policy:masklength-range: 'exact'
                               openconfig-routing-policy-ext:seq: 10
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
+              openconfig-routing-policy:policy-definitions:
+                openconfig-routing-policy:policy-definition:
+                  - openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:config:
+                      openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:statements:
                       openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            match-prefix-set:
-                              config:
-                                prefix-set: 'prefix_test'
-                                match-set-options: 'ANY'
+                        - openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:conditions:
+                            openconfig-routing-policy:match-prefix-set:
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:prefix-set: 'prefix_test'
+                                openconfig-routing-policy:match-set-options: 'ANY'
                           openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:actions:
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
-                  table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'STATIC'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'STATIC'
-                        import-policy:
-                        - 'test'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'STATIC'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'STATIC'
+                          openconfig-network-instance:import-policy:
+                            - 'test'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -752,38 +752,38 @@
         content: |
           mdd:openconfig:
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
-                - name: 'abc'
-                  config:
-                    name: 'abc'
-                    type: 'L3VRF'
-                    enabled: true
-                    enabled-address-families:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
+                - openconfig-network-instance:name: 'abc'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'abc'
+                    openconfig-network-instance:type: 'L3VRF'
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:enabled-address-families:
                       - 'IPV4'
-                    route-distinguisher: '1:1'
+                    openconfig-network-instance:route-distinguisher: '1:1'
                     openconfig-network-instance-ext:route-targets-import:
                       - '100:100'
                       - '101:101'
@@ -791,32 +791,32 @@
                       - '200:200'
                       - '202:202'
                   openconfig-network-instance:protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
                   openconfig-network-instance:table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'STATIC'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'STATIC'
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'STATIC'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'STATIC'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -833,78 +833,78 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
-                prefix-sets:
-                  prefix-set:
-                    - name: 'prefix_test'
-                      config:
-                        name: 'prefix_test'
-                        mode: 'IPV4'
-                      prefixes:
-                        prefix:
-                          - ip-prefix: '192.133.184.0/22'
-                            masklength-range: 'exact'
-                            config:
-                              ip-prefix: '192.133.184.0/22'
-                              masklength-range: 'exact'
+              openconfig-routing-policy:defined-sets:
+                openconfig-routing-policy:prefix-sets:
+                  openconfig-routing-policy:prefix-set:
+                    - openconfig-routing-policy:name: 'prefix_test'
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: 'prefix_test'
+                        openconfig-routing-policy:mode: 'IPV4'
+                      openconfig-routing-policy:prefixes:
+                        openconfig-routing-policy:prefix:
+                          - openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                            openconfig-routing-policy:masklength-range: 'exact'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                              openconfig-routing-policy:masklength-range: 'exact'
                               openconfig-routing-policy-ext:seq: 10
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
+              openconfig-routing-policy:policy-definitions:
+                openconfig-routing-policy:policy-definition:
+                  - openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:config:
+                      openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:statements:
                       openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            match-prefix-set:
-                              config:
-                                prefix-set: 'prefix_test'
-                                match-set-options: 'ANY'
+                        - openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:conditions:
+                            openconfig-routing-policy:match-prefix-set:
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:prefix-set: 'prefix_test'
+                                openconfig-routing-policy:match-set-options: 'ANY'
                           openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:actions:
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
-                - name: 'abc'
-                  config:
-                    name: 'abc'
-                    type: 'L3VRF'
-                    enabled: true
-                    enabled-address-families:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
+                - openconfig-network-instance:name: 'abc'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'abc'
+                    openconfig-network-instance:type: 'L3VRF'
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:enabled-address-families:
                       - 'IPV4'
-                    route-distinguisher: '1:1'
+                    openconfig-network-instance:route-distinguisher: '1:1'
                     openconfig-network-instance-ext:route-targets-import:
                       - '100:100'
                       - '101:101'
@@ -912,34 +912,34 @@
                       - '200:200'
                       - '202:202'
                   openconfig-network-instance:protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
                   openconfig-network-instance:table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'STATIC'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'STATIC'
-                        import-policy:
-                        - 'test'
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'STATIC'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'STATIC'
+                          openconfig-network-instance:import-policy:
+                            - 'test'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -956,33 +956,33 @@
         content: |
           mdd:openconfig:
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                  table-connections:
-                    table-connection:
-                      - address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'OSPF'
-                        config:
-                          address-family: 'IPV4'
-                          dst-protocol: 'BGP'
-                          src-protocol: 'OSPF'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'OSPF'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'OSPF'
                           openconfig-network-instance-ext:src-protocol-process-number: 1
         api_method: PUT
         rollback: true
@@ -999,76 +999,76 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
-                prefix-sets:
-                  prefix-set:
-                    - name: 'prefix_test'
-                      config:
-                        name: 'prefix_test'
-                        mode: 'IPV4'
-                      prefixes:
-                        prefix:
-                          - ip-prefix: '192.133.184.0/22'
-                            masklength-range: 'exact'
-                            config:
-                              ip-prefix: '192.133.184.0/22'
-                              masklength-range: 'exact'
+              openconfig-routing-policy:defined-sets:
+                openconfig-routing-policy:prefix-sets:
+                  openconfig-routing-policy:prefix-set:
+                    - openconfig-routing-policy:name: 'prefix_test'
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: 'prefix_test'
+                        openconfig-routing-policy:mode: 'IPV4'
+                      openconfig-routing-policy:prefixes:
+                        openconfig-routing-policy:prefix:
+                          - openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                            openconfig-routing-policy:masklength-range: 'exact'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                              openconfig-routing-policy:masklength-range: 'exact'
                               openconfig-routing-policy-ext:seq: 10
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
+              openconfig-routing-policy:policy-definitions:
+                openconfig-routing-policy:policy-definition:
+                  - openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:config:
+                      openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:statements:
                       openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            match-prefix-set:
-                              config:
-                                prefix-set: 'prefix_test'
-                                match-set-options: 'ANY'
+                        - openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:conditions:
+                            openconfig-routing-policy:match-prefix-set:
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:prefix-set: 'prefix_test'
+                                openconfig-routing-policy:match-set-options: 'ANY'
                           openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:actions:
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                  table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'OSPF'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'OSPF'
-                        openconfig-network-instance-ext:src-protocol-process-number: 1
-                        import-policy:
-                        - 'test'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'OSPF'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'OSPF'
+                          openconfig-network-instance-ext:src-protocol-process-number: 1
+                          openconfig-network-instance:import-policy:
+                            - 'test'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -1084,40 +1084,40 @@
         content: |
           mdd:openconfig:
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
-                  table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'OSPF'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'OSPF'
-                        openconfig-network-instance-ext:src-protocol-process-number: 1
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'OSPF'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'OSPF'
+                          openconfig-network-instance-ext:src-protocol-process-number: 1
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -1134,82 +1134,82 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
-                prefix-sets:
-                  prefix-set:
-                    - name: 'prefix_test'
-                      config:
-                        name: 'prefix_test'
-                        mode: 'IPV4'
-                      prefixes:
-                        prefix:
-                          - ip-prefix: '192.133.184.0/22'
-                            masklength-range: 'exact'
-                            config:
-                              ip-prefix: '192.133.184.0/22'
-                              masklength-range: 'exact'
+              openconfig-routing-policy:defined-sets:
+                openconfig-routing-policy:prefix-sets:
+                  openconfig-routing-policy:prefix-set:
+                    - openconfig-routing-policy:name: 'prefix_test'
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: 'prefix_test'
+                        openconfig-routing-policy:mode: 'IPV4'
+                      openconfig-routing-policy:prefixes:
+                        openconfig-routing-policy:prefix:
+                          - openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                            openconfig-routing-policy:masklength-range: 'exact'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                              openconfig-routing-policy:masklength-range: 'exact'
                               openconfig-routing-policy-ext:seq: 10
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
+              openconfig-routing-policy:policy-definitions:
+                openconfig-routing-policy:policy-definition:
+                  - openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:config:
+                      openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:statements:
                       openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            match-prefix-set:
-                              config:
-                                prefix-set: 'prefix_test'
-                                match-set-options: 'ANY'
+                        - openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:conditions:
+                            openconfig-routing-policy:match-prefix-set:
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:prefix-set: 'prefix_test'
+                                openconfig-routing-policy:match-set-options: 'ANY'
                           openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:actions:
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
-                  table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'OSPF'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'OSPF'
-                        openconfig-network-instance-ext:src-protocol-process-number: 1
-                        import-policy:
-                        - 'test'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'OSPF'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'OSPF'
+                          openconfig-network-instance-ext:src-protocol-process-number: 1
+                          openconfig-network-instance:import-policy:
+                            - 'test'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -1226,58 +1226,58 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'Loopback10'
-                    type: 'softwareLoopback'
-                    description: 'TEST123'
-                  name: 'Loopback10'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'Loopback10'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'Loopback10'
+                    openconfig-interfaces:type: 'softwareLoopback'
+                    openconfig-interfaces:description: 'TEST123'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.255.10.1'
-                                  prefix-length: 32
-                                ip: '10.255.10.1'
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.255.10.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.255.10.1'
+                                  openconfig-if-ip:prefix-length: 32
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
-                - name: 'xyz'
-                  config:
-                    name: 'xyz'
-                    type: 'L3VRF'
-                    enabled: true
-                    enabled-address-families:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
+                - openconfig-network-instance:name: 'xyz'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'xyz'
+                    openconfig-network-instance:type: 'L3VRF'
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:enabled-address-families:
                       - 'IPV4'
-                    route-distinguisher: '1:1'
+                    openconfig-network-instance:route-distinguisher: '1:1'
                     openconfig-network-instance-ext:route-targets-import:
                       - '100:100'
                       - '101:101'
@@ -1285,49 +1285,49 @@
                       - '200:200'
                       - '202:202'
                   openconfig-network-instance:interfaces:
-                    interface:
-                      - id: 'Loopback10'
-                        config:
-                          id: 'Loopback10'
-                          interface: 'Loopback10'
-                          subinterface: 0
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'Loopback10'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'Loopback10'
+                          openconfig-network-instance:interface: 'Loopback10'
+                          openconfig-network-instance:subinterface: 0
                   openconfig-network-instance:protocols:
-                    protocol:
-                      - name: '5'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '5'
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '5'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '5'
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
                   openconfig-network-instance:table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'OSPF'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'OSPF'
-                        openconfig-network-instance-ext:src-protocol-process-number: 2
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'OSPF'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'OSPF'
+                          openconfig-network-instance-ext:src-protocol-process-number: 5
         api_method: PUT
         rollback: true
-        assertion_ignore_errors: true  # this one can randomly error out!
+        assertion_ignore_errors: false
         assertions:
           - "'+ address-family ipv4 vrf xyz:' in changes"
           - "'+  redistribute ospf 5:' in changes"
@@ -1341,78 +1341,78 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
-                prefix-sets:
-                  prefix-set:
-                    - name: 'prefix_test'
-                      config:
-                        name: 'prefix_test'
-                        mode: 'IPV4'
-                      prefixes:
-                        prefix:
-                          - ip-prefix: '192.133.184.0/22'
-                            masklength-range: 'exact'
-                            config:
-                              ip-prefix: '192.133.184.0/22'
-                              masklength-range: 'exact'
+              openconfig-routing-policy:defined-sets:
+                openconfig-routing-policy:prefix-sets:
+                  openconfig-routing-policy:prefix-set:
+                    - openconfig-routing-policy:name: 'prefix_test'
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: 'prefix_test'
+                        openconfig-routing-policy:mode: 'IPV4'
+                      openconfig-routing-policy:prefixes:
+                        openconfig-routing-policy:prefix:
+                          - openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                            openconfig-routing-policy:masklength-range: 'exact'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                              openconfig-routing-policy:masklength-range: 'exact'
                               openconfig-routing-policy-ext:seq: 10
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
+              openconfig-routing-policy:policy-definitions:
+                openconfig-routing-policy:policy-definition:
+                  - openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:config:
+                      openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:statements:
                       openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            match-prefix-set:
-                              config:
-                                prefix-set: 'prefix_test'
-                                match-set-options: 'ANY'
+                        - openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:conditions:
+                            openconfig-routing-policy:match-prefix-set:
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:prefix-set: 'prefix_test'
+                                openconfig-routing-policy:match-set-options: 'ANY'
                           openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:actions:
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
-                - name: 'abc'
-                  config:
-                    name: 'abc'
-                    type: 'L3VRF'
-                    enabled: true
-                    enabled-address-families:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
+                - openconfig-network-instance:name: 'abc'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'abc'
+                    openconfig-network-instance:type: 'L3VRF'
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:enabled-address-families:
                       - 'IPV4'
-                    route-distinguisher: '1:1'
+                    openconfig-network-instance:route-distinguisher: '1:1'
                     openconfig-network-instance-ext:route-targets-import:
                       - '100:100'
                       - '101:101'
@@ -1420,38 +1420,44 @@
                       - '200:200'
                       - '202:202'
                   openconfig-network-instance:protocols:
-                    protocol:
-                      - name: 'BGP'
-                        identifier: 'BGP'
-                        config:
-                          enabled: True
-                          identifier: 'BGP'
-                          name: 'BGP'
-                        bgp:
-                          global:
-                            config:
-                              as: 1
-                            afi-safis:
-                              afi-safi:
-                                - afi-safi-name: 'IPV4_UNICAST'
-                                  config:
-                                    afi-safi-name: 'IPV4_UNICAST'
-                                    enabled: true
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '3'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '3'
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
                   openconfig-network-instance:table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'BGP'
-                      src-protocol: 'OSPF'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'BGP'
-                        src-protocol: 'OSPF'
-                        openconfig-network-instance-ext:src-protocol-process-number: 2
-                        import-policy:
-                        - 'test'
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'OSPF'
+                        openconfig-network-instance:dst-protocol: 'BGP'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'OSPF'
+                          openconfig-network-instance-ext:src-protocol-process-number: 3
+                          openconfig-network-instance:import-policy:
+                            - 'test'
         api_method: PUT
         rollback: true
-        assertion_ignore_errors: true  # this one can randomly error out
+        assertion_ignore_errors: false
         assertions:
           - "'+ address-family ipv4 vrf abc:' in changes"
-          - "'+  redistribute ospf 2 route-map test:' in changes"
+          - "'+  redistribute ospf 3 route-map test:' in changes"
