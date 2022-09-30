@@ -16,27 +16,29 @@
         content: |
           mdd:openconfig:
             openconfig-acl:acl:
-              acl-sets:
-                acl-set:
-                  - config:
-                      name: '11'
-                      type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    name: '11'
-                    type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    acl-entries:
-                      acl-entry:
-                        - actions:
-                            config:
-                              forwarding-action: 'ACCEPT'
-                              log-action: 'LOG_NONE'
-                          config:
-                            sequence-id: 10
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
+                  - openconfig-acl:name: '11'
+                    openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    openconfig-acl:config:
+                      openconfig-acl:name: '11'
+                      openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
+                        - openconfig-acl:sequence-id: 10
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:sequence-id: 10
                           openconfig-acl-ext:ipv4:
-                            source-address: '0.0.0.0/0'
-                          sequence-id: 10
+                            openconfig-acl-ext:config:
+                              openconfig-acl-ext:source-address: '0.0.0.0/0'
               openconfig-acl-ext:ntp:
-                openconfig-acl-ext:serve:
-                  openconfig-acl-ext:serve-acl-set: '11'
+                openconfig-acl-ext:server:
+                  openconfig-acl-ext:config:
+                    openconfig-acl-ext:server-acl-set: '11'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -51,27 +53,29 @@
         content: |
           mdd:openconfig:
             openconfig-acl:acl:
-              acl-sets:
-                acl-set:
-                  - config:
-                      name: '11'
-                      type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    name: '11'
-                    type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    acl-entries:
-                      acl-entry:
-                        - actions:
-                            config:
-                              forwarding-action: 'ACCEPT'
-                              log-action: 'LOG_NONE'
-                          config:
-                            sequence-id: 10
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
+                  - openconfig-acl:name: '11'
+                    openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    openconfig-acl:config:
+                      openconfig-acl:name: '11'
+                      openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
+                        - openconfig-acl:sequence-id: 10
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:sequence-id: 10
                           openconfig-acl-ext:ipv4:
-                            source-address: '0.0.0.0/0'
-                          sequence-id: 10
+                            openconfig-acl-ext:config:
+                              openconfig-acl-ext:source-address: '0.0.0.0/0'
               openconfig-acl-ext:ntp:
                 openconfig-acl-ext:peer:
-                  openconfig-acl-ext:peer-acl-set: '11'
+                  openconfig-acl-ext:config:
+                    openconfig-acl-ext:peer-acl-set: '11'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false

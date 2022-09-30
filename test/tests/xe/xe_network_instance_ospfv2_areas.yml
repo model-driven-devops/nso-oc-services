@@ -16,99 +16,99 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'Loopback10'
-                    type: 'softwareLoopback'
-                    description: 'TEST123'
-                  name: 'Loopback10'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'Loopback10'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'Loopback10'
+                    openconfig-interfaces:type: 'softwareLoopback'
+                    openconfig-interfaces:description: 'TEST123'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.255.10.1'
-                                  prefix-length: 32
-                                ip: '10.255.10.1'
-                          config:
-                            dhcp-client: false
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.255.10.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.255.10.1'
+                                  openconfig-if-ip:prefix-length: 32
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 1
-                              identifier: 1
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'Loopback10'
-                                  id: 'Loopback10'
-                            - config:
-                                identifier: 0
-                              identifier: 0
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                  id: 'GigabitEthernet6'
-                  interfaces:
-                    interface:
-                      - id: 'Loopback10'
-                        config:
-                          id: 'Loopback10'
-                          interface: 'Loopback10'
-                          subinterface: '0'
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: '0'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 1
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 1
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'Loopback10'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'Loopback10'
+                            - openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'Loopback10'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'Loopback10'
+                          openconfig-network-instance:interface: 'Loopback10'
+                          openconfig-network-instance:subinterface: '0'
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: '0'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -126,67 +126,67 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 0
-                              identifier: 0
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                    network-type: 'NON_BROADCAST_NETWORK'
-                                  id: 'GigabitEthernet6'
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
+                                    openconfig-network-instance:network-type: 'NON_BROADCAST_NETWORK'
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -202,67 +202,67 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 0
-                              identifier: 0
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                    metric: 10
-                                  id: 'GigabitEthernet6'
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
+                                    openconfig-network-instance:metric: 10
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -278,67 +278,67 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 0
-                              identifier: 0
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                    passive: True
-                                  id: 'GigabitEthernet6'
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
+                                    openconfig-network-instance:passive: True
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -354,67 +354,67 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 0
-                              identifier: 0
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                    priority: 10
-                                  id: 'GigabitEthernet6'
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
+                                    openconfig-network-instance:priority: 10
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -430,69 +430,69 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 0
-                              identifier: 0
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                  enable-bfd:
-                                    config:
-                                      enabled: True
-                                  id: 'GigabitEthernet6'
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:enable-bfd:
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:enabled: True
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -508,72 +508,72 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 0
-                              identifier: 0
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                  neighbors:
-                                    neighbor:
-                                    - config:
-                                        metric: 100
-                                        router-id: '10.10.10.10'
-                                      router-id: '10.10.10.10'
-                                  id: 'GigabitEthernet6'
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:neighbors:
+                                    openconfig-network-instance:neighbor:
+                                    - openconfig-network-instance:router-id: '10.10.10.10'
+                                      openconfig-network-instance:config:
+                                        openconfig-network-instance:metric: 100
+                                        openconfig-network-instance:router-id: '10.10.10.10'
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -590,71 +590,71 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 0
-                              identifier: 0
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                  timers:
-                                    config:
-                                      dead-interval: 60
-                                      hello-interval: 15
-                                      retransmission-interval: 10
-                                  id: 'GigabitEthernet6'
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:timers:
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:dead-interval: 60
+                                      openconfig-network-instance:hello-interval: 15
+                                      openconfig-network-instance:retransmission-interval: 10
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -672,69 +672,69 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 0
-                              identifier: 0
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                  id: 'GigabitEthernet6'
-                              mpls:
-                                config:
-                                  traffic-engineering-enabled: True
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 0
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
+                              openconfig-network-instance:mpls:
+                                openconfig-network-instance:config:
+                                  openconfig-network-instance:traffic-engineering-enabled: True
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -750,71 +750,71 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 200
-                              identifier: 200
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                  id: 'GigabitEthernet6'
-                              virtual-links:
-                                virtual-link:
-                                - config:
-                                    remote-router-id: '10.200.200.200'
-                                  remote-router-id: '10.200.200.200'
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 200
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 200
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
+                              openconfig-network-instance:virtual-links:
+                                openconfig-network-instance:virtual-link:
+                                - openconfig-network-instance:remote-router-id: '10.200.200.200'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:remote-router-id: '10.200.200.200'
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -830,80 +830,80 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 200
-                              identifier: 200
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                  id: 'GigabitEthernet6'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 200
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 200
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
                               openconfig-ospfv2-ext:stub-options:
-                                stub:
-                                  config:
-                                    enabled: true
-                                    default-information-originate: true
-                                totally-stubby:
-                                  config:
-                                    enabled: false
-                                    default-information-originate: false
-                                nssa:
-                                  config:
-                                    enabled: false
-                                    default-information-originate: false
-                                    no-summary: false
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+                                openconfig-ospfv2-ext:stub:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: true
+                                    openconfig-ospfv2-ext:default-information-originate: true
+                                openconfig-ospfv2-ext:totally-stubby:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: false
+                                    openconfig-ospfv2-ext:default-information-originate: false
+                                openconfig-ospfv2-ext:nssa:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: false
+                                    openconfig-ospfv2-ext:default-information-originate: false
+                                    openconfig-ospfv2-ext:no-summary: false
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -919,80 +919,80 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 200
-                              identifier: 200
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                  id: 'GigabitEthernet6'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 200
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 200
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
                               openconfig-ospfv2-ext:stub-options:
-                                stub:
-                                  config:
-                                    enabled: false
-                                    default-information-originate: false
-                                totally-stubby:
-                                  config:
-                                    enabled: true
-                                    default-information-originate: true
-                                nssa:
-                                  config:
-                                    enabled: false
-                                    default-information-originate: false
-                                    no-summary: false
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+                                openconfig-ospfv2-ext:stub:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: false
+                                    openconfig-ospfv2-ext:default-information-originate: false
+                                openconfig-ospfv2-ext:totally-stubby:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: true
+                                    openconfig-ospfv2-ext:default-information-originate: true
+                                openconfig-ospfv2-ext:nssa:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: false
+                                    openconfig-ospfv2-ext:default-information-originate: false
+                                    openconfig-ospfv2-ext:no-summary: false
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -1008,80 +1008,80 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 200
-                              identifier: 200
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                  id: 'GigabitEthernet6'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 200
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 200
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
                               openconfig-ospfv2-ext:stub-options:
-                                stub:
-                                  config:
-                                    enabled: false
-                                    default-information-originate: false
-                                totally-stubby:
-                                  config:
-                                    enabled: false
-                                    default-information-originate: false
-                                nssa:
-                                  config:
-                                    enabled: true
-                                    default-information-originate: false
-                                    no-summary: false
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+                                openconfig-ospfv2-ext:stub:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: false
+                                    openconfig-ospfv2-ext:default-information-originate: false
+                                openconfig-ospfv2-ext:totally-stubby:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: false
+                                    openconfig-ospfv2-ext:default-information-originate: false
+                                openconfig-ospfv2-ext:nssa:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: true
+                                    openconfig-ospfv2-ext:default-information-originate: false
+                                    openconfig-ospfv2-ext:no-summary: false
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -1097,80 +1097,80 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 200
-                              identifier: 200
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                  id: 'GigabitEthernet6'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 200
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 200
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
                               openconfig-ospfv2-ext:stub-options:
-                                stub:
-                                  config:
-                                    enabled: false
-                                    default-information-originate: false
-                                totally-stubby:
-                                  config:
-                                    enabled: false
-                                    default-information-originate: false
-                                nssa:
-                                  config:
-                                    enabled: true
-                                    default-information-originate: true
-                                    no-summary: false
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+                                openconfig-ospfv2-ext:stub:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: false
+                                    openconfig-ospfv2-ext:default-information-originate: false
+                                openconfig-ospfv2-ext:totally-stubby:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: false
+                                    openconfig-ospfv2-ext:default-information-originate: false
+                                openconfig-ospfv2-ext:nssa:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: true
+                                    openconfig-ospfv2-ext:default-information-originate: true
+                                    openconfig-ospfv2-ext:no-summary: false
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -1186,80 +1186,80 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 200
-                              identifier: 200
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                  id: 'GigabitEthernet6'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 200
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 200
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
                               openconfig-ospfv2-ext:stub-options:
-                                stub:
-                                  config:
-                                    enabled: false
-                                    default-information-originate: false
-                                totally-stubby:
-                                  config:
-                                    enabled: false
-                                    default-information-originate: false
-                                nssa:
-                                  config:
-                                    enabled: true
-                                    default-information-originate: false
-                                    no-summary: true
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+                                openconfig-ospfv2-ext:stub:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: false
+                                    openconfig-ospfv2-ext:default-information-originate: false
+                                openconfig-ospfv2-ext:totally-stubby:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: false
+                                    openconfig-ospfv2-ext:default-information-originate: false
+                                openconfig-ospfv2-ext:nssa:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: true
+                                    openconfig-ospfv2-ext:default-information-originate: false
+                                    openconfig-ospfv2-ext:no-summary: true
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -1275,80 +1275,80 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                        ospfv2:
-                          areas:
-                            area:
-                            - config:
-                                identifier: 200
-                              identifier: 200
-                              interfaces:
-                                interface:
-                                - config:
-                                    id: 'GigabitEthernet6'
-                                  id: 'GigabitEthernet6'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 200
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 200
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'GigabitEthernet6'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'GigabitEthernet6'
                               openconfig-ospfv2-ext:stub-options:
-                                stub:
-                                  config:
-                                    enabled: true
-                                    default-information-originate: true
-                                totally-stubby:
-                                  config:
-                                    enabled: false
-                                    default-information-originate: false
-                                nssa:
-                                  config:
-                                    enabled: true
-                                    default-information-originate: false
-                                    no-summary: true
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
+                                openconfig-ospfv2-ext:stub:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: true
+                                    openconfig-ospfv2-ext:default-information-originate: true
+                                openconfig-ospfv2-ext:totally-stubby:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: false
+                                    openconfig-ospfv2-ext:default-information-originate: false
+                                openconfig-ospfv2-ext:nssa:
+                                  openconfig-ospfv2-ext:config:
+                                    openconfig-ospfv2-ext:enabled: true
+                                    openconfig-ospfv2-ext:default-information-originate: false
+                                    openconfig-ospfv2-ext:no-summary: true
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
         api_method: PUT
         api_ignore_errors: true
         rollback: false

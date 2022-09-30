@@ -37,7 +37,8 @@
                 openconfig-system:motd-banner: |
                   This is the motd-banner.
               openconfig-system-ext:services:
-                openconfig-system-ext:ip-domain-lookup: false
+                openconfig-system-ext:config:
+                  openconfig-system-ext:ip-domain-lookup: false
         api_method: PUT
         api_ignore_errors: false
         rollback: false

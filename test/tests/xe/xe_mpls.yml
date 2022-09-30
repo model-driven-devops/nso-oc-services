@@ -25,118 +25,118 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Loopback 0'
-                    enabled: true
-                    name: 'Loopback0'
-                    type: 'softwareLoopback'
-                  name: 'Loopback0'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'Loopback0'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Loopback 0'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'Loopback0'
+                    openconfig-interfaces:type: 'softwareLoopback'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.255.0.1'
-                                  prefix-length: '32'
-                                ip: '10.255.0.1'
-                - config:
-                    description: 'Physical Interface 5'
-                    enabled: true
-                    mtu: 1500
-                    name: 'GigabitEthernet5'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet5'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.255.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.255.0.1'
+                                  openconfig-if-ip:prefix-length: '32'
+                - openconfig-interfaces:name: 'GigabitEthernet5'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 5'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet5'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.5.0.1'
-                                  prefix-length: 24
-                                ip: '10.5.0.1'
-                - config:
-                    description: 'Physical Interface 6'
-                    enabled: true
-                    mtu: 1500
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.5.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.5.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 6'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 24
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    enabled: true
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet5'
-                        config:
-                          id: 'GigabitEthernet5'
-                          interface: 'GigabitEthernet5'
-                          subinterface: 0
-                      - id: 'GigabitEthernet6'
-                        config:
-                          id: 'GigabitEthernet6'
-                          interface: 'GigabitEthernet6'
-                          subinterface: 0
-                  mpls:
-                    global:
-                      config:
-                        ttl-propagation: true  # or no mpls ip propagate-ttl
-                      interface-attributes:
-                        interface:
-                          - config:
-                              interface-id: 'GigabitEthernet5'
-                              mpls-enabled: true
-                            interface-id: 'GigabitEthernet5'
-                            interface-ref:
-                              config:
-                                interface: 'GigabitEthernet5'
-                                subinterface: 0
-                          - config:
-                              interface-id: 'GigabitEthernet6'
-                              mpls-enabled: true
-                            interface-id: 'GigabitEthernet6'
-                            interface-ref:
-                              config:
-                                interface: 'GigabitEthernet6'
-                                subinterface: 0
-                    signaling-protocols:
-                      ldp:
-                        global:
-                          config:
-                            lsr-id: '10.255.0.1'  # mpls ldp router-id Loopback0
-                          graceful-restart:
-                            config:
-                              enabled: true  # if true, mpls ldp graceful-restart
-                        interface-attributes:
-                          config:
-                            hello-holdtime: 30  # mpls ldp discovery hello holdtime seconds
-                            hello-interval: 10 # mpls ldp discovery hello interval seconds
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet5'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet5'
+                          openconfig-network-instance:interface: 'GigabitEthernet5'
+                          openconfig-network-instance:subinterface: 0
+                      - openconfig-network-instance:id: 'GigabitEthernet6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet6'
+                          openconfig-network-instance:interface: 'GigabitEthernet6'
+                          openconfig-network-instance:subinterface: 0
+                  openconfig-network-instance:mpls:
+                    openconfig-network-instance:global:
+                      openconfig-network-instance:config:
+                        openconfig-network-instance:ttl-propagation: true  # or no mpls ip propagate-ttl
+                      openconfig-network-instance:interface-attributes:
+                        openconfig-network-instance:interface:
+                          - openconfig-network-instance:interface-id: 'GigabitEthernet5'
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:interface-id: 'GigabitEthernet5'
+                              openconfig-network-instance:mpls-enabled: true
+                            openconfig-network-instance:interface-ref:
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:interface: 'GigabitEthernet5'
+                                openconfig-network-instance:subinterface: 0
+                          - openconfig-network-instance:interface-id: 'GigabitEthernet6'
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:interface-id: 'GigabitEthernet6'
+                              openconfig-network-instance:mpls-enabled: true
+                            openconfig-network-instance:interface-ref:
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:interface: 'GigabitEthernet6'
+                                openconfig-network-instance:subinterface: 0
+                    openconfig-network-instance:signaling-protocols:
+                      openconfig-network-instance:ldp:
+                        openconfig-network-instance:global:
+                          openconfig-network-instance:config:
+                            openconfig-network-instance:lsr-id: '10.255.0.1'  # mpls ldp router-id Loopback0
+                          openconfig-network-instance:graceful-restart:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:enabled: true  # if true, mpls ldp graceful-restart
+                        openconfig-network-instance:interface-attributes:
+                          openconfig-network-instance:config:
+                            openconfig-network-instance:hello-holdtime: 30  # mpls ldp discovery hello holdtime seconds
+                            openconfig-network-instance:hello-interval: 10 # mpls ldp discovery hello interval seconds
 
         api_method: PUT
         rollback: false

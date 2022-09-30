@@ -16,26 +16,26 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
-                prefix-sets:
-                  prefix-set:
-                    - name: 'LOCAL-PREFIXES'
-                      config:
-                        name: 'LOCAL-PREFIXES'
-                        mode: 'IPV4'
-                      prefixes:
-                        prefix:
-                          - ip-prefix: '1.1.1.1/32'
-                            masklength-range: 'exact'
-                            config:
-                              ip-prefix: '1.1.1.1/32'
-                              masklength-range: 'exact'
+              openconfig-routing-policy:defined-sets:
+                openconfig-routing-policy:prefix-sets:
+                  openconfig-routing-policy:prefix-set:
+                    - openconfig-routing-policy:name: 'LOCAL-PREFIXES'
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: 'LOCAL-PREFIXES'
+                        openconfig-routing-policy:mode: 'IPV4'
+                      openconfig-routing-policy:prefixes:
+                        openconfig-routing-policy:prefix:
+                          - openconfig-routing-policy:ip-prefix: '1.1.1.1/32'
+                            openconfig-routing-policy:masklength-range: 'exact'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '1.1.1.1/32'
+                              openconfig-routing-policy:masklength-range: 'exact'
                               openconfig-routing-policy-ext:seq: 10
-                          - ip-prefix: '2.2.2.0/23'
-                            masklength-range: '24..30'
-                            config:
-                              ip-prefix: '2.2.2.0/23'
-                              masklength-range: '24..30'
+                          - openconfig-routing-policy:ip-prefix: '2.2.2.0/23'
+                            openconfig-routing-policy:masklength-range: '24..30'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '2.2.2.0/23'
+                              openconfig-routing-policy:masklength-range: '24..30'
                               openconfig-routing-policy-ext:seq: 20
         api_method: PUT
         api_ignore_errors: false
@@ -54,14 +54,14 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
+              openconfig-routing-policy:defined-sets:
                 openconfig-bgp-policy:bgp-defined-sets:
-                  as-path-sets:
-                    as-path-set:
-                      - as-path-set-name: '11'
-                        config:
-                          as-path-set-name: '11'
-                          as-path-set-member:
+                  openconfig-bgp-policy:as-path-sets:
+                    openconfig-bgp-policy:as-path-set:
+                      - openconfig-bgp-policy:as-path-set-name: '11'
+                        openconfig-bgp-policy:config:
+                          openconfig-bgp-policy:as-path-set-name: '11'
+                          openconfig-bgp-policy:as-path-set-member:
                             - "^$"
                             - "_100"
         api_method: PUT
@@ -81,15 +81,15 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
+              openconfig-routing-policy:defined-sets:
                 openconfig-bgp-policy:bgp-defined-sets:
-                  community-sets:
-                    community-set:
-                      - community-set-name: 'test'
-                        config:
-                          community-set-name: 'test'
-                          match-set-options: 'ANY'  # ANY, ALL, INVERT  ONLY ANY supported on ios
-                          community-member:  # NO_EXPORT, NO_ADVERTISE, NO_EXPORT_SUBCONFED, NOPEER, AS:AS, regexs
+                  openconfig-bgp-policy:community-sets:
+                    openconfig-bgp-policy:community-set:
+                      - openconfig-bgp-policy:community-set-name: 'test'
+                        openconfig-bgp-policy:config:
+                          openconfig-bgp-policy:community-set-name: 'test'
+                          openconfig-bgp-policy:match-set-options: 'ANY'  # ANY, ALL, INVERT  ONLY ANY supported on ios
+                          openconfig-bgp-policy:community-member:  # NO_EXPORT, NO_ADVERTISE, NO_EXPORT_SUBCONFED, NOPEER, AS:AS, regexs
                             - "100:100"
                             - "200:200"
         api_method: PUT
@@ -109,15 +109,15 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
+              openconfig-routing-policy:defined-sets:
                 openconfig-bgp-policy:bgp-defined-sets:
-                  community-sets:
-                    community-set:
-                      - community-set-name: 'test'
-                        config:
-                          community-set-name: 'test'
-                          match-set-options: 'ANY'  # ANY, ALL, INVERT  ONLY ANY supported on ios
-                          community-member:  # NO_EXPORT, NO_ADVERTISE, NO_EXPORT_SUBCONFED, NOPEER, AS:AS, regexs
+                  openconfig-bgp-policy:community-sets:
+                    openconfig-bgp-policy:community-set:
+                      - openconfig-bgp-policy:community-set-name: 'test'
+                        openconfig-bgp-policy:config:
+                          openconfig-bgp-policy:community-set-name: 'test'
+                          openconfig-bgp-policy:match-set-options: 'ANY'  # ANY, ALL, INVERT  ONLY ANY supported on ios
+                          openconfig-bgp-policy:community-member:  # NO_EXPORT, NO_ADVERTISE, NO_EXPORT_SUBCONFED, NOPEER, AS:AS, regexs
                             - "6509[6-9]:4000"
                             - "6509[6-9]:3000"
         api_method: PUT
@@ -137,15 +137,15 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
+              openconfig-routing-policy:defined-sets:
                 openconfig-bgp-policy:bgp-defined-sets:
-                  community-sets:
-                    community-set:
-                      - community-set-name: 'test'
-                        config:
-                          community-set-name: 'test'
-                          match-set-options: 'ANY'  # ANY, ALL, INVERT  ONLY ANY supported on ios
-                          community-member:  # NO_EXPORT, NO_ADVERTISE, NO_EXPORT_SUBCONFED, NOPEER, AS:AS, regexs
+                  openconfig-bgp-policy:community-sets:
+                    openconfig-bgp-policy:community-set:
+                      - openconfig-bgp-policy:community-set-name: 'test'
+                        openconfig-bgp-policy:config:
+                          openconfig-bgp-policy:community-set-name: 'test'
+                          openconfig-bgp-policy:match-set-options: 'ANY'  # ANY, ALL, INVERT  ONLY ANY supported on ios
+                          openconfig-bgp-policy:community-member:  # NO_EXPORT, NO_ADVERTISE, NO_EXPORT_SUBCONFED, NOPEER, AS:AS, regexs
                             - "NO_EXPORT"
                             - "NO_ADVERTISE"
                             - "NO_EXPORT_SUBCONFED"

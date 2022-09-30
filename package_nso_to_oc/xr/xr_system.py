@@ -34,7 +34,7 @@ openconfig_system = {
                 "openconfig-system:server": []}
         },
         "openconfig-system:ssh-server": {"openconfig-system:config": {}},
-        "openconfig-system-ext:services": {}
+        "openconfig-system-ext:services": {"openconfig-system-ext:config": {}}
     }
 }
 
@@ -45,10 +45,10 @@ def xr_system_services(config_before: dict, config_leftover: dict) -> None:
     """
     openconfig_system_services = openconfig_system["openconfig-system:system"]["openconfig-system-ext:services"]
     if type(config_before.get("tailf-ned-cisco-ios-xr:domain", {}).get("lookup", {}).get("disable", "")) is list:
-        openconfig_system_services["openconfig-system-ext:ip-domain-lookup"] = False
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-domain-lookup"] = False
         del config_leftover["tailf-ned-cisco-ios-xr:domain"]["lookup"]
     else:
-        openconfig_system_services["openconfig-system-ext:ip-domain-lookup"] = True
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-domain-lookup"] = True
 
 
 def xr_system_config(config_before: dict, config_leftover: dict) -> None:

@@ -34,7 +34,7 @@ openconfig_system = {
                 "openconfig-system:server": []}
         },
         "openconfig-system:ssh-server": {"openconfig-system:config": {}},
-        "openconfig-system-ext:services": {}
+        "openconfig-system-ext:services": {"openconfig-system-ext:config": {}}
     }
 }
 
@@ -46,10 +46,10 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
     openconfig_system_services = openconfig_system["openconfig-system:system"]["openconfig-system-ext:services"]
     if config_before.get("tailf-ned-cisco-ios:ip", {}).get("domain", {}).get("lookup-conf", {}).get("lookup",
                                                                                                     True) is False:
-        openconfig_system_services["openconfig-system-ext:ip-domain-lookup"] = False
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-domain-lookup"] = False
         del config_leftover["tailf-ned-cisco-ios:ip"]["domain"]["lookup-conf"]
     else:
-        openconfig_system_services["openconfig-system-ext:ip-domain-lookup"] = True
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-domain-lookup"] = True
 
 
 def xe_system_config(config_before: dict, config_leftover: dict) -> None:

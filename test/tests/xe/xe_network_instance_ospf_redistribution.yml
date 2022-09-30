@@ -16,30 +16,30 @@
         content: |
           mdd:openconfig:
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                  table-connections:
-                    table-connection:
-                      - address-family: 'IPV4'
-                        dst-protocol: 'OSPF'
-                        src-protocol: 'DIRECTLY_CONNECTED'
-                        config:
-                          address-family: 'IPV4'
-                          dst-protocol: 'OSPF'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
+                        openconfig-network-instance:dst-protocol: 'OSPF'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'OSPF'
                           openconfig-network-instance-ext:dst-protocol-process-number: 1
-                          src-protocol: 'DIRECTLY_CONNECTED'
+                          openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -55,72 +55,72 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
-                prefix-sets:
-                  prefix-set:
-                    - name: 'prefix_test'
-                      config:
-                        name: 'prefix_test'
-                        mode: 'IPV4'
-                      prefixes:
-                        prefix:
-                          - ip-prefix: '192.133.184.0/22'
-                            masklength-range: 'exact'
-                            config:
-                              ip-prefix: '192.133.184.0/22'
-                              masklength-range: 'exact'
+              openconfig-routing-policy:defined-sets:
+                openconfig-routing-policy:prefix-sets:
+                  openconfig-routing-policy:prefix-set:
+                    - openconfig-routing-policy:name: 'prefix_test'
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: 'prefix_test'
+                        openconfig-routing-policy:mode: 'IPV4'
+                      openconfig-routing-policy:prefixes:
+                        openconfig-routing-policy:prefix:
+                          - openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                            openconfig-routing-policy:masklength-range: 'exact'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                              openconfig-routing-policy:masklength-range: 'exact'
                               openconfig-routing-policy-ext:seq: 10
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
+              openconfig-routing-policy:policy-definitions:
+                openconfig-routing-policy:policy-definition:
+                  - openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:config:
+                      openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:statements:
                       openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            match-prefix-set:
-                              config:
-                                prefix-set: 'prefix_test'
-                                match-set-options: 'ANY'
+                        - openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:conditions:
+                            openconfig-routing-policy:match-prefix-set:
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:prefix-set: 'prefix_test'
+                                openconfig-routing-policy:match-set-options: 'ANY'
                           openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:actions:
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                  table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'OSPF'
-                      src-protocol: 'DIRECTLY_CONNECTED'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'OSPF'
-                        openconfig-network-instance-ext:dst-protocol-process-number: 1
-                        src-protocol: 'DIRECTLY_CONNECTED'
-                        import-policy:
-                        - 'test'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
+                        openconfig-network-instance:dst-protocol: 'OSPF'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'OSPF'
+                          openconfig-network-instance-ext:dst-protocol-process-number: 1
+                          openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
+                          openconfig-network-instance:import-policy:
+                            - 'test'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -136,30 +136,30 @@
         content: |
           mdd:openconfig:
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                  table-connections:
-                    table-connection:
-                      - address-family: 'IPV4'
-                        dst-protocol: 'OSPF'
-                        src-protocol: 'STATIC'
-                        config:
-                          address-family: 'IPV4'
-                          dst-protocol: 'OSPF'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'STATIC'
+                        openconfig-network-instance:dst-protocol: 'OSPF'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'OSPF'
                           openconfig-network-instance-ext:dst-protocol-process-number: 1
-                          src-protocol: 'STATIC'
+                          openconfig-network-instance:src-protocol: 'STATIC'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -175,72 +175,72 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
-                prefix-sets:
-                  prefix-set:
-                    - name: 'prefix_test'
-                      config:
-                        name: 'prefix_test'
-                        mode: 'IPV4'
-                      prefixes:
-                        prefix:
-                          - ip-prefix: '192.133.184.0/22'
-                            masklength-range: 'exact'
-                            config:
-                              ip-prefix: '192.133.184.0/22'
-                              masklength-range: 'exact'
+              openconfig-routing-policy:defined-sets:
+                openconfig-routing-policy:prefix-sets:
+                  openconfig-routing-policy:prefix-set:
+                    - openconfig-routing-policy:name: 'prefix_test'
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: 'prefix_test'
+                        openconfig-routing-policy:mode: 'IPV4'
+                      openconfig-routing-policy:prefixes:
+                        openconfig-routing-policy:prefix:
+                          - openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                            openconfig-routing-policy:masklength-range: 'exact'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                              openconfig-routing-policy:masklength-range: 'exact'
                               openconfig-routing-policy-ext:seq: 10
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
+              openconfig-routing-policy:policy-definitions:
+                openconfig-routing-policy:policy-definition:
+                  - openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:config:
+                      openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:statements:
                       openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            match-prefix-set:
-                              config:
-                                prefix-set: 'prefix_test'
-                                match-set-options: 'ANY'
+                        - openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:conditions:
+                            openconfig-routing-policy:match-prefix-set:
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:prefix-set: 'prefix_test'
+                                openconfig-routing-policy:match-set-options: 'ANY'
                           openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:actions:
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                  table-connections:
-                    table-connection:
-                    - address-family: 'IPV4'
-                      dst-protocol: 'OSPF'
-                      src-protocol: 'STATIC'
-                      config:
-                        address-family: 'IPV4'
-                        dst-protocol: 'OSPF'
-                        src-protocol: 'STATIC'
-                        openconfig-network-instance-ext:dst-protocol-process-number: 1
-                        import-policy:
-                        - 'test'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'STATIC'
+                        openconfig-network-instance:dst-protocol: 'OSPF'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'OSPF'
+                          openconfig-network-instance:src-protocol: 'STATIC'
+                          openconfig-network-instance-ext:dst-protocol-process-number: 1
+                          openconfig-network-instance:import-policy:
+                            - 'test'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -256,30 +256,30 @@
         content: |
           mdd:openconfig:
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                  table-connections:
-                    table-connection:
-                      - address-family: 'IPV4'
-                        dst-protocol: 'OSPF'
-                        src-protocol: 'OSPF'
-                        config:
-                          address-family: 'IPV4'
-                          dst-protocol: 'OSPF'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'OSPF'
+                        openconfig-network-instance:dst-protocol: 'OSPF'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'OSPF'
                           openconfig-network-instance-ext:dst-protocol-process-number: 1
-                          src-protocol: 'OSPF'
+                          openconfig-network-instance:src-protocol: 'OSPF'
                           openconfig-network-instance-ext:src-protocol-process-number: 2
         api_method: PUT
         rollback: true
@@ -296,38 +296,38 @@
         content: |
           mdd:openconfig:
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                - name: 'abc'
-                  config:
-                    name: 'abc'
-                    type: 'L3VRF'
-                    enabled: true
-                    enabled-address-families:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                - openconfig-network-instance:name: 'abc'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'abc'
+                    openconfig-network-instance:type: 'L3VRF'
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:enabled-address-families:
                       - 'IPV4'
-                    route-distinguisher: '1:1'
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                  table-connections:
-                    table-connection:
-                      - address-family: 'IPV4'
-                        dst-protocol: 'OSPF'
-                        src-protocol: 'DIRECTLY_CONNECTED'
-                        config:
-                          address-family: 'IPV4'
-                          dst-protocol: 'OSPF'
+                    openconfig-network-instance:route-distinguisher: '1:1'
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
+                        openconfig-network-instance:dst-protocol: 'OSPF'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'OSPF'
                           openconfig-network-instance-ext:dst-protocol-process-number: 1
-                          src-protocol: 'DIRECTLY_CONNECTED'
+                          openconfig-network-instance:src-protocol: 'DIRECTLY_CONNECTED'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -344,30 +344,30 @@
         content: |
           mdd:openconfig:
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                  table-connections:
-                    table-connection:
-                      - address-family: 'IPV4'
-                        dst-protocol: 'OSPF'
-                        src-protocol: 'BGP'
-                        config:
-                          address-family: 'IPV4'
-                          dst-protocol: 'OSPF'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'BGP'
+                        openconfig-network-instance:dst-protocol: 'OSPF'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'OSPF'
                           openconfig-network-instance-ext:dst-protocol-process-number: 1
-                          src-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'BGP'
                           openconfig-network-instance-ext:src-protocol-process-number: 1
         api_method: PUT
         rollback: true
@@ -384,73 +384,73 @@
         content: |
           mdd:openconfig:
             openconfig-routing-policy:routing-policy:
-              defined-sets:
-                prefix-sets:
-                  prefix-set:
-                    - name: 'prefix_test'
-                      config:
-                        name: 'prefix_test'
-                        mode: 'IPV4'
-                      prefixes:
-                        prefix:
-                          - ip-prefix: '192.133.184.0/22'
-                            masklength-range: 'exact'
-                            config:
-                              ip-prefix: '192.133.184.0/22'
-                              masklength-range: 'exact'
+              openconfig-routing-policy:defined-sets:
+                openconfig-routing-policy:prefix-sets:
+                  openconfig-routing-policy:prefix-set:
+                    - openconfig-routing-policy:name: 'prefix_test'
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: 'prefix_test'
+                        openconfig-routing-policy:mode: 'IPV4'
+                      openconfig-routing-policy:prefixes:
+                        openconfig-routing-policy:prefix:
+                          - openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                            openconfig-routing-policy:masklength-range: 'exact'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                              openconfig-routing-policy:masklength-range: 'exact'
                               openconfig-routing-policy-ext:seq: 10
-              policy-definitions:
-                policy-definition:
-                  - name: 'test'
-                    config:
-                      name: 'test'
-                    statements:
+              openconfig-routing-policy:policy-definitions:
+                openconfig-routing-policy:policy-definition:
+                  - openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:config:
+                      openconfig-routing-policy:name: 'test'
+                    openconfig-routing-policy:statements:
                       openconfig-routing-policy:statement:
-                        - name: '10'
-                          config:
-                            name: '10'
-                          conditions:
-                            match-prefix-set:
-                              config:
-                                prefix-set: 'prefix_test'
-                                match-set-options: 'ANY'
+                        - openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '10'
+                          openconfig-routing-policy:conditions:
+                            openconfig-routing-policy:match-prefix-set:
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:prefix-set: 'prefix_test'
+                                openconfig-routing-policy:match-set-options: 'ANY'
                           openconfig-routing-policy:actions:
-                            config:
-                              policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
-                        - name: '20'
-                          config:
-                            name: '20'
-                          actions:
-                            config:
-                              policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                        - openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: '20'
+                          openconfig-routing-policy:actions:
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
             openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                  protocols:
-                    protocol:
-                      - name: '1'
-                        identifier: 'OSPF'
-                        config:
-                          enabled: True
-                          identifier: 'OSPF'
-                          name: '1'
-                  table-connections:
-                    table-connection:
-                      - address-family: 'IPV4'
-                        dst-protocol: 'OSPF'
-                        src-protocol: 'BGP'
-                        config:
-                          address-family: 'IPV4'
-                          dst-protocol: 'OSPF'
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                  openconfig-network-instance:table-connections:
+                    openconfig-network-instance:table-connection:
+                      - openconfig-network-instance:src-protocol: 'BGP'
+                        openconfig-network-instance:dst-protocol: 'OSPF'
+                        openconfig-network-instance:address-family: 'IPV4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:address-family: 'IPV4'
+                          openconfig-network-instance:dst-protocol: 'OSPF'
                           openconfig-network-instance-ext:dst-protocol-process-number: 1
-                          src-protocol: 'BGP'
+                          openconfig-network-instance:src-protocol: 'BGP'
                           openconfig-network-instance-ext:src-protocol-process-number: 1
-                          import-policy:
-                          - 'test'
+                          openconfig-network-instance:import-policy:
+                            - 'test'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false

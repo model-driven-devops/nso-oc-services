@@ -380,7 +380,7 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['timeout'] == 800"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:absolute-timeout-minutes'] == 1200"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['session-limit'] == 16"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['ip-domain-lookup'] == false"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-domain-lookup'] == false"
 
     - name: NSO configure ntp authenticate
       tags:

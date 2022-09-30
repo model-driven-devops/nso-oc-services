@@ -25,35 +25,35 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Physical Interface 1/0'
-                    enabled: true
-                    mtu: 1500
-                    name: 'GigabitEthernet1/0'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet1/0'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 1/0'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet1/0'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      enable-flow-control: true
-                  hold-time:
-                    config:
-                      down: 0
-                      up: 0  # not in xe
-                  name: 'GigabitEthernet1/0'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:enable-flow-control: true
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 0
+                      openconfig-interfaces:up: 0  # not in xe
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.10.0.1'
-                                  prefix-length: 24
-                                ip: '10.10.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.10.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.10.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -70,18 +70,18 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Access Port Example'
-                    enabled: true
-                    name: 'GigabitEthernet0/1'
-                    type: 'l2vlan'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet0/1'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Access Port Example'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet0/1'
+                    openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
                     openconfig-vlan:switched-vlan:
-                      config:
-                        access-vlan: 100
-                        interface-mode: 'ACCESS'
-                  name: 'GigabitEthernet0/1'
+                      openconfig-vlan:config:
+                        openconfig-vlan:access-vlan: 100
+                        openconfig-vlan:interface-mode: 'ACCESS'
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -99,22 +99,22 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Trunk Port Example'
-                    enabled: true
-                    name: 'GigabitEthernet0/2'
-                    type: 'l2vlan'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet0/2'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Trunk Port Example'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet0/2'
+                    openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
                     openconfig-vlan:switched-vlan:
-                      config:
-                        interface-mode: 'TRUNK'
-                        native-vlan: 99
-                        trunk-vlans:
+                      openconfig-vlan:config:
+                        openconfig-vlan:interface-mode: 'TRUNK'
+                        openconfig-vlan:native-vlan: 99
+                        openconfig-vlan:trunk-vlans:
                           - 100
                           - 200
                           - 300
-                  name: 'GigabitEthernet0/2'
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -134,43 +134,43 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - openconfig-if-aggregate:aggregation:
-                    config:
-                      lag-type: 'LACP'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'Port-channel1'
+                  openconfig-if-aggregate:aggregation:
+                    openconfig-if-aggregate:config:
+                      openconfig-if-aggregate:lag-type: 'LACP'
                     openconfig-vlan:switched-vlan:
-                      config:
-                        interface-mode: 'TRUNK'
-                        native-vlan: 99
-                        trunk-vlans:
+                      openconfig-vlan:config:
+                        openconfig-vlan:interface-mode: 'TRUNK'
+                        openconfig-vlan:native-vlan: 99
+                        openconfig-vlan:trunk-vlans:
                           - 100
                           - 200
                           - 300
-                  config:
-                    description: 'LACP Example PO1'
-                    enabled: true
-                    mtu: 1500
-                    name: 'Port-channel1'
-                    type: 'ieee8023adLag'
-                  name: 'Port-channel1'
-                - config:
-                    description: 'LACP Link Trunk Port Example'
-                    enabled: true
-                    mtu: 1500
-                    name: 'GigabitEthernet1/1'
-                    type: 'ethernetCsmacd'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'LACP Example PO1'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'Port-channel1'
+                    openconfig-interfaces:type: 'ieee8023adLag'
+                - openconfig-interfaces:name: 'GigabitEthernet1/1'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'LACP Link Trunk Port Example'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet1/1'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
+                    openconfig-if-ethernet:config:
                       openconfig-if-aggregate:aggregate-id: 'Port-channel1'
                     openconfig-vlan:switched-vlan:
-                      config:
-                        interface-mode: 'TRUNK'
-                        native-vlan: 99
-                        trunk-vlans:
+                      openconfig-vlan:config:
+                        openconfig-vlan:interface-mode: 'TRUNK'
+                        openconfig-vlan:native-vlan: 99
+                        openconfig-vlan:trunk-vlans:
                           - 100
                           - 200
                           - 300
-                  name: 'GigabitEthernet1/1'
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -198,33 +198,33 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - openconfig-if-aggregate:aggregation:
-                    config:
-                      lag-type: 'LACP'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'Port-channel2'
+                  openconfig-if-aggregate:aggregation:
+                    openconfig-if-aggregate:config:
+                      openconfig-if-aggregate:lag-type: 'LACP'
                     openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: '192.168.50.1'
-                              prefix-length: '24'
-                            ip: '192.168.50.1'
-                  config:
-                    description: 'LACP Example PO2'
-                    enabled: true
-                    name: 'Port-channel2'
-                    type: 'ieee8023adLag'
-                  name: 'Port-channel2'
-                - config:
-                    description: 'LACP Link L3 Port Example'
-                    enabled: true
-                    mtu: 1500
-                    name: 'GigabitEthernet1/2'
-                    type: 'ethernetCsmacd'
+                      openconfig-if-ip:addresses:
+                        openconfig-if-ip:address:
+                          - openconfig-if-ip:ip: '192.168.50.1'
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:ip: '192.168.50.1'
+                              openconfig-if-ip:prefix-length: '24'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'LACP Example PO2'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'Port-channel2'
+                    openconfig-interfaces:type: 'ieee8023adLag'
+                - openconfig-interfaces:name: 'GigabitEthernet1/2'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'LACP Link L3 Port Example'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet1/2'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
+                    openconfig-if-ethernet:config:
                       openconfig-if-aggregate:aggregate-id: 'Port-channel2'
-                  name: 'GigabitEthernet1/2'
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
@@ -245,25 +245,25 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    description: 'Example Routed Vlan100 IP'
-                    enabled: true
-                    loopback-mode: false
-                    mtu: 1500
-                    name: 'Vlan100'
-                    type: 'l3ipvlan'
-                  name: 'Vlan100'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'Vlan100'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Example Routed Vlan100 IP'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:loopback-mode: false
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'Vlan100'
+                    openconfig-interfaces:type: 'l3ipvlan'
                   openconfig-vlan:routed-vlan:
-                    config:
-                      vlan: 100
+                    openconfig-vlan:config:
+                      openconfig-vlan:vlan: 100
                     openconfig-if-ip:ipv4:
-                      addresses:
-                        address:
-                          - config:
-                              ip: '192.168.100.1'
-                              prefix-length: '24'
-                            ip: '192.168.100.1'
+                      openconfig-if-ip:addresses:
+                        openconfig-if-ip:address:
+                          - openconfig-if-ip:ip: '192.168.100.1'
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:ip: '192.168.100.1'
+                              openconfig-if-ip:prefix-length: '24'
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false

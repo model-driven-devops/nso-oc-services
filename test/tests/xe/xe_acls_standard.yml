@@ -16,77 +16,79 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 30
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 30
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-acl:acl:
-              acl-sets:
-                acl-set:
-                  - config:
-                      name: '11'
-                      type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    name: '11'
-                    type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    acl-entries:
-                      acl-entry:
-                        - actions:
-                            config:
-                              forwarding-action: 'ACCEPT'
-                              log-action: 'LOG_NONE'
-                          config:
-                            sequence-id: 10
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
+                  - openconfig-acl:name: '11'
+                    openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    openconfig-acl:config:
+                      openconfig-acl:name: '11'
+                      openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
+                        - openconfig-acl:sequence-id: 10
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:sequence-id: 10
                           openconfig-acl-ext:ipv4:
-                            source-address: '10.0.0.0/8'
-                          sequence-id: 10
-                        - actions:
-                            config:
-                              forwarding-action: 'REJECT'
-                              log-action: 'LOG_NONE'
-                          config:
-                            sequence-id: 20
+                            openconfig-acl-ext:config:
+                              openconfig-acl-ext:source-address: '10.0.0.0/8'
+                        - openconfig-acl:sequence-id: 20
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:sequence-id: 20
                           openconfig-acl-ext:ipv4:
-                            source-address: '0.0.0.0/0'
-                          sequence-id: 20
-              interfaces:
-                interface:
-                  - config:
-                      id: 'GigabitEthernet6'
-                    id: 'GigabitEthernet6'
-                    ingress-acl-sets:
-                      ingress-acl-set:
-                        - config:
-                            set-name: '11'
-                            type: 'ACL_IPV4_STANDARD'
-                          set-name: '11'
-                          type: 'ACL_IPV4_STANDARD'
-                    interface-ref:
-                      config:
-                        interface: 'GigabitEthernet6'
-                        subinterface: 0
+                            openconfig-acl-ext:config:
+                              openconfig-acl-ext:source-address: '0.0.0.0/0'
+              openconfig-acl:interfaces:
+                openconfig-acl:interface:
+                  - openconfig-acl:id: 'GigabitEthernet6'
+                    openconfig-acl:config:
+                      openconfig-acl:id: 'GigabitEthernet6'
+                    openconfig-acl:ingress-acl-sets:
+                      openconfig-acl:ingress-acl-set:
+                        - openconfig-acl:set-name: '11'
+                          openconfig-acl:type: 'ACL_IPV4_STANDARD'
+                          openconfig-acl:config:
+                            openconfig-acl:set-name: '11'
+                            openconfig-acl:type: 'ACL_IPV4_STANDARD'
+                    openconfig-acl:interface-ref:
+                      openconfig-acl:config:
+                        openconfig-acl:interface: 'GigabitEthernet6'
+                        openconfig-acl:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -102,77 +104,79 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 30
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 30
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-acl:acl:
-              acl-sets:
-                acl-set:
-                  - config:
-                      name: '11'
-                      type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    name: '11'
-                    type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    acl-entries:
-                      acl-entry:
-                        - actions:
-                            config:
-                              forwarding-action: 'ACCEPT'
-                              log-action: 'LOG_NONE'
-                          config:
-                            sequence-id: 10
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
+                  - openconfig-acl:name: '11'
+                    openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    openconfig-acl:config:
+                      openconfig-acl:name: '11'
+                      openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
+                        - openconfig-acl:sequence-id: 10
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:sequence-id: 10
                           openconfig-acl-ext:ipv4:
-                            source-address: '10.0.0.0/8'
-                          sequence-id: 10
-                        - actions:
-                            config:
-                              forwarding-action: 'REJECT'
-                              log-action: 'LOG_NONE'
-                          config:
-                            sequence-id: 20
+                            openconfig-acl-ext:config:
+                              openconfig-acl-ext:source-address: '10.0.0.0/8'
+                        - openconfig-acl:sequence-id: 20
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:sequence-id: 20
                           openconfig-acl-ext:ipv4:
-                            source-address: '0.0.0.0/0'
-                          sequence-id: 20
-              interfaces:
-                interface:
-                  - config:
-                      id: 'GigabitEthernet6'
-                    id: 'GigabitEthernet6'
-                    egress-acl-sets:
-                      egress-acl-set:
-                        - config:
-                            set-name: '11'
-                            type: 'ACL_IPV4_STANDARD'
-                          set-name: '11'
-                          type: 'ACL_IPV4_STANDARD'
-                    interface-ref:
-                      config:
-                        interface: 'GigabitEthernet6'
-                        subinterface: 0
+                            openconfig-acl-ext:config:
+                              openconfig-acl-ext:source-address: '0.0.0.0/0'
+              openconfig-acl:interfaces:
+                openconfig-acl:interface:
+                  - openconfig-acl:id: 'GigabitEthernet6'
+                    openconfig-acl:config:
+                      openconfig-acl:id: 'GigabitEthernet6'
+                    openconfig-acl:egress-acl-sets:
+                      openconfig-acl:egress-acl-set:
+                        - openconfig-acl:set-name: '11'
+                          openconfig-acl:type: 'ACL_IPV4_STANDARD'
+                          openconfig-acl:config:
+                            openconfig-acl:set-name: '11'
+                            openconfig-acl:type: 'ACL_IPV4_STANDARD'
+                    openconfig-acl:interface-ref:
+                      openconfig-acl:config:
+                        openconfig-acl:interface: 'GigabitEthernet6'
+                        openconfig-acl:subinterface: 0
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
@@ -223,8 +227,8 @@
 #                      type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
 #                    name: '11'
 #                    type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-#                    acl-entries:
-#                      acl-entry:
+#                    openconfig-acl:acl-entries:
+#                      openconfig-acl:acl-entry:
 #                        - actions:
 #                            config:
 #                              forwarding-action: 'ACCEPT'
@@ -232,7 +236,8 @@
 #                          config:
 #                            sequence-id: 10
 #                          openconfig-acl-ext:ipv4:
-#                            source-address: '0.0.0.0/0'
+#                            openconfig-acl-ext:config:
+#                              source-address: '0.0.0.0/0'
 #                          sequence-id: 10
 #              openconfig-acl-ext:lines:
 #                line:
@@ -260,58 +265,59 @@
         content: |
           mdd:openconfig:
             openconfig-interfaces:interfaces:
-              interface:
-                - config:
-                    enabled: true
-                    name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
-                    config:
-                      auto-negotiate: true
-                      enable-flow-control: false
-                  hold-time:
-                    config:
-                      down: 10
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
-                          index: 0
-                        index: 0
+                    openconfig-if-ethernet:config:
+                      openconfig-if-ethernet:auto-negotiate: true
+                      openconfig-if-ethernet:enable-flow-control: false
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
                         openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
-                                  ip: '10.6.0.1'
-                                  prefix-length: 30
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 30
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
             openconfig-acl:acl:
-              acl-sets:
-                acl-set:
-                  - config:
-                      name: '11'
-                      type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    name: '11'
-                    type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
-                    acl-entries:
-                      acl-entry:
-                        - actions:
-                            config:
-                              forwarding-action: 'ACCEPT'
-                              log-action: 'LOG_NONE'
-                          config:
-                            sequence-id: 10
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
+                  - openconfig-acl:name: '11'
+                    openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    openconfig-acl:config:
+                      openconfig-acl:name: '11'
+                      openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
+                        - openconfig-acl:sequence-id: 10
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:sequence-id: 10
                           openconfig-acl-ext:ipv4:
-                            source-address: '0.0.0.0/0'
-                          sequence-id: 10
+                            openconfig-acl-ext:config:
+                              openconfig-acl-ext:source-address: '0.0.0.0/0'
               openconfig-acl-ext:lines:
-                line:
-                  - config:
-                      id: 'vty 0 4'
-                    id: 'vty 0 4'
-                    egress-acl-set: '11'
+                openconfig-acl-ext:line:
+                  - openconfig-acl-ext:id: 'vty 0 4'
+                    openconfig-acl-ext:config:
+                      openconfig-acl-ext:id: 'vty 0 4'
+                    openconfig-acl-ext:egress-acl-set: '11'
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false

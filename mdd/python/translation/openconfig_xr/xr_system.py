@@ -30,21 +30,21 @@ def xr_system_program_service(self) -> None:
         device_cdb.cisco_ios_xr__line.console.exec_timeout.seconds = str(seconds_all % 60)
     if self.service.oc_sys__system.config.ip_options:
         raise NotImplementedError('openconfig-system-config-ip-options has not yet been implemented for XR')
-    if self.service.oc_sys__system.config.timestamps.logging.enabled and (
-            self.service.oc_sys__system.config.timestamps.logging.datetime or self.service.oc_sys__system.config.timestamps.logging.uptime):
+    if self.service.oc_sys__system.timestamps.logging.config.enabled and (
+            self.service.oc_sys__system.timestamps.logging.config.datetime or self.service.oc_sys__system.timestamps.logging.config.uptime):
         raise NotImplementedError('openconfig-system-config-ip-options has not yet been implemented for XR')
-    elif self.service.oc_sys__system.config.timestamps.logging.datetime and self.service.oc_sys__system.config.timestamps.logging.uptime:
+    elif self.service.oc_sys__system.timestamps.logging.config.datetime and self.service.oc_sys__system.timestamps.logging.config.uptime:
         raise ValueError('Can not use timestamp logging with both uptime and datetime')
-    elif self.service.oc_sys__system.config.timestamps.logging.enabled and (
-            not self.service.oc_sys__system.config.timestamps.logging.datetime or not self.service.oc_sys__system.config.timestamps.logging.uptime):
+    elif self.service.oc_sys__system.timestamps.logging.config.enabled and (
+            not self.service.oc_sys__system.timestamps.logging.config.datetime or not self.service.oc_sys__system.timestamps.logging.config.uptime):
         raise ValueError('Logging timestamps must use datetime or uptime')
-    if self.service.oc_sys__system.config.timestamps.debugging.enabled and (
-            self.service.oc_sys__system.config.timestamps.debugging.datetime or self.service.oc_sys__system.config.timestamps.debugging.uptime):
+    if self.service.oc_sys__system.timestamps.debugging.config.enabled and (
+            self.service.oc_sys__system.timestamps.debugging.config.datetime or self.service.oc_sys__system.timestamps.debugging.config.uptime):
         raise NotImplementedError('openconfig-system-config-timestamps-debugging has not yet been implemented for XR')
-    elif self.service.oc_sys__system.config.timestamps.debugging.datetime and self.service.oc_sys__system.config.timestamps.debugging.uptime:
+    elif self.service.oc_sys__system.timestamps.debugging.config.datetime and self.service.oc_sys__system.timestamps.debugging.config.uptime:
         raise ValueError('Can not use timestamp debugging with both uptime and datetime')
-    elif self.service.oc_sys__system.config.timestamps.debugging.enabled and (
-            not self.service.oc_sys__system.config.timestamps.debugging.datetime or not self.service.oc_sys__system.config.timestamps.debugging.uptime):
+    elif self.service.oc_sys__system.timestamps.debugging.config.enabled and (
+            not self.service.oc_sys__system.timestamps.debugging.config.datetime or not self.service.oc_sys__system.timestamps.debugging.config.uptime):
         raise ValueError('Debugging timestamps must use datetime or uptime')
     # DNS servers
     if len(self.service.oc_sys__system.dns.servers.server) > 0:
@@ -112,50 +112,50 @@ def xr_system_program_service(self) -> None:
     if self.service.oc_sys__system.aaa.accounting.events.event:
         raise NotImplementedError('openconfig-system-aaa-accounting-config has not yet been implemented for XR')
     # service domain lookup disable (no ip domain lookup)
-    if self.service.oc_sys__system.services.ip_domain_lookup is False:
+    if self.service.oc_sys__system.services.config.ip_domain_lookup is False:
         device_cdb.cisco_ios_xr__domain.lookup.disable.create()
-    elif self.service.oc_sys__system.services.ip_domain_lookup is True:
+    elif self.service.oc_sys__system.services.config.ip_domain_lookup is True:
         if device_cdb.cisco_ios_xr__domain.lookup.disable.exists():
             device_cdb.cisco_ios_xr__domain.lookup.disable.delete()
     # service finger
-    if self.service.oc_sys__system.services.finger:
+    if self.service.oc_sys__system.services.config.finger:
         raise NotImplementedError('openconfig-system-service-finger has not yet been implemented for XR')
-    elif self.service.oc_sys__system.services.finger is False:
+    elif self.service.oc_sys__system.services.config.finger is False:
         raise NotImplementedError('openconfig-system-service-finger has not yet been implemented for XR')
     # ip gratuitous arps
-    if self.service.oc_sys__system.services.ip_gratuitous_arps:
+    if self.service.oc_sys__system.services.config.ip_gratuitous_arps:
         raise NotImplementedError('openconfig-system-ip-gratuitous-arp has not yet been implemented for XR')
-    elif self.service.oc_sys__system.services.ip_gratuitous_arps is False:
+    elif self.service.oc_sys__system.services.config.ip_gratuitous_arps is False:
         raise NotImplementedError('openconfig-system-ip-gratuitous-arp has not yet been implemented for XR')
     # service password-encryption
-    if self.service.oc_sys__system.services.service_password_encryption:
+    if self.service.oc_sys__system.services.config.service_password_encryption:
         raise NotImplementedError('openconfig-system-service-password-encryption has not yet been implemented for XR')
-    elif self.service.oc_sys__system.services.service_password_encryption is False:
+    elif self.service.oc_sys__system.services.config.service_password_encryption is False:
         raise NotImplementedError('openconfig-system-service-password-encryption has not yet been implemented for XR')
     # service-tcp-small-servers
-    if self.service.oc_sys__system.services.service_tcp_small_servers:
+    if self.service.oc_sys__system.services.config.service_tcp_small_servers:
         raise NotImplementedError('openconfig-system-service-tcp-small-servers has not yet been implemented for XR')
-    elif self.service.oc_sys__system.services.service_tcp_small_servers is False:
+    elif self.service.oc_sys__system.services.config.service_tcp_small_servers is False:
         raise NotImplementedError('openconfig-system-service-tcp-small-servers has not yet been implemented for XR')
     # service-udp-small-servers
-    if self.service.oc_sys__system.services.service_udp_small_servers:
+    if self.service.oc_sys__system.services.config.service_udp_small_servers:
         raise NotImplementedError('openconfig-system-service-udp-small-servers has not yet been implemented for XR')
-    elif self.service.oc_sys__system.services.service_udp_small_servers is False:
+    elif self.service.oc_sys__system.services.config.service_udp_small_servers is False:
         raise NotImplementedError('openconfig-system-service-udp-small-servers has not yet been implemented for XR')
     # service http
-    if self.service.oc_sys__system.services.http.http_enabled:
+    if self.service.oc_sys__system.services.http.config.http_enabled:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for XR')
-    elif self.service.oc_sys__system.services.http.http_enabled is False:
+    elif self.service.oc_sys__system.services.http.config.http_enabled is False:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for XR')
-    if self.service.oc_sys__system.services.http.https_enabled:
+    if self.service.oc_sys__system.services.http.config.https_enabled:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for XR')
-    elif self.service.oc_sys__system.services.http.https_enabled is False:
+    elif self.service.oc_sys__system.services.http.config.https_enabled is False:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for XR')
-    if self.service.oc_sys__system.services.http.ip_http_max_connections:
+    if self.service.oc_sys__system.services.http.config.ip_http_max_connections:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for XR')
-    if self.service.oc_sys__system.services.http.ip_http_secure_ciphersuite:
+    if self.service.oc_sys__system.services.http.config.ip_http_secure_ciphersuite:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for XR')
-    if self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.connection and self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.life and self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.requests:
+    if self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.connection and self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.life and self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.requests:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for XR')
     # nat pools
     if len(self.service.oc_sys__system.services.nat.pools.pool) > 0:
