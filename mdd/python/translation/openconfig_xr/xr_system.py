@@ -30,21 +30,21 @@ def xr_system_program_service(self) -> None:
         device_cdb.cisco_ios_xr__line.console.exec_timeout.seconds = str(seconds_all % 60)
     if self.service.oc_sys__system.config.ip_options:
         raise NotImplementedError('openconfig-system-config-ip-options has not yet been implemented for XR')
-    if self.service.oc_sys__system.config.timestamps.logging.config.enabled and (
-            self.service.oc_sys__system.config.timestamps.logging.config.datetime or self.service.oc_sys__system.config.timestamps.logging.config.uptime):
+    if self.service.oc_sys__system.timestamps.logging.config.enabled and (
+            self.service.oc_sys__system.timestamps.logging.config.datetime or self.service.oc_sys__system.timestamps.logging.config.uptime):
         raise NotImplementedError('openconfig-system-config-ip-options has not yet been implemented for XR')
-    elif self.service.oc_sys__system.config.timestamps.logging.config.datetime and self.service.oc_sys__system.config.timestamps.logging.config.uptime:
+    elif self.service.oc_sys__system.timestamps.logging.config.datetime and self.service.oc_sys__system.timestamps.logging.config.uptime:
         raise ValueError('Can not use timestamp logging with both uptime and datetime')
-    elif self.service.oc_sys__system.config.timestamps.logging.config.enabled and (
-            not self.service.oc_sys__system.config.timestamps.logging.config.datetime or not self.service.oc_sys__system.config.timestamps.logging.config.uptime):
+    elif self.service.oc_sys__system.timestamps.logging.config.enabled and (
+            not self.service.oc_sys__system.timestamps.logging.config.datetime or not self.service.oc_sys__system.timestamps.logging.config.uptime):
         raise ValueError('Logging timestamps must use datetime or uptime')
-    if self.service.oc_sys__system.config.timestamps.debugging.config.enabled and (
-            self.service.oc_sys__system.config.timestamps.debugging.config.datetime or self.service.oc_sys__system.config.timestamps.debugging.config.uptime):
+    if self.service.oc_sys__system.timestamps.debugging.config.enabled and (
+            self.service.oc_sys__system.timestamps.debugging.config.datetime or self.service.oc_sys__system.timestamps.debugging.config.uptime):
         raise NotImplementedError('openconfig-system-config-timestamps-debugging has not yet been implemented for XR')
-    elif self.service.oc_sys__system.config.timestamps.debugging.config.datetime and self.service.oc_sys__system.config.timestamps.debugging.config.uptime:
+    elif self.service.oc_sys__system.timestamps.debugging.config.datetime and self.service.oc_sys__system.timestamps.debugging.config.uptime:
         raise ValueError('Can not use timestamp debugging with both uptime and datetime')
-    elif self.service.oc_sys__system.config.timestamps.debugging.config.enabled and (
-            not self.service.oc_sys__system.config.timestamps.debugging.config.datetime or not self.service.oc_sys__system.config.timestamps.debugging.config.uptime):
+    elif self.service.oc_sys__system.timestamps.debugging.config.enabled and (
+            not self.service.oc_sys__system.timestamps.debugging.config.datetime or not self.service.oc_sys__system.timestamps.debugging.config.uptime):
         raise ValueError('Debugging timestamps must use datetime or uptime')
     # DNS servers
     if len(self.service.oc_sys__system.dns.servers.server) > 0:
