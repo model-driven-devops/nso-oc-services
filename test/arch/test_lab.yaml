@@ -459,6 +459,8 @@ nodes:
       interface mgmt0
       ip address dhcp
       vrf member management
+      no password strength-check
+      username admin password admin role network-admin
     hide_links: false
     boot_disk_size: 0
     cpu_limit: 100

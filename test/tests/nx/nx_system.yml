@@ -1,0 +1,62 @@
+---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  tags:
+    - always
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- name: test system
+  hosts: "{{ lookup('env', 'TEST_DEVICE_NXSWITCH') | default('nx1', True) }}"
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_NXSWITCH') | default('nx1', True) }}"
+    ansible_network_os: 'cisco.nxos.nxos'
+  tasks:
+    - name: test config
+      tags:
+        - config
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system:config:
+                openconfig-system-ext:console-exec-timeout-seconds: 800
+                openconfig-system:domain-name: 'test123.com'
+                openconfig-system:hostname: 'rxx'
+                openconfig-system:login-banner: |
+                  This is the login-banner.
+                openconfig-system:motd-banner: |
+                  This is the motd-banner.
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:ip-domain-lookup: false
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          # - "'+hostname rxx:' in changes"
+          - "'+banner exec ^This is the login-banner.:' in changes"
+          - "'+banner motd ^This is the motd-banner.:' in changes"
+          - "'+ip domain-name test123.com:' in changes"
+          - "'+no ip domain-lookup:' in changes"
+          - "'+ exec-timeout 13:' in changes"
+
+- hosts: nso
+  connection: local
+  gather_facts: no
+  tags:
+    - always
+  roles:
+    - nso-rollback-load
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
