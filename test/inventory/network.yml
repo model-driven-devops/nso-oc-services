@@ -8,8 +8,8 @@ all:
         switches:
           hosts:
             xeswitch1:
-#            nx1:
-#              device_ned: cisco-nx-cli-5.23
+            nx1:
+              device_ned: cisco-nx-cli-5.23
         routers:
           hosts:
             xe1:

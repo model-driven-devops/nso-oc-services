@@ -197,7 +197,7 @@ jobs:
           for PLAYBOOK in $FILES
           do
           echo $PLAYBOOK
-          ansible-playbook $PLAYBOOK --skip-tags="iosxr"
+          ansible-playbook $PLAYBOOK --skip-tags="iosxr,nxos"
           done
         env:
           NSO_HOST: ${{ env.NSO_HOST }}
@@ -272,7 +272,7 @@ jobs:
           for PLAYBOOK in $FILES
           do
           echo $PLAYBOOK
-          ansible-playbook $PLAYBOOK --skip-tags="ios"
+          ansible-playbook $PLAYBOOK --skip-tags="ios,nxos"
           done
         env:
           NSO_HOST: ${{ env.NSO_HOST }}
@@ -284,10 +284,84 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
+  test-oc-nx:
+    runs-on: self-hosted
+    if: github.event.review.state == 'approved'
+    needs: test-oc-xr
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: echo "The workflow is now ready to test your code on the runner."
+      - name: update ubuntu
+        run: sudo apt-get update
+      - name: install sshpass
+        run: sudo apt-get install sshpass -y
+      - name: install git
+        run: sudo apt-get install git -y
+      - name: clone mdd
+        run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Install PIP requirements
+        run: pip install -r ./mdd_repo/requirements.txt
+      - name: Install PIP virl2_client
+        run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
+      - name: Install Collections
+        run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: Inventory CML
+        run: ansible-playbook cisco.cml.inventory
+        env:
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
+      - name: Save host IPs
+        run: ansible-playbook ./test/save_cml_node_ips.yml
+        env:
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ secrets.CML_LAB }}
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
+      - name: Write contents of nso IP file to envars
+        run: |
+          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+      - name: Write contents of xe1 IP file to envars
+        run: |
+          cat ${{ github.workspace }}/xe1_host.txt >> $GITHUB_ENV
+      - name: Write contents of xeswitch1 IP file to envars
+        run: |
+          cat ${{ github.workspace }}/xeswitch1_host.txt >> $GITHUB_ENV
+      - name: Write contents of xr1 IP file to envars
+        run: |
+          cat ${{ github.workspace }}/xr1_host.txt >> $GITHUB_ENV
+      - name: Write contents of nx1 IP file to envars
+        run: |
+          cat ${{ github.workspace }}/nx1_host.txt >> $GITHUB_ENV
+      - name: Run NSO Services XR Tests
+        run: |
+          cd ./test/tests/nx
+          FILES=$(ls ./*.yml)
+          for PLAYBOOK in $FILES
+          do
+          echo $PLAYBOOK
+          ansible-playbook $PLAYBOOK --skip-tags="ios,iosxr"
+          done
+        env:
+          NSO_HOST: ${{ env.NSO_HOST }}
+          NX1_HOST: ${{ env.NX1_HOST }}
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev.cfg
+          NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
+          NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
+          NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
+          NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
   remove-mdd-logic:
     runs-on: self-hosted
     if: github.event.review.state == 'approved'
-    needs: [test-oc-xe, test-oc-xr]
+    needs: [test-oc-xe, test-oc-xr, test-oc-nx]
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2

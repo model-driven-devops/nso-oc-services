@@ -25,6 +25,14 @@
   tags:
     - iosxr
 
+- name: nxos collect config (before)
+  nxos_command:
+    commands:
+      - show run
+  register: result_before
+  tags:
+    - nxos
+
 - name: Convert string to JSON
   set_fact:
     configs: "{{ content | from_yaml | to_json }}"
@@ -71,6 +79,14 @@
   register: result_after
   tags:
     - iosxr
+
+- name: nxos collect config (after)
+  nxos_command:
+    commands:
+      - show run
+  register: result_after
+  tags:
+    - nxos
 
 - set_fact:
     exclude_list:
