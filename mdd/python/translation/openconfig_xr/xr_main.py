@@ -1,6 +1,7 @@
 # -*- mode: python; python-indent: 4 -*-
 from translation.common import is_oc_routing_policy_configured
 from translation.openconfig_xr.xr_system import xr_system_program_service
+from translation.openconfig_xr.xr_interfaces import xr_interfaces_program_service
 
 def check_xr_features(self) -> None:
     """
@@ -8,7 +9,7 @@ def check_xr_features(self) -> None:
     """
     # OpenConfig Interfaces
     if len(self.service.oc_if__interfaces.interface) > 0:
-        raise NotImplementedError('openconfig-interfaces has not yet been implemented for XR')
+        xr_interfaces_program_service(self)
 
     # # OpenConfig ACL
     if len(self.service.oc_acl__acl.acl_sets.acl_set) > 0:
