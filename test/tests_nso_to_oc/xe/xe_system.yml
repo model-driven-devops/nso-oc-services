@@ -297,19 +297,33 @@
               log:
                 - null
         api_method: PATCH
-     - name: NSO configure login on-failure
-       tags:
-         - login_on-failure
-       import_role:
-         name: nso-ned-device-configure
-       vars:
-         api_path: config/tailf-ned-cisco-ios:login
-         content: |
-           tailf-ned-cisco-ios:login:
-             on-failure:
-               log:
-                 - null
-         api_method: PATCH
+    - name: NSO configure login on-failure
+      tags:
+       - login_on-failure
+      import_role:
+       name: nso-ned-device-configure
+      vars:
+       api_path: config/tailf-ned-cisco-ios:login
+       content: |
+         tailf-ned-cisco-ios:login:
+           on-failure:
+             log:
+               - null
+       api_method: PATCH
+    - name: NSO configure login block-for
+      tags:
+       - login_block-for
+      import_role:
+       name: nso-ned-device-configure
+      vars:
+       api_path: config/tailf-ned-cisco-ios:login
+       content: |
+         tailf-ned-cisco-ios:login:
+           block-for:
+             seconds: 900
+             attempts: 3
+             within: 120
+       api_method: PATCH
     - name: NSO configure ssh source interface
       tags:
         - ssh_source_interface
@@ -409,8 +423,11 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-domain-lookup'] == false"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-success'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-failure'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['seconds'] == 900"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['within'] == 3"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['attempts'] == 120"
 
-  - name: NSO configure ntp authenticate
+    - name: NSO configure ntp authenticate
       tags:
         - ntp_authenticate
       import_role:
