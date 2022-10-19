@@ -121,6 +121,26 @@ def xe_system_program_service(self) -> None:
     elif self.service.oc_sys__system.services.config.service_udp_small_servers is False:
         if device_cdb.ios__service.udp_small_servers.exists():
             device_cdb.ios__service.udp_small_servers.delete()
+    # login on-success
+    if self.service.oc_sys__system.services.login_security_policy.config.on_success:
+        device_cdb.ios__login.on_success.log.create()
+    elif self.service.oc_sys__system.services.login_security_policy.config.on_success is False:
+        if device_cdb.ios__login.on_success.log.exists():
+            device_cdb.ios__login.on_success.log.delete()
+    # login on-failure
+    if self.service.oc_sys__system.services.login_security_policy.config.on_failure:
+        device_cdb.ios__login.on_failure.log.create()
+    elif self.service.oc_sys__system.services.login_security_policy.config.on_failure is False:
+        if device_cdb.ios__login.on_failure.log.exists():
+            device_cdb.ios__login.on_failure.log.delete()
+    # login block-for
+    if self.service.oc_sys__system.services.login_security_policy.block_for.config.seconds and \
+            self.service.oc_sys__system.services.login_security_policy.block_for.config.attempts and \
+            self.service.oc_sys__system.services.login_security_policy.block_for.config.within:
+        device_cdb.ios__login.block_for.seconds = self.service.oc_sys__system.services.login_security_policy.block_for.config.seconds
+        device_cdb.ios__login.block_for.attempts = self.service.oc_sys__system.services.login_security_policy.block_for.config.attempts
+        device_cdb.ios__login.block_for.within = self.service.oc_sys__system.services.login_security_policy.block_for.config.within
+
     # service http
     if self.service.oc_sys__system.services.http.config.http_enabled:
         device_cdb.ios__ip.http.server = True

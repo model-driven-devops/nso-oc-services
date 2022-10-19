@@ -1271,6 +1271,185 @@
         assertions:
           - "'+no ip domain lookup:' in changes"
 
+    - name: test no_login_on_success
+      tags:
+        - no_login_on_success
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:login-security-policy:
+                  openconfig-system-ext:config:
+                    openconfig-system-ext:on-success: false
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+no login on-success log:' in changes"
+
+    - name: test login_on_success
+      tags:
+        - login_on_success
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:login-security-policy:
+                  openconfig-system-ext:config:
+                    openconfig-system-ext:on-success: true
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+login on-success log:' in changes"
+
+    - name: test no_login_on_failure
+      tags:
+        - no_login_on_failure
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:login-security-policy:
+                  openconfig-system-ext:config:
+                    openconfig-system-ext:on-failure: false
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+no login on-failure log:' in changes"
+
+    - name: test login_on_failure
+      tags:
+        - login_on_failure
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:login-security-policy:
+                  openconfig-system-ext:config:
+                    openconfig-system-ext:on-failure: true
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+login on-failure log:' in changes"
+
+    - name: test block_for
+      tags:
+        - block_for
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:login-security-policy:
+                  openconfig-system-ext:block-for:
+                    openconfig-system-ext:config:
+                      openconfig-system-ext:seconds: 900
+                      openconfig-system-ext:attempts: 3
+                      openconfig-system-ext:within: 120
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+login block-for 900 attempts 3 within 120:' in changes"
+
+    - name: test archive_logging
+      tags:
+        - archive_logging
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:archive-logging: true
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+archive log config logging enable:' in changes"
+
+    - name: test no_archive_logging
+      tags:
+        - no_archive_logging
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:archive-logging: false
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+no archive log config logging enable:' in changes"
+
+    - name: test logging_userinfo
+      tags:
+        - logging_userinfo
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:logging:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:userinfo: true
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+logging userinfo:' in changes"
+
+    - name: test no_logging_userinfo
+      tags:
+        - no_logging_userinfo
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:logging:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:userinfo: false
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+no logging userinfo:' in changes"
+
 - hosts: nso
   connection: local
   gather_facts: no
