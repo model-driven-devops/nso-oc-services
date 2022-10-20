@@ -426,7 +426,7 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['seconds'] == 900"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['attempts'] == 3"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['within'] == 120"
-          -
+
     - name: NSO configure ntp authenticate
       tags:
         - ntp_authenticate
