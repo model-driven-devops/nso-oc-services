@@ -213,6 +213,43 @@ module openconfig-system-ext{
             "Enables small User Datagram Protocol (UDP) servers such as the ECHO.";
         }
       }
+      container login-security-policy {
+        description
+          "Login security policy services";
+        container config {
+          leaf on-success {
+            type boolean;
+            description
+              "Enables logging for successful login attempt.";
+          }
+          leaf on-failure {
+            type boolean;
+            description
+              "Enables logging for failed login attempt.";
+          }
+        }
+        container block-for {
+          description
+            "Login block-for security policy services";
+          container config {
+            leaf seconds {
+              type uint16;
+              description
+                "Set quiet-mode active time period.";
+            }
+            leaf attempts {
+              type uint16;
+              description
+                "Set max number of fail attempts.";
+            }
+            leaf within {
+              type uint16;
+              description
+                "Watch period for fail attempts.";
+            }
+          }
+        }
+      }
       container http {
         description
           "HTTP server configurations";

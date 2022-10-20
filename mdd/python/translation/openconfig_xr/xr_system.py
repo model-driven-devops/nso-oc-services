@@ -46,6 +46,21 @@ def xr_system_program_service(self) -> None:
     elif self.service.oc_sys__system.timestamps.debugging.config.enabled and (
             not self.service.oc_sys__system.timestamps.debugging.config.datetime or not self.service.oc_sys__system.timestamps.debugging.config.uptime):
         raise ValueError('Debugging timestamps must use datetime or uptime')
+    # login on-success
+    if self.service.oc_sys__system.services.login_security_policy.config.on_success:
+        raise ValueError('login_security_policy not supported in XR')
+    elif self.service.oc_sys__system.services.login_security_policy.config.on_success is False:
+        raise ValueError('login_security_policy not supported in XR')
+    # login on-failure
+    if self.service.oc_sys__system.services.login_security_policy.config.on_failure:
+        raise ValueError('login_security_policy not supported in XR')
+    elif self.service.oc_sys__system.services.login_security_policy.config.on_failure is False:
+        raise ValueError('login_security_policy not supported in XR')
+    # login block-for
+    if self.service.oc_sys__system.services.login_security_policy.block_for.config.seconds and \
+            self.service.oc_sys__system.services.login_security_policy.block_for.config.attempts and \
+            self.service.oc_sys__system.services.login_security_policy.block_for.config.within:
+        raise ValueError('login_security_policy not supported in XR')
     # DNS servers
     if len(self.service.oc_sys__system.dns.servers.server) > 0:
         raise NotImplementedError('openconfig-system-dns has not yet been implemented for XR')

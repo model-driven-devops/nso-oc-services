@@ -34,10 +34,15 @@ openconfig_system = {
                 "openconfig-system:server": []}
         },
         "openconfig-system:ssh-server": {"openconfig-system:config": {}},
-        "openconfig-system-ext:services": {"openconfig-system-ext:config": {}}
+        "openconfig-system-ext:services": {
+            "openconfig-system-ext:config": {},
+            "openconfig-system-ext:login-security-policy": {
+                "openconfig-system-ext:config": {},
+                "openconfig-system-ext:block-for": {"openconfig-system-ext:config": {}}
+            }
+        }
     }
 }
-
 
 def xe_system_services(config_before: dict, config_leftover: dict) -> None:
     """
@@ -50,6 +55,32 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
         del config_leftover["tailf-ned-cisco-ios:ip"]["domain"]["lookup-conf"]
     else:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-domain-lookup"] = True
+    # login on-success log
+    if type(config_before.get("tailf-ned-cisco-ios:login", {}).get("on-success", {}).get("log", '')) is list:
+        openconfig_system_services["openconfig-system-ext:login-security-policy"]["openconfig-system-ext:config"][
+            "openconfig-system-ext:on-success"] = True
+        del config_leftover["tailf-ned-cisco-ios:login"]["on-success"]["log"]
+    else:
+        openconfig_system_services["openconfig-system-ext:login-security-policy"]["openconfig-system-ext:config"][
+            "openconfig-system-ext:on-success"] = False
+    # login on-failure log
+    if type(config_before.get("tailf-ned-cisco-ios:login", {}).get("on-failure", {}).get("log", '')) is list:
+        openconfig_system_services["openconfig-system-ext:login-security-policy"]["openconfig-system-ext:config"][
+            "openconfig-system-ext:on-failure"] = True
+        del config_leftover["tailf-ned-cisco-ios:login"]["on-failure"]["log"]
+    else:
+        openconfig_system_services["openconfig-system-ext:login-security-policy"]["openconfig-system-ext:config"][
+            "openconfig-system-ext:on-failure"] = False
+    # login block-for
+    if config_before.get("tailf-ned-cisco-ios:login", {}).get("block-for", {}).get("seconds"):
+        openconfig_system_services["openconfig-system-ext:login-security-policy"]["openconfig-system-ext:block-for"]["openconfig-system-ext:config"]["openconfig-system-ext:seconds"] = config_before.get("tailf-ned-cisco-ios:login", {}).get("block-for", {}).get("seconds")
+        del config_leftover["tailf-ned-cisco-ios:login"]["block-for"]["seconds"]
+    if config_before.get("tailf-ned-cisco-ios:login", {}).get("block-for", {}).get("attempts"):
+        openconfig_system_services["openconfig-system-ext:login-security-policy"]["openconfig-system-ext:block-for"]["openconfig-system-ext:config"]["openconfig-system-ext:attempts"] = config_before.get("tailf-ned-cisco-ios:login", {}).get("block-for", {}).get("attempts")
+        del config_leftover["tailf-ned-cisco-ios:login"]["block-for"]["attempts"]
+    if config_before.get("tailf-ned-cisco-ios:login", {}).get("block-for", {}).get("within"):
+        openconfig_system_services["openconfig-system-ext:login-security-policy"]["openconfig-system-ext:block-for"]["openconfig-system-ext:config"]["openconfig-system-ext:within"] = config_before.get("tailf-ned-cisco-ios:login", {}).get("block-for", {}).get("within")
+        del config_leftover["tailf-ned-cisco-ios:login"]["block-for"]["within"]
 
 
 def xe_system_config(config_before: dict, config_leftover: dict) -> None:
