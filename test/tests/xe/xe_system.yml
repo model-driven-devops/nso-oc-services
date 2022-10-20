@@ -1311,26 +1311,6 @@
         assertions:
           - "'+login on-success log:' in changes"
 
-    - name: test no_login_on_failure
-      tags:
-        - no_login_on_failure
-      import_role:
-        name: nso-openconfig-test
-      vars:
-        content: |
-          mdd:openconfig:
-            openconfig-system:system:
-              openconfig-system-ext:services:
-                openconfig-system-ext:login-security-policy:
-                  openconfig-system-ext:config:
-                    openconfig-system-ext:on-failure: false
-        api_method: PUT
-        api_ignore_errors: false
-        rollback: false
-        assertion_ignore_errors: false
-        assertions:
-          - "'+no login on-failure log:' in changes"
-
     - name: test login_on_failure
       tags:
         - login_on_failure
