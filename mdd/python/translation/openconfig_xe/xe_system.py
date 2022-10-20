@@ -140,6 +140,12 @@ def xe_system_program_service(self) -> None:
         device_cdb.ios__login.block_for.seconds = self.service.oc_sys__system.services.login_security_policy.block_for.config.seconds
         device_cdb.ios__login.block_for.attempts = self.service.oc_sys__system.services.login_security_policy.block_for.config.attempts
         device_cdb.ios__login.block_for.within = self.service.oc_sys__system.services.login_security_policy.block_for.config.within
+    # archive logging
+    if self.service.oc_sys__system.services.config.archive_logging:
+        device_cdb.ios__archive.log.config.logging.enable.create()
+    elif self.service.oc_sys__system.services.config.archive_logging is False:
+        if device_cdb.ios__archive.log.config.logging.enable.exists():
+            device_cdb.ios__archive.delete()
 
     # service http
     if self.service.oc_sys__system.services.http.config.http_enabled:

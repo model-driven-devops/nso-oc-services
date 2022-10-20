@@ -61,6 +61,11 @@ def xr_system_program_service(self) -> None:
             self.service.oc_sys__system.services.login_security_policy.block_for.config.attempts and \
             self.service.oc_sys__system.services.login_security_policy.block_for.config.within:
         raise ValueError('login_security_policy not supported in XR')
+    # archive logging
+    if self.service.oc_sys__system.archive_logging:
+        raise ValueError('login_security_policy not supported in XR')
+    elif self.service.oc_sys__system.archive_logging is False:
+        raise ValueError('login_security_policy not supported in XR')
     # DNS servers
     if len(self.service.oc_sys__system.dns.servers.server) > 0:
         raise NotImplementedError('openconfig-system-dns has not yet been implemented for XR')
