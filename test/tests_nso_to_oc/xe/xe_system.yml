@@ -336,7 +336,7 @@
             log:
               config:
                 logging:
-                   nable:
+                  enable:
                     - null
         api_method: PATCH
     - name: NSO configure ssh source interface
