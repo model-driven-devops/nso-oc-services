@@ -75,6 +75,24 @@ def process_xpvst_interfaces(self, if_list: list) -> None:
             stp_interface.spanning_tree.port_priority = interface[2]
 
 
+def process_mst_instance_interfaces(self, if_list: list, mst_id: int) -> None:
+    for interface in if_list:
+        """
+        interface[0] = interface name
+        interface[1] = interface cost
+        interface[2] = interface port_priority
+        """
+        interface_type, interface_number = xe_get_interface_type_and_number(interface[0])
+        class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+                                  interface_type)
+        stp_interface = class_attribute[interface_number]
+        stp_if_mst_instance = stp_interface.spanning_tree.mst.instance_range.create(mst_id)
+        if interface[1]:
+            stp_if_mst_instance.cost = interface[1]
+        if interface[2]:
+            stp_if_mst_instance.port_priority = interface[2]
+
+
 def xe_stp_rpvst(self) -> None:
     """
     RPVST configuration
@@ -123,8 +141,7 @@ def xe_stp_mstp(self) -> None:
     """
     MSTP configuration
     """
-    self.log.info("\nxe_stp_mstp\n")
-    if len(self.service.oc_stp__stp.mstp.mstp_instances) > 0:
+    if len(self.service.oc_stp__stp.mstp.mst_instances.mst_instance) > 0:
         device_cdb = self.root.devices.device[self.device_name].config.ios__spanning_tree
         if self.service.oc_stp__stp.mstp.config.name:
             device_cdb.mst.configuration.name = self.service.oc_stp__stp.mstp.config.name
@@ -137,9 +154,28 @@ def xe_stp_mstp(self) -> None:
         if self.service.oc_stp__stp.mstp.config.max_age:
             raise ValueError("XE NED cisco-ios-cli-6.85 does not support multiple spanning-tree max-age")
         if self.service.oc_stp__stp.mstp.config.forwarding_delay:
-            device_cdb.forward_time = self.service.oc_stp__stp.mstp.config.forwarding_delay
+            device_cdb.mst.forward_time = self.service.oc_stp__stp.mstp.config.forwarding_delay
         if self.service.oc_stp__stp.mstp.config.hold_count:
             raise ValueError("XE NED cisco-ios-cli-6.85 does not support multiple spanning-tree hold-count")
+        for service_mst_instance in self.service.oc_stp__stp.mstp.mst_instances.mst_instance:
+            mst_id = service_mst_instance.config.mst_id
+            bridge_priority = service_mst_instance.config.bridge_priority
+            vlan_list = service_mst_instance.config.vlan.as_list()
+            # Configure Bridge Priority per MST instance
+            if bridge_priority:
+                mst_instance_cdb = device_cdb.mst.instance_range.create(mst_id)
+                mst_instance_cdb.priority = bridge_priority
+            # Create CDB MST instance
+            if not device_cdb.mst.configuration.instance.exists(mst_id):
+                device_cdb.mst.configuration.instance.create(mst_id)
+            mst_instance_configuration_cdb = device_cdb.mst.configuration.instance[mst_id]
+            # Add VLANs to MST instance
+            for service_vlan in vlan_list:
+                mst_instance_configuration_cdb.vlan.create(service_vlan)
+            # Configure interfaces for MST instance
+            if len(service_mst_instance.interfaces.interface) > 0:
+                service_if_tuples = get_pvst_vlan_interfaces(service_mst_instance)
+                process_mst_instance_interfaces(self, service_if_tuples, mst_id)
 
 
 stp_version_handler = {

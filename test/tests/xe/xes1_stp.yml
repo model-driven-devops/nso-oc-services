@@ -1,4 +1,13 @@
 ---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
 - name: test stp
   hosts: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
   gather_facts: no
@@ -43,9 +52,9 @@
         assertion_ignore_errors: false
         assertions:
           - "'+spanning-tree loopguard default:' in changes"
-          - "'+no spanning-tree etherchannel guard misconfig:' in changes"
           - "'+spanning-tree portfast edge bpduguard default:' in changes"
           - "'+spanning-tree portfast edge bpdufilter default:' in changes"
+#          - "'+no spanning-tree etherchannel guard misconfig:' in changes"  # on by default. Must be enabled by NSO to be removed by NSO (doesn't show in NSO configs unless).
 
 - name: test stp
   hosts: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
@@ -308,8 +317,8 @@
           - "'+spanning-tree vlan 100,200 forward-time 10:' in changes"
           - "'+spanning-tree vlan 100,200 hello-time 4:' in changes"
           - "'+spanning-tree vlan 100,200 max-age 30:' in changes"
-          - "'+spanning-tree vlan 100 priority 16384:' in changes"
-          - "'+spanning-tree vlan 200 priority 61440:' in changes"
+          - "'+spanning-tree vlan 100 priority 61440:' in changes"
+          - "'+spanning-tree vlan 200 priority 16384:' in changes"
           - "'+spanning-tree uplinkfast:' in changes"
           - "'+spanning-tree backbonefast:' in changes"
           - "' interface GigabitEthernet1/0:' in changes"
@@ -858,7 +867,8 @@
         rollback: false
         assertion_ignore_errors: false
         assertions:
-          - "'+spanning-tree mode mstp:' in changes"
+          - "'+spanning-tree mode mst:' in changes"
+          - "'+spanning-tree mst configuration:' in changes"
           - "'+ name MST:' in changes"
           - "'+ revision 1:' in changes"
           - "'+ instance 1 vlan 100, 200:' in changes"
@@ -869,7 +879,7 @@
           - "' interface GigabitEthernet1/0:' in changes"
           - "'+ spanning-tree mst 1 cost 10:' in changes"
           - "' interface GigabitEthernet1/1:' in changes"
-          - "'+ spanning-tree mst 2 port-priority 96:' in changes"
+          - "'+ spanning-tree mst 1 port-priority 96:' in changes"
 
 - hosts: nso
   connection: local
