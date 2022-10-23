@@ -59,9 +59,9 @@
                     openconfig-network-instance:enabled: true
                     openconfig-network-instance:enabled-address-families:
                       - 'IPV4'
-            openconfig-network-instance:openconfig-system:system:
-              openconfig-network-instance:config:
-                openconfig-network-instance:hostname: 'test'
+            openconfig-system:system:
+              openconfig-system:config:
+                openconfig-system:hostname: 'test'
         api_method: PUT
     - name: NSO configure VLANs
       tags:

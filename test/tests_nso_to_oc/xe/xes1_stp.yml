@@ -249,9 +249,9 @@
         that:
           - "'openconfig-spanning-tree-ext:PVST' in oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['enabled-protocol']"
           - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['loop-guard'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['etherchannel-misconfig-guard'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['bpdu-guard'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['bpdu-filter'] == true"
+#          - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['etherchannel-misconfig-guard'] == true"  # Unreliable in production. Sometimes True is not in NSO Device config which is the same on False
       tags:
         - stp_global
 

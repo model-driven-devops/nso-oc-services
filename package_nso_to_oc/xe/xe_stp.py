@@ -35,7 +35,10 @@ openconfig_spanning_tree = {
             "openconfig-spanning-tree-ext:vlan": []
         },
         "openconfig-spanning-tree:mstp": {
-            "openconfig-spanning-tree:vlan": []
+            "openconfig-spanning-tree:config": {},
+            "openconfig-spanning-tree:mst-instances": {
+                "openconfig-spanning-tree:mst-instance": []
+            }
         }
     }
 }
@@ -79,14 +82,16 @@ def xe_spanning_tree_global(config_before: dict, config_leftover: dict) -> None:
         openconfig_spanning_tree["openconfig-spanning-tree:stp"]["openconfig-spanning-tree:global"][
             "openconfig-spanning-tree:config"]["openconfig-spanning-tree:loop-guard"] = False
 
-    if type(config_before.get("tailf-ned-cisco-ios:spanning-tree", {}).get("etherchannel", {}).get("guard", {}).get(
-            "misconfig", "")) is list:
-        openconfig_spanning_tree["openconfig-spanning-tree:stp"]["openconfig-spanning-tree:global"][
-            "openconfig-spanning-tree:config"]["openconfig-spanning-tree:etherchannel-misconfig-guard"] = True
-        del config_leftover["tailf-ned-cisco-ios:spanning-tree"]["etherchannel"]["guard"]
-    else:
-        openconfig_spanning_tree["openconfig-spanning-tree:stp"]["openconfig-spanning-tree:global"][
-            "openconfig-spanning-tree:config"]["openconfig-spanning-tree:etherchannel-misconfig-guard"] = False
+    # Unreliable - Enabled by default on device. NSO NED doesn't show enabled when device added to NSO.
+    # Hence we can't configure etherchannel-misconfig-guard = False if the configu is missing from NSO.
+    # if type(config_before.get("tailf-ned-cisco-ios:spanning-tree", {}).get("etherchannel", {}).get("guard", {}).get(
+    #         "misconfig", "")) is list:
+    #     openconfig_spanning_tree["openconfig-spanning-tree:stp"]["openconfig-spanning-tree:global"][
+    #         "openconfig-spanning-tree:config"]["openconfig-spanning-tree:etherchannel-misconfig-guard"] = True
+    #     del config_leftover["tailf-ned-cisco-ios:spanning-tree"]["etherchannel"]["guard"]
+    # else:
+    #     openconfig_spanning_tree["openconfig-spanning-tree:stp"]["openconfig-spanning-tree:global"][
+    #         "openconfig-spanning-tree:config"]["openconfig-spanning-tree:etherchannel-misconfig-guard"] = False
 
     if type(config_before.get("tailf-ned-cisco-ios:spanning-tree", {}).get("portfast", {}).get("edge", {}).get(
             "bpduguard", {}).get("default", "")) is list:
@@ -218,7 +223,7 @@ def xe_spanning_tree_interfaces(config_before: dict, config_leftover: dict) -> N
                             "openconfig-spanning-tree:bpdu-guard"] = False
                     if interface.get("spanning-tree", {}).get("link-type") == "shared" or interface.get("spanning-tree",
                                                                                                         {}).get(
-                            "link-type") == "point-to-point":
+                        "link-type") == "point-to-point":
                         service_interface_dict["openconfig-spanning-tree:config"][
                             "openconfig-spanning-tree:link-type"] = stp_link_types.get(
                             interface.get("spanning-tree", {}).get("link-type"))
@@ -259,7 +264,7 @@ def xe_spanning_tree_interfaces(config_before: dict, config_leftover: dict) -> N
                                 "portfast"]
                     elif type(interface.get("switchport", {}).get("mode", {}).get("access", "")) is dict and type(
                             config_before.get("tailf-ned-cisco-ios:spanning-tree", {}).get("portfast", {}).get(
-                                    "default", "")) is list:
+                                "default", "")) is list:
                         service_interface_dict["openconfig-spanning-tree:config"][
                             "openconfig-spanning-tree:edge-port"] = "EDGE_AUTO"
                     openconfig_spanning_tree["openconfig-spanning-tree:stp"]["openconfig-spanning-tree:interfaces"][
@@ -332,6 +337,109 @@ def get_stp_interfaces_pvst(config_before: dict, config_leftover: dict) -> list:
     return stp_interfaces
 
 
+def get_stp_interfaces_mstp(config_before: dict, config_leftover: dict) -> dict:
+    """
+    Return dict with instances as keys and list of interfaces as value
+    """
+    mstp_instances_interfaces_dict = {}
+    for interface_type in config_before.get("tailf-ned-cisco-ios:interface", {}):
+        if interface_type in stp_interface_types:
+            for nso_index, interface in enumerate(
+                    config_before.get("tailf-ned-cisco-ios:interface", {}).get(interface_type)):
+                if type(interface.get("switchport", "")) is dict:
+                    if len(interface.get("spanning-tree", {}).get("mst", {}).get("instance-range")) > 0:
+                        for instance_index, cdb_interface_instance in enumerate(
+                                interface.get("spanning-tree", {}).get("mst", {}).get("instance-range")):
+                            if cdb_interface_instance.get("id") not in mstp_instances_interfaces_dict.keys():
+                                mstp_instances_interfaces_dict[cdb_interface_instance.get("id")] = []
+
+                            temp_dict = {"openconfig-spanning-tree:name": f"{interface_type}{interface['name']}",
+                                         "openconfig-spanning-tree:config": {
+                                             "openconfig-spanning-tree:name": f"{interface_type}{interface['name']}"
+                                         }}
+                            if cdb_interface_instance.get("cost"):
+                                temp_dict["openconfig-spanning-tree:config"][
+                                    "openconfig-spanning-tree:cost"] = cdb_interface_instance.get("cost")
+                                del \
+                                    config_leftover["tailf-ned-cisco-ios:interface"][interface_type][nso_index][
+                                        "spanning-tree"]["mst"]["instance-range"][instance_index]["cost"]
+                            if cdb_interface_instance.get("port-priority"):
+                                temp_dict["openconfig-spanning-tree:config"][
+                                    "openconfig-spanning-tree:port-priority"] = cdb_interface_instance.get(
+                                    "port-priority")
+                                del \
+                                    config_leftover["tailf-ned-cisco-ios:interface"][interface_type][nso_index][
+                                        "spanning-tree"]["mst"]["instance-range"][instance_index]["port-priority"]
+                            mstp_instances_interfaces_dict[cdb_interface_instance.get("id")].append(temp_dict)
+    return mstp_instances_interfaces_dict
+
+
+def get_cdb_mst_instance_info(config_before: dict, config_leftover: dict) -> dict:
+    """
+    Parses tailf-ned-cisco-ios:spanning-tree for instance priorities and vlan ranges
+    returns dict, e.g. {$mst-id: {'priority': "16384", 'vlans': [10,11,12]}}
+    """
+    mst_instances = {}
+    for instance_index, instance in enumerate(
+            config_before.get("tailf-ned-cisco-ios:spanning-tree", {}).get("mst", {}).get("instance-range")):
+        if instance.get("id") not in mst_instances.keys():
+            mst_instances[instance.get("id")] = {}
+        if instance.get("priority"):
+            mst_instances[instance.get("id")]["priority"] = instance.get("priority")
+            del config_leftover["tailf-ned-cisco-ios:spanning-tree"]["mst"]["instance-range"][instance_index][
+                "priority"]
+    for instance_index, instance in enumerate(
+            config_before.get("tailf-ned-cisco-ios:spanning-tree", {}).get("mst", {}).get("configuration", {}).get(
+                    "instance")):
+        if instance.get("id") not in mst_instances.keys():
+            mst_instances[instance.get("id")] = {}
+        if len(instance.get("vlan", [])) > 0:
+            mst_instances[instance.get("id")]["vlans"] = instance.get("vlan", [])
+            del \
+            config_leftover["tailf-ned-cisco-ios:spanning-tree"]["mst"]["configuration"]["instance"][instance_index][
+                "vlan"]
+    return mst_instances
+
+
+def xe_configure_mstp(config_before: dict, config_leftover: dict, stp_interfaces: dict) -> None:
+    oc_mstp = openconfig_spanning_tree["openconfig-spanning-tree:stp"]["openconfig-spanning-tree:mstp"]
+    if config_before.get("tailf-ned-cisco-ios:spanning-tree", {}).get("mst", {}).get("configuration", {}).get("name"):
+        oc_mstp["openconfig-spanning-tree:config"]["openconfig-spanning-tree:name"] = config_before.get(
+            "tailf-ned-cisco-ios:spanning-tree", {}).get("mst", {}).get("configuration", {}).get("name")
+        del config_leftover["tailf-ned-cisco-ios:spanning-tree"]["mst"]["configuration"]["name"]
+    if config_before.get("tailf-ned-cisco-ios:spanning-tree", {}).get("mst", {}).get("configuration", {}).get(
+            "revision"):
+        oc_mstp["openconfig-spanning-tree:config"]["openconfig-spanning-tree:revision"] = config_before.get(
+            "tailf-ned-cisco-ios:spanning-tree", {}).get("mst", {}).get("configuration", {}).get("revision")
+        del config_leftover["tailf-ned-cisco-ios:spanning-tree"]["mst"]["configuration"]["revision"]
+    if config_before.get("tailf-ned-cisco-ios:spanning-tree", {}).get("mst", {}).get("forward-time"):
+        oc_mstp["openconfig-spanning-tree:config"]["openconfig-spanning-tree:forwarding-delay"] = config_before.get(
+            "tailf-ned-cisco-ios:spanning-tree", {}).get("mst", {}).get("forward-time")
+        del config_leftover["tailf-ned-cisco-ios:spanning-tree"]["mst"]["forward-time"]
+
+    mst_instances = get_cdb_mst_instance_info(config_before, config_leftover)
+
+    for mst_instance_id, mst_values in mst_instances.items():
+        temp_instance_dict = {"openconfig-spanning-tree:mst-id": mst_instance_id,
+                              "openconfig-spanning-tree:config": {
+                                  "openconfig-spanning-tree:mst-id": mst_instance_id,
+                              },
+                              "openconfig-spanning-tree:interfaces": {
+                                  "openconfig-spanning-tree:interface": []
+                              }}
+        if mst_values.get("vlans"):
+            temp_instance_dict["openconfig-spanning-tree:config"]["openconfig-spanning-tree:vlan"] = mst_values.get(
+                "vlans")
+        if mst_values.get("priority"):
+            temp_instance_dict["openconfig-spanning-tree:config"][
+                "openconfig-spanning-tree:bridge-priority"] = mst_values.get("priority")
+        if mst_instance_id in stp_interfaces.keys():
+            temp_instance_dict["openconfig-spanning-tree:interfaces"]["openconfig-spanning-tree:interface"].extend(
+                stp_interfaces[mst_instance_id])
+        oc_mstp["openconfig-spanning-tree:mst-instances"]["openconfig-spanning-tree:mst-instance"].append(
+            temp_instance_dict)
+
+
 def xe_spanning_tree(config_before: dict, config_leftover: dict) -> dict:
     """
     Translates NSO XE NED to MDD OpenConfig Spanning-tree
@@ -374,9 +482,9 @@ def xe_spanning_tree(config_before: dict, config_leftover: dict) -> dict:
         xe_configure_rpvst_vlans(config_before, config_leftover, stp_interfaces)
 
     # MSTP
-    if config_before.get("tailf-ned-cisco-ios:spanning-tree", {}).get("mode") == "rapid-pvst":
-        pass
-
+    if config_before.get("tailf-ned-cisco-ios:spanning-tree", {}).get("mode") == "mst":
+        stp_interfaces_mstp = get_stp_interfaces_mstp(config_before, config_leftover)
+        xe_configure_mstp(config_before, config_leftover, stp_interfaces_mstp)
     # Interfaces
     xe_spanning_tree_interfaces(config_before, config_leftover)
 

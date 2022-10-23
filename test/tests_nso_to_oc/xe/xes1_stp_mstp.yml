@@ -199,23 +199,23 @@
         api_method: PATCH
     - set_fact:
         instance_1:
-          mst-id: 1
           config:
-            mst-id: 1
             bridge-priority: 16384
+            mst-id: 1
             vlan:
               - 100
               - 200
-            interfaces:
-              interface:
-                - name: GigabitEthernet1/0
-                  config:
-                    name: GigabitEthernet1/0
-                    cost: 10
-                - name: GigabitEthernet1/1
-                  config:
-                    name: GigabitEthernet1/1
-                    port-priority: 16
+          interfaces:
+            interface:
+              - config:
+                  cost: 10
+                  name: GigabitEthernet1/0
+                name: GigabitEthernet1/0
+              - config:
+                  name: GigabitEthernet1/1
+                  port-priority: 16
+                name: GigabitEthernet1/1
+          mst-id: 1
       tags:
         - mstp
     - set_fact:
@@ -227,12 +227,12 @@
             vlan:
               - 300
               - 400
-            interfaces:
-              interface:
-                - name: GigabitEthernet1/1
-                  config:
-                    name: GigabitEthernet1/1
-                    port-priority: 96
+          interfaces:
+            interface:
+              - name: GigabitEthernet1/1
+                config:
+                  name: GigabitEthernet1/1
+                  port-priority: 96
       tags:
         - mstp
     - name: Execute NSO NED to OC script
