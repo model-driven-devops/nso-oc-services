@@ -9,7 +9,9 @@ def check_nx_features(self) -> None:
     # OpenConfig Interfaces
     if len(self.service.oc_if__interfaces.interface) > 0:
         raise NotImplementedError('openconfig-interfaces has not yet been implemented for NX')
-
+    # Spanning-tree
+    if self.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.exists():
+        raise NotImplementedError('openconfig-stp has not yet been implemented for NX')
     # # OpenConfig ACL
     if len(self.service.oc_acl__acl.acl_sets.acl_set) > 0:
         raise NotImplementedError('openconfig-acl-sets has not yet been implemented for NX')

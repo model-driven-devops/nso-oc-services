@@ -1,0 +1,178 @@
+module openconfig-spanning-tree-ext {
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/openconfig-spanning-tree-ext";
+
+  prefix "oc-stp-ext";
+
+  import tailf-ncs { prefix ncs; }
+  import mdd { prefix mdd; }
+
+  import openconfig-spanning-tree-types { prefix oc-stp-types; }
+  import openconfig-spanning-tree { prefix oc-stp; }
+  import openconfig-vlan-types { prefix oc-vlan-types; }
+  import openconfig-interfaces { prefix oc-if; }
+
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Augmentation to openconfig stp model.";
+
+  revision "2022-10-13" {
+    description
+      "Initial revision";
+  }
+  identity PVST {
+    base oc-stp-types:STP_PROTOCOL;
+    description
+      "Per VLAN Spanning-Tree Protocol";
+  }
+
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-stp:stp/oc-stp:global/oc-stp:config {
+    when "oc-stp:enabled-protocol='oc-stp-ext:PVST'" ;
+    leaf uplinkfast {
+      description
+        "Enable XE UplinkFast to improve the convergence time of PVST in the event of an uplink failure.";
+      type boolean;
+    }
+    leaf backbonefast {
+      description
+        "Enable XE Backbonefast to improve the convergence time of PVST in the event of an indirect link failure.";
+      type boolean;
+    }
+  }
+
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-stp:stp {
+    container pvst {
+      list vlan {
+        key "vlan-id";
+        description
+          "List of the vlans";
+        leaf vlan-id {
+          type leafref {
+            path "../config/vlan-id";
+          }
+          description
+            "Reference to the list key";
+        }
+        container config {
+          description
+            "Configuration parameters relating to PVST";
+          leaf vlan-id {
+            type oc-vlan-types:vlan-id;
+            description
+              "Interface VLAN ID";
+          }
+          leaf hello-time {
+            type uint8 {
+              range 1..10;
+            }
+            units "seconds";
+            description
+              "The interval between periodic transmissions of
+              configuration messages by designated ports";
+            reference
+              "IEEE 802.1D 17.13.6 Bridge Hello Time";
+          }
+
+          leaf max-age {
+            type uint8 {
+              range 6..40;
+            }
+            units "seconds";
+            description
+              "The maximum age of the information transmitted by the
+              bridge when it is the root bridge";
+            reference
+              "IEEE 802.1D 17.13.8 Bridge Max Age";
+          }
+
+          leaf forwarding-delay {
+            type uint8 {
+              range 4..30;
+            }
+            units "seconds";
+            description
+              "The delay used by STP bridges to transition root and
+              designated ports to forwarding";
+            reference
+              "IEEE 802.1D 17.13.5 Bridge Forward Delay";
+          }
+
+          leaf hold-count {
+            type uint8 {
+              range 1..10;
+            }
+            //default 6;
+            description
+              "the maximum number of BPDUs per second that the switch can send from an interface";
+            reference
+              "IEEE 802.1D 17.13.12 Transmit Hold Count";
+          }
+          leaf bridge-priority {
+            type oc-stp-types:stp-bridge-priority-type;
+            description
+              "The manageable component of the Bridge Identifier";
+            reference
+              "IEEE 802.1D 17.13.7 Bridge Identifier Priority";
+          }
+        }
+        container interfaces {
+          description
+            "Enclosing container for the list of interface references";
+
+          list interface {
+            key "name";
+            description
+              "List of interfaces on which STP is enable";
+
+            leaf name {
+              type leafref {
+                path "../config/name";
+              }
+              description
+                "Reference to the list key";
+            }
+
+            container config {
+              description
+                "Configuration data for STP on each interface";
+
+              leaf name {
+                type oc-if:base-interface-ref;
+                description
+                  "Reference to the STP ethernet interface";
+              }
+
+              leaf cost {
+                type uint32 {
+                  range 1..200000000;
+                }
+                description
+                  "The port's contribution, when it is the Root Port,
+                  to the Root Path Cost for the Bridge";
+                reference
+                  "IEEE 802.1D 17.13.11 PortPathCost";
+              }
+
+              leaf port-priority {
+                type oc-stp-types:stp-port-priority-type;
+                description
+                  "The manageable component of the Port Identifier,
+                  also known as the Port Priority";
+                reference
+                  "IEEE 802.1D 17.13.10 Port Identifier Priority";
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

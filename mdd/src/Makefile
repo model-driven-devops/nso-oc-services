@@ -20,6 +20,7 @@ OC_MODELS = $(filter-out %aaa-tacacs.yang %aaa-radius.yang %grpc.yang, $(wildcar
 			$(filter-out %openconfig-bgp-common.yang %openconfig-bgp-common-multiprotocol.yang %openconfig-bgp-common-structure.yang %openconfig-bgp-peer-group.yang %openconfig-bgp-neighbor.yang %openconfig-bgp-global.yang %openconfig-bgp-errors.yang, $(wildcard yang/openconfig/bgp/*.yang)) \
 			$(filter-out %if-8021X.yang %if-ethernet-ext.yang %if-ip-ext.yang %if-sdn-ext.yang, $(wildcard yang/openconfig/interfaces/*.yang)) \
 			$(wildcard yang/openconfig/vlan/*.yang) \
+			$(wildcard yang/openconfig/stp/*.yang) \
       $(filter-out %system-ext-sub-nat.yang, $(wildcard yang/extensions/*.yang))
 
 # Not used
@@ -32,7 +33,6 @@ OC_MODELS = $(filter-out %aaa-tacacs.yang %aaa-radius.yang %grpc.yang, $(wildcar
 #       $(wildcard yang/openconfig/multicast/*.yang) \
 # 			$(filter-out %openconfig-qos-interfaces.yang %openconfig-qos-elements.yang, $(wildcard yang/openconfig/qos/*.yang)) \
 #       $(wildcard yang/openconfig/segment-routing/*.yang) \
-# 			$(wildcard yang/openconfig/stp/*.yang) \
 
 IETF_MODELS = $(wildcard yang/ietf/*.yang)
 

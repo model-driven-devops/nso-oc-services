@@ -72,120 +72,6 @@ module openconfig-spanning-tree {
 
   // grouping statements
 
-  grouping stp-interfaces-state {
-    description
-      "Grouping of STP operational data for bridge port";
-
-    leaf port-num {
-      type uint16;
-      description
-        "The port number of the bridge port";
-      reference "RFC4188 BRIDGE-MIB dot1dStpPort";
-    }
-
-    leaf role {
-      type identityref {
-        base oc-stp-types:STP_PORT_ROLE;
-      }
-      description
-        "The current role of the bridge port";
-      reference
-        "IEEE8021-MSTP-MIB ieee8021MstpPortRole";
-    }
-
-    leaf port-state {
-      type identityref {
-        base oc-stp-types:STP_PORT_STATE;
-      }
-      description
-        "The current state of the bridge port";
-      reference "RFC4188 BRIDGE-MIB dot1dStpPortState";
-    }
-
-    leaf designated-root-priority {
-      type oc-stp-types:stp-bridge-priority-type;
-      description
-        "The bridge priority of the bridge recorded as the
-        root in the configuration BPDUs transmitted by the designated
-        bridge for the segment to which the port is attached";
-      reference "RFC4188 BRIDGE-MIB dot1dStpPortDesignatedRoot";
-    }
-
-    leaf designated-root-address {
-      type oc-yang:mac-address;
-      description
-        "The bridge address of the bridge recorded as the
-        root in the configuration BPDUs transmitted by the designated
-        bridge for the segment to which the port is attached";
-      reference "RFC4188 BRIDGE-MIB dot1dStpPortDesignatedRoot";
-    }
-
-    leaf designated-cost {
-      type uint32;
-      description
-        "The path cost of the Designated Port of the
-        segment connected to this port";
-      reference "RFC4188 BRIDGE-MIB dot1dStpPortDesignatedCost";
-    }
-
-    leaf designated-bridge-priority {
-      type oc-stp-types:stp-bridge-priority-type;
-      description
-        "The bridge priority of the bridge that this port considers
-        to be the designated bridge for this port's segment.";
-      reference "RFC4188 BRIDGE-MIB dot1dStpPortDesignatedBridge";
-    }
-
-    leaf designated-bridge-address {
-      type oc-yang:mac-address;
-      description
-        "The bridge address of the bridge that this port considers
-        to be the designated bridge for this port's segment.";
-      reference "RFC4188 BRIDGE-MIB dot1dStpPortDesignatedBridge";
-    }
-
-    leaf designated-port-priority {
-      type oc-stp-types:stp-port-priority-type;
-      description
-        "The Port priority of the port on the Designated
-        Bridge for this port's segment, two octet string";
-      reference "RFC4188 BRIDGE-MIB dot1dStpPortDesignatedPort";
-    }
-
-    leaf designated-port-num {
-      type uint16;
-      description
-        "The Port number of the port on the Designated
-        Bridge for this port's segment, two octet string";
-      reference "RFC4188 BRIDGE-MIB dot1dStpPortDesignatedPort";
-    }
-
-    leaf forward-transisitions {
-      type oc-yang:counter64;
-      description
-        "The number of times this port has transitioned
-        from the Learning state to the Forwarding state";
-      reference "RFC4188 BRIDGE-MIB dot1dStpPortForwardTransitions";
-    }
-
-    container counters {
-      description
-        "The BPDU packet transmition statistics";
-
-      leaf bpdu-sent {
-        type oc-yang:counter64;
-        description
-          "The number of BPDU packet sent";
-      }
-
-      leaf bpdu-received {
-        type oc-yang:counter64;
-        description
-          "The number of BPDU packet received";
-      }
-    }
-  }
-
   grouping stp-interfaces-config {
     description
       "Grouping of STP configuration for bridge port";
@@ -245,17 +131,6 @@ module openconfig-spanning-tree {
 
       	  uses stp-interfaces-config;
       	}
-
-      	container state {
-
-      	  config false;
-
-      	  description
-      	    "Operational state data for STP on each interface";
-
-      	  uses stp-interfaces-config;
-      	  uses stp-interfaces-state;
-      	}
       }
     }
   }
@@ -270,86 +145,6 @@ module openconfig-spanning-tree {
         "The manageable component of the Bridge Identifier";
       reference
         "IEEE 802.1D 17.13.7 Bridge Identifier Priority";
-    }
-  }
-
-  grouping stp-common-state {
-    description
-      "Grouping for common STP operation data";
-
-    leaf bridge-address {
-      type oc-yang:mac-address;
-      description
-        "A unique 48-bit Universally Administered MAC Address
-        assigned to the bridge";
-      reference
-        "IEEE 802.1D 7.12.5 Unique identification of a bridge";
-    }
-
-    leaf designated-root-priority {
-      type oc-stp-types:stp-bridge-priority-type;
-      description
-        "The bridge priority of the root of the spanning
-        tree, as determined by the Spanning Tree Protocol,
-        as executed by this node";
-	    reference
-        "RFC4188 BRIDGE-MIB dot1dStpDesignatedRoot";
-    }
-
-    leaf designated-root-address {
-      type oc-yang:mac-address;
-      description
-        "The bridge address of the root of the spanning
-        tree, as determined by the Spanning Tree Protocol,
-        as executed by this node";
-      reference
-        "RFC4188 BRIDGE-MIB dot1dStpDesignatedRoot";
-    }
-
-    leaf root-port {
-      type uint16;
-      description
-        "The port number of the port which offers the lowest
-        cost path from this bridge to the root bridge";
-      reference
-        "RFC4188 BRIDGE-MIB dot1dStpRootPort";
-    }
-
-    leaf root-cost {
-      type uint32;
-      description
-        "The cost of the path to the root as seen from this bridge";
-      reference
-        "RFC4188 BRIDGE-MIB dot1dStpRootCost";
-    }
-
-    leaf hold-time {
-      type uint8;
-      description
-        "This time value determines the interval length
-        during which no more than two Configuration bridge
-        PDUs shall be transmitted by this node";
-      reference
-        "RFC4188 BRIDGE-MIB dot1dStpHoldTime";
-    }
-
-    leaf topology-changes {
-      type oc-yang:counter64;
-      description
-        "The total number of topology changes detected by
-        this bridge since the management entity was last
-        reset or initialized";
-      reference
-        "RFC4188 BRIDGE-MIB dot1dStpTopChanges";
-    }
-
-    leaf last-topology-change {
-      type oc-types:timeticks64;
-      description
-        "The time at which the last topology change was
-        detected by the bridge entity. The value is
-        expressed relative to the Unix Epoch (Jan 1, 1970
-        00:00:00 UTC).";
     }
   }
 
@@ -443,18 +238,6 @@ module openconfig-spanning-tree {
         uses stp-timer-config;
         uses bridge-priority-config;
       }
-
-      container state {
-        config false;
-        description
-          "Operational data for each vlan";
-
-        uses stp-rapid-pvst-config;
-        uses stp-timer-config;
-        uses bridge-priority-config;
-        uses stp-common-state;
-      }
-
       uses stp-interfaces-top;
     }
   }
@@ -509,17 +292,6 @@ module openconfig-spanning-tree {
         uses bridge-priority-config;
       }
 
-      container state {
-        config false;
-
-        description
-          "Operational data for MSTP instance";
-
-        uses mst-instance-config;
-        uses bridge-priority-config;
-        uses stp-common-state;
-      }
-
       uses stp-interfaces-top;
     }
   }
@@ -560,11 +332,6 @@ module openconfig-spanning-tree {
     uses stp-timer-config;
   }
 
-  grouping mstp-state {
-    description
-      "Operational state data for MSTP";
-  }
-
   grouping stp-mstp-top {
     description
       "Top grouping for MSTP configuration and operation data";
@@ -574,16 +341,6 @@ module openconfig-spanning-tree {
         "Configuration data for MSTP";
 
       uses mstp-config;
-    }
-
-    container state {
-      config false;
-
-      description
-        "Operational data for MSTP";
-
-      uses mstp-config;
-      uses mstp-state;
     }
 
     container mst-instances {
@@ -604,17 +361,6 @@ module openconfig-spanning-tree {
 
       uses stp-timer-config;
       uses bridge-priority-config;
-    }
-
-    container state {
-      config false;
-
-      description
-        "Operational state data for RSTP";
-
-      uses stp-timer-config;
-      uses bridge-priority-config;
-      uses stp-common-state;
     }
 
     uses stp-interfaces-top;
@@ -654,11 +400,6 @@ module openconfig-spanning-tree {
 
   }
 
-  grouping stp-interface-common-state {
-    description
-      "Operational state data for STP on interfaces";
-  }
-
   grouping stp-interface-common-top {
     description
       "Top-level grouping for interface specific STP features";
@@ -681,17 +422,6 @@ module openconfig-spanning-tree {
           "Configuration data for STP on each bridge port";
 
         uses stp-interface-common-config;
-      }
-
-      container state {
-
-        config false;
-
-        description
-          "Operational state data for STP on each bridge port";
-
-        uses stp-interface-common-config;
-        uses stp-interface-common-state;
       }
     }
   }
@@ -762,11 +492,6 @@ module openconfig-spanning-tree {
 
   }
 
-  grouping stp-global-state {
-    description
-      "Global operational state for STP";
-  }
-
   grouping stp-global-base {
     description
       "Grouping for global spanning tree data";
@@ -775,15 +500,6 @@ module openconfig-spanning-tree {
       description
         "Global spanning tree configuration";
       uses stp-global-config;
-    }
-
-    container state {
-      config false;
-
-      description
-        "Global spanning tree state";
-      uses stp-global-config;
-      uses stp-global-state;
     }
   }
 
