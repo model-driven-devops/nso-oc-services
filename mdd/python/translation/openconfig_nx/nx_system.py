@@ -160,10 +160,10 @@ def nx_system_program_service(self) -> None:
     elif self.service.oc_sys__system.services.config.service_udp_small_servers is False:
         raise NotImplementedError('openconfig-system-service-udp-small-servers has not yet been implemented for NX')
     # archive logging
-    if self.service.oc_sys__system.archive_logging:
-        raise ValueError('login_security_policy not supported in NX')
-    elif self.service.oc_sys__system.archive_logging is False:
-        raise ValueError('login_security_policy not supported in NX')
+    if self.service.oc_sys__system.services.config.archive_logging:
+        raise ValueError('archive logging not supported in NX')
+    elif self.service.oc_sys__system.services.config.archive_logging is False:
+        raise ValueError('archive logging not supported in NX')
     # service http
     if self.service.oc_sys__system.services.http.config.http_enabled:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for NX')
