@@ -35,7 +35,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -45,7 +45,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -55,7 +55,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -69,7 +69,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -83,7 +83,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -97,7 +97,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -110,7 +110,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -124,7 +124,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -160,7 +160,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -170,7 +170,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -235,7 +235,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -245,7 +245,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -311,7 +311,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -321,7 +321,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -385,7 +385,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -421,7 +421,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -431,7 +431,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -497,7 +497,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -507,7 +507,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+          CML_LAB: ${{ secrets.CML_LAB }}
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -572,7 +572,7 @@ jobs:
 #        env:
 #          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
 #          CML_HOST: ${{ secrets.CML_HOST }}
-#          CML_LAB: ${{ env.GITHUB_REF_NAME }}
+#          CML_LAB: ${{ secrets.CML_LAB }}
 #          CML_USERNAME: ${{ secrets.CML_USERNAME }}
 #          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
 #          CML_VERIFY_CERT: "false"
