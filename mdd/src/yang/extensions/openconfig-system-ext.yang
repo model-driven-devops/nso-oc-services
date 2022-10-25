@@ -212,6 +212,11 @@ module openconfig-system-ext{
           description
             "Enables small User Datagram Protocol (UDP) servers such as the ECHO.";
         }
+        leaf archive-logging {
+          type boolean;
+          description
+            "Enable the config logger.";
+        }
       }
       container login-security-policy {
         description
