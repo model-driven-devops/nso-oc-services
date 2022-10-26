@@ -1354,6 +1354,27 @@
         assertions:
           - "'+login block-for 900 attempts 3 within 120:' in changes"
 
+    - name: test archive_logging
+      tags:
+        - archive_logging
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:archive-logging: true
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+archive:' in changes"
+          - "'+ log config:' in changes"
+          - "'+  logging enable:' in changes"
+
 - hosts: nso
   connection: local
   gather_facts: no

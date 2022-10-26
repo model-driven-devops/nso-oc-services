@@ -324,6 +324,21 @@
              attempts: 3
              within: 120
        api_method: PATCH
+    - name: NSO configure archive_logging
+      tags:
+        - archive_logging
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:archive
+        content: |
+          tailf-ned-cisco-ios:archive:
+            log:
+              config:
+                logging:
+                  enable:
+                    - null
+        api_method: PATCH
     - name: NSO configure ssh source interface
       tags:
         - ssh_source_interface
@@ -426,6 +441,7 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['seconds'] == 900"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['attempts'] == 3"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['within'] == 120"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['archive-logging'] == true"
 
     - name: NSO configure ntp authenticate
       tags:

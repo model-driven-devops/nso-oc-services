@@ -81,6 +81,12 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
     if config_before.get("tailf-ned-cisco-ios:login", {}).get("block-for", {}).get("within"):
         openconfig_system_services["openconfig-system-ext:login-security-policy"]["openconfig-system-ext:block-for"]["openconfig-system-ext:config"]["openconfig-system-ext:within"] = config_before.get("tailf-ned-cisco-ios:login", {}).get("block-for", {}).get("within")
         del config_leftover["tailf-ned-cisco-ios:login"]["block-for"]["within"]
+    # Archive Logging
+    if type(config_before.get("tailf-ned-cisco-ios:archive", {}).get("log", {}).get("config", {}).get("logging", {}).get("enable", '')) is list:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:archive-logging"] = True
+        del config_leftover["tailf-ned-cisco-ios:archive"]["log"]["config"]["logging"]["enable"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:archive-logging"] = False
 
 
 def xe_system_config(config_before: dict, config_leftover: dict) -> None:

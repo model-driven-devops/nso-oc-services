@@ -112,11 +112,11 @@ def configure_network_interfaces(net_inst, interfaces_by_vrf):
         subinterface = '0' if len(name_split) == 1 else name_split[1]
 
         net_inst["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"].append({
-            "id": interface["type"] + interface["name"],
-            "config": {
-                "id": interface["type"] + interface["name"],
-                "interface": interface["type"] + primary_interface,
-                "subinterface": subinterface,
+            "openconfig-network-instance:id": interface["type"] + interface["name"],
+            "openconfig-network-instance:config": {
+                "openconfig-network-instance:id": interface["type"] + interface["name"],
+                "openconfig-network-instance:interface": interface["type"] + primary_interface,
+                "openconfig-network-instance:subinterface": subinterface,
             }
         })
 
