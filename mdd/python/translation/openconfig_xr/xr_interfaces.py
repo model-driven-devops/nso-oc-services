@@ -419,10 +419,10 @@ def xr_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: nc
             interface_cdb.ipv4.redirects.delete()
     # no ip unreachables
     if service_ipv4.config.oc_if_ip_mdd_ext__unreachables:
-        interface_cdb.ipv4.unreachables.disable.create()
-    elif service_ipv4.config.oc_if_ip_mdd_ext__unreachables is False:
         if interface_cdb.ipv4.unreachables.disable:
             interface_cdb.ipv4.unreachables.disable.delete()
+    elif service_ipv4.config.oc_if_ip_mdd_ext__unreachables is False:
+        interface_cdb.ipv4.unreachables.disable.create()
     # proxy-arp
     if service_ipv4.proxy_arp.config.mode == 'DISABLE':
         if interface_cdb.proxy_arp:
