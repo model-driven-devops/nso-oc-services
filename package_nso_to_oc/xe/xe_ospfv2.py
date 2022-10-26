@@ -188,6 +188,7 @@ def set_ospf2_global_config(ospf_leftover, net_protocols, prot_index, ospf):
         and not ospf.get("compatible") and not ospf.get("prefix-suppression")):
         ospfv2_global["config"] = {
             "openconfig-network-instance:log-adjacency-changes": False,
+            "openconfig-network-instance:summary-route-cost-mode": "RFC1583_COMPATIBLE",
             "openconfig-network-instance:hide-transit-only-networks": False
         }
         
@@ -202,10 +203,10 @@ def set_ospf2_global_config(ospf_leftover, net_protocols, prot_index, ospf):
         ospfv2_global_config["openconfig-network-instance:log-adjacency-changes"] = True
     else:
         ospfv2_global_config["openconfig-network-instance:log-adjacency-changes"] = False
-    if ospf.get("compatible") and ospf["compatible"].get("rfc1583"):
-        ospfv2_global_config["openconfig-network-instance:summary-route-cost-mode"] = "RFC1583_COMPATIBLE"
-    else:
+    if ospf.get("compatible") and ospf["compatible"].get("rfc1583") is False:
         ospfv2_global_config["openconfig-network-instance:summary-route-cost-mode"] = "RFC2328_COMPATIBLE"
+    else:
+        ospfv2_global_config["openconfig-network-instance:summary-route-cost-mode"] = "RFC1583_COMPATIBLE"
     if ospf.get("prefix-suppression"):
         ospfv2_global_config["openconfig-network-instance:hide-transit-only-networks"] = True
     else:
