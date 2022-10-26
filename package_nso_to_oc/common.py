@@ -93,7 +93,7 @@ def print_and_test_configs(device_name, config_before_dict, config_leftover_dict
     nso_device = os.environ.get("NSO_DEVICE", device_name)
     test = os.environ.get("TEST", "False")
 
-    # print(json.dumps(oc, indent=4))
+    print(json.dumps(oc, indent=4))
     with open(f"{output_data_dir}{nso_device}_{config_name}.json", "w") as b:
         b.write(json.dumps(config_before_dict, indent=4))
     with open(f"{output_data_dir}{nso_device}_{config_remaining_name}.json", "w") as a:
