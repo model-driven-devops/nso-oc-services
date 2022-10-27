@@ -582,13 +582,12 @@
                 - ip: '10.255.100.1'
                   mask: '0.0.0.0'
                   area: '1'
+                - ip: '0.0.0.0'
+                  mask: '255.255.255.255'
+                  area: '0'
             - id: '2'
               vrf: 'internal_0'
               area:
-                - id: '0'
-                  filter-list:
-                    - direction: 'in'
-                      prefix: 'test'
                 - id: '1'
                   stub:
                     no-summary: {}
@@ -614,8 +613,11 @@
                 - ip: '10.250.0.0'
                   mask: '0.0.255.255'
                   area: '4'
-                - ip: '10.255.0.0'
-                  mask: '0.0.255.255'
+                - ip: '10.250.25.0'
+                  mask: '0.0.0.255'
+                  area: '5'
+                - ip: '0.0.0.0'
+                  mask: '255.255.255.255'
                   area: '0'
               mpls:
                 traffic-eng:

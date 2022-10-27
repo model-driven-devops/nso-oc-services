@@ -17,6 +17,7 @@ TEST - True or False. True enables sending the OpenConfig to the NSO server afte
 """
 
 import copy
+from functools import cmp_to_key
 
 ospf_network_types = {
     "broadcast": "BROADCAST_NETWORK",
@@ -38,7 +39,7 @@ def configure_xe_ospf(net_inst, vrf_interfaces, config_before, config_leftover):
     for ospf_index, ospf in enumerate(ospf_list):
         if ((instance_type == "L3VRF" and "vrf" in ospf)
             or (instance_type == "DEFAULT_INSTANCE" and not "vrf" in ospf)):
-            process_ospf(net_protocols, vrf_interfaces, config_before, config_leftover, ospf_index, ospf)
+            process_ospf(net_protocols, vrf_interfaces, config_leftover, ospf_index, ospf)
 
 def get_interfaces_by_area(network_statements, vrf_interfaces):
     """
@@ -48,13 +49,14 @@ def get_interfaces_by_area(network_statements, vrf_interfaces):
     Source: https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_ospf/command/iro-cr-book/ospf-i1.html#wp2261032279
 
     TODO: Consider creating network statement sort algorithm
-    As there can be multiple sort algorthims, some may be more specific than others and they can point to different
+    As there can be multiple network statements, some may be more specific than others and they can point to different
     OSPF areas. The more specific statements should be prioritized over the less specific ones.
     """
     processed_interfaces = set()
     interfaces_by_area = {}
+    sorted_network_statements = sorted(network_statements, key=cmp_to_key(sort_by_mask))
 
-    for net_stmt in network_statements:
+    for net_stmt in sorted_network_statements:
         # Use get method for net_stmt, since it contains input values that we did not generate and cannot guarantee.
         stmt_mask = net_stmt.get("mask", "")
         area_id = net_stmt.get("area", "0")
@@ -76,8 +78,40 @@ def get_interfaces_by_area(network_statements, vrf_interfaces):
                     interfaces_by_area[area_id] = []
                 
                 interfaces_by_area[area_id].append(vrf_intf)
-
+                
     return interfaces_by_area
+
+def sort_by_mask(stmt1, stmt2):
+    """
+    A comparator to sort by mask, ordered from most specific (mask of 0.0.0.0) to least specific (mask of 255.255.255.255).
+    """
+    mask1 = stmt1.get("mask", None)
+    mask2 = stmt2.get("mask", None)
+
+    if not mask1 and not mask2:
+        return 0
+    if not mask1:
+        return 1
+    if not mask2:
+        return -1
+
+    mask1_octets = mask1.split(".")
+    mask2_octets = mask2.split(".")
+
+    # Sanity check
+    if len(mask1_octets) != 4 or len(mask2_octets) != 4:
+        raise ValueError("Invalid IP string provided")
+    
+    for octet_index in range(len(mask1_octets)):
+        mask1_octet_int = int(mask1_octets[octet_index])
+        mask2_octet_int = int(mask2_octets[octet_index])
+
+        if mask1_octet_int == mask2_octet_int:
+            continue
+
+        return mask1_octet_int - mask2_octet_int
+
+    return 0
 
 def binary_merge(ip, mask):
     """
@@ -88,24 +122,20 @@ def binary_merge(ip, mask):
     mask_in_binary = get_binary_str(mask)
 
     for index in range(len(ip_in_binary)):
-        ip_val = ip_in_binary[index] == '1'
-        mask_val = mask_in_binary[index] == '1'
-        merged_result.append('1' if ip_val or mask_val else '0')
+        ip_val = ip_in_binary[index] == "1"
+        mask_val = mask_in_binary[index] == "1"
+        merged_result.append("1" if ip_val or mask_val else "0")
 
-    return ''.join(merged_result)
+    return "".join(merged_result)
 
 def get_binary_str(ip_str):
-    octets = ip_str.split('.')
+    octets = ip_str.split(".")
     binary_octets = []
 
-    # Sanity check
-    if len(octets) != 4:
-        raise ValueError("Invalid IP string provided")
-
     for octet in octets:
-        binary_octets.append(format(int(octet), '08b'))
+        binary_octets.append(format(int(octet), "08b"))
 
-    return ''.join(binary_octets)
+    return "".join(binary_octets)
 
 def get_ospfv2_global(net_protocols, prot_index):
     if (len(net_protocols) >= prot_index):
@@ -153,7 +183,7 @@ def get_intf_by_intf_number(intf_attr, intf_number):
         if intf["name"] == intf_number:
             return intf
 
-def process_ospf(net_protocols, vrf_interfaces, config_before, config_leftover, ospf_index, ospf):
+def process_ospf(net_protocols, vrf_interfaces, config_leftover, ospf_index, ospf):
     ospf_leftover = config_leftover.get("tailf-ned-cisco-ios:router", {}).get("ospf")[ospf_index]
     # If we got here, we init an empty dict and append to protocol list for future use.
     net_protocols.append({})
@@ -163,7 +193,7 @@ def process_ospf(net_protocols, vrf_interfaces, config_before, config_leftover, 
     set_graceful_restart_ietf(ospf_leftover, net_protocols, prot_index, ospf)
     set_vrf_lite(ospf_leftover, net_protocols, prot_index, ospf)
     set_default_info_originate(ospf_leftover, net_protocols, prot_index, ospf)
-    check_areas(ospf_leftover, net_protocols, vrf_interfaces, config_before, config_leftover, prot_index, ospf)
+    check_areas(ospf_leftover, net_protocols, vrf_interfaces, config_leftover, prot_index, ospf)
     set_mpls_ldp_sync(ospf_leftover, net_protocols, prot_index, ospf)
     set_timers_lsa(ospf_leftover, net_protocols, prot_index, ospf)
     set_timers_spf(ospf_leftover, net_protocols, prot_index, ospf)
@@ -284,30 +314,49 @@ def set_default_info_originate(ospf_leftover, net_protocols, prot_index, ospf):
 
     ospfv2_global["openconfig-network-instance:config"].update(oc_default_info_originate)
             
-def check_areas(ospf_leftover, net_protocols, vrf_interfaces, config_before, config_leftover, prot_index, ospf):
+def check_areas(ospf_leftover, net_protocols, vrf_interfaces, config_leftover, prot_index, ospf):
     intf_config_leftover = config_leftover.get("tailf-ned-cisco-ios:interface", {}) 
     ospfv2_area = get_ospfv2_area(net_protocols, prot_index)
     interfaces_by_area = get_interfaces_by_area(ospf.get("network", []), vrf_interfaces)
+    area_list = populate_area_list(ospf)
+    is_area_0_present = check_for_area_0(area_list)
+    
+    for area_key, area in enumerate(area_list):
+        set_ospfv2_areas(ospfv2_area, area, area_key, ospf, ospf_leftover)
 
-    if "area" in ospf:
-        is_area_0_present = check_for_area_0(ospf)
+        if is_area_0_present and int(area["id"]) != 0:
+            # We do this as long as area 0 is available and destination area is not 0.
+            set_inter_area_propagation_policy(ospf_leftover, net_protocols, prot_index, area_key, area)
+        
+        for current_intf in interfaces_by_area.get(area.get("id", 0), []):
+            intf_type, intf_number = (current_intf["type"], current_intf["name"])
+            intf_name = intf_type + intf_number
+            intf_attr_leftover = intf_config_leftover.get(intf_type, {})
+            intf_leftover = get_intf_by_intf_number(intf_attr_leftover, intf_number)
+            set_ospfv2_intf_areas(ospfv2_area, intf_leftover, area, intf_name, current_intf, ospf, ospf_leftover)
 
-        for area_key, area in enumerate(ospf["area"]):
-            set_ospfv2_areas(ospfv2_area, area, area_key, ospf, ospf_leftover)
+def populate_area_list(ospf):
+    area_list = []
+    area_id_set = set()
+    
+    # Populate with existing areas defined by NED first, if any.
+    for area in ospf.get("area", []):
+        area_list.append(area)
+        area_id_set.add(area["id"])
+    
+    # Populate with area based on OSPF network statement, if area wasn't already defined by the NED
+    for net_stmt in ospf.get("network", []):
+        # Is adding a default necessary, or should we always expect a network statement to contain an area ID?
+        area_id = net_stmt.get("area", "0")
 
-            if is_area_0_present and int(area["id"]) != 0:
-                # We do this as long as area 0 is available and destination area is not 0.
-                set_inter_area_propagation_policy(ospf_leftover, net_protocols, prot_index, area_key, area)
+        if area_id in area_id_set:
+            continue
 
-            for current_intf in interfaces_by_area.get(area.get("id", 0), []):
-                intf_type, intf_number = (current_intf["type"], current_intf["name"])
-                intf_name = intf_type + intf_number
-                intf_attr_leftover = intf_config_leftover.get(intf_type, {})
-                intf_leftover = get_intf_by_intf_number(intf_attr_leftover, intf_number)
-                set_ospfv2_intf_areas(ospfv2_area, intf_leftover, area, intf_name, current_intf, ospf, ospf_leftover)
+        area_list.append({"id": area_id})
+    return area_list
 
-def check_for_area_0(ospf):
-    for area in ospf["area"]:
+def check_for_area_0(area_list):
+    for area in area_list:
         if area["id"] == 0:
             return True
 
@@ -334,7 +383,8 @@ def set_inter_area_propagation_policy(ospf_leftover, net_protocols, prot_index, 
         }
 
         ospfv2_global["openconfig-network-instance:inter-area-propagation-policies"]["openconfig-network-instance:inter-area-propagation-policy"].append(service_policy)
-        if "filter-list" in ospf_leftover["area"][area_key]:
+        
+        if 0 <= area_key < len(ospf_leftover["area"]) and area["id"] == ospf_leftover["area"][area_key]["id"] and "filter-list" in ospf_leftover["area"][area_key]:
             del ospf_leftover["area"][area_key]["filter-list"]
     
 
@@ -392,7 +442,7 @@ def set_timers_spf(ospf_leftover, net_protocols, prot_index, ospf):
             
             ospfv2_global["openconfig-network-instance:timers"]["openconfig-network-instance:spf"].update({"openconfig-network-instance:config": config})
         else:
-            raise ValueError('XE OSPF throttle timers spf needs values for spf-start, spf-hold, and spf-max-wait')
+            raise ValueError("XE OSPF throttle timers spf needs values for spf-start, spf-hold, and spf-max-wait")
 
     del ospf_leftover["timers"]["throttle"]["spf"]
 
@@ -534,7 +584,9 @@ def set_virtual_links(area_by_id, area, area_key, ospf_leftover):
                 "openconfig-network-instance:remote-router-id": v_link["id"],
                 "openconfig-network-instance:config": {"openconfig-network-instance:remote-router-id": v_link["id"]}
             })
-            ospf_leftover["area"][area_key]["virtual-link"][v_link_index] = None
+
+            if 0 <= area_key < len(ospf_leftover["area"]) and area["id"] == ospf_leftover["area"][area_key]["id"]:
+                ospf_leftover["area"][area_key]["virtual-link"][v_link_index] = None
 
 def set_stub(area_by_id, area, area_key, ospf_leftover):
     # This might not be necessary, since configs are coming directly from NEDs.
@@ -576,7 +628,8 @@ def set_stub(area_by_id, area, area_key, ospf_leftover):
                 "openconfig-ospfv2-ext:nssa": {"openconfig-ospfv2-ext:config": nssa_false}
             }
         
-        del ospf_leftover["area"][area_key]["stub"]
+        if 0 <= area_key < len(ospf_leftover["area"]) and area["id"] == ospf_leftover["area"][area_key]["id"]:
+            del ospf_leftover["area"][area_key]["stub"]
     elif "nssa" in area:
         nssa_true = copy.deepcopy(all_true)
         nssa_true["openconfig-ospfv2-ext:no-summary"] = "no-summary" in area["nssa"]
@@ -585,4 +638,6 @@ def set_stub(area_by_id, area, area_key, ospf_leftover):
             "openconfig-ospfv2-ext:stub": {"openconfig-ospfv2-ext:config": copy.deepcopy(all_false)},
             "openconfig-ospfv2-ext:nssa": {"openconfig-ospfv2-ext:config": nssa_true}
         }
-        del ospf_leftover["area"][area_key]["nssa"]
+
+        if 0 <= area_key < len(ospf_leftover["area"]) and area["id"] == ospf_leftover["area"][area_key]["id"]:
+            del ospf_leftover["area"][area_key]["nssa"]
