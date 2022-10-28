@@ -35,6 +35,9 @@ openconfig_system = {
         },
         "openconfig-system:ssh-server": {"openconfig-system:config": {}},
         "openconfig-system-ext:services": {
+            "openconfig-system-ext:http": {
+                "openconfig-system-ext:config": {}
+            },
             "openconfig-system-ext:config": {},
             "openconfig-system-ext:login-security-policy": {
                 "openconfig-system-ext:config": {},
@@ -87,8 +90,75 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
         del config_leftover["tailf-ned-cisco-ios:archive"]["log"]["config"]["logging"]["enable"]
     else:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:archive-logging"] = False
-
-
+    # boot network
+    if not config_before.get("tailf-ned-cisco-ios:boot", {}).get("network"):
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:boot-network"] = "DISABLED"
+    # IP bootp server
+    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("bootp", {}).get("server", True) is False:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-bootp-server"] = False
+        del config_leftover["tailf-ned-cisco-ios:ip"]["bootp"]["server"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-bootp-server"] = True
+    # IP dns server
+    if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("dns", {}).get("server", '')) is dict:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-dns-server"] = True
+        del config_leftover["tailf-ned-cisco-ios:ip"]["dns"]["server"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-dns-server"] = False
+    # IP identd
+    if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("identd", '')) is list:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-identd"] = True
+        del config_leftover["tailf-ned-cisco-ios:ip"]["identd"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-identd"] = False
+    # IP http server
+    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("server", True) is False:
+        openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:config"]["openconfig-system-ext:http-enabled"] = False
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["server"]
+    else:
+        openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:config"]["openconfig-system-ext:http-enabled"] = True
+    # IP RCMD rcp-enable
+    if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("rcmd", {}).get("rcp-enable", '')) is list:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-rcmd-rcp-enable"] = True
+        del config_leftover["tailf-ned-cisco-ios:ip"]["rcmd"]["rcp-enable"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-rcmd-rcp-enable"] = False
+    # IP RCMD rsh-enable
+    if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("rcmd", {}).get("rsh-enable", '')) is list:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-rcmd-rsh-enable"] = True
+        del config_leftover["tailf-ned-cisco-ios:ip"]["rcmd"]["rsh-enable"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-rcmd-rsh-enable"] = False
+    # IP finger
+    if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("finger", '')) is dict:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:finger"] = True
+        del config_leftover["tailf-ned-cisco-ios:ip"]["finger"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:finger"] = False
+    # service config
+    if type(config_before.get("tailf-ned-cisco-ios:service", {}).get("config", '')) is list:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-config"] = True
+        del config_leftover["tailf-ned-cisco-ios:service"]["config"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-config"] = False
+    # service tcp-small-servers
+    if type(config_before.get("tailf-ned-cisco-ios:service", {}).get("tcp-small-servers", '')) is list:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-tcp-small-servers"] = True
+        del config_leftover["tailf-ned-cisco-ios:service"]["tcp-small-servers"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-tcp-small-servers"] = False
+    # service udp-small-servers
+    if type(config_before.get("tailf-ned-cisco-ios:service", {}).get("udp-small-servers", '')) is list:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-udp-small-servers"] = True
+        del config_leftover["tailf-ned-cisco-ios:service"]["udp-small-servers"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-udp-small-servers"] = False
+    # service pad
+    if config_before.get("tailf-ned-cisco-ios:service", {}).get("conf", {}).get("pad", True) is False:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-pad"] = False
+        del config_leftover["tailf-ned-cisco-ios:service"]["conf"]["pad"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-pad"] = True
 def xe_system_config(config_before: dict, config_leftover: dict) -> None:
     """
     Translates NSO XE NED to MDD OpenConfig System Config

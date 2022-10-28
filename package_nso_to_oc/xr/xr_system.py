@@ -49,7 +49,18 @@ def xr_system_services(config_before: dict, config_leftover: dict) -> None:
         del config_leftover["tailf-ned-cisco-ios-xr:domain"]["lookup"]
     else:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-domain-lookup"] = True
-
+    # service tcp-small-servers
+    if type(config_before.get("tailf-ned-cisco-ios-xr:service", {}).get("ipv4", {}).get("tcp-small-servers", '')) is dict:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-tcp-small-servers"] = True
+        del config_leftover["tailf-ned-cisco-ios-xr:service"]["ipv4"]["tcp-small-servers"]["max-servers"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-tcp-small-servers"] = False
+    # service udp-small-servers
+    if type(config_before.get("tailf-ned-cisco-ios-xr:service", {}).get("ipv4", {}).get("udp-small-servers", '')) is dict:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-udp-small-servers"] = True
+        del config_leftover["tailf-ned-cisco-ios-xr:service"]["ipv4"]["udp-small-servers"]["max-servers"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-udp-small-servers"] = False
 
 def xr_system_config(config_before: dict, config_leftover: dict) -> None:
     """

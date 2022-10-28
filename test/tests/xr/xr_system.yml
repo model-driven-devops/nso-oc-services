@@ -52,6 +52,44 @@
           - "'+line console:' in changes"
           - "'+ exec-timeout 13 20:' in changes"
 
+    - name: test service_tcp_small_servers
+      tags:
+        - service_tcp_small_servers
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:service-tcp-small-servers: true
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+service ipv4 tcp-small-servers max-servers 2147483647:' in changes"
+
+    - name: test service_udp_small_servers
+      tags:
+        - service_udp_small_servers
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:service-udp-small-servers: true
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+service ipv4 udp-small-servers max-servers 2147483647:' in changes"
+
 - hosts: nso
   connection: local
   gather_facts: no

@@ -339,6 +339,151 @@
                   enable:
                     - null
         api_method: PATCH
+#    - name: NSO configure no boot network (no test for negative assertion)
+
+    - name: NSO configure ip bootp server
+      tags:
+        - ip_bootp_server
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:ip
+        content: |
+          tailf-ned-cisco-ios:ip:
+            bootp:
+              server: true
+        api_method: PATCH
+
+    - name: NSO configure ip dns server
+      tags:
+        - ip_dns_server
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:ip
+        content: |
+          tailf-ned-cisco-ios:ip:
+            dns:
+              server: {}
+        api_method: PATCH
+
+    - name: NSO configure ip identd
+      tags:
+        - ip_identd
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:ip
+        content: |
+          tailf-ned-cisco-ios:ip:
+            identd:
+              - null
+        api_method: PATCH
+
+    - name: NSO configure no ip http server
+      tags:
+        - no_ip_http_server
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:ip
+        content: |
+          tailf-ned-cisco-ios:ip:
+            http:
+              server: false
+        api_method: PATCH
+
+    - name: NSO configure ip rcmd rcp-enable
+      tags:
+        - ip_rcmd_rcp_enable
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:ip
+        content: |
+          tailf-ned-cisco-ios:ip:
+            rcmd:
+              rcp-enable:
+                - null
+        api_method: PATCH
+
+    - name: NSO configure ip rcmd rsh-enable
+      tags:
+        - ip_rcmd_rsh_enable
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:ip
+        content: |
+          tailf-ned-cisco-ios:ip:
+            rcmd:
+              rsh-enable:
+                - null
+        api_method: PATCH
+
+    - name: NSO configure ip finger
+      tags:
+        - ip_finger
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:ip
+        content: |
+          tailf-ned-cisco-ios:ip:
+            finger: {}
+        api_method: PATCH
+
+    - name: NSO configure service config
+      tags:
+        - service_config
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:service
+        content: |
+          tailf-ned-cisco-ios:service:
+            config:
+              - null
+        api_method: PATCH
+
+    - name: NSO configure service tcp-small-servers
+      tags:
+        - service_tcp_small_servers
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:service
+        content: |
+          tailf-ned-cisco-ios:service:
+            tcp-small-servers:
+              - null
+        api_method: PATCH
+    - name: NSO configure service udp-small-servers
+      tags:
+        - service_udp_small_servers
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:service
+        content: |
+          tailf-ned-cisco-ios:service:
+            udp-small-servers:
+              - null
+        api_method: PATCH
+
+    - name: NSO configure service pad
+      tags:
+        - service_pad
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:service
+        content: |
+          tailf-ned-cisco-ios:service:
+            conf:
+              pad: true
+        api_method: PATCH
+
     - name: NSO configure ssh source interface
       tags:
         - ssh_source_interface
@@ -442,6 +587,17 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['attempts'] == 3"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['within'] == 120"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['archive-logging'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-bootp-server'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-dns-server'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-identd'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['http']['config']['http-enabled'] == false"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rcp-enable'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rsh-enable'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['finger'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-config'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-tcp-small-servers'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-udp-small-servers'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-pad'] == true"
 
     - name: NSO configure ntp authenticate
       tags:
