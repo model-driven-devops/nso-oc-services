@@ -129,9 +129,9 @@ def xe_system_program_service(self) -> None:
             device_cdb.ios__archive.delete()
     # boot network
     if self.service.oc_sys__system.services.config.boot_network == "DISABLED":
-        if device_cdb.ios__boot.network.list.__len__() != 0 or \
-           device_cdb.ios__boot.network.list_flash.flash.__len__() != 0 or \
-           device_cdb.ios__boot.network.remote_url.__len__() != 0:
+        if len(device_cdb.ios__boot.network.list) != 0 or \
+           len(device_cdb.ios__boot.network.list_flash.flash) != 0 or \
+           len(device_cdb.ios__boot.network.remote_url) != 0:
             device_cdb.ios__boot.network.delete()
     # IP bootp server
     if self.service.oc_sys__system.services.config.ip_bootp_server:
