@@ -1375,6 +1375,192 @@
           - "'+ log config:' in changes"
           - "'+  logging enable:' in changes"
 
+    - name: apply boot network
+      tags:
+        - boot_network
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:boot
+        content: |
+          tailf-ned-cisco-ios:boot:
+            network:
+              list:
+                - protocol: ftp
+                  filename: ftp
+                  address: 255.255.255.255
+                - protocol: rcp
+                  filename: rcp
+                  address: 255.255.255.255
+                - protocol: tftp
+                  filename: tftphost
+                  address: 255.255.255.255
+                - protocol: tftp
+                  filename: word
+                  address: 255.255.255.255
+              list-flash:
+                flash:
+                  - name: flash
+              remote-url: "mop:unknown"
+        api_method: PATCH
+
+    - name: test no_boot_network
+      tags:
+        - no_boot_network
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:boot-network: DISABLED
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: true
+        assertions:
+          - "'-boot network flash flash:' in changes"
+          - "'-boot network ftp ftp 255.255.255.255:' in changes"
+          - "'-boot network rcp rcp 255.255.255.255:' in changes"
+          - "'-boot network tftp tftphost 255.255.255.255:' in changes"
+          - "'-boot network tftp word 255.255.255.255:' in changes"
+          - "'-boot network mop:unknown:' in changes"
+
+    - name: test ansible-playbook tests/xe/xe_system.yml --skip-tags="iosxr,nxos" -e rollback=true -t service_pad
+      tags:
+        - ip_bootp_server
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:ip-bootp-server: true
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip bootp server:' in changes"
+
+    - name: test ip_dns_server
+      tags:
+        - ip_dns_server
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:ip-dns-server: true
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip dns server:' in changes"
+
+    - name: test ip_identd
+      tags:
+        - ip_identd
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:ip-identd: true
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip identd:' in changes"
+
+    - name: test ip_rcmd_rcp_enable
+      tags:
+        - ip_rcmd_rcp_enable
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:ip-rcmd-rcp-enable: true
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip rcmd rcp-enable:' in changes"
+
+    - name: test ip_rcmd_rsh_enable
+      tags:
+        - ip_rcmd_rsh_enable
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:ip-rcmd-rsh-enable: true
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip rcmd rsh-enable:' in changes"
+
+    - name: test service_config
+      tags:
+        - service_config
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:service-config: true
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+service config:' in changes"
+
+    - name: test service_pad
+      tags:
+        - service_pad
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:service-pad: true
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+service pad:' in changes"
+
 - hosts: nso
   connection: local
   gather_facts: no

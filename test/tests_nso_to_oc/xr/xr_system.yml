@@ -105,6 +105,34 @@
                 seconds: 20
         api_method: PATCH
 
+    - name: NSO configure service tcp-small-servers
+      tags:
+        - service_tcp_small_servers
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:service
+        content: |
+          tailf-ned-cisco-ios-xr:service:
+            ipv4:
+              tcp-small-servers:
+                max-servers: 2147483647
+        api_method: PATCH
+
+    - name: NSO configure service tcp-small-servers
+      tags:
+        - service_udp_small_servers
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:service
+        content: |
+          tailf-ned-cisco-ios-xr:service:
+            ipv4:
+              udp-small-servers:
+                max-servers: 2147483647
+        api_method: PATCH
+
     - name: Execute NSO NED to OC script
       script: ../../../package_nso_to_oc/xr/xr_system.py
       args:
@@ -138,3 +166,6 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:enable-secret'] == 'VALUE_SPECIFIED_IN_NO_LOG_PARAMETER'"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:console-exec-timeout-seconds'] == 800"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-domain-lookup'] == false"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-tcp-small-servers'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-udp-small-servers'] == true"
+

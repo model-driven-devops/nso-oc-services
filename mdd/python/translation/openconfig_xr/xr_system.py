@@ -92,6 +92,63 @@ def xr_system_program_service(self) -> None:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for XR')
     if self.service.oc_sys__system.ssh_server.config.ssh_source_interface:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for XR')
+    # boot network
+    if self.service.oc_sys__system.services.config.boot_network == "DISABLED":
+        raise ValueError('boot_network not supported in XR')
+    # IP bootp server
+    if self.service.oc_sys__system.services.config.ip_bootp_server:
+        raise ValueError('ip_bootp_server not supported in XR')
+    elif self.service.oc_sys__system.services.config.ip_bootp_server is False:
+        raise ValueError('ip_bootp_server not supported in XR')
+    # IP DNS server
+    if self.service.oc_sys__system.services.config.ip_dns_server:
+        raise ValueError('ip_dns_server not supported in XR')
+    elif self.service.oc_sys__system.services.config.ip_dns_server is False:
+        raise ValueError('ip_dns_server not supported in XR')
+    # IP identd
+    if self.service.oc_sys__system.services.config.ip_identd:
+        raise ValueError('ip_identd not supported in XR')
+    elif self.service.oc_sys__system.services.config.ip_identd is False:
+        raise ValueError('ip_identd not supported in XR')
+    # IP rcmd RCP enable
+    if self.service.oc_sys__system.services.config.ip_rcmd_rcp_enable:
+        raise ValueError('ip_rcmd_rcp_enable not supported in XR')
+    elif self.service.oc_sys__system.services.config.ip_rcmd_rcp_enable is False:
+        raise ValueError('ip_rcmd_rcp_enable not supported in XR')
+    # IP rcmd RSH enable
+    if self.service.oc_sys__system.services.config.ip_rcmd_rsh_enable:
+        raise ValueError('ip_rcmd_rsh_enable not supported in XR')
+    elif self.service.oc_sys__system.services.config.ip_rcmd_rsh_enable is False:
+        raise ValueError('ip_rcmd_rsh_enable not supported in XR')
+    # service finger
+    if self.service.oc_sys__system.services.config.finger:
+        raise ValueError('finger not supported in XR')
+    elif self.service.oc_sys__system.services.config.finger is False:
+        raise ValueError('finger not supported in XR')
+    # service config
+    if self.service.oc_sys__system.services.config.service_config:
+        raise ValueError('service_config not supported in XR')
+    elif self.service.oc_sys__system.services.config.service_config is False:
+        raise ValueError('service_config not supported in XR')
+    # service-tcp-small-servers
+    if self.service.oc_sys__system.services.config.service_tcp_small_servers:
+        device_cdb.cisco_ios_xr__service.ipv4.tcp_small_servers.max_servers = 2147483647
+    elif self.service.oc_sys__system.services.config.service_tcp_small_servers is False:
+        if device_cdb.cisco_ios_xr__service.ipv4.tcp_small_servers.max_servers and \
+                device_cdb.cisco_ios_xr__service.ipv4.tcp_small_servers.max_servers > 0:
+            device_cdb.cisco_ios_xr__service.ipv4.tcp_small_servers.delete()
+    # service-udp-small-servers
+    if self.service.oc_sys__system.services.config.service_udp_small_servers:
+        device_cdb.cisco_ios_xr__service.ipv4.udp_small_servers.max_servers = 2147483647
+    elif self.service.oc_sys__system.services.config.service_udp_small_servers is False:
+        if device_cdb.cisco_ios_xr__service.ipv4.udp_small_servers.max_servers and \
+                device_cdb.cisco_ios_xr__service.ipv4.udp_small_servers.max_servers > 0:
+            device_cdb.cisco_ios_xr__service.ipv4.udp_small_servers.delete()
+    # service pad
+    if self.service.oc_sys__system.services.config.service_pad:
+        raise ValueError('service_pad not supported in XR')
+    elif self.service.oc_sys__system.services.config.service_pad is False:
+        raise ValueError('service_pad not supported in XR')
     # NTP
     if self.service.oc_sys__system.ntp.config.enabled:
         raise NotImplementedError('openconfig-system-ntp-config has not yet been implemented for XR')
@@ -152,16 +209,6 @@ def xr_system_program_service(self) -> None:
         raise NotImplementedError('openconfig-system-service-password-encryption has not yet been implemented for XR')
     elif self.service.oc_sys__system.services.config.service_password_encryption is False:
         raise NotImplementedError('openconfig-system-service-password-encryption has not yet been implemented for XR')
-    # service-tcp-small-servers
-    if self.service.oc_sys__system.services.config.service_tcp_small_servers:
-        raise NotImplementedError('openconfig-system-service-tcp-small-servers has not yet been implemented for XR')
-    elif self.service.oc_sys__system.services.config.service_tcp_small_servers is False:
-        raise NotImplementedError('openconfig-system-service-tcp-small-servers has not yet been implemented for XR')
-    # service-udp-small-servers
-    if self.service.oc_sys__system.services.config.service_udp_small_servers:
-        raise NotImplementedError('openconfig-system-service-udp-small-servers has not yet been implemented for XR')
-    elif self.service.oc_sys__system.services.config.service_udp_small_servers is False:
-        raise NotImplementedError('openconfig-system-service-udp-small-servers has not yet been implemented for XR')
     # service http
     if self.service.oc_sys__system.services.http.config.http_enabled:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for XR')

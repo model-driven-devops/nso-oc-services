@@ -164,6 +164,59 @@ def nx_system_program_service(self) -> None:
         raise ValueError('archive logging not supported in NX')
     elif self.service.oc_sys__system.services.config.archive_logging is False:
         raise ValueError('archive logging not supported in NX')
+    # boot network
+    if self.service.oc_sys__system.services.config.boot_network == "DISABLED":
+        raise ValueError('boot_network not supported in NX')
+    # IP bootp server
+    if self.service.oc_sys__system.services.config.ip_bootp_server:
+        raise ValueError('ip_bootp_server not supported in NX')
+    elif self.service.oc_sys__system.services.config.ip_bootp_server is False:
+        raise ValueError('ip_bootp_server not supported in NX')
+    # IP DNS server
+    if self.service.oc_sys__system.services.config.ip_dns_server:
+        raise ValueError('ip_dns_server not supported in NX')
+    elif self.service.oc_sys__system.services.config.ip_dns_server is False:
+        raise ValueError('ip_dns_server not supported in NX')
+    # IP identd
+    if self.service.oc_sys__system.services.config.ip_identd:
+        raise ValueError('ip_identd not supported in NX')
+    elif self.service.oc_sys__system.services.config.ip_identd is False:
+        raise ValueError('ip_identd not supported in NX')
+    # IP rcmd RCP enable
+    if self.service.oc_sys__system.services.config.ip_rcmd_rcp_enable:
+        raise ValueError('ip_rcmd_rcp_enable not supported in NX')
+    elif self.service.oc_sys__system.services.config.ip_rcmd_rcp_enable is False:
+        raise ValueError('ip_rcmd_rcp_enable not supported in NX')
+    # IP rcmd RSH enable
+    if self.service.oc_sys__system.services.config.ip_rcmd_rsh_enable:
+        raise ValueError('ip_rcmd_rsh_enable not supported in NX')
+    elif self.service.oc_sys__system.services.config.ip_rcmd_rsh_enable is False:
+        raise ValueError('ip_rcmd_rsh_enable not supported in NX')
+    # service finger
+    if self.service.oc_sys__system.services.config.finger:
+        raise ValueError('finger not supported in NX')
+    elif self.service.oc_sys__system.services.config.finger is False:
+        raise ValueError('finger not supported in NX')
+    # service config
+    if self.service.oc_sys__system.services.config.service_config:
+        raise ValueError('service_config not supported in NX')
+    elif self.service.oc_sys__system.services.config.service_config is False:
+        raise ValueError('service_config not supported in NX')
+    # service-tcp-small-servers
+    if self.service.oc_sys__system.services.config.service_tcp_small_servers:
+        raise ValueError('finger not supported in NX')
+    elif self.service.oc_sys__system.services.config.service_tcp_small_servers is False:
+        raise ValueError('finger not supported in NX')
+    # service-udp-small-servers
+    if self.service.oc_sys__system.services.config.service_udp_small_servers:
+        raise ValueError('finger not supported in NX')
+    elif self.service.oc_sys__system.services.config.service_udp_small_servers is False:
+        raise ValueError('finger not supported in NX')
+    # service pad
+    if self.service.oc_sys__system.services.config.service_pad:
+        raise ValueError('finger not supported in NX')
+    elif self.service.oc_sys__system.services.config.service_pad is False:
+        raise ValueError('finger not supported in NX')
     # service http
     if self.service.oc_sys__system.services.http.config.http_enabled:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for NX')

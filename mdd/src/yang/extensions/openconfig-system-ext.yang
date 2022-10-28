@@ -186,12 +186,6 @@ module openconfig-system-ext{
             description
               "Disable or enable ip domain-lookup.";
         }
-        leaf finger {
-            type boolean;
-            //default false;
-            description
-              "Configure a system to accept Finger protocol requests.";
-        }
         leaf ip-gratuitous-arps {
           type boolean;
           description
@@ -201,6 +195,55 @@ module openconfig-system-ext{
           type boolean;
           description
             "Converts unencrypted passwords to encrypted passwords.";
+        }
+        leaf archive-logging {
+          type boolean;
+          description
+            "Enable the config logger.";
+        }
+        leaf boot-network {
+          type enumeration {
+            enum MANUAL_CONFIG;
+            enum DISABLED;
+          }
+          description
+            "Configure a system to boot from network-wide config file.";
+        }
+        leaf ip-bootp-server {
+          type boolean;
+          description
+            "Config BOOTP services.";
+        }
+        leaf ip-dns-server {
+          type boolean;
+          description
+            "Configure DNS server for a zone.";
+        }
+        leaf ip-identd {
+          type boolean;
+          description
+            "Configure Ident server.";
+        }
+        leaf ip-rcmd-rcp-enable {
+          type boolean;
+          description
+            "Enable server side of RCP.";
+        }
+        leaf ip-rcmd-rsh-enable {
+          type boolean;
+          description
+            "Enable server side of RSH.";
+        }
+        leaf finger {
+          type boolean;
+          //default false;
+          description
+            "Configure a system to accept Finger protocol requests.";
+        }
+        leaf service-config {
+          type boolean;
+          description
+            "Enables TFTP load config files.";
         }
         leaf service-tcp-small-servers {
           type boolean;
@@ -212,10 +255,10 @@ module openconfig-system-ext{
           description
             "Enables small User Datagram Protocol (UDP) servers such as the ECHO.";
         }
-        leaf archive-logging {
+        leaf service-pad {
           type boolean;
           description
-            "Enable the config logger.";
+            "Enable PAD commands.";
         }
       }
       container login-security-policy {

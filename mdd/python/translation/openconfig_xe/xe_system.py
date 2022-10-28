@@ -91,13 +91,6 @@ def xe_system_program_service(self) -> None:
         device_cdb.ios__ip.domain.lookup_conf.lookup = False
     elif self.service.oc_sys__system.services.config.ip_domain_lookup is True:
         device_cdb.ios__ip.domain.lookup_conf.lookup = True
-    # service finger
-    if self.service.oc_sys__system.services.config.finger:
-        if not device_cdb.ios__ip.finger.exists():
-            device_cdb.ios__ip.finger.create()
-    elif self.service.oc_sys__system.services.config.finger is False:
-        if device_cdb.ios__ip.finger.exists():
-            device_cdb.ios__ip.finger.delete()
     # ip gratuitous arps
     if self.service.oc_sys__system.services.config.ip_gratuitous_arps:
         device_cdb.ios__ip.gratuitous_arps_conf.gratuitous_arps = True
@@ -109,18 +102,6 @@ def xe_system_program_service(self) -> None:
     elif self.service.oc_sys__system.services.config.service_password_encryption is False:
         if device_cdb.ios__service.password_encryption.exists():
             device_cdb.ios__service.password_encryption.delete()
-    # service-tcp-small-servers
-    if self.service.oc_sys__system.services.config.service_tcp_small_servers:
-        device_cdb.ios__service.tcp_small_servers.create()
-    elif self.service.oc_sys__system.services.config.service_tcp_small_servers is False:
-        if device_cdb.ios__service.tcp_small_servers.exists():
-            device_cdb.ios__service.tcp_small_servers.delete()
-    # service-udp-small-servers
-    if self.service.oc_sys__system.services.config.service_udp_small_servers:
-        device_cdb.ios__service.udp_small_servers.create()
-    elif self.service.oc_sys__system.services.config.service_udp_small_servers is False:
-        if device_cdb.ios__service.udp_small_servers.exists():
-            device_cdb.ios__service.udp_small_servers.delete()
     # login on-success
     if self.service.oc_sys__system.services.login_security_policy.config.on_success:
         device_cdb.ios__login.on_success.log.create()
@@ -146,7 +127,71 @@ def xe_system_program_service(self) -> None:
     elif self.service.oc_sys__system.services.config.archive_logging is False:
         if device_cdb.ios__archive.log.config.logging.enable.exists():
             device_cdb.ios__archive.delete()
-
+    # boot network
+    if self.service.oc_sys__system.services.config.boot_network == "DISABLED":
+        if len(device_cdb.ios__boot.network.list) != 0 or \
+           len(device_cdb.ios__boot.network.list_flash.flash) != 0 or \
+           len(device_cdb.ios__boot.network.remote_url) != 0:
+            device_cdb.ios__boot.network.delete()
+    # IP bootp server
+    if self.service.oc_sys__system.services.config.ip_bootp_server:
+        device_cdb.ios__ip.bootp.server = True
+    elif self.service.oc_sys__system.services.config.ip_bootp_server is False:
+        device_cdb.ios__ip.bootp.server = False
+    # IP DNS server
+    if self.service.oc_sys__system.services.config.ip_dns_server:
+        device_cdb.ios__ip.dns.server.create()
+    elif self.service.oc_sys__system.services.config.ip_dns_server is False:
+        if device_cdb.ios__ip.dns.server.exists():
+            device_cdb.ios__ip.dns.server.delete()
+    # IP identd
+    if self.service.oc_sys__system.services.config.ip_identd:
+        device_cdb.ios__ip.identd.create()
+    elif self.service.oc_sys__system.services.config.ip_identd is False:
+        if device_cdb.ios__ip.identd.exists():
+            device_cdb.ios__ip.identd.delete()
+    # IP rcmd RCP enable
+    if self.service.oc_sys__system.services.config.ip_rcmd_rcp_enable:
+        device_cdb.ios__ip.rcmd.rcp_enable.create()
+    elif self.service.oc_sys__system.services.config.ip_rcmd_rcp_enable is False:
+        if device_cdb.ios__ip.rcmd.rcp_enable.exists():
+            device_cdb.ios__ip.rcmd.rcp_enable.delete()
+    # IP rcmd RSH enable
+    if self.service.oc_sys__system.services.config.ip_rcmd_rsh_enable:
+        device_cdb.ios__ip.rcmd.rsh_enable.create()
+    elif self.service.oc_sys__system.services.config.ip_rcmd_rsh_enable is False:
+        if device_cdb.ios__ip.rcmd.rsh_enable.exists():
+            device_cdb.ios__ip.rcmd.rsh_enable.delete()
+    # service finger
+    if self.service.oc_sys__system.services.config.finger:
+        if not device_cdb.ios__ip.finger.exists():
+            device_cdb.ios__ip.finger.create()
+    elif self.service.oc_sys__system.services.config.finger is False:
+        if device_cdb.ios__ip.finger.exists():
+            device_cdb.ios__ip.finger.delete()
+    # service config
+    if self.service.oc_sys__system.services.config.service_config:
+        device_cdb.ios__service.config.create()
+    elif self.service.oc_sys__system.services.config.service_config is False:
+        if device_cdb.ios__service.config.exists():
+            device_cdb.ios__service.config.delete()
+    # service-tcp-small-servers
+    if self.service.oc_sys__system.services.config.service_tcp_small_servers:
+        device_cdb.ios__service.tcp_small_servers.create()
+    elif self.service.oc_sys__system.services.config.service_tcp_small_servers is False:
+        if device_cdb.ios__service.tcp_small_servers.exists():
+            device_cdb.ios__service.tcp_small_servers.delete()
+    # service-udp-small-servers
+    if self.service.oc_sys__system.services.config.service_udp_small_servers:
+        device_cdb.ios__service.udp_small_servers.create()
+    elif self.service.oc_sys__system.services.config.service_udp_small_servers is False:
+        if device_cdb.ios__service.udp_small_servers.exists():
+            device_cdb.ios__service.udp_small_servers.delete()
+    # service pad
+    if self.service.oc_sys__system.services.config.service_pad:
+        device_cdb.ios__service.conf.pad = True
+    elif self.service.oc_sys__system.services.config.service_pad is False:
+        device_cdb.ios__service.conf.pad = False
     # service http
     if self.service.oc_sys__system.services.http.config.http_enabled:
         device_cdb.ios__ip.http.server = True
