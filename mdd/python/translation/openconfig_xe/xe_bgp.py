@@ -89,14 +89,20 @@ def xe_bgp_global_program_service(self, service_protocol, network_instance_type,
                     if not device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.exists(vrf_name):
                         device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf.create(vrf_name)
                     if afi_safi_service.ipv4_unicast.config.send_default_route:
-                        device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].default_information.originate.create()
+                        device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
+                            vrf_name].default_information.originate.create()
                     elif afi_safi_service.ipv4_unicast.config.send_default_route is False:
-                        if device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].default_information.originate.exists():
-                            device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].default_information.originate.delete()
+                        if device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
+                            vrf_name].default_information.originate.exists():
+                            device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
+                                vrf_name].default_information.originate.delete()
                     if service_bgp_global.default_route_distance.config.external_route_distance and service_bgp_global.default_route_distance.config.internal_route_distance:  # because command needs ex, in, and local
-                        device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].distance.bgp.extern_as = service_bgp_global.default_route_distance.config.external_route_distance
-                        device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].distance.bgp.internal_as = service_bgp_global.default_route_distance.config.internal_route_distance
-                        device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[vrf_name].distance.bgp.local = '200'  # TODO add this to extensions
+                        device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
+                            vrf_name].distance.bgp.extern_as = service_bgp_global.default_route_distance.config.external_route_distance
+                        device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
+                            vrf_name].distance.bgp.internal_as = service_bgp_global.default_route_distance.config.internal_route_distance
+                        device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
+                            vrf_name].distance.bgp.local = '200'  # TODO add this to extensions
                 elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
                     raise NotImplementedError('oc-bgp-types:IPV6_UNICAST has not yet been implemented for XE')
 
@@ -115,24 +121,30 @@ def xe_bgp_redistribution_program_service(self, service_protocol, network_instan
                 if protocol['src-protocol'] == 'oc-pol-types:OSPF' and protocol['address-family'] == 'oc-types:IPV4':
                     if service_protocol.bgp.oc_netinst__global.afi_safis.afi_safi:
                         if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE':  # address-family ipv4 unicast
-                            device_bgp_cbd.address_family.ipv4['unicast'].redistribute.ospf.create(protocol['src-protocol-process-number'])
+                            device_bgp_cbd.address_family.ipv4['unicast'].redistribute.ospf.create(
+                                protocol['src-protocol-process-number'])
                             if protocol['import-policy']:
-                                device_bgp_cbd.address_family.ipv4['unicast'].redistribute.ospf[protocol['src-protocol-process-number']].route_map = protocol[
+                                device_bgp_cbd.address_family.ipv4['unicast'].redistribute.ospf[
+                                    protocol['src-protocol-process-number']].route_map = protocol[
                                     'import-policy']
                         elif network_instance_type == 'oc-ni-types:L3VRF':  # address-family ipv4 unicast vrf
                             device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
                                 vrf_name].redistribute.ospf.create(protocol['src-protocol-process-number'])
                             if protocol['import-policy']:
                                 device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
-                                    vrf_name].redistribute.ospf[protocol['src-protocol-process-number']].route_map = protocol['import-policy']
+                                    vrf_name].redistribute.ospf[protocol['src-protocol-process-number']].route_map = \
+                                protocol['import-policy']
                     else:  # router ospf X
-                        self.log.info(f" \n protocol['src-protocol-process-number'] \n {protocol['src-protocol-process-number']}")
+                        self.log.info(
+                            f" \n protocol['src-protocol-process-number'] \n {protocol['src-protocol-process-number']}")
                         device_bgp_cbd.redistribute.ospf.create(protocol['src-protocol-process-number'])
                         if protocol['import-policy']:
-                            device_bgp_cbd.redistribute.ospf[protocol['src-protocol-process-number']].route_map = protocol['import-policy']
+                            device_bgp_cbd.redistribute.ospf[protocol['src-protocol-process-number']].route_map = \
+                            protocol['import-policy']
                 elif protocol['src-protocol'] == 'oc-pol-types:OSPF3' and protocol['address-family'] == 'oc-types:IPV4':
                     raise NotImplementedError('oc-pol-types:OSPF3 has not yet been implemented for XE')
-                elif protocol['src-protocol'] == 'oc-pol-types:STATIC' and protocol['address-family'] == 'oc-types:IPV4':
+                elif protocol['src-protocol'] == 'oc-pol-types:STATIC' and protocol[
+                    'address-family'] == 'oc-types:IPV4':
                     if service_protocol.bgp.oc_netinst__global.afi_safis.afi_safi:
                         if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE':  # address-family ipv4 unicast
                             device_bgp_cbd.address_family.ipv4['unicast'].redistribute.static.create()
@@ -149,13 +161,14 @@ def xe_bgp_redistribution_program_service(self, service_protocol, network_instan
                         device_bgp_cbd.redistribute.static.create()
                         if protocol['import-policy']:
                             device_bgp_cbd.redistribute.static.route_map = protocol['import-policy']
-                elif protocol['src-protocol'] == 'oc-pol-types:DIRECTLY_CONNECTED' and protocol['address-family'] == 'oc-types:IPV4':
+                elif protocol['src-protocol'] == 'oc-pol-types:DIRECTLY_CONNECTED' and protocol[
+                    'address-family'] == 'oc-types:IPV4':
                     if service_protocol.bgp.oc_netinst__global.afi_safis.afi_safi:
                         if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE':  # address-family ipv4 unicast
                             device_bgp_cbd.address_family.ipv4['unicast'].redistribute.connected.create()
                             if protocol['import-policy']:
                                 device_bgp_cbd.address_family.ipv4['unicast'].redistribute.connected.route_map = \
-                                protocol['import-policy']
+                                    protocol['import-policy']
                         elif network_instance_type == 'oc-ni-types:L3VRF':  # address-family ipv4 unicast vrf
                             device_bgp_cbd.address_family.with_vrf.ipv4['unicast'].vrf[
                                 vrf_name].redistribute.connected.create()
@@ -275,10 +288,24 @@ def transport(neighbor_object_cdb, object_service) -> None:
 
 def activate_neighbor(afi_safi_service, neighbor_object_cdb, service_bgp_neighbor) -> None:
     """
-    Activate neighbor or peer group under address family
+    Activate neighbor under address family
     """
     if afi_safi_service.config.enabled:
         neighbor_object_cdb.activate.create()
+        route_reflector_client_add(neighbor_object_cdb, service_bgp_neighbor)
+    elif afi_safi_service.config.enabled is False:
+        if neighbor_object_cdb.activate.exists():
+            neighbor_object_cdb.activate.delete()
+        route_reflector_client_remove(neighbor_object_cdb)
+
+
+def activate_peer_group(afi_safi_service, neighbor_object_cdb, service_bgp_neighbor, service_dynamic_neighbors) -> None:
+    """
+    Activate peer group under address family
+    """
+    if afi_safi_service.config.enabled:
+        if service_dynamic_neighbors:
+            neighbor_object_cdb.activate.create()
         route_reflector_client_add(neighbor_object_cdb, service_bgp_neighbor)
     elif afi_safi_service.config.enabled is False:
         if neighbor_object_cdb.activate.exists():
@@ -333,9 +360,11 @@ def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_ty
                                 if service_bgp_neighbor.config.send_community and service_bgp_neighbor.config.send_community != 'NONE':
                                     send_community(neighbor_object_cdb, service_bgp_neighbor)
                             elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
-                                raise NotImplementedError('oc-bgp-types:IPV6_UNICAST has not yet been implemented for XE')
+                                raise NotImplementedError(
+                                    'oc-bgp-types:IPV6_UNICAST has not yet been implemented for XE')
                             elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
-                                raise NotImplementedError('oc-bgp-types:L3VPN_IPV6_UNICAST has not yet been implemented for XE')
+                                raise NotImplementedError(
+                                    'oc-bgp-types:L3VPN_IPV6_UNICAST has not yet been implemented for XE')
                         elif network_instance_type == 'oc-ni-types:L3VRF':
                             if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST' or \
                                     afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
@@ -408,6 +437,13 @@ def xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor) -> None:
         transport(neighbor, service_bgp_neighbor)
 
 
+def get_peer_groups_with_dynamic_neighbors(service_protocol) -> list:
+    peer_groups = []
+    for peer in service_protocol.bgp.oc_netinst__global.dynamic_neighbor_prefixes.dynamic_neighbor_prefix:
+        peer_groups.append(peer.config.peer_group)
+    return peer_groups
+
+
 def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_type, vrf_name) -> None:
     """
     Program service for xe NED features
@@ -431,7 +467,12 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
     self.log.info(f'{self.device_name} BGP peer-groups')
     asn = service_protocol.bgp.oc_netinst__global.config.oc_netinst__as
     if asn:
+        peer_groups_with_dynamic_neighbors = get_peer_groups_with_dynamic_neighbors(service_protocol)
         for service_bgp_peergroup in service_protocol.bgp.peer_groups.peer_group:
+            if service_bgp_peergroup.peer_group_name in peer_groups_with_dynamic_neighbors:
+                service_dynamic_neighbors = True
+            else:
+                service_dynamic_neighbors = False
             flag_configure_global_peer_group = True
             if len(service_bgp_peergroup.afi_safis.afi_safi) > 0:
                 device_bgp_cbd = self.root.devices.device[self.device_name].config.ios__router.bgp[asn]
@@ -445,7 +486,8 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                                     service_bgp_peergroup.peer_group_name)
                             neighbor_object_cdb = device_bgp_cbd.address_family.ipv4['unicast'].neighbor_tag.neighbor[
                                 service_bgp_peergroup.peer_group_name]
-                            activate_neighbor(afi_safi_service, neighbor_object_cdb, service_bgp_peergroup)
+                            activate_peer_group(afi_safi_service, neighbor_object_cdb, service_bgp_peergroup,
+                                                service_dynamic_neighbors)
                             apply_policy(neighbor_object_cdb, afi_safi_service)
                             if service_bgp_peergroup.config.send_community and service_bgp_peergroup.config.send_community != 'NONE':
                                 send_community(neighbor_object_cdb, service_bgp_peergroup)
@@ -457,14 +499,16 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                                     service_bgp_peergroup.peer_group_name)
                             neighbor_object_cdb = device_bgp_cbd.address_family.vpnv4['unicast'].neighbor_tag.neighbor[
                                 service_bgp_peergroup.peer_group_name]
-                            activate_neighbor(afi_safi_service, neighbor_object_cdb, service_bgp_peergroup)
+                            activate_peer_group(afi_safi_service, neighbor_object_cdb, service_bgp_peergroup,
+                                                service_dynamic_neighbors)
                             apply_policy(neighbor_object_cdb, afi_safi_service)
                             if service_bgp_peergroup.config.send_community and service_bgp_peergroup.config.send_community != 'NONE':
                                 send_community(neighbor_object_cdb, service_bgp_peergroup)
                         elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
                             raise NotImplementedError('oc-bgp-types:IPV6_UNICAST has not yet been implemented for XE')
                         elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
-                            raise NotImplementedError('oc-bgp-types:L3VPN_IPV6_UNICAST has not yet been implemented for XE')
+                            raise NotImplementedError(
+                                'oc-bgp-types:L3VPN_IPV6_UNICAST has not yet been implemented for XE')
                     elif network_instance_type == 'oc-ni-types:L3VRF':
                         if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST' or \
                                 afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
@@ -483,7 +527,8 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                                 service_bgp_peergroup.peer_group_name]
                             if not neighbor_object_cdb.peer_group.exists():
                                 neighbor_object_cdb.peer_group.create()
-                            activate_neighbor(afi_safi_service, neighbor_object_cdb, service_bgp_peergroup)
+                            activate_peer_group(afi_safi_service, neighbor_object_cdb, service_bgp_peergroup,
+                                                service_dynamic_neighbors)
                             xe_bgp_configure_peer_group(service_bgp_peergroup, neighbor_object_cdb)
                             apply_policy(neighbor_object_cdb, afi_safi_service)
                             if service_bgp_peergroup.config.send_community and service_bgp_peergroup.config.send_community != 'NONE':
