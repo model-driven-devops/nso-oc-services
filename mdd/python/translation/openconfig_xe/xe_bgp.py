@@ -222,12 +222,20 @@ def ebgp_multihop(neighbor_object_cdb, object_service) -> None:
         neighbor_object_cdb.ebgp_multihop.max_hop = object_service.ebgp_multihop.config.multihop_ttl
 
 
-def route_reflector_client(neighbor_object_cdb, object_service) -> None:
+def route_reflector_client_add(neighbor_object_cdb, object_service) -> None:
     """
     Configure route_reflector client
     """
     if object_service.route_reflector.config.route_reflector_client:
         neighbor_object_cdb.route_reflector_client.create()
+
+
+def route_reflector_client_remove(neighbor_object_cdb) -> None:
+    """
+    Remove route_reflector client
+    """
+    if neighbor_object_cdb.route_reflector_client.exists():
+        neighbor_object_cdb.route_reflector_client.delete()
 
 
 def route_reflector_cluster_id(neighbor_object_cdb, object_service) -> None:
@@ -265,6 +273,19 @@ def transport(neighbor_object_cdb, object_service) -> None:
         neighbor_object_cdb.update_source[interface_type] = interface_number
 
 
+def activate_neighbor(afi_safi_service, neighbor_object_cdb, service_bgp_neighbor) -> None:
+    """
+    Activate neighbor or peer group under address family
+    """
+    if afi_safi_service.config.enabled:
+        neighbor_object_cdb.activate.create()
+        route_reflector_client_add(neighbor_object_cdb, service_bgp_neighbor)
+    elif afi_safi_service.config.enabled is False:
+        if not neighbor_object_cdb.activate.exists():
+            neighbor_object_cdb.activate.delete()
+        route_reflector_client_remove(neighbor_object_cdb)
+
+
 def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_type, vrf_name) -> None:
     """
     Program service for xe NED features
@@ -288,7 +309,7 @@ def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_ty
                 if len(service_bgp_neighbor.afi_safis.afi_safi) > 0:
                     device_bgp_cbd = self.root.devices.device[self.device_name].config.ios__router.bgp[asn]
                     for afi_safi_service in service_bgp_neighbor.afi_safis.afi_safi:
-                        if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE' and afi_safi_service.config.enabled:
+                        if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE':
                             if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
                                 if not device_bgp_cbd.address_family.ipv4['unicast'].neighbor.exists(
                                         service_bgp_neighbor.neighbor_address):
@@ -296,10 +317,8 @@ def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_ty
                                         service_bgp_neighbor.neighbor_address)
                                 neighbor_object_cdb = device_bgp_cbd.address_family.ipv4['unicast'].neighbor[
                                     service_bgp_neighbor.neighbor_address]
-                                if not neighbor_object_cdb.activate.exists():
-                                    neighbor_object_cdb.activate.create()
+                                activate_neighbor(afi_safi_service, neighbor_object_cdb, service_bgp_neighbor)
                                 apply_policy(neighbor_object_cdb, afi_safi_service)
-                                route_reflector_client(neighbor_object_cdb, service_bgp_neighbor)
                                 if service_bgp_neighbor.config.send_community and service_bgp_neighbor.config.send_community != 'NONE':
                                     send_community(neighbor_object_cdb, service_bgp_neighbor)
                             elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV4_UNICAST':
@@ -309,17 +328,15 @@ def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_ty
                                         service_bgp_neighbor.neighbor_address)
                                 neighbor_object_cdb = device_bgp_cbd.address_family.vpnv4['unicast'].neighbor[
                                     service_bgp_neighbor.neighbor_address]
-                                if not neighbor_object_cdb.activate.exists():
-                                    neighbor_object_cdb.activate.create()
+                                activate_neighbor(afi_safi_service, neighbor_object_cdb, service_bgp_neighbor)
                                 apply_policy(neighbor_object_cdb, afi_safi_service)
-                                route_reflector_client(neighbor_object_cdb, service_bgp_neighbor)
                                 if service_bgp_neighbor.config.send_community and service_bgp_neighbor.config.send_community != 'NONE':
                                     send_community(neighbor_object_cdb, service_bgp_neighbor)
                             elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
                                 raise NotImplementedError('oc-bgp-types:IPV6_UNICAST has not yet been implemented for XE')
                             elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
                                 raise NotImplementedError('oc-bgp-types:L3VPN_IPV6_UNICAST has not yet been implemented for XE')
-                        elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi_service.config.enabled:
+                        elif network_instance_type == 'oc-ni-types:L3VRF':
                             if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST' or \
                                     afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
                                 if not device_bgp_cbd.address_family.with_vrf.ipv4.exists('unicast'):
@@ -335,10 +352,8 @@ def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_ty
                                 xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor_object_cdb)
                                 if service_bgp_neighbor.config.send_community and service_bgp_neighbor.config.send_community != 'NONE':
                                     send_community(neighbor_object_cdb, service_bgp_neighbor)
-                                if not neighbor_object_cdb.activate.exists():
-                                    neighbor_object_cdb.activate.create()
+                                activate_neighbor(afi_safi_service, neighbor_object_cdb, service_bgp_neighbor)
                                 apply_policy(neighbor_object_cdb, afi_safi_service)
-                                route_reflector_client(neighbor_object_cdb, service_bgp_neighbor)
                                 if service_bgp_neighbor.as_path_options.config.replace_peer_as:
                                     neighbor_object_cdb.as_override.create()
                                 if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
@@ -346,7 +361,7 @@ def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_ty
                 else:  # standard BGP Neighbor community configuration
                     if service_bgp_neighbor.config.send_community and service_bgp_neighbor.config.send_community != 'NONE':
                         send_community(neighbor, service_bgp_neighbor)
-                    route_reflector_client(neighbor, service_bgp_neighbor)
+                    route_reflector_client_add(neighbor, service_bgp_neighbor)
 
 
 def xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor) -> None:
@@ -421,7 +436,7 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
             if len(service_bgp_peergroup.afi_safis.afi_safi) > 0:
                 device_bgp_cbd = self.root.devices.device[self.device_name].config.ios__router.bgp[asn]
                 for afi_safi_service in service_bgp_peergroup.afi_safis.afi_safi:
-                    if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE' and afi_safi_service.config.enabled:
+                    if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE':
                         if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
                             configure_global_peer_group()
                             if not device_bgp_cbd.address_family.ipv4['unicast'].neighbor_tag.neighbor.exists(
@@ -430,8 +445,8 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                                     service_bgp_peergroup.peer_group_name)
                             neighbor_object_cdb = device_bgp_cbd.address_family.ipv4['unicast'].neighbor_tag.neighbor[
                                 service_bgp_peergroup.peer_group_name]
+                            activate_neighbor(afi_safi_service, neighbor_object_cdb, service_bgp_peergroup)
                             apply_policy(neighbor_object_cdb, afi_safi_service)
-                            route_reflector_client(neighbor_object_cdb, service_bgp_peergroup)
                             if service_bgp_peergroup.config.send_community and service_bgp_peergroup.config.send_community != 'NONE':
                                 send_community(neighbor_object_cdb, service_bgp_peergroup)
                         elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV4_UNICAST':
@@ -442,15 +457,15 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                                     service_bgp_peergroup.peer_group_name)
                             neighbor_object_cdb = device_bgp_cbd.address_family.vpnv4['unicast'].neighbor_tag.neighbor[
                                 service_bgp_peergroup.peer_group_name]
+                            activate_neighbor(afi_safi_service, neighbor_object_cdb, service_bgp_peergroup)
                             apply_policy(neighbor_object_cdb, afi_safi_service)
-                            route_reflector_client(neighbor_object_cdb, service_bgp_peergroup)
                             if service_bgp_peergroup.config.send_community and service_bgp_peergroup.config.send_community != 'NONE':
                                 send_community(neighbor_object_cdb, service_bgp_peergroup)
                         elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV6_UNICAST':  # TODO
                             raise NotImplementedError('oc-bgp-types:IPV6_UNICAST has not yet been implemented for XE')
                         elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV6_UNICAST':  # TODO
                             raise NotImplementedError('oc-bgp-types:L3VPN_IPV6_UNICAST has not yet been implemented for XE')
-                    elif network_instance_type == 'oc-ni-types:L3VRF' and afi_safi_service.config.enabled:
+                    elif network_instance_type == 'oc-ni-types:L3VRF':
                         if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST' or \
                                 afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
                             flag_configure_global_peer_group = False  # PEER GROUPS can not be used in multiple VRFs
@@ -468,9 +483,9 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                                 service_bgp_peergroup.peer_group_name]
                             if not neighbor_object_cdb.peer_group.exists():
                                 neighbor_object_cdb.peer_group.create()
+                            activate_neighbor(afi_safi_service, neighbor_object_cdb, service_bgp_peergroup)
                             xe_bgp_configure_peer_group(service_bgp_peergroup, neighbor_object_cdb)
                             apply_policy(neighbor_object_cdb, afi_safi_service)
-                            route_reflector_client(neighbor_object_cdb, service_bgp_peergroup)
                             if service_bgp_peergroup.config.send_community and service_bgp_peergroup.config.send_community != 'NONE':
                                 send_community(neighbor_object_cdb, service_bgp_peergroup)
                             if service_bgp_peergroup.as_path_options.config.replace_peer_as:
@@ -480,8 +495,7 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
             else:
                 if service_bgp_peergroup.peer_group_name:
                     if not self.root.devices.device[self.device_name].config.ios__router.bgp[
-                        asn].neighbor_tag.neighbor.exists(
-                        service_bgp_peergroup.peer_group_name):
+                        asn].neighbor_tag.neighbor.exists(service_bgp_peergroup.peer_group_name):
                         self.root.devices.device[self.device_name].config.ios__router.bgp[
                             asn].neighbor_tag.neighbor.create(
                             service_bgp_peergroup.peer_group_name)
@@ -493,7 +507,7 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                         peer_group.peer_group.create()
                     if service_bgp_peergroup.config.send_community and service_bgp_peergroup.config.send_community != 'NONE':
                         send_community(peer_group, service_bgp_peergroup)
-                    route_reflector_client(peer_group, service_bgp_peergroup)
+                    route_reflector_client_add(peer_group, service_bgp_peergroup)
             if flag_configure_global_peer_group:  # Flag will be False if peer group used in a VRF
                 configure_global_peer_group()
 
