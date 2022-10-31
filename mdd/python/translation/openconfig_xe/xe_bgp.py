@@ -281,7 +281,7 @@ def activate_neighbor(afi_safi_service, neighbor_object_cdb, service_bgp_neighbo
         neighbor_object_cdb.activate.create()
         route_reflector_client_add(neighbor_object_cdb, service_bgp_neighbor)
     elif afi_safi_service.config.enabled is False:
-        if not neighbor_object_cdb.activate.exists():
+        if neighbor_object_cdb.activate.exists():
             neighbor_object_cdb.activate.delete()
         route_reflector_client_remove(neighbor_object_cdb)
 
