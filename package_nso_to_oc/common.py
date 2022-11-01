@@ -107,7 +107,7 @@ def print_and_test_configs(device_name, config_before_dict, config_leftover_dict
         with open(f"{output_data_dir}{nso_device}_{oc_name}_notes.txt", "w") as o:
             # We run it through a map, just in case an element in our list of notes contain non-string type.
             # Otherwise, we risk an error when joining.
-            o.write("\n".join(map(lambda note: str(note), translation_notes)))
+            o.write("\n\n".join(map(lambda note: str(note), translation_notes)))
 
     if test == "True":
         test_nso_program_oc(nso_host, nso_username, nso_password, nso_device, oc)
