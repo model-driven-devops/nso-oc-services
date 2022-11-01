@@ -19,6 +19,8 @@ import sys
 from pathlib import Path
 from importlib.util import find_spec
 
+system_notes = []
+
 openconfig_system = {
     "openconfig-system:system": {
         "openconfig-system:aaa": {},
@@ -364,7 +366,7 @@ def xe_system_ntp(config_before: dict, config_leftover: dict, if_ip: dict) -> No
                     openconfig_system_ntp_server_list, "PEER", vrf["name"], if_ip)
 
 
-def main(before: dict, leftover: dict, if_ip: dict) -> dict:
+def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []) -> dict:
     """
     Translates NSO Device configurations to MDD OpenConfig configurations.
 
@@ -384,6 +386,7 @@ def main(before: dict, leftover: dict, if_ip: dict) -> dict:
     xe_system_services(before, leftover)
     xe_system_ssh_server(before, leftover)
     xe_system_ntp(before, leftover, if_ip)
+    translation_notes += system_notes
 
     return openconfig_system
 
@@ -403,7 +406,8 @@ if __name__ == "__main__":
     config_name = "configuration"
     config_remaining_name = "configuration_remaining"
     oc_name = "openconfig_system"
-    common.print_and_test_configs("xe1", config_before_dict, config_leftover_dict, openconfig_system, config_name, config_remaining_name, oc_name)
+    common.print_and_test_configs("xe1", config_before_dict, config_leftover_dict, openconfig_system, 
+        config_name, config_remaining_name, oc_name, system_notes)
 else:
     # This is needed for now due to top level __init__.py. We need to determine if contents in __init__.py is still necessary.
     if (find_spec("package_nso_to_oc") is not None):
