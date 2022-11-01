@@ -20,6 +20,8 @@ from pathlib import Path
 from importlib.util import find_spec
 import ipaddress
 
+interfaces_notes = []
+
 openconfig_interfaces = {
     "openconfig-interfaces:interfaces": {
         "openconfig-interfaces:interface": [
@@ -803,7 +805,7 @@ def xe_interfaces(config_before: dict, config_leftover: dict, interfaces: dict) 
             configure_software_vasi(config_before, config_leftover, interfaces[interface_type])
 
 
-def main(before: dict, leftover: dict) -> dict:
+def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
     """
     Translates NSO Device configurations to MDD OpenConfig configurations.
 
@@ -821,6 +823,7 @@ def main(before: dict, leftover: dict) -> dict:
 
     interfaces = create_interface_dict(before)
     xe_interfaces(before, leftover, interfaces)
+    translation_notes += interfaces_notes
 
     return openconfig_interfaces
 
@@ -842,7 +845,7 @@ if __name__ == "__main__":
     oc_name = "openconfig_interfaces"
     common.print_and_test_configs(
         "xe1", config_before_dict, config_leftover_dict, openconfig_interfaces, 
-        config_name, config_remaining_name, oc_name)
+        config_name, config_remaining_name, oc_name, interfaces_notes)
 else:
     # This is needed for now due to top level __init__.py. We need to determine if contents in __init__.py is still necessary.
     if (find_spec("package_nso_to_oc") is not None):

@@ -88,7 +88,8 @@ def test_nso_program_oc(host: str, username: str, password: str, device: str, oc
         else:
             raise Exception(f"Error in input payload reported by NSO")
 
-def print_and_test_configs(device_name, config_before_dict, config_leftover_dict, oc, config_name, config_remaining_name, oc_name):
+def print_and_test_configs(device_name, config_before_dict, config_leftover_dict, oc, config_name, 
+    config_remaining_name, oc_name, translation_notes = []):
     (nso_host, nso_username, nso_password) = get_nso_creds()
     nso_device = os.environ.get("NSO_DEVICE", device_name)
     test = os.environ.get("TEST", "False")
@@ -100,6 +101,13 @@ def print_and_test_configs(device_name, config_before_dict, config_leftover_dict
         a.write(json.dumps(config_leftover_dict, indent=4))
     with open(f"{output_data_dir}{nso_device}_{oc_name}.json", "w") as o:
         o.write(json.dumps(oc, indent=4))
+
+    if len(translation_notes) > 0:
+        # Only print to file, if actual notes exist.
+        with open(f"{output_data_dir}{nso_device}_{oc_name}_notes.txt", "w") as o:
+            # We run it through a map, just in case an element in our list of notes contain non-string type.
+            # Otherwise, we risk an error when joining.
+            o.write("\n".join(map(lambda note: str(note), translation_notes)))
 
     if test == "True":
         test_nso_program_oc(nso_host, nso_username, nso_password, nso_device, oc)

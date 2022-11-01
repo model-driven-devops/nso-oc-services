@@ -30,16 +30,19 @@ nso_device = os.environ.get("NSO_DEVICE", "xe1")
 device_os = os.environ.get("DEVICE_OS", common.XE)
 test = os.environ.get("TEST", "False")
 
+# Append any pertinent notes here. This will be printed out in output_data directory
+translation_notes = []
 config_before_dict = common.nso_get_device_config(nso_host, nso_username, nso_password, nso_device)
 configs_leftover = copy.deepcopy(config_before_dict)
 oc = {"mdd:openconfig": {}}
 
 if device_os == common.XE:
-    main_xe.build_xe_to_oc(config_before_dict, configs_leftover, oc)
+    main_xe.build_xe_to_oc(config_before_dict, configs_leftover, oc, translation_notes)
 elif device_os == common.XR:
-    main_xr.build_xr_to_oc(config_before_dict, configs_leftover, oc)
+    main_xr.build_xr_to_oc(config_before_dict, configs_leftover, oc, translation_notes)
 
 config_name = "full_ned_configuration"
 config_remaining_name = "full_ned_configuration_remaining"
 oc_name = "full_openconfig"
-common.print_and_test_configs(nso_device, config_before_dict, configs_leftover, oc, config_name, config_remaining_name, oc_name)
+common.print_and_test_configs(nso_device, config_before_dict, configs_leftover, oc, config_name, 
+    config_remaining_name, oc_name, translation_notes)

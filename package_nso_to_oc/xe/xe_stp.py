@@ -20,6 +20,8 @@ import sys
 from pathlib import Path
 from importlib.util import find_spec
 
+stp_notes = []
+
 openconfig_spanning_tree = {
     "openconfig-spanning-tree:stp": {
         "openconfig-spanning-tree:global": {
@@ -489,7 +491,7 @@ def xe_spanning_tree(config_before: dict, config_leftover: dict) -> dict:
     xe_spanning_tree_interfaces(config_before, config_leftover)
 
 
-def main(before: dict, leftover: dict) -> dict:
+def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
     """
     Translates NSO Device configurations to MDD OpenConfig configurations.
 
@@ -506,6 +508,7 @@ def main(before: dict, leftover: dict) -> dict:
     """
 
     xe_spanning_tree(before, leftover)
+    translation_notes += stp_notes
 
     return openconfig_spanning_tree
 
@@ -528,7 +531,7 @@ if __name__ == "__main__":
     oc_name = "openconfig_spanning_tree"
     common.print_and_test_configs(
         "xeswitch1", config_before_dict, config_leftover_dict, openconfig_spanning_tree,
-        config_name, config_remaining_name, oc_name)
+        config_name, config_remaining_name, oc_name, stp_notes)
 else:
     # This is needed for now due to top level __init__.py. We need to determine if contents in __init__.py is still necessary.
     if (find_spec("package_nso_to_oc") is not None):

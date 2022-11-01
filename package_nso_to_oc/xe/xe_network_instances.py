@@ -21,6 +21,8 @@ from pathlib import Path
 from importlib.util import find_spec
 import copy
 
+network_instances_notes = []
+
 openconfig_network_instances = {
     "openconfig-network-instance:network-instances": {
         "openconfig-network-instance:network-instance": [
@@ -120,7 +122,7 @@ def configure_network_interfaces(net_inst, interfaces_by_vrf):
             }
         })
 
-def main(before: dict, leftover: dict) -> dict:
+def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
     """
     Translates NSO Device configurations to MDD OpenConfig configurations.
 
@@ -137,6 +139,7 @@ def main(before: dict, leftover: dict) -> dict:
     """
 
     xe_network_instances(before, leftover)
+    translation_notes += network_instances_notes
 
     return openconfig_network_instances
 
@@ -160,7 +163,7 @@ if __name__ == "__main__":
     oc_name = "openconfig_network_instances"
     common.print_and_test_configs(
         "xe1", config_before_dict, config_leftover_dict, openconfig_network_instances, 
-        config_name, config_remaining_name, oc_name)
+        config_name, config_remaining_name, oc_name, network_instances_notes)
 else:
     # This is needed for now due to top level __init__.py. We need to determine if contents in __init__.py is still necessary.
     if (find_spec("package_nso_to_oc") is not None):
