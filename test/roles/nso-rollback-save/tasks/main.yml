@@ -6,6 +6,8 @@
       delegate_to: localhost
 - include_role:
     name: ciscops.mdd.nso
+- include_role:
+    name: ciscops.mdd.nso
     tasks_from: get_rollbacks
 - set_fact:
     file_content:
