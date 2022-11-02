@@ -34,8 +34,9 @@ def xe_acls_program_service(self) -> None:
     device = self.root.devices.device[self.device_name].config
     for service_acl in self.service.oc_acl__acl.acl_sets.acl_set:
         if service_acl.type == 'oc-acl:ACL_IPV4':
-            if not device.ios__ip.access_list.extended.ext_named_acl.exists(service_acl.name):
-                device.ios__ip.access_list.extended.ext_named_acl.create(service_acl.name)
+            if device.ios__ip.access_list.extended.ext_named_acl.exists(service_acl.name):
+                del device.ios__ip.access_list.extended.ext_named_acl[service_acl.name]
+            device.ios__ip.access_list.extended.ext_named_acl.create(service_acl.name)
 
             acl = device.ios__ip.access_list.extended.ext_named_acl[service_acl.name]
             rules_oc_config = list()  # {'10 permit tcp any 1.1.1.1 0.0.0.0 eq 80'}
@@ -100,8 +101,9 @@ def xe_acls_program_service(self) -> None:
                 acl.ext_access_list_rule.create(i)
 
         if service_acl.type == 'oc-acl-ext:ACL_IPV4_STANDARD':
-            if not device.ios__ip.access_list.standard.std_named_acl.exists(service_acl.name):
-                device.ios__ip.access_list.standard.std_named_acl.create(service_acl.name)
+            if device.ios__ip.access_list.standard.std_named_acl.exists(service_acl.name):
+                del device.ios__ip.access_list.standard.std_named_acl[service_acl.name]
+            device.ios__ip.access_list.standard.std_named_acl.create(service_acl.name)
             acl = device.ios__ip.access_list.standard.std_named_acl[service_acl.name]
             rules_oc_config = list()  # {'10 permit any'}
             for i in service_acl.acl_entries.acl_entry:
