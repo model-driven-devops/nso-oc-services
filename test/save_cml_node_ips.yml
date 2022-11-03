@@ -9,20 +9,25 @@
         password: "{{ cml_password }}"
         lab: "{{ cml_lab }}"
       register: result
-    - debug:
-        msg: "NSO IP = {{ result.cml_facts.nodes.nso1.ansible_host }}"
+    - copy:
+        content: "NSO_URL=http://{{ result.cml_facts.nodes.nso1.ansible_host }}:8080"
+        dest: "../nso_url.txt"
     - copy:
         content: "NSO_HOST={{ result.cml_facts.nodes.nso1.ansible_host }}"
         dest: "../nso_host.txt"
     - copy:
         content: "NX1_HOST={{ result.cml_facts.nodes.nx1.ansible_host }}"
         dest: "../nx1_host.txt"
+      when: result.cml_facts.nodes.nx1.ansible_host is defined
     - copy:
         content: "XE1_HOST={{ result.cml_facts.nodes.xe1.ansible_host }}"
         dest: "../xe1_host.txt"
+      when: result.cml_facts.nodes.xe1.ansible_host is defined
     - copy:
         content: "XESWITCH1_HOST={{ result.cml_facts.nodes.xeswitch1.ansible_host }}"
         dest: "../xeswitch1_host.txt"
+      when: result.cml_facts.nodes.xeswitch1.ansible_host is defined
     - copy:
         content: "XR1_HOST={{ result.cml_facts.nodes.xr1.ansible_host }}"
         dest: "../xr1_host.txt"
+      when: result.cml_facts.nodes.xr1.ansible_host is defined
