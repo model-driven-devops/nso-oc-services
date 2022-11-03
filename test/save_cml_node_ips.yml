@@ -9,6 +9,8 @@
         password: "{{ cml_password }}"
         lab: "{{ cml_lab }}"
       register: result
+    - debug:
+        msg: "NSO IP = {{ result.cml_facts.nodes.nso1.ansible_host }}"
     - copy:
         content: "NSO_HOST={{ result.cml_facts.nodes.nso1.ansible_host }}"
         dest: "../nso_host.txt"
