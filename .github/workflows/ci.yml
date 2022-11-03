@@ -707,15 +707,6 @@ jobs:
       - name: Write contents of nso IP file to envars
         run: |
           cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
-      - name: Write contents of xe1 IP file to envars
-        run: |
-          cat ${{ github.workspace }}/xe1_host.txt >> $GITHUB_ENV
-      - name: Write contents of xeswitch1 IP file to envars
-        run: |
-          cat ${{ github.workspace }}/xeswitch1_host.txt >> $GITHUB_ENV
-      - name: Write contents of xr1 IP file to envars
-        run: |
-          cat ${{ github.workspace }}/xr1_host.txt >> $GITHUB_ENV
       - name: Write contents of nx1 IP file to envars
         run: |
           cat ${{ github.workspace }}/nx1_host.txt >> $GITHUB_ENV
