@@ -41,7 +41,7 @@ jobs:
           CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
       - name: Build CML
-        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=${{ github.workspace }}/test/arch/test_lab.yaml
+        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=${{ github.workspace }}/test/arch/test_lab_xe.yaml
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
@@ -311,7 +311,7 @@ jobs:
           CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
       - name: Build CML
-        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=${{ github.workspace }}/test/arch/test_lab.yaml
+        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=${{ github.workspace }}/test/arch/test_lab_xr.yaml
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
@@ -573,7 +573,7 @@ jobs:
           CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible.cfg
       - name: Build CML
-        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=${{ github.workspace }}/test/arch/test_lab.yaml
+        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=${{ github.workspace }}/test/arch/test_lab_nx.yaml
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
