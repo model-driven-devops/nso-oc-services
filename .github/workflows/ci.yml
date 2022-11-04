@@ -230,7 +230,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ github.ref_name }}
+          CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
@@ -240,7 +240,7 @@ jobs:
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
-          CML_LAB: ${{ github.ref_name }}
+          CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
