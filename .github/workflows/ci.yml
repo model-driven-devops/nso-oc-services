@@ -245,6 +245,9 @@ jobs:
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+      - name: Write contents of nso URL file to envars
+        run: |
+          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
       - name: Write contents of nso IP file to envars
         run: |
           cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
@@ -514,6 +517,9 @@ jobs:
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+      - name: Write contents of nso URL file to envars
+        run: |
+          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
       - name: Write contents of nso IP file to envars
         run: |
           cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
@@ -716,7 +722,7 @@ jobs:
       - name: Write contents of nx1 IP file to envars
         run: |
           cat ${{ github.workspace }}/nx1_host.txt >> $GITHUB_ENV
-      - name: Run NSO Services XR Tests
+      - name: Run NSO Services NX Tests
         run: |
           cd ./test/tests/nx
           FILES=$(ls ./*.yml)
@@ -776,10 +782,13 @@ jobs:
 #          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
 #          CML_VERIFY_CERT: "false"
 #          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+#      - name: Write contents of nso URL file to envars
+#        run: |
+#          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
 #      - name: Write contents of nso IP file to envars
 #        run: |
 #          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
-#      - name: Write contents of xr1 IP file to envars
+#      - name: Write contents of nx1 IP file to envars
 #        run: |
 #          cat ${{ github.workspace }}/nx1_host.txt >> $GITHUB_ENV
 #      - name: Run NSO Device NED configuration to Openconfig configuration Tests
