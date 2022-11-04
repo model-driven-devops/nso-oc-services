@@ -445,6 +445,9 @@ jobs:
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+      - name: Write contents of nso URL file to envars
+        run: |
+          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
       - name: Write contents of nso IP file to envars
         run: |
           cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
@@ -704,6 +707,9 @@ jobs:
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+      - name: Write contents of nso URL file to envars
+        run: |
+          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
       - name: Write contents of nso IP file to envars
         run: |
           cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
