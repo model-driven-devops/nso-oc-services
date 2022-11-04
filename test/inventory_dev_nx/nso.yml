@@ -1,0 +1,23 @@
+all:
+  children:
+    nso_hosts:
+      vars:
+        admin_user: "{{ lookup('env', 'NSO_USERNAME') | default('ubuntu', True) }}"
+        admin_password: "{{ lookup('env', 'NSO_PASSWORD') | default('admin', True) }}"
+        ansible_user: "{{ admin_user }}"
+        ansible_password: "{{ admin_password }}"
+      hosts:
+        nso:
+          ansible_host: "{{ lookup('env', 'NSO_HOST') | default('') }}"
+          ansible_user: "{{ lookup('env', 'NSO_USERNAME') | default('ubuntu', True) }}"
+          ansible_password: "{{ lookup('env', 'NSO_PASSWORD') | default('admin', True) }}"
+          ansible_python_interpreter: auto_silent
+    nso_devices:
+      vars:
+        admin_user: "{{ lookup('env', 'NSO_DEVICES_USERNAME') | default('admin', True) }}"
+        admin_password: "{{ lookup('env', 'NSO_DEVICES_PASSWORD') | default('admin', True) }}"
+        ansible_user: "{{ admin_user }}"
+        ansible_password: "{{ admin_password }}"
+      hosts:
+        nx1:
+          ansible_host: "{{ lookup('env', 'NX1_HOST') | default('') }}"

@@ -1,0 +1,13 @@
+all:
+  vars:
+    ansible_user: "{{ lookup('env', 'NSO_DEVICES_USERNAME') | default('admin', true) }}"
+    ansible_password: "{{ lookup('env', 'NSO_DEVICES_PASSWORD') | default('admin', true) }}"
+  children:
+    network:
+      children:
+        switches:
+          hosts:
+            xeswitch1:
+        routers:
+          hosts:
+            xe1:
