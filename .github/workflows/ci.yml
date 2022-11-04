@@ -281,6 +281,9 @@ jobs:
     runs-on: self-hosted
     if: github.event.review.state == 'approved'
     steps:
+      - name: Sleep 10 seconds to stagger downloads
+        run: sleep 10
+        shell: bash
       - run: echo "The name of your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -549,6 +552,9 @@ jobs:
     runs-on: self-hosted
     if: github.event.review.state == 'approved'
     steps:
+      - name: Sleep 20 seconds to stagger downloads
+        run: sleep 20
+        shell: bash
       - run: echo "The name of your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v2
