@@ -203,10 +203,46 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-  test-xe-oc:
+  remove-mdd-logic-xe:
     runs-on: self-hosted
     if: github.event.review.state == 'approved'
     needs: test-oc-xe
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: echo "The workflow is now ready to test your code on the runner."
+      - name: update ubuntu
+        run: sudo apt-get update
+      - name: install sshpass
+        run: sudo apt-get install sshpass -y
+      - name: install git
+        run: sudo apt-get install git -y
+      - name: clone mdd
+        run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Install PIP requirements
+        run: pip install -r ./mdd_repo/requirements.txt
+      - name: Install PIP virl2_client
+        run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
+      - name: Install Collections
+        run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: NSO MDD remove logic for NSO to OC testing
+        run: ansible-playbook ./test/remove_mdd_logic.yml
+        env:
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ github.ref_name }}_XE
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
+          NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
+          NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
+          NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
+          NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+  test-xe-oc:
+    runs-on: self-hosted
+    if: github.event.review.state == 'approved'
+    needs: remove-mdd-logic-xe
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -478,10 +514,46 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-  test-xr-oc:
+  remove-mdd-logic-xr:
     runs-on: self-hosted
     if: github.event.review.state == 'approved'
     needs: test-oc-xr
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: echo "The workflow is now ready to test your code on the runner."
+      - name: update ubuntu
+        run: sudo apt-get update
+      - name: install sshpass
+        run: sudo apt-get install sshpass -y
+      - name: install git
+        run: sudo apt-get install git -y
+      - name: clone mdd
+        run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Install PIP requirements
+        run: pip install -r ./mdd_repo/requirements.txt
+      - name: Install PIP virl2_client
+        run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
+      - name: Install Collections
+        run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: NSO MDD remove logic for NSO to OC testing
+        run: ansible-playbook ./test/remove_mdd_logic.yml
+        env:
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ github.ref_name }}_XR
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
+          NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
+          NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
+          NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
+          NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+  test-xr-oc:
+    runs-on: self-hosted
+    if: github.event.review.state == 'approved'
+    needs: remove-mdd-logic-xr
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -746,10 +818,46 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
+  remove-mdd-logic-nx:
+    runs-on: self-hosted
+    if: github.event.review.state == 'approved'
+    needs: test-oc-nx
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: echo "The workflow is now ready to test your code on the runner."
+      - name: update ubuntu
+        run: sudo apt-get update
+      - name: install sshpass
+        run: sudo apt-get install sshpass -y
+      - name: install git
+        run: sudo apt-get install git -y
+      - name: clone mdd
+        run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Install PIP requirements
+        run: pip install -r ./mdd_repo/requirements.txt
+      - name: Install PIP virl2_client
+        run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
+      - name: Install Collections
+        run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: NSO MDD remove logic for NSO to OC testing
+        run: ansible-playbook ./test/remove_mdd_logic.yml
+        env:
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ github.ref_name }}_NX
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
+          NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
+          NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
+          NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
+          NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
 #  test-nx-oc:
 #    runs-on: self-hosted
 #    if: github.event.review.state == 'approved'
-#    needs: test-oc-nx
+#    needs: remove-mdd-logic-nx
 #    steps:
 #      - name: Check out repository code
 #        uses: actions/checkout@v2
