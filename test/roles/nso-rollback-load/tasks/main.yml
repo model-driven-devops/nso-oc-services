@@ -7,6 +7,9 @@
 
 - include_role:
     name: ciscops.mdd.nso
+
+- include_role:
+    name: ciscops.mdd.nso
     tasks_from: get_rollbacks
 
 - name: Check the Rollback File
