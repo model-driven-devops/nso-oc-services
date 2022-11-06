@@ -25,3 +25,4 @@ def build_xe_to_oc(config_before_dict: dict, configs_leftover: dict, oc: dict, t
     oc['mdd:openconfig'].update(openconfig_system)
     oc['mdd:openconfig'].update(openconfig_network_instances)
     oc['mdd:openconfig'].update(openconfig_interfaces)
+    oc['mdd:openconfig'].update(openconfig_acls)
