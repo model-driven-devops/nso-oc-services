@@ -309,7 +309,7 @@ def get_interfaces_by_acl(config_before, config_after):
     return interfaces_by_acl
 
 def process_interfaces(acl_type, acl_name, interfaces_by_acl, acl_interfaces):
-    interfaces = interfaces_by_acl[acl_name]
+    interfaces = interfaces_by_acl.get(acl_name, [])
     
     for interface in interfaces:
         if interface["id"] in acl_interfaces:
