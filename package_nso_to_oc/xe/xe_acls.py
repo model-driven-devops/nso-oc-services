@@ -56,8 +56,8 @@ ACL_EXT_TYPE = "ACL_IPV4"
 def xe_acls(config_before, config_after):
     oc_acl_set = openconfig_acls["openconfig-acl:acl"]["openconfig-acl:acl-sets"]["openconfig-acl:acl-set"]
     oc_acl_interface = openconfig_acls["openconfig-acl:acl"]["openconfig-acl:interfaces"]["openconfig-acl:interface"]
-    access_list = config_before.get("tailf-ned-cisco-ios:ip", {}).get("access-list")
-    access_list_after = config_after.get("tailf-ned-cisco-ios:ip", {}).get("access-list")
+    access_list = config_before.get("tailf-ned-cisco-ios:ip", {}).get("access-list", {})
+    access_list_after = config_after.get("tailf-ned-cisco-ios:ip", {}).get("access-list", {})
     interfaces_by_acl = get_interfaces_by_acl(config_before, config_after)
     acl_interfaces = {}
 
@@ -356,8 +356,8 @@ def get_intf_acl_set(acl_interface, direction):
         return acl_interface[f"{egress_set}s"][egress_set]
 
 def process_ntp(config_before, config_after):
-    ntp_access_group = config_before.get("tailf-ned-cisco-ios:ntp", {}).get("access-group")
-    ntp_access_group_after = config_after.get("tailf-ned-cisco-ios:ntp", {}).get("access-group")
+    ntp_access_group = config_before.get("tailf-ned-cisco-ios:ntp", {}).get("access-group", {})
+    ntp_access_group_after = config_after.get("tailf-ned-cisco-ios:ntp", {}).get("access-group", {})
 
     if ntp_access_group.get("serve") and ntp_access_group["serve"].get("access-list"):
         openconfig_acls["openconfig-acl:acl"]["openconfig-acl-ext:ntp"] = {
