@@ -10,6 +10,7 @@ envfile.sh
 collections/
 mdd.tgz
 mdd_repo/
+nso_url.txt
 nso_host.txt
 xe1_host.txt
 xeswitch1_host.txt
