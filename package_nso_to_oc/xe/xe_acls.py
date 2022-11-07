@@ -397,7 +397,9 @@ def process_line(config_before, config_after):
                 "openconfig-acl-ext:id": f"vty {access['first']} {access['last']}"
             }
         }
-        acl_line.append(line_item)
+        if ("access-class" in access and "access-list" in access["access-class"]) or (
+                "access-class-vrf" in access and "access-class" in access["access-class-vrf"]):
+            acl_line.append(line_item)
 
         if "access-class" in access and "access-list" in access["access-class"]:
             process_vrf(access["access-class"]["access-list"], line_item)
