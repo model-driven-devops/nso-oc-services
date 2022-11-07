@@ -80,6 +80,7 @@ class BaseAcl:
         self._oc_acl_set = oc_acl_set
         self._xe_acl_set = xe_acl_set
         self._xe_acl_set_after = xe_acl_set_after
+        self._xe_acl_name = self._xe_acl_set.get("name")
 
     def process_acl(self):
         acl_set = {
@@ -95,11 +96,17 @@ class BaseAcl:
             }
         }
         self._oc_acl_set.append(acl_set)
-        del self._xe_acl_set_after["name"]
+        success = True
         
         for rule_index, access_rule in enumerate(self._xe_acl_set.get(self._rule_list_key, [])):
-            self.__set_rule_parts(access_rule, acl_set)
-            self._xe_acl_set_after[self._rule_list_key][rule_index] = None
+            success = self.__set_rule_parts(access_rule, acl_set)
+
+            if success:
+                self._xe_acl_set_after[self._rule_list_key][rule_index] = None
+
+        # We only delete if all entries processed successfully.
+        if success:
+            del self._xe_acl_set_after["name"]
 
     def __set_rule_parts(self, access_rule, acl_set):
         rule_parts = access_rule.get("rule", "").split()
@@ -107,6 +114,7 @@ class BaseAcl:
         if len(rule_parts) < 1:
             return
 
+        success = True
         seq_id = int(rule_parts[0])
         entry = {
             "openconfig-acl:sequence-id": seq_id,
@@ -115,25 +123,42 @@ class BaseAcl:
                 "openconfig-acl:config": {"openconfig-acl:forwarding-action": actions_xe_to_oc[rule_parts[1]]}
             }
         }
-        current_index = self.__set_protocol(entry, rule_parts)
-        # Source IP
-        current_index = self.__set_ip_and_port(rule_parts, current_index, entry, True)
+
+        try:
+            current_index = self.__set_protocol(entry, rule_parts)
+            # Source IP
+            current_index = self.__set_ip_and_port(rule_parts, current_index, entry, True)
+            if self._acl_type == "ACL_IPV4":
+                # Destination IP (if exists)
+                current_index = self.__set_ip_and_port(rule_parts, current_index, entry, False)
+        except Exception as err:
+            success = False
         
-        if self._acl_type == "ACL_IPV4":
-            # Destination IP (if exists)
-            current_index = self.__set_ip_and_port(rule_parts, current_index, entry, False)
 
         if len(rule_parts) > current_index and rule_parts[current_index] == "log-input":
             entry["openconfig-acl:actions"]["openconfig-acl:config"]["openconfig-acl:log-action"] = "LOG_SYSLOG"
         else:
             entry["openconfig-acl:actions"]["openconfig-acl:config"]["openconfig-acl:log-action"] = "LOG_NONE"
 
-        acl_set["openconfig-acl:acl-entries"]["openconfig-acl:acl-entry"].append(entry)
+        if success:
+            acl_set["openconfig-acl:acl-entries"]["openconfig-acl:acl-entry"].append(entry)
+
+        return success
     
+    def __add_acl_entry_note(self, original_entry, note):
+        acls_notes.append(f"""
+            ACL name: {self._xe_acl_name}
+            Original ACL entry: {original_entry}
+            {note} 
+        """)
+
     def __set_protocol(self, entry, rule_parts):
         if self._acl_type == "ACL_IPV4_STANDARD":
             return 2
         if rule_parts[2] != 'ip':
+            if not rule_parts[2] in protocols_oc_to_xe:
+                self.__add_acl_entry_note(" ".join(rule_parts), f"protocol {rule_parts[2]} does not exist in expected list of protocols")
+                raise ValueError
             self.__get_ipv4_config(entry)["openconfig-acl:protocol"] = protocols_oc_to_xe[rule_parts[2]]
         
         return 3
@@ -198,7 +223,12 @@ class BaseAcl:
             return current_index
         
         current_port = rule_parts[current_index + 1]
-        current_port = current_port if current_port.isdigit() else socket.getservbyname(current_port)
+
+        try:
+            current_port = current_port if current_port.isdigit() else socket.getservbyname(current_port)
+        except Exception as err:
+            self.__add_acl_entry_note(" ".join(rule_parts), f"Unable to convert service {current_port} to a port number")
+            raise Exception
         
         if rule_parts[current_index] == "range":
             end_port = rule_parts[current_index + 2]
@@ -215,14 +245,7 @@ class BaseAcl:
                 self.__get_transport_config(entry)["openconfig-acl:source-port"] = f"0..{int(current_port) - 1}"
             else:
                 self.__get_transport_config(entry)["openconfig-acl:destination-port"] = f"0..{int(current_port) - 1}"
-        elif rule_parts[current_index] == "gt" or rule_parts[current_index] == "neq":
-            # We will treat operator neq as gt. In addition, note it down so we know this happened.
-            if rule_parts[current_index] == "neq":
-                acls_notes.append(f"""
-                    Original config: {current_port}
-                    XE ACL use of "neq" port operator does not have an OC equivalent. 
-                    Converted as range: {int(current_port) + 1}..65535
-                """)
+        elif rule_parts[current_index] == "gt":
             if is_source:
                 self.__get_transport_config(entry)["openconfig-acl:source-port"] = f"{int(current_port) + 1}..65535"
             else:
@@ -232,6 +255,9 @@ class BaseAcl:
                 self.__get_transport_config(entry)["openconfig-acl:source-port"] = int(current_port)
             else:
                 self.__get_transport_config(entry)["openconfig-acl:destination-port"] = int(current_port)
+        elif rule_parts[current_index] == "neq":
+            self.__add_acl_entry_note(" ".join(rule_parts), "XE ACL use of 'neq' port operator does not have an OC equivalent.")
+            raise ValueError
         
         if not is_source:
             current_index = self.__set_tcp_flags(rule_parts, current_index + 2, entry)
@@ -398,7 +424,7 @@ def process_line(config_before, config_after):
             }
         }
         if ("access-class" in access and "access-list" in access["access-class"]) or (
-                "access-class-vrf" in access and "access-class" in access["access-class-vrf"]):
+            "access-class-vrf" in access and "access-class" in access["access-class-vrf"]):
             acl_line.append(line_item)
 
         if "access-class" in access and "access-list" in access["access-class"]:
