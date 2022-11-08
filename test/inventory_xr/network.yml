@@ -8,4 +8,4 @@ all:
         routers:
           hosts:
             xr1:
-              device_ned: cisco-iosxr-cli-7.41
+              device_ned: cisco-iosxr-cli-7.43
