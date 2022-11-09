@@ -342,6 +342,8 @@
                   access-group:
                     - direction: 'in'
                       access-list: 'deny-bogons-ingress'
+            Port-channel:
+              - name: 10
             Port-channel-subinterface:
               Port-channel:
                 - name: '10.105'
