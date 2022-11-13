@@ -125,8 +125,8 @@ def create_interface_dict(config_before: dict) -> dict:
                         {"openconfig-interfaces:name": f"{interface_type}{physical_interface_number}",
                          "openconfig-interfaces:config": {
                              "openconfig-interfaces:name": f"{interface_type}{physical_interface_number}"}})
-                    old_nso_index = nso_index
                     oc_interface_index += 1  # Do not increase oc_interface_index for sub-interfaces
+                old_nso_index = nso_index
                 nso_old_physical_interface_number = physical_interface_number
                 # When finished processing sub-ifs, increase oc_interface_index for next main/physical interface
                 if oc_sub_interface_number > 0:
@@ -161,7 +161,6 @@ def create_interface_dict(config_before: dict) -> dict:
                 interface_dict[interface_type].update(temp)
                 nso_old_physical_interface_number = physical_interface_number
             oc_interface_index += 1
-    # pprint.pprint(interface_dict)
     return interface_dict
 
 

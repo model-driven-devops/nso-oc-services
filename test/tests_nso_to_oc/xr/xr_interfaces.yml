@@ -1,0 +1,443 @@
+---
+- hosts: localhost
+  gather_facts: no
+  environment:
+    NSO_DEVICE: xr1
+    DEVICE_OS: xr
+  vars:
+    nso_host: "{{ lookup('env', 'NSO_HOST') }}"
+    nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
+    nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
+    device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
+  tasks:
+    - name: Set up service config
+      tags:
+        - set_up
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: mdd:openconfig
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system:config:
+                openconfig-system:hostname: 'test'
+        api_method: PUT
+    - name: NSO configure Interfaces
+      tags:
+        - interfaces_ipv4
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:interface
+        content: |
+          interface:
+            GigabitEthernet:
+              - id: 0/0/0/5
+                ipv4:
+                  address:
+                    ip: 10.5.0.2
+                    mask: 255.255.255.0
+                  mtu: 1476
+                  unreachables:
+                    disable:
+                      - null
+                  redirects:
+                    - null
+                  mask-reply: 
+                    - null
+                proxy-arp:
+                  - null
+              - id: 0/0/0/6
+                ipv4:
+                  address:
+                    ip: 10.6.0.1
+                    mask: 255.255.255.0
+        api_method: PATCH
+    - name: NSO configure Interfaces
+      tags:
+        - interfaces_ipv4
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:router
+        content: |
+          router:
+            vrrp:
+              interface:
+                - name: GigabitEthernet0/0/0/5
+                  address-family:
+                    ipv4:
+                      vrrp:
+                        - id: 6
+                          priority: 200
+                          preempt:
+                            delay: 10
+                          timer:
+                            time-value: 3
+                          address:
+                            - ip: 10.5.0.100
+        api_method: PATCH
+    - name: Execute NSO NED to OC script
+      tags:
+        - interfaces_ipv4
+      script: ../../../package_nso_to_oc/xr/xr_interfaces.py
+      args:
+        executable: python3
+      register: nso_to_oc_result
+    - debug:
+        msg: "{{nso_to_oc_result}}"
+      tags:
+        - interfaces_ipv4
+    - name: NSO API call
+      tags:
+        - interfaces_ipv4
+      uri:
+        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url_username: "{{ nso_username }}"
+        url_password: "{{ nso_password }}"
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: GET
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+      delegate_to: localhost
+      register: oc_result
+    - debug:
+        msg: "{{ oc_result }}"
+      tags:
+        - interfaces_ipv4
+    - assert:
+        that:
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.5.0.2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['virtual-router-id'] == 6"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['preempt'] == True"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['preempt-delay'] == 10"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['priority'] == 200"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['advertisement-interval'] == 300"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['mtu'] == 1476"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:redirects'] == True"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:unreachables'] == False"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['proxy-arp']['config']['mode'] == 'REMOTE_ONLY'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:mask-reply'] == true"
+      tags:
+        - interfaces_ipv4
+
+    - name: NSO configure Interfaces
+      tags:
+        - interfaces_loopback
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:interface
+        content: |
+          interface:
+            Loopback:
+              - id: 10
+                ipv4:
+                  address:
+                    ip: 10.255.10.1
+                    mask: 255.255.255.255
+              - id: 100
+                ipv4:
+                  address:
+                    ip: 10.255.100.1
+                    mask: 255.255.255.255
+        api_method: PATCH
+
+    - name: Execute NSO NED to OC script
+      tags:
+        - interfaces_loopback
+      script: ../../../package_nso_to_oc/xr/xr_interfaces.py
+      args:
+        executable: python3
+      register: nso_to_oc_result
+    - debug:
+        msg: "{{nso_to_oc_result}}"
+      tags:
+        - interfaces_loopback
+    - name: NSO API call
+      tags:
+        - interfaces_loopback
+      uri:
+        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url_username: "{{ nso_username }}"
+        url_password: "{{ nso_password }}"
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: GET
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+      delegate_to: localhost
+      register: oc_result
+    - debug:
+        msg: "{{ oc_result }}"
+      tags:
+        - interfaces_loopback
+    - assert:
+        that:
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][9]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.255.10.1'"
+      tags:
+        - interfaces_loopback
+
+    - name: NSO configure Interfaces
+      tags:
+        - dot1q
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:interface
+        content: |
+          interface:
+            GigabitEthernet-subinterface:
+              GigabitEthernet:
+                - id: '0/0/0/6.5'
+                  description: "Sub interface 5"
+                  encapsulation:
+                    dot1q:
+                      vlan-id: 5
+                  ipv4:
+                    address:
+                      ip: 10.6.5.1
+                      mask: 255.255.255.0
+                - id: '0/0/0/6.6'
+                  description: "Sub interface 6"
+                  encapsulation:
+                    dot1q:
+                      vlan-id: 6
+                  ipv4:
+                    address:
+                      ip: 10.6.6.1
+                      mask: 255.255.255.0
+        api_method: PATCH
+    - name: NSO configure Interfaces
+      tags:
+        - dot1q
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:router
+        content: |
+          router:
+            vrrp:
+              interface:
+                - name: GigabitEthernet0/0/0/6.5
+                  address-family:
+                    ipv4:
+                      vrrp:
+                        - id: 6
+                          preempt:
+                            delay: 10
+                          timer:
+                            time-value: 3
+                          address: 
+                            - ip: 10.6.5.100
+        api_method: PATCH
+    - name: Execute NSO NED to OC script
+      tags:
+        - dot1q
+      script: ../../../package_nso_to_oc/xr/xr_interfaces.py
+      args:
+        executable: python3
+      register: nso_to_oc_result
+    - debug:
+        msg: "{{nso_to_oc_result}}"
+      tags:
+        - dot1q
+    - name: NSO API call
+      tags:
+        - dot1q
+      uri:
+        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url_username: "{{ nso_username }}"
+        url_password: "{{ nso_password }}"
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: GET
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+      delegate_to: localhost
+      register: oc_result
+    - debug:
+        msg: "{{ oc_result }}"
+      tags:
+        - dot1q
+    - assert:
+        that:
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][1]['config']['description'] == 'Sub interface 5'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][1]['config']['enabled'] == True"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][1]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.6.5.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][1]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][2]['config']['description'] == 'Sub interface 6'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][2]['config']['enabled'] == True"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][2]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.6.6.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][2]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
+      tags:
+        - dot1q
+
+    - name: NSO configure Interfaces
+      tags:
+        - tunnel
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:interface
+        content: |
+          interface:
+            tunnel-ip:
+              - id: '1'
+                description: "GRE Tunnel Interface"
+                ipv4:
+                  address: 
+                    ip: 10.254.1.1
+                    mask: 255.255.255.0
+                  mtu: 1476
+                keepalive:
+                  values:
+                    interval: 5
+                    retry: 3
+                tunnel:
+                  mode:
+                    gre: ipv4
+                  source: 10.255.10.1
+                  destination: 192.168.1.1
+        api_method: PATCH
+    - name: Execute NSO NED to OC script
+      tags:
+        - tunnel
+      script: ../../../package_nso_to_oc/xr/xr_interfaces.py
+      args:
+        executable: python3
+      register: nso_to_oc_result
+    - debug:
+        msg: "{{nso_to_oc_result}}"
+      tags:
+        - tunnel
+    - name: NSO API call
+      tags:
+        - tunnel
+      uri:
+        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url_username: "{{ nso_username }}"
+        url_password: "{{ nso_password }}"
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: GET
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+      delegate_to: localhost
+      register: oc_result
+    - debug:
+        msg: "{{ oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11] }}"
+      tags:
+        - tunnel
+    - assert:
+        that:
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['name'] == 'tunnel-ip1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['config']['src'] == '10.255.10.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['config']['dst'] == '192.168.1.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['config']['openconfig-if-tunnel-ext:keepalives']['period'] == 5"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['config']['openconfig-if-tunnel-ext:keepalives']['retries'] == 3"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['ipv4']['addresses']['address'][0]['config']['ip'] == '10.254.1.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['ipv4']['config']['mtu'] == 1476"
+      tags:
+        - tunnel
+
+    - name: NSO configure Interfaces
+      tags:
+        - hsrp
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:interface
+        content: |
+          interface:
+            GigabitEthernet:
+              - id: 0/0/0/3
+                ipv4:
+                  address:
+                    ip: 10.3.0.2
+                    mask: 255.255.255.0
+        api_method: PATCH
+    - name: NSO configure Interfaces
+      tags:
+        - hsrp
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:router
+        content: |
+          router:
+            hsrp:
+              interface:
+                - name: GigabitEthernet0/0/0/3
+                  address-family:
+                    ipv4:
+                      hsrp-version1-list:
+                        hsrp:
+                          - id: 3
+                            address: 10.3.0.110
+                            timers:
+                              hello-seconds: 30
+                              hold-seconds: 100
+                            priority: 200
+                            preempt:
+                              delay: 3500
+        api_method: PATCH
+    - name: Execute NSO NED to OC script
+      tags:
+        - hsrp
+      script: ../../../package_nso_to_oc/xr/xr_interfaces.py
+      args:
+        executable: python3
+      register: nso_to_oc_result
+    - debug:
+        msg: "{{nso_to_oc_result}}"
+      tags:
+        - hsrp
+    - name: NSO API call
+      tags:
+        - hsrp
+      uri:
+        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url_username: "{{ nso_username }}"
+        url_password: "{{ nso_password }}"
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: GET
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+      delegate_to: localhost
+      register: oc_result
+    - debug:
+        msg: "{{ oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][3] }}"
+      tags:
+        - hsrp
+    - assert:
+        that:
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][3]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['virtual-address'][0] == '10.3.0.110'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][3]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['group-number'] == 3"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][3]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['preempt'] == True"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][3]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['preempt-delay'] == 3500"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][3]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['priority'] == 200"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][3]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['timers']['hello-interval'] == 30"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][3]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['timers']['holdtime'] == 100"
+      tags:
+        - hsrp
