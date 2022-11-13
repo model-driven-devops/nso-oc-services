@@ -21,7 +21,6 @@ from importlib.util import find_spec
 from ipaddress import IPv4Network
 import socket
 import re
-import copy
 
 acls_notes = []
 openconfig_acls = {
@@ -96,16 +95,18 @@ class BaseAcl:
             }
         }
         self._oc_acl_set.append(acl_set)
-        success = True
+        acl_success = True
         
         for rule_index, access_rule in enumerate(self._xe_acl_set.get(self._rule_list_key, [])):
-            success = self.__set_rule_parts(access_rule, acl_set)
-
-            if success:
+            rule_success = self.__set_rule_parts(access_rule, acl_set)
+            
+            if rule_success:
                 self._xe_acl_set_after[self._rule_list_key][rule_index] = None
+            else:
+                acl_success = False
 
         # We only delete if all entries processed successfully.
-        if success:
+        if acl_success:
             del self._xe_acl_set_after["name"]
 
     def __set_rule_parts(self, access_rule, acl_set):
@@ -133,7 +134,6 @@ class BaseAcl:
                 current_index = self.__set_ip_and_port(rule_parts, current_index, entry, False)
         except Exception as err:
             success = False
-        
 
         if len(rule_parts) > current_index and rule_parts[current_index] == "log-input":
             entry["openconfig-acl:actions"]["openconfig-acl:config"]["openconfig-acl:log-action"] = "LOG_SYSLOG"
@@ -200,7 +200,14 @@ class BaseAcl:
                 self.__get_ipv4_config(entry)["openconfig-acl:destination-address"] = "0.0.0.0/0"
             
             return current_index + 1
+        elif ip == "host":
+            if is_source:
+                self.__get_ipv4_config(entry)[self._src_addr_key] = f"{rule_parts[current_index + 1]}/32"
+            else:
+                self.__get_ipv4_config(entry)["openconfig-acl:destination-address"] = f"{rule_parts[current_index + 1]}/32"
             
+            return current_index + 2
+
         hostmask = rule_parts[current_index + 1]
         temp_ip = IPv4Network((0, hostmask))
 
@@ -229,7 +236,7 @@ class BaseAcl:
         except Exception as err:
             self.__add_acl_entry_note(" ".join(rule_parts), f"Unable to convert service {current_port} to a port number")
             raise Exception
-        
+
         if rule_parts[current_index] == "range":
             end_port = rule_parts[current_index + 2]
 
@@ -262,7 +269,7 @@ class BaseAcl:
         if not is_source:
             current_index = self.__set_tcp_flags(rule_parts, current_index + 2, entry)
 
-        return current_index
+        return current_index + 2
 
     def __set_tcp_flags(self, rule_parts, current_index, entry):
         if len(rule_parts) <= current_index or not rule_parts[current_index] in ["ack", "rst", "established"]:

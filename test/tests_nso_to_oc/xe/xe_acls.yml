@@ -253,29 +253,24 @@
                     - rule: '30 deny any'
             extended:
               ext-named-acl:
-                - name: 'deny-bogons-egress'
+                - name: 'auto-rp'
                   ext-access-list-rule:
-                    - rule: '10 deny ip any 0.0.0.0 0.255.255.255 log-input'
-                    - rule: '20 deny ip any 10.0.0.0 0.255.255.255 log-input'
-                    - rule: '30 deny ip any 100.64.0.0 0.63.255.255 log-input'
-                    - rule: '40 deny ip any 127.0.0.0 0.255.255.255 log-input'
-                    - rule: '50 deny ip any 169.254.0.0 0.0.255.255 log-input'
-                    - rule: '60 deny ip any 172.16.0.0 0.15.255.255 log-input'
-                    - rule: '70 deny ip any 192.0.0.0 0.0.0.255 log-input'
-                    - rule: '80 deny ip any 192.0.2.0 0.0.0.255 log-input'
-                    - rule: '90 deny ip any 192.168.0.0 0.0.255.255 log-input'
-                    - rule: '100 deny ip any 198.18.0.0 0.1.255.255 log-input'
-                    - rule: '110 deny ip any 198.51.100.0 0.0.0.255 log-input'
-                    - rule: '120 deny ip any 203.0.113.0 0.0.0.255 log-input'
-                    - rule: '130 deny ip any 224.0.0.0 31.255.255.255 log-input'
-                    - rule: '140 permit ip any any'
-                - name: 'deny-bogons-ingress'
+                    - rule: '10 permit tcp any host 224.0.1.39 eq pim-auto-rp'
+                    - rule: '20 permit tcp any host 224.0.1.40 eq pim-auto-rp'
+                    - rule: '30 deny ip any any log-input'
+                - name: 'deny-hosts'
                   ext-access-list-rule:
-                    - rule: '10 deny ip 0.0.0.0 0.255.255.255 any log-input'
-                    - rule: '20 deny ip 10.0.0.0 0.255.255.255 any log-input'
-                    - rule: '30 deny ip 100.64.0.0 0.63.255.255 any log-input'
-                    - rule: '40 deny ip 127.0.0.0 0.255.255.255 any log-input'
-                    - rule: '50 deny ip 169.254.0.0 0.0.255.255 any log-input'
+                    - rule: '10 deny tcp host 192.168.1.10 host 10.1.1.1 eq www'
+                    - rule: '20 deny tcp host 192.168.1.10 host 10.1.1.2'
+                    - rule: '30 deny tcp 192.168.1.0 0.0.0.255 10.1.1.0 0.0.0.255'
+                    - rule: '40 deny tcp host 192.168.1.11 any eq www'
+                    - rule: '50 deny tcp host 192.168.1.12 any gt 1024'
+                    - rule: '60 permit ip any any'
+                - name: 'service-cmd'
+                  ext-access-list-rule:
+                    - rule: '10 permit tcp any eq cmd any'
+                    - rule: '20 permit tcp any any eq cmd'
+                    - rule: '30 deny ip any any log-input'
                 - name: 'external-ingress'
                   ext-access-list-rule:
                     - rule: '10 permit tcp any any eq 22'
@@ -298,7 +293,7 @@
                 description: 'Description for GigabitEthernet5'
                 ip:
                   access-group:
-                    - direction: 'in'
+                    - direction: 'out'
                       access-list: 'external-ingress'
                     - direction: 'in'
                       access-list: '11'
@@ -311,9 +306,9 @@
                 ip:
                   access-group:
                     - direction: 'in'
-                      access-list: 'deny-bogons-ingress'
+                      access-list: 'service-cmd'
                     - direction: 'out'
-                      access-list: 'deny-bogons-egress'
+                      access-list: 'deny-hosts'
                   address:
                     primary:
                       address: '10.6.0.1'
@@ -323,7 +318,7 @@
                 ip:
                   access-group:
                     - direction: 'in'
-                      access-list: 'external-ingress'
+                      access-list: 'auto-rp'
                     - direction: 'out'
                       access-list: '11'
                   address:
@@ -334,16 +329,25 @@
                 description: 'Description for GigabitEthernet7.100'
                 ip:
                   access-group:
+                    - direction: 'out'
+                      access-list: 'auto-rp'
                     - direction: 'in'
-                      access-list: 'deny-bogons-ingress'
+                      access-list: 'deny-hosts'
               - name: '7.200'
                 description: 'Description for GigabitEthernet7.200'
                 ip:
                   access-group:
+                    - direction: 'out'
+                      access-list: 'auto-rp'
                     - direction: 'in'
-                      access-list: 'deny-bogons-ingress'
+                      access-list: 'deny-hosts'
             Port-channel:
               - name: 10
+                negotiation:
+                  auto: true
+                ip:
+                  no-address:
+                    address: true
             Port-channel-subinterface:
               Port-channel:
                 - name: '10.105'
@@ -351,7 +355,7 @@
                   ip:
                     access-group:
                       - direction: 'in'
-                        access-list: 'deny-bogons-ingress'
+                        access-list: 'service-cmd'
         api_method: PATCH
 
     - name: NSO configure NTP
@@ -428,14 +432,23 @@
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['sequence-id'] == 10"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['actions']['config']['forwarding-action'] == 'openconfig-acl:ACCEPT'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['actions']['config']['log-action'] == 'openconfig-acl:LOG_NONE'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['openconfig-acl-ext:ipv4']['config']['source-address'] == '10.0.0.0/8'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['name'] == 'deny-bogons-egress'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['openconfig-acl-ext:ipv4']['config']['source-address'] == '192.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['name'] == 'auto-rp'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['type'] == 'openconfig-acl:ACL_IPV4'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][12]['sequence-id'] == 130"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][12]['actions']['config']['forwarding-action'] == 'openconfig-acl:REJECT'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][12]['actions']['config']['log-action'] == 'openconfig-acl:LOG_SYSLOG'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][12]['ipv4']['config']['source-address'] == '0.0.0.0/0'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][12]['ipv4']['config']['destination-address'] == '224.0.0.0/3'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['sequence-id'] == 30"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['actions']['config']['forwarding-action'] == 'openconfig-acl:REJECT'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['actions']['config']['log-action'] == 'openconfig-acl:LOG_SYSLOG'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['ipv4']['config']['source-address'] == '0.0.0.0/0'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['ipv4']['config']['destination-address'] == '0.0.0.0/0'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['name'] == 'deny-hosts'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['type'] == 'openconfig-acl:ACL_IPV4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['sequence-id'] == 50"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['actions']['config']['forwarding-action'] == 'openconfig-acl:REJECT'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['actions']['config']['log-action'] == 'openconfig-acl:LOG_NONE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['ipv4']['config']['source-address'] == '192.168.1.12/32'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['ipv4']['config']['destination-address'] == '0.0.0.0/0'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['transport']['config']['source-port'] == 'ANY'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['transport']['config']['destination-port'] == '1025..65535'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['id'] == 'vty 0 4'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['egress-acl-set'] == '11'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['ingress-acl-set-name'] == '11'"
