@@ -96,13 +96,13 @@ def create_interface_dict(config_before: dict) -> dict:
 
         for nso_index, value in enumerate(
                 config_before["tailf-ned-cisco-ios-xr:interface"][interface_type][
-                    interface_type.removesuffix("-subinterface")]):
+                    interface_type.replace("-subinterface", "")]):
             interface_numbering = str(value["id"]).split('.')  # If '.' then number.su-if
 
             physical_interface_number = interface_numbering[0]
             oc_sub_interface_number = int(interface_numbering[1])
             oc_interface_index = \
-            interface_dict[interface_type.removesuffix("-subinterface")][physical_interface_number][
+            interface_dict[interface_type.replace("-subinterface", "")][physical_interface_number][
                 "oc_interface_index"]
 
             if oc_sub_interface_number != 0:
@@ -501,7 +501,7 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
         # Configure sub-interfaces
         if "-subinterface" in interface_directory["nso_interface_type"]:
             path_nso_subif = ["tailf-ned-cisco-ios-xr:interface", interface_directory["nso_interface_type"],
-                              interface_directory["nso_interface_type"].removesuffix("-subinterface"),
+                              interface_directory["nso_interface_type"].replace("-subinterface", ""),
                               interface_directory["nso_interface_index"]]
             nso_before_interface = return_nested_dict(config_before, path_nso_subif)
             nso_leftover_interface = return_nested_dict(config_leftover, path_nso_subif)
