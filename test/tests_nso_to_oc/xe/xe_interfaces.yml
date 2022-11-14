@@ -246,16 +246,6 @@
                         seconds: 3
                     ip:
                       address: 10.8.10.100
-              - name: '8.11'
-                description: "sub if 11"
-                encapsulation:
-                  dot1Q:
-                    vlan-id: 11
-                ip:
-                  address:
-                    primary:
-                      address: 10.8.11.2
-                      mask: 255.255.255.0
         api_method: PATCH
     - name: Execute NSO NED to OC script
       tags:
