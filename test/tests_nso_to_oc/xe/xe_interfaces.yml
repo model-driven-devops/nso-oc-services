@@ -419,11 +419,8 @@
         msg: "{{ oc_result }}"
     - assert:
         that:
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['name'] == 'vasileft1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.1.1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 30"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['name'] == 'vasiright1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.2.2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['name'] == 'vasileft1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.1.1'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 30"
       tags:
         - vasi
