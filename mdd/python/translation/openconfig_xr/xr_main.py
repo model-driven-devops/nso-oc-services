@@ -30,7 +30,7 @@ def check_xr_features(self) -> None:
 
     # OpenConfig Network Instances
     if len(self.service.oc_netinst__network_instances.network_instance) > 0:
-        raise NotImplementedError('openconfig-network-distances has not yet been implemented for XR')
+        raise NotImplementedError('openconfig-network-instance has not yet been implemented for XR')
 
     # OpenConfig System
     xr_system_program_service(self)
