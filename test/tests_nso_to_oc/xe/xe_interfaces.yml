@@ -350,17 +350,17 @@
         - tunnel
     - assert:
         that:
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['name'] == 'Tunnel1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['config']['src'] == '10.255.0.1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['config']['dst'] == '192.168.172.1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['config']['gre-key'] == 1"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['config']['openconfig-if-tunnel-ext:tunnel-path-mtu-discovery'] == True"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['config']['openconfig-if-tunnel-ext:keepalives']['period'] == 5"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['config']['openconfig-if-tunnel-ext:keepalives']['retries'] == 3"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['ipv4']['addresses']['address'][0]['config']['ip'] == '10.254.0.1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['ipv4']['config']['mtu'] == 1476"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['ipv4']['config']['openconfig-if-ip-mdd-ext:tcp-adjust-mss'] == 1460"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['name'] == 'Tunnel1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['config']['src'] == '10.255.0.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['config']['dst'] == '192.168.172.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['config']['gre-key'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['config']['openconfig-if-tunnel-ext:tunnel-path-mtu-discovery'] == True"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['config']['openconfig-if-tunnel-ext:keepalives']['period'] == 5"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['config']['openconfig-if-tunnel-ext:keepalives']['retries'] == 3"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['ipv4']['addresses']['address'][0]['config']['ip'] == '10.254.0.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['ipv4']['config']['mtu'] == 1476"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['openconfig-if-tunnel:tunnel']['ipv4']['config']['openconfig-if-ip-mdd-ext:tcp-adjust-mss'] == 1460"
       tags:
         - tunnel
     - name: NSO configure Interfaces
@@ -419,12 +419,12 @@
         msg: "{{ oc_result }}"
     - assert:
         that:
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['name'] == 'vasileft1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.1.1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 30"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['name'] == 'vasiright1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.2.2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['name'] == 'vasileft1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.1.1'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 30"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][13]['name'] == 'vasiright1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][13]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.2.2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][13]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 30"
       tags:
         - vasi
     - name: NSO configure Interfaces

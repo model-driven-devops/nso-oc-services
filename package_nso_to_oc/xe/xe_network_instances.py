@@ -75,8 +75,12 @@ def xe_network_instances(config_before: dict, config_leftover: dict) -> None:
 def get_interfaces_by_vrf(config_before):
     interfaces_by_vrf = {}
     interfaces = config_before.get("tailf-ned-cisco-ios:interface", {})
-    for interface_type in interfaces:
-        for interface in interfaces.get(interface_type, {}):
+    for interface_type, interface_list in interfaces.items():
+        if interface_type == "Port-channel-subinterface":
+            interface_type = "Port-channel"
+            interface_list = interface_list[interface_type]
+
+        for interface in interface_list:
             if (not "ip" in interface or not "address" in interface["ip"] 
                 or not "primary" in interface["ip"]["address"] or not "address" in interface["ip"]["address"]["primary"]):
                 continue
