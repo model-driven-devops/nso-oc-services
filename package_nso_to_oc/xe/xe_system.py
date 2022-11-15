@@ -161,6 +161,12 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
         del config_leftover["tailf-ned-cisco-ios:service"]["conf"]["pad"]
     else:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-pad"] = True
+    # service password-encryption
+    if type(config_before.get("tailf-ned-cisco-ios:service", {}).get("password-encryption", '')) is dict:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-password-encryption"] = True
+        del config_leftover["tailf-ned-cisco-ios:service"]["password-encryption"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-password-encryption"] = False
 def xe_system_config(config_before: dict, config_leftover: dict) -> None:
     """
     Translates NSO XE NED to MDD OpenConfig System Config

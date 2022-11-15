@@ -484,6 +484,18 @@
               pad: true
         api_method: PATCH
 
+    - name: NSO configure service password-encryption
+      tags:
+        - service_password_encryption
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:service
+        content: |
+          tailf-ned-cisco-ios:service:
+            password-encryption: {}
+        api_method: PATCH
+
     - name: NSO configure ssh source interface
       tags:
         - ssh_source_interface
@@ -598,6 +610,7 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-tcp-small-servers'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-udp-small-servers'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-pad'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-password-encryption'] == true"
 
     - name: NSO configure ntp authenticate
       tags:

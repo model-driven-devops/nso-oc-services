@@ -67,6 +67,11 @@ def nx_system_program_service(self) -> None:
             self.service.oc_sys__system.services.login_security_policy.block_for.config.attempts and \
             self.service.oc_sys__system.services.login_security_policy.block_for.config.within:
         raise ValueError('login_security_policy not supported in NX')
+    # service password-encryption
+    if self.service.oc_sys__system.services.config.service_password_encryption:
+        raise ValueError('service_password_encryption not supported in NX')
+    elif self.service.oc_sys__system.services.config.service_password_encryption is False:
+        raise ValueError('service_password_encryption not supported in NX')
     # DNS servers
     if len(self.service.oc_sys__system.dns.servers.server) > 0:
         raise NotImplementedError('openconfig-system-dns has not yet been implemented for NX')
