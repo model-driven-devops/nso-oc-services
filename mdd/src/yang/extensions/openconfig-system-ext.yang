@@ -191,11 +191,6 @@ module openconfig-system-ext{
           description
             "Enable the transmission of gratuitous Address Resolution Protocol (ARP) messages.";
         }
-        leaf service-password-encryption {
-          type boolean;
-          description
-            "Converts unencrypted passwords to encrypted passwords.";
-        }
         leaf archive-logging {
           type boolean;
           description
@@ -259,6 +254,11 @@ module openconfig-system-ext{
           type boolean;
           description
             "Enable PAD commands.";
+        }
+        leaf service-password-encryption {
+          type boolean;
+          description
+            "Encrypt system passwords.";
         }
       }
       container login-security-policy {

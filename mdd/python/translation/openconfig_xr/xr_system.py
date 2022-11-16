@@ -66,6 +66,11 @@ def xr_system_program_service(self) -> None:
         raise ValueError('archive logging not supported in XR')
     elif self.service.oc_sys__system.services.config.archive_logging is False:
         raise ValueError('archive logging not supported in XR')
+    # service password-encryption
+    if self.service.oc_sys__system.services.config.service_password_encryption:
+        raise ValueError('service_password_encryption not supported in XR')
+    elif self.service.oc_sys__system.services.config.service_password_encryption is False:
+        raise ValueError('service_password_encryption not supported in XR')
     # DNS servers
     if len(self.service.oc_sys__system.dns.servers.server) > 0:
         raise NotImplementedError('openconfig-system-dns has not yet been implemented for XR')

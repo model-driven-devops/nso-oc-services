@@ -192,6 +192,13 @@ def xe_system_program_service(self) -> None:
         device_cdb.ios__service.conf.pad = True
     elif self.service.oc_sys__system.services.config.service_pad is False:
         device_cdb.ios__service.conf.pad = False
+    # service password-encryption
+    if self.service.oc_sys__system.services.config.service_password_encryption:
+        if not device_cdb.ios__service.password_encryption.exists():
+            device_cdb.ios__service.password_encryption.create()
+    elif self.service.oc_sys__system.services.config.service_password_encryption is False:
+        if device_cdb.ios__service.password_encryption.exists():
+            device_cdb.ios__service.password_encryption.delete()
     # service http
     if self.service.oc_sys__system.services.http.config.http_enabled:
         device_cdb.ios__ip.http.server = True

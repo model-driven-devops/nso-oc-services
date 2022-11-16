@@ -1561,6 +1561,25 @@
         assertions:
           - "'+service pad:' in changes"
 
+    - name: test password-encryption
+      tags:
+        - password-encryption
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:config:
+                  openconfig-system-ext:service-password-encryption: true
+        api_method: PATCH
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+service password-encryption:' in changes"
+
 - hosts: nso
   connection: local
   gather_facts: no
