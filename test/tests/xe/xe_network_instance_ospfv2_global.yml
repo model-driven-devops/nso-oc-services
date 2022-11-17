@@ -635,3 +635,117 @@
         assertion_ignore_errors: false
         assertions:
           - "'+ default-information originate always metric 5 metric-type 1 route-map TEST:' in changes"
+
+    - name: test auto_cost_reference_bandwidth
+      tags:
+        - auto_cost_reference_bandwidth
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: true
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-ospfv2-ext:auto-cost-ref-bandwidth: '100000'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+router ospf 1:' in changes"
+          - "'+ auto-cost reference-bandwidth 100000:' in changes"
+
+    - name: test interface_ospf_authentication
+      tags:
+        - interface_ospf_authentication
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'Loopback10'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'Loopback10'
+                    openconfig-interfaces:type: 'softwareLoopback'
+                    openconfig-interfaces:description: 'TEST123'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.255.10.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.255.10.1'
+                                  openconfig-if-ip:prefix-length: 32
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'OSPF'
+                        openconfig-network-instance:name: '1'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'OSPF'
+                          openconfig-network-instance:name: '1'
+                        openconfig-network-instance:ospfv2:
+                          openconfig-network-instance:areas:
+                            openconfig-network-instance:area:
+                            - openconfig-network-instance:identifier: 3
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:identifier: 3
+                              openconfig-network-instance:interfaces:
+                                openconfig-network-instance:interface:
+                                - openconfig-network-instance:id: 'Loopback10'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:id: 'Loopback10'
+                                    openconfig-ospfv2-ext:authentications:
+                                      openconfig-ospfv2-ext:authentication:
+                                        - openconfig-ospfv2-ext:key-id: 2 
+                                          openconfig-ospfv2-ext:config:
+                                            openconfig-ospfv2-ext:key-id: 2
+                                            openconfig-ospfv2-ext:enabled: true
+                                            openconfig-ospfv2-ext:md5-key: 'pass1'
+                                        - openconfig-ospfv2-ext:key-id: 3 
+                                          openconfig-ospfv2-ext:config:
+                                            openconfig-ospfv2-ext:key-id: 3
+                                            openconfig-ospfv2-ext:enabled: true
+                                            openconfig-ospfv2-ext:md5-key: 'pass2'
+                                          
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+interface Loopback10:' in changes"
+          - "'+ ip ospf authentication:' in changes"
+          - "'+ ip ospf message-digest-key 2 md5 pass1:' in changes"
+          - "'+ ip ospf message-digest-key 3 md5 pass2:' in changes"

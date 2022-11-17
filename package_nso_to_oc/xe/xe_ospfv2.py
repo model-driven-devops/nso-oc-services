@@ -41,6 +41,8 @@ def configure_xe_ospf(net_inst, vrf_interfaces, config_before, config_leftover):
             or (instance_type == "DEFAULT_INSTANCE" and not "vrf" in ospf)):
             process_ospf(net_protocols, vrf_interfaces, config_leftover, ospf_index, ospf)
 
+    print(net_inst)
+
 def get_interfaces_by_area(network_statements, vrf_interfaces):
     """
     Assigns OSPF enabled interfaces by area, based on OSPF network statements.
@@ -197,6 +199,7 @@ def process_ospf(net_protocols, vrf_interfaces, config_leftover, ospf_index, osp
     set_mpls_ldp_sync(ospf_leftover, net_protocols, prot_index, ospf)
     set_timers_lsa(ospf_leftover, net_protocols, prot_index, ospf)
     set_timers_spf(ospf_leftover, net_protocols, prot_index, ospf)
+    set_auto_cost_ref_bandwidth(ospf_leftover, net_protocols, prot_index, ospf)
 
 def set_network_config(ospf_leftover, net_protocols, prot_index, ospf):
     net_protocols[prot_index]["openconfig-network-instance:identifier"] = "OSPF"
@@ -446,6 +449,18 @@ def set_timers_spf(ospf_leftover, net_protocols, prot_index, ospf):
 
     del ospf_leftover["timers"]["throttle"]["spf"]
 
+def set_auto_cost_ref_bandwidth(ospf_leftover, net_protocols, prot_index, ospf):
+    # if not "auto-cost reference-bandwidth" in ospf:
+    if not "auto-cost" in ospf or not "reference-bandwidth" in ospf["auto-cost"]:
+        return
+    
+    ospfv2_global = get_ospfv2_global(net_protocols, prot_index)
+    auto_cost = ospf["auto-cost"]
+
+    ospfv2_global["openconfig-network-instance:config"].update({"openconfig-ospfv2-ext:auto-cost-ref-bandwidth": auto_cost["reference-bandwidth"]})
+    
+    del ospf_leftover["auto-cost"]["reference-bandwidth"]
+
 def set_ospfv2_intf_areas(ospfv2_area, intf_leftover, area, intf_name, intf, ospf, ospf_leftover):
     intf_config = {"openconfig-network-instance:id": intf_name}
     set_network_type(intf, intf_leftover, intf_config)
@@ -459,12 +474,18 @@ def set_ospfv2_intf_areas(ospfv2_area, intf_leftover, area, intf_name, intf, osp
     if not "openconfig-network-instance:interface" in area_intf["openconfig-network-instance:interfaces"]:
         area_intf["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"] = []
 
+    # Set ip ospf authentication
+    is_auth_enabled = "ip" in intf and "ospf" in intf["ip"] and "authentication" in intf["ip"]["ospf"]
+    is_message_digest_present = "ip" in intf and "ospf" in intf["ip"] and "message-digest-key" in intf["ip"]["ospf"]
+    if is_auth_enabled and is_message_digest_present:
+        intf_config.update({"openconfig-ospfv2-ext:authentications": set_authentication(intf, intf_leftover, is_auth_enabled)})
+
     area_intf["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"].append({
         "openconfig-network-instance:id": intf_name,
         "openconfig-network-instance:config": intf_config,
         "openconfig-network-instance:enable-bfd": {"openconfig-network-instance:config": {"openconfig-network-instance:enabled": is_bfd_enabled(intf, intf_leftover)}},
         "openconfig-network-instance:neighbors": set_neighbors(ospf, ospf_leftover),
-        "openconfig-network-instance:timers": set_timers(intf, intf_leftover)
+        "openconfig-network-instance:timers": set_timers(intf, intf_leftover),
     })
 
 def set_network_type(intf, intf_leftover, intf_config):
@@ -554,6 +575,27 @@ def set_timers(intf, intf_leftover):
             del intf_leftover["ip"]["ospf"]["dead-interval"]
     
     return {"openconfig-network-instance:config": config}
+
+def set_authentication(intf, intf_leftover, is_auth_enabled):
+    # Authentication enabled, message digest key and md5 key
+    authentication = {"openconfig-ospfv2-ext:authentication": []}
+    auth_list = authentication["openconfig-ospfv2-ext:authentication"]
+
+    for index, message_digest in enumerate(intf["ip"]["ospf"]["message-digest-key"]):
+        config = {
+            "openconfig-ospfv2-ext:key-id": message_digest["id"],
+            "openconfig-ospfv2-ext:config": {
+                "openconfig-ospfv2-ext:enabled": is_auth_enabled,
+                "openconfig-ospfv2-ext:key-id": message_digest["id"],
+                "openconfig-ospfv2-ext:md5-key": message_digest["md5"]["secret"]
+            }
+        }
+        auth_list.append(config)
+
+        if "message-digest-key" in intf_leftover["ip"]["ospf"]:
+            intf_leftover["ip"]["ospf"]["message-digest-key"][index] = None
+    
+    return authentication
 
 def set_ospfv2_areas(ospfv2_area, area, area_key, ospf, ospf_leftover):
     area_by_id = get_area_by_id(ospfv2_area, area["id"])

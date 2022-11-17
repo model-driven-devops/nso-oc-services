@@ -24,6 +24,11 @@ module openconfig-ospfv2-ext{
   description
     "Augmentation to openconfig ospfv2 model.";
 
+  revision "2022-11-07" {
+    description
+      "Added auto-cost reference-bandwidth";
+  }
+
   revision "2022-05-28" {
     description
       "Added VRF-Lite capability";
@@ -148,6 +153,57 @@ module openconfig-ospfv2-ext{
             description
               "do not send LSA Type 3 into nssa";
           }
+        }
+      }
+    }
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:ospfv2/oc-netinst:global/oc-netinst:config {
+    when "../../../oc-netinst:identifier = 'oc-pol-types:OSPF'";
+    leaf auto-cost-ref-bandwidth {
+      type uint32;
+      description
+        "XE - Auto cost reference bandwidth. This value affects the calculation used to determine the metric. The default value is 100000.";
+    }
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:ospfv2/oc-netinst:areas/oc-netinst:area/oc-netinst:interfaces/oc-netinst:interface/oc-netinst:config {
+    when "../../../../../../oc-netinst:identifier = 'oc-pol-types:OSPF'";
+    container authentications {
+      description
+        "Enclosing container for OSPF Authentication groups handled by this
+        IP interface";
+
+      list authentication {
+        key "key-id";
+        description
+          "List of authentication groups, keyed by key-id";
+
+        leaf key-id {
+          type leafref {
+            path "../config/key-id";
+          }
+          description
+            "References the configured message digest key id for this
+            interface";
+        }
+        container config {
+          description
+            "Configuration data for the authentication group";
+
+          leaf key-id {
+            type uint8;
+            description
+              "XE - Enables message digest key id for OSPF authentication.";
+          }
+          leaf enabled {
+            type boolean;
+            description
+              "XE - Enables authentication in the OSPF routing protocol at the interface level.";
+          }
+          leaf md5-key {
+            type string;
+            description
+              "XE - Enables MD5 key for OSPF authentication.";
+          } 
         }
       }
     }

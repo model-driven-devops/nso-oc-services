@@ -159,6 +159,17 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
                     # timer dead-interval
                     if service_interface.timers.config.dead_interval:
                         interface_cdb.ip.ospf.dead_interval.seconds = service_interface.timers.config.dead_interval
+                    
+                    if len(service_interface.config.oc_ospfv2_ext__authentications.authentication) > 0:
+                        for authentication_interface in service_interface.config.oc_ospfv2_ext__authentications.authentication:
+                            # authentication
+                            if authentication_interface.config.enabled:
+                                interface_cdb.ip.ospf.authentication.create()
+                            # MD5
+                            if authentication_interface.config.key_id:
+                                interface_cdb.ip.ospf.message_digest_key.create(authentication_interface.config.key_id)
+                                interface_cdb.ip.ospf.message_digest_key[authentication_interface.config.key_id].md5.secret = authentication_interface.config.md5_key
+
             # mpls_traffic_eng_area
             if service_area.mpls.config.traffic_engineering_enabled:
                 device_ospf_cbd.mpls.traffic_eng.area.create(service_area.identifier)
@@ -234,6 +245,10 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
             if stub_counter > 1:
                 raise ValueError(
                     'OSPF stub areas can only be type stub, totally-stubby, or nssa: not more than one type.')
+    # Auto-cost reference-bandwidth
+    if service_protocol.ospfv2.oc_netinst__global.config.auto_cost_ref_bandwidth:
+        device_ospf_cbd.auto_cost.reference_bandwidth = service_protocol.ospfv2.oc_netinst__global.config.auto_cost_ref_bandwidth
+
 
 
 def create_area_network_statement(self, service_interface, device_ospf_cbd, service_area) -> None:
