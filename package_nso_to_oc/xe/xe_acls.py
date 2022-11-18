@@ -503,7 +503,7 @@ else:
     # This is needed for now due to top level __init__.py. We need to determine if contents in __init__.py is still necessary.
     if (find_spec("package_nso_to_oc") is not None):
         from package_nso_to_oc.xe import common_xe
-        from package_nso_to_oc.xe import xe_ospfv2
+        from package_nso_to_oc import common
     else:
         from xe import common_xe
-        from xe import xe_ospfv2
+        import common

@@ -3,7 +3,7 @@ import ipaddress
 import re
 
 import ncs
-from translation.openconfig_xe.common import xe_get_interface_type_and_number
+from translation.common import get_interface_type_and_number
 
 speeds_oc_to_xe = {
     'SPEED_10MB': '10',
@@ -118,7 +118,7 @@ def xe_process_interfaces(self) -> None:
         # Layer 2 interfaces
         elif interface.config.type == 'ianaift:l2vlan' or (
                 interface.config.type == 'ianaift:ethernetCsmacd' and interface.ethernet.config.aggregate_id):
-            interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
+            interface_type, interface_number = get_interface_type_and_number(interface.config.name)
             class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                       interface_type)
             l2_interface = class_attribute[interface_number]
@@ -128,7 +128,7 @@ def xe_process_interfaces(self) -> None:
 
         # Port channels
         elif interface.config.type == 'ianaift:ieee8023adLag':
-            interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
+            interface_type, interface_number = get_interface_type_and_number(interface.config.name)
             class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                       interface_type)
             if not class_attribute.exists(interface_number):
@@ -176,7 +176,7 @@ def xe_process_interfaces(self) -> None:
 
         # Physical and Sub-interfaces
         elif interface.config.type == 'ianaift:ethernetCsmacd':
-            interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
+            interface_type, interface_number = get_interface_type_and_number(interface.config.name)
             class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                       interface_type)
             physical_interface = class_attribute[interface_number]
@@ -233,7 +233,7 @@ def xe_process_interfaces(self) -> None:
 
         # Loopback interfaces
         elif interface.config.type == 'ianaift:softwareLoopback':
-            interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
+            interface_type, interface_number = get_interface_type_and_number(interface.config.name)
             if not self.root.devices.device[self.device_name].config.ios__interface.Loopback.exists(interface_number):
                 self.root.devices.device[self.device_name].config.ios__interface.Loopback.create(interface_number)
             loopback = self.root.devices.device[self.device_name].config.ios__interface.Loopback[interface_number]
@@ -243,7 +243,7 @@ def xe_process_interfaces(self) -> None:
 
         # VASI interfaces
         elif interface.config.type == 'iftext:vasi':
-            interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
+            interface_type, interface_number = get_interface_type_and_number(interface.config.name)
             class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                       interface_type)
             if not class_attribute.exists(interface_number):
@@ -255,7 +255,7 @@ def xe_process_interfaces(self) -> None:
 
         # GRE Tunnel interface
         elif interface.config.type == 'ianaift:tunnel':
-            interface_type, interface_number = xe_get_interface_type_and_number(interface.config.name)
+            interface_type, interface_number = get_interface_type_and_number(interface.config.name)
             class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                       interface_type)
             if not class_attribute.exists(interface_number):

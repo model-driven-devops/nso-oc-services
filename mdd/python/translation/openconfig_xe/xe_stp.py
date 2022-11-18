@@ -1,7 +1,7 @@
 # -*- mode: python; python-indent: 4 -*-
 
 import ncs
-from translation.openconfig_xe.common import xe_get_interface_type_and_number
+from translation.common import get_interface_type_and_number
 
 
 def xe_stp_program_service(self) -> None:
@@ -65,7 +65,7 @@ def process_xpvst_interfaces(self, if_list: list) -> None:
         interface[1] = interface cost
         interface[2] = interface port_priority
         """
-        interface_type, interface_number = xe_get_interface_type_and_number(interface[0])
+        interface_type, interface_number = get_interface_type_and_number(interface[0])
         class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                   interface_type)
         stp_interface = class_attribute[interface_number]
@@ -82,7 +82,7 @@ def process_mst_instance_interfaces(self, if_list: list, mst_id: int) -> None:
         interface[1] = interface cost
         interface[2] = interface port_priority
         """
-        interface_type, interface_number = xe_get_interface_type_and_number(interface[0])
+        interface_type, interface_number = get_interface_type_and_number(interface[0])
         class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                   interface_type)
         stp_interface = class_attribute[interface_number]
@@ -252,7 +252,7 @@ def xe_stp_interfaces(self) -> None:
     service_l2vlan_interfaces = get_l2vlan_interfaces(self)
     stp_edge_auto_flag = False
     for service_interface in self.service.oc_stp__stp.interfaces.interface:
-        interface_type, interface_number = xe_get_interface_type_and_number(service_interface.config.name)
+        interface_type, interface_number = get_interface_type_and_number(service_interface.config.name)
         class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface, interface_type)
         physical_interface_cdb = class_attribute[interface_number]
         # Guard - Root or Loop

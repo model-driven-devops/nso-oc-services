@@ -1,6 +1,6 @@
 # -*- mode: python; python-indent: 4 -*-
 from translation.openconfig_xe.common import xe_system_get_interface_ip_address
-from translation.openconfig_xe.common import xe_get_interface_type_and_number
+from translation.common import get_interface_type_and_number
 
 severity_levels_oc_to_xe = {'EMERGENCY': 'emergencies',
                             'ALERT': 'alerts',
@@ -343,7 +343,7 @@ def xe_system_program_service(self) -> None:
     if self.service.oc_sys__system.ssh_server.config.ssh_timeout:
         device_cdb.ios__ip.ssh.time_out = self.service.oc_sys__system.ssh_server.config.ssh_timeout
     if self.service.oc_sys__system.ssh_server.config.ssh_source_interface:
-        interface_type, interface_number = xe_get_interface_type_and_number(
+        interface_type, interface_number = get_interface_type_and_number(
             self.service.oc_sys__system.ssh_server.config.ssh_source_interface)
         device_cdb.ios__ip.ssh.source_interface[interface_type] = interface_number
     # NTP
@@ -351,7 +351,7 @@ def xe_system_program_service(self) -> None:
         if self.service.oc_sys__system.ntp.config.ntp_source_address:
             ip_name_dict = xe_system_get_interface_ip_address(self)
             if ip_name_dict.get(self.service.oc_sys__system.ntp.config.ntp_source_address):
-                interface_type, interface_number = xe_get_interface_type_and_number(
+                interface_type, interface_number = get_interface_type_and_number(
                     ip_name_dict.get(self.service.oc_sys__system.ntp.config.ntp_source_address))
                 device_cdb.ios__ntp.source[interface_type] = interface_number
         if self.service.oc_sys__system.ntp.config.enable_ntp_auth:
@@ -501,7 +501,7 @@ def xe_system_program_service(self) -> None:
                 if service_remote_server.config.source_address:
                     ip_name_dict = xe_system_get_interface_ip_address(self)
                     if ip_name_dict.get(service_remote_server.config.source_address):
-                        interface_type, interface_number = xe_get_interface_type_and_number(
+                        interface_type, interface_number = get_interface_type_and_number(
                             ip_name_dict.get(service_remote_server.config.source_address))
                         device_cdb.ios__logging.source_interface.create(f"{interface_type}{interface_number}")
             elif self.service.oc_netinst__network_instances.network_instance[
@@ -510,7 +510,7 @@ def xe_system_program_service(self) -> None:
                 if service_remote_server.config.source_address:
                     ip_name_dict = xe_system_get_interface_ip_address(self)
                     if ip_name_dict.get(service_remote_server.config.source_address):
-                        interface_type, interface_number = xe_get_interface_type_and_number(
+                        interface_type, interface_number = get_interface_type_and_number(
                             ip_name_dict.get(service_remote_server.config.source_address))
                         source_interface = device_cdb.ios__logging.source_interface.create(f"{interface_type}{interface_number}")
                         source_interface.vrf = service_remote_server.config.use_vrf
@@ -603,7 +603,7 @@ def xe_system_program_service(self) -> None:
             if source_address:
                 ip_name_dict = xe_system_get_interface_ip_address(self)
                 if ip_name_dict.get(source_address):
-                    interface_name, interface_number = xe_get_interface_type_and_number(
+                    interface_name, interface_number = get_interface_type_and_number(
                         ip_name_dict.get(source_address))
                     if g.get('type') == 'oc-aaa:TACACS':
                         setattr(group.ip.tacacs.source_interface, interface_name, interface_number)
@@ -719,7 +719,7 @@ def xe_system_program_service(self) -> None:
 def xe_configure_ntp_server_source_address(self, service_ntp_server, peer_cdb) -> None:
     ip_name_dict = xe_system_get_interface_ip_address(self)
     if ip_name_dict.get(service_ntp_server.config.ntp_source_address):
-        interface_type, interface_number = xe_get_interface_type_and_number(
+        interface_type, interface_number = get_interface_type_and_number(
             ip_name_dict.get(service_ntp_server.config.ntp_source_address))
         peer_cdb.source[interface_type] = interface_number
 

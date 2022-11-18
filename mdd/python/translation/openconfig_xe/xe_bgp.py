@@ -1,5 +1,5 @@
 # -*- mode: python; python-indent: 4 -*-
-from translation.openconfig_xe.common import xe_get_interface_type_and_number
+from translation.common import get_interface_type_and_number
 
 
 def xe_bgp_global_program_service(self, service_protocol, network_instance_type, vrf_name) -> None:
@@ -281,7 +281,7 @@ def transport(neighbor_object_cdb, object_service) -> None:
     if object_service.transport.config.passive_mode:
         neighbor_object_cdb.transport.connection_mode = 'passive'
     if object_service.transport.config.local_address:  # TODO add check and translation from IP
-        interface_type, interface_number = xe_get_interface_type_and_number(
+        interface_type, interface_number = get_interface_type_and_number(
             object_service.transport.config.local_address)
         neighbor_object_cdb.update_source[interface_type] = interface_number
 

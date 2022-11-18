@@ -173,6 +173,8 @@ else:
     if (find_spec("package_nso_to_oc") is not None):
         from package_nso_to_oc.xe import common_xe
         from package_nso_to_oc.xe import xe_ospfv2
+        from package_nso_to_oc import common
     else:
         from xe import common_xe
         from xe import xe_ospfv2
+        import common

@@ -150,7 +150,10 @@ if __name__ == "__main__":
     common.print_and_test_configs("xr1", config_before_dict, config_leftover_dict, openconfig_system, 
         config_name, config_remaining_name, oc_name, system_notes)
 else:
+    # This is needed for now due to top level __init__.py. We need to determine if contents in __init__.py is still necessary.
     if (find_spec("package_nso_to_oc") is not None):
         from package_nso_to_oc.xr import common_xr
+        from package_nso_to_oc import common
     else:
         from xr import common_xr
+        import common
