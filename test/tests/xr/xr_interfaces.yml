@@ -528,6 +528,37 @@
           - "' interface GigabitEthernet0/0/0/5:' in changes"
           - "'+ mac-address 5254.5699.9999:' in changes"
 
+#    - name: test ethernet  # These doesn't work on CML 2.4 IOS XRv 9000
+#      tags:
+#        -  ethernet
+#      import_role:
+#        name: nso-openconfig-test
+#      vars:
+#        content: |
+#          mdd:openconfig:
+#            openconfig-interfaces:interfaces:
+#              openconfig-interfaces:interface:
+#                - openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
+#                  openconfig-interfaces:config:
+#                    openconfig-interfaces:description: 'Physical Interface 5'
+#                    openconfig-interfaces:enabled: true
+#                    openconfig-interfaces:mtu: 1500
+#                    openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
+#                    openconfig-interfaces:type: 'ethernetCsmacd'
+#                  openconfig-if-ethernet:ethernet:
+#                    openconfig-if-ethernet:config:
+#                      openconfig-if-ethernet:auto-negotiate: False
+#                      openconfig-if-ethernet:enable-flow-control: True
+#                      openconfig-if-ethernet:port-speed: 'SPEED_1GB'
+#                      openconfig-if-ethernet:duplex-mode: 'FULL'
+#        api_method: PUT
+#        rollback: false
+#        assertion_ignore_errors: false
+#        assertions:
+#          - "' interface GigabitEthernet0/0/0/5:' in changes"
+#          - "'+ flow-control bidirectional:' in changes"
+#          - "'+ speed 1000:' in changes"
+#          - "'+ duplex full:' in changes"
     - name: test hold-down-timer
       tags:
         -  hold-down-timer

@@ -1,0 +1,125 @@
+---
+- name: test acls lines
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test create_line_acl_ingress configurations
+      tags:
+        - create_line_acl_ingress
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-acl:acl:
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
+                  - openconfig-acl:name: 'ingress_vty'
+                    openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:config:
+                      openconfig-acl:name: 'ingress_vty'
+                      openconfig-acl:type: 'ACL_IPV4'
+                      openconfig-acl:description: 'ingress VTY'
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
+                        - openconfig-acl:sequence-id: 10
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'ssh'
+                            openconfig-acl:sequence-id: 10
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:protocol: 'IP_TCP'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                          openconfig-acl:transport:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-port: 22
+                        - openconfig-acl:sequence-id: 20
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'DROP'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'drop log other packets'
+                            openconfig-acl:sequence-id: 20
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+              openconfig-acl-ext:lines:
+                openconfig-acl-ext:line:
+                  - openconfig-acl-ext:id: 'vty 0 99'
+                    openconfig-acl-ext:config:
+                      openconfig-acl-ext:id: 'vty 0 99'
+                    openconfig-acl-ext:ingress-acl-sets:
+                      openconfig-acl-ext:ingress-acl-set:
+                        - openconfig-acl-ext:ingress-acl-set-name: 'ingress_vty'
+                          openconfig-acl-ext:config:
+                              openconfig-acl-ext:vrf: global
+                              openconfig-acl-ext:vrf-also: false
+                              openconfig-acl-ext:ingress-acl-set-name: 'ingress_vty'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ipv4 access-list ingress_vty:' in changes"
+          - "'+ 10 permit tcp any any eq ssh:' in changes"
+          - "'+ 20 deny ipv4 any any log-input:' in changes"
+          - "'+vty-pool default 0 99:' in changes"
+          - "'+line default:' in changes"
+          - "'+ access-class ingress ingress_vty:' in changes"
+
+    - name: test create_line_acl_egress configurations
+      tags:
+        - create_line_acl_egress
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-acl:acl:
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
+                  - openconfig-acl:name: 'egress_vty'
+                    openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:config:
+                      openconfig-acl:description: 'egress VTY access'
+                      openconfig-acl:name: 'egress_vty'
+                      openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
+                        - openconfig-acl:sequence-id: 10
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'permit any'
+                            openconfig-acl:sequence-id: 10
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+              openconfig-acl-ext:lines:
+                openconfig-acl-ext:line:
+                  - openconfig-acl-ext:id: 'vty 0 99'
+                    openconfig-acl-ext:config:
+                      openconfig-acl-ext:id: 'vty 0 99'
+                    openconfig-acl-ext:egress-acl-set: 'egress_vty'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ipv4 access-list egress_vty:' in changes"
+          - "'+ 10 permit ipv4 any any:' in changes"
+          - "'+ access-class egress egress_vty:' in changes"
+#          - "'+vty-pool default 0 99:' in changes"  # will not show up if already in config
+#          - "'+line default:' in changes"  # will not show up if already in config

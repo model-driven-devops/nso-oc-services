@@ -306,24 +306,30 @@ def xr_get_subinterfaces(self) -> list:
 
 def xr_interface_ethernet(s, interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
     # auto-negotiate
+    # This doesn't work on CML 2.4 IOS XRv 9000
     if interface_service.ethernet.config.auto_negotiate:
-        interface_cdb.negotiation.auto = interface_service.ethernet.config.auto_negotiate
+        interface_cdb.negotiation.auto.create()
     elif interface_service.ethernet.config.auto_negotiate is False:
-        interface_cdb.negotiation.auto = interface_service.ethernet.config.auto_negotiate
+        if interface_cdb.negotiation.auto.exists():
+            interface_cdb.negotiation.auto.delete()
         # port-speed - may need to be set before duplex is configured
+        # This doesn't work on CML 2.4 IOS XRv 9000
         if interface_service.ethernet.config.port_speed:
             interface_cdb.speed = speeds_oc_to_xr.get(interface_service.ethernet.config.port_speed)
         # duplex-mode
+        # This doesn't work on CML 2.4 IOS XRv 9000
         if interface_service.ethernet.config.duplex_mode:
             interface_cdb.duplex = str(interface_service.ethernet.config.duplex_mode).lower()
     # port-speed
+    # This doesn't work on CML 2.4 IOS XRv 9000
     if interface_service.ethernet.config.port_speed:
         interface_cdb.speed = speeds_oc_to_xr.get(interface_service.ethernet.config.port_speed)
     # enable-flow-control
+    # This doesn't work on CML 2.4 IOS XRv 9000
     if interface_service.ethernet.config.enable_flow_control is True:
-        interface_cdb.flow_control.ingress = 'on'
+        interface_cdb.flow_control = 'bidirectional'
     elif interface_service.ethernet.config.enable_flow_control is False:
-        interface_cdb.flow_control.ingress = None
+        interface_cdb.flow_control = None
     # mac-address
     if interface_service.ethernet.config.mac_address:
         xr_mac = f'{interface_service.ethernet.config.mac_address[0:2]}{interface_service.ethernet.config.mac_address[3:5]}.{interface_service.ethernet.config.mac_address[6:8]}{interface_service.ethernet.config.mac_address[9:11]}.{interface_service.ethernet.config.mac_address[12:14]}{interface_service.ethernet.config.mac_address[15:17]}'
