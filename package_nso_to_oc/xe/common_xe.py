@@ -6,7 +6,7 @@ when invoking the individual features.
 import sys
 import os
 import copy
-from pathlib import Path, os as path_os
+from pathlib import Path
 
 # To be able to import top-level common
 sys.path.append(str(Path(__file__).resolve().parents[1]))

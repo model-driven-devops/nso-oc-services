@@ -1,8 +1,8 @@
 # -*- mode: python; python-indent: 4 -*-
 import re
 
-from translation.openconfig_xe.common import prefix_to_network_and_mask
-from translation.openconfig_xe.common import xe_get_interface_type_and_number
+from translation.common import prefix_to_network_and_mask
+from translation.common import get_interface_type_and_number
 
 regex_ports = re.compile(r'(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})\.\.(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})')
 
@@ -127,7 +127,7 @@ def xe_acls_interfaces_program_service(self) -> None:
     """
     for service_acl_interface in self.service.oc_acl__acl.interfaces.interface:
         # Get interface object
-        interface_type, interface_number = xe_get_interface_type_and_number(
+        interface_type, interface_number = get_interface_type_and_number(
             service_acl_interface.interface_ref.config.interface)
         class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                   interface_type)

@@ -2,9 +2,9 @@
 import copy
 import ipaddress
 
-from translation.openconfig_xe.common import verify_ipv4
-from translation.openconfig_xe.common import xe_get_interface_type_and_number
-from translation.openconfig_xe.common import xe_get_interface_type_number_and_subinterface
+from translation.common import get_interface_type_and_number
+from translation.common import get_interface_type_number_and_subinterface
+from translation.common import verify_ipv4
 from translation.openconfig_xe.common import xe_system_get_interface_ip_address
 from translation.openconfig_xe.xe_bgp import xe_bgp_global_program_service
 from translation.openconfig_xe.xe_bgp import xe_bgp_neighbors_program_service
@@ -189,7 +189,7 @@ def xe_reconcile_vrf_interfaces(self, network_instance) -> None:
     # Assign interfaces to correct VRFs
     for i in vrf_interfaces_in_cdb:
         try:
-            interface_type, interface_number = xe_get_interface_type_number_and_subinterface(i[0])
+            interface_type, interface_number = get_interface_type_number_and_subinterface(i[0])
             class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                         interface_type)
             interface = class_attribute[interface_number]
@@ -219,7 +219,7 @@ def xe_configure_mpls(self, network_instance) -> None:
         self.root.devices.device[self.device_name].config.ios__mpls.ip = 'true'
         for interface in network_instance.mpls.oc_netinst__global.interface_attributes.interface:
             if interface.config.mpls_enabled:
-                interface_type, interface_number = xe_get_interface_type_and_number(
+                interface_type, interface_number = get_interface_type_and_number(
                     interface.interface_ref.config.interface)
                 class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                             interface_type)
@@ -231,7 +231,7 @@ def xe_configure_mpls(self, network_instance) -> None:
                 if not interface_cdb.mpls.ip.exists():
                     interface_cdb.mpls.ip.create()
             elif interface.config.mpls_enabled is False:
-                interface_type, interface_number = xe_get_interface_type_and_number(
+                interface_type, interface_number = get_interface_type_and_number(
                     interface.interface_ref.config.interface)
                 class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                             interface_type)

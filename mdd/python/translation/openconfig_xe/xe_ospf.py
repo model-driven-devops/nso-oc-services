@@ -1,5 +1,5 @@
 # -*- mode: python; python-indent: 4 -*-
-from translation.openconfig_xe.common import xe_get_interface_type_number_and_subinterface
+from translation.common import get_interface_type_number_and_subinterface
 
 ospf_network_types = {
     'oc-ospf-types:BROADCAST_NETWORK': 'broadcast',
@@ -115,7 +115,7 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
             if len(service_area.interfaces.interface) > 0:
                 for service_interface in service_area.interfaces.interface:
 
-                    interface_type, interface_number = xe_get_interface_type_number_and_subinterface(
+                    interface_type, interface_number = get_interface_type_number_and_subinterface(
                         service_interface.id)
                     class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
                                               interface_type)

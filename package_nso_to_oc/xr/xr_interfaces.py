@@ -638,7 +638,7 @@ def xr_configure_vrrp(nso_before: dict, nso_leftover: dict, interfaces: dict):
             service_vrrp["openconfig-if-ip:vrrp"]["openconfig-if-ip:vrrp-group"].append(service_vrrp_group)
         # TODO process IPV6
         # Apply to OC interfaces
-        if_type, if_name = common_xr.xr_get_interface_type_number_and_subinterface(vrrp_instance["name"])
+        if_type, if_name = common.get_interface_type_number_and_subinterface(vrrp_instance["name"])
 
         if "." in if_name:
             if_type = f"{if_type}-subinterface"
@@ -687,7 +687,7 @@ def xr_configure_hsrp(nso_before: dict, nso_leftover: dict, interfaces: dict):
                 service_hsrp_group)
         # TODO process IPV6
         # Apply to OC interfaces
-        if_type, if_name = common_xr.xr_get_interface_type_number_and_subinterface(hsrp_instance["name"])
+        if_type, if_name = common.get_interface_type_number_and_subinterface(hsrp_instance["name"])
         openconfig_interfaces["openconfig-interfaces:interfaces"]["openconfig-interfaces:interface"][
             interfaces[if_type][if_name]["oc_interface_index"]]["openconfig-interfaces:subinterfaces"][
             "openconfig-interfaces:subinterface"][interfaces[if_type][if_name]["oc_sub_interface_place_counter"]][
@@ -791,5 +791,7 @@ else:
     # This is needed for now due to top level __init__.py. We need to determine if contents in __init__.py is still necessary.
     if (find_spec("package_nso_to_oc") is not None):
         from package_nso_to_oc.xr import common_xr
+        from package_nso_to_oc import common
     else:
         from xr import common_xr
+        import common
