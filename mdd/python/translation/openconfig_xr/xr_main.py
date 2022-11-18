@@ -5,6 +5,7 @@ from translation.openconfig_xr.xr_interfaces import xr_interfaces_program_servic
 from translation.openconfig_xr.xr_acls import xr_acls_program_service
 from translation.openconfig_xr.xr_acls import xr_acls_interfaces_program_service
 from translation.openconfig_xr.xr_acls import xr_acls_lines_program_service
+from translation.openconfig_xr.xr_acls import xr_acls_ntp_program_service
 
 
 def check_xr_features(self) -> None:
@@ -26,7 +27,7 @@ def check_xr_features(self) -> None:
         xr_acls_lines_program_service(self)
     if (self.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set or
         self.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set):
-        raise NotImplementedError('openconfig-acl-ntp has not yet been implemented for XR')
+        xr_acls_ntp_program_service(self)
 
     # OpenConfig routing-policy
     if is_oc_routing_policy_configured(self):

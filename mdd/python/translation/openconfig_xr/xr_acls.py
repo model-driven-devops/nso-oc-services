@@ -179,18 +179,20 @@ def xr_acls_lines_program_service(self) -> None:
                 raise ValueError('line vty takes a start and an end line number range')
 
 
-# def xr_acls_ntp_program_service(self) -> None:
-#     """
-#     Apply NTP ACLs
-#     """
-#     device = self.root.devices.device[self.device_name].config
-#     # Server
-#     if self.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set:
-#         device.ios__ntp.access_group.serve.access_list = self.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set
-#     else:
-#         device.ios__ntp.access_group.serve.access_list = None
-#     # Peer
-#     if self.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set:
-#         device.ios__ntp.access_group.peer.access_list = self.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set
-#     else:
-#         device.ios__ntp.access_group.peer.access_list = None
+def xr_acls_ntp_program_service(self) -> None:
+    """
+    Apply NTP ACLs
+    """
+    device = self.root.devices.device[self.device_name].config
+    if self.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set or self.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set:
+        device.cisco_ios_xr__ntp.access_group.delete()
+
+    # Serve
+    if self.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set:
+        serve = device.cisco_ios_xr__ntp.access_group.create(('ipv4', 'serve'))
+        serve.name = self.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set
+
+    # Peer
+    if self.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set:
+        peer = device.cisco_ios_xr__ntp.access_group.create(('ipv4', 'peer'))
+        peer.name = self.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set
