@@ -162,48 +162,69 @@ module openconfig-ospfv2-ext{
     leaf auto-cost-ref-bandwidth {
       type uint32;
       description
-        "XE - Auto cost reference bandwidth. This value affects the calculation used to determine the metric. The default value is 100000.";
+        "XE - Auto cost reference bandwidth. This value affects the calculation used to determine the metric.";
     }
   }
-  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:ospfv2/oc-netinst:areas/oc-netinst:area/oc-netinst:interfaces/oc-netinst:interface/oc-netinst:config {
-    when "../../../../../../oc-netinst:identifier = 'oc-pol-types:OSPF'";
-    container authentications {
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:ospfv2/oc-netinst:areas/oc-netinst:area/oc-netinst:interfaces/oc-netinst:interface {
+    when "../../../../../oc-netinst:identifier = 'oc-pol-types:OSPF'";
+    container authentication {
       description
-        "Enclosing container for OSPF Authentication groups handled by this
-        IP interface";
-
-      list authentication {
-        key "key-id";
-        description
-          "List of authentication groups, keyed by key-id";
-
-        leaf key-id {
-          type leafref {
-            path "../config/key-id";
+        "Enclosing container for OSPF Authentication";
+      container config {
+        leaf authentication-type {
+          type enumeration {
+            enum UNCONFIGURED {
+              description
+                "This is also called Type 0 but is not specifically null.";
+            }
+            enum NULL {
+              description
+                "This is also called Type 0 and it means no authentication information is included in the packet header.";
+            }
+            enum SIMPLE {
+              description
+                "This is also called Type 1 and it uses simple clear-text passwords.";
+            }
+            enum MD5 {
+              description
+                "This is also called Type 2 and it uses MD5 cryptographic passwords.";
+            }
           }
-          description
-            "References the configured message digest key id for this
-            interface";
         }
-        container config {
+        leaf simple-password {
+          when "../authentication-type = 'SIMPLE'";
+          type string;
           description
-            "Configuration data for the authentication group";
-
+            "This is a plain text authentication password.";
+        }
+      }
+      container md5-authentication-keys {
+        list md5-authentication-key {
+          when "../../config/authentication-type = 'MD5'";
+          key "key-id";
+          description
+            "List of authentication keys, keyed by key-id";
           leaf key-id {
-            type uint8;
+            type leafref {
+              path "../config/key-id";
+            }
             description
-              "XE - Enables message digest key id for OSPF authentication.";
+              "References the configured message digest key id";
           }
-          leaf enabled {
-            type boolean;
+          container config {
             description
-              "XE - Enables authentication in the OSPF routing protocol at the interface level.";
+              "Configuration data for the authentication key-id";
+            leaf key-id {
+              type uint8;
+              description
+                "Enables message digest key id for OSPF authentication.";
+            }
+            leaf key {
+              type string;
+              description
+                "Key for OSPF authentication";
+            }
           }
-          leaf md5-key {
-            type string;
-            description
-              "XE - Enables MD5 key for OSPF authentication.";
-          } 
         }
       }
     }
