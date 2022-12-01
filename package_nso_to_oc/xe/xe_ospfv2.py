@@ -41,7 +41,7 @@ def configure_xe_ospf(net_inst, vrf_interfaces, config_before, config_leftover):
             or (instance_type == "DEFAULT_INSTANCE" and not "vrf" in ospf)):
             process_ospf(net_protocols, vrf_interfaces, config_leftover, ospf_index, ospf)
 
-    print(net_inst)
+    print(f"{net_inst}\n\n")
 
 def get_interfaces_by_area(network_statements, vrf_interfaces):
     """
@@ -468,17 +468,12 @@ def set_ospfv2_intf_areas(ospfv2_area, intf_leftover, area, intf_name, intf, osp
     set_passive(ospf, ospf_leftover, intf_config, intf_name)
     set_priority(intf, intf_leftover, intf_config)
     area_intf = get_area_by_id(ospfv2_area, area["id"])
+    # intf_auth = {"openconfig-ospfv2-ext:authentication": intf_name}
 
     if not "openconfig-network-instance:interfaces" in area_intf:
         area_intf["openconfig-network-instance:interfaces"] = {"openconfig-network-instance:interface": []}
     if not "openconfig-network-instance:interface" in area_intf["openconfig-network-instance:interfaces"]:
         area_intf["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"] = []
-
-    # Set ip ospf authentication
-    is_auth_enabled = "ip" in intf and "ospf" in intf["ip"] and "authentication" in intf["ip"]["ospf"]
-    is_message_digest_present = "ip" in intf and "ospf" in intf["ip"] and "message-digest-key" in intf["ip"]["ospf"]
-    if is_auth_enabled and is_message_digest_present:
-        intf_config.update({"openconfig-ospfv2-ext:authentications": set_authentication(intf, intf_leftover, is_auth_enabled)})
 
     area_intf["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"].append({
         "openconfig-network-instance:id": intf_name,
@@ -486,6 +481,7 @@ def set_ospfv2_intf_areas(ospfv2_area, intf_leftover, area, intf_name, intf, osp
         "openconfig-network-instance:enable-bfd": {"openconfig-network-instance:config": {"openconfig-network-instance:enabled": is_bfd_enabled(intf, intf_leftover)}},
         "openconfig-network-instance:neighbors": set_neighbors(ospf, ospf_leftover),
         "openconfig-network-instance:timers": set_timers(intf, intf_leftover),
+        "openconfig-ospfv2-ext:authentication": set_authentication(intf, intf_leftover),
     })
 
 def set_network_type(intf, intf_leftover, intf_config):
@@ -576,26 +572,69 @@ def set_timers(intf, intf_leftover):
     
     return {"openconfig-network-instance:config": config}
 
-def set_authentication(intf, intf_leftover, is_auth_enabled):
-    # Authentication enabled, message digest key and md5 key
-    authentication = {"openconfig-ospfv2-ext:authentication": []}
-    auth_list = authentication["openconfig-ospfv2-ext:authentication"]
+def set_authentication(intf, intf_leftover):
+    # Authentication type: unconfigured, null, simple and md5
+    authentication = {"openconfig-ospfv2-ext:config": []}
+    auth_list = authentication["openconfig-ospfv2-ext:config"]
+    is_auth_enabled = "ip" in intf and "ospf" in intf["ip"] and "authentication" in intf["ip"]["ospf"]
+    is_mess_digest = "ip" in intf and "ospf" in intf["ip"] and "message-digest-key" in intf["ip"]["ospf"]
+    if not is_auth_enabled:
+        config = {
+            "openconfig-ospfv2-ext:authentication-type": 'UNCONFIGURED'
+        }
+        auth_list.append(config)
+    else:
+        for index, auth in enumerate(intf["ip"]["ospf"]["authentication"]):
+            # NULL
+            if "null" in intf["ip"]["ospf"]["authentication"]:
+                config = {
+                    "openconfig-ospfv2-ext:authentication-type": 'NULL'
+                }
+                intf_leftover["ip"]["ospf"]["authentication"][index] = None
+            # Simple
+            if not "null" in intf["ip"]["ospf"]["authentication"] and not "message-digest" in intf["ip"]["ospf"]["authentication"]:
+                config = {
+                    "openconfig-ospfv2-ext:authentication-type": 'SIMPLE'
+                }
+                intf_leftover["ip"]["ospf"]["authentication"][index] = None
+            # MD5
+            if "message-digest" in intf["ip"]["ospf"]["authentication"]:
+                config = {
+                    "openconfig-ospfv2-ext:authentication-type": 'MD5'
+                }
+                intf_leftover["ip"]["ospf"]["authentication"][index] = None        
+            auth_list.append(config)
+
+    if is_mess_digest:        
+        authentication.update(set_message_digest(intf, intf_leftover))
+
+    return authentication
+    
+
+def set_message_digest(intf, intf_leftover):
+    # Configure md5 keys
+    mess_digest = {"openconfig-ospfv2-ext:md5-authentication-keys": {
+        "openconfig-ospfv2-ext:md5-authentication-key": []
+    }}
+    mess_digest_list = mess_digest["openconfig-ospfv2-ext:md5-authentication-keys"][
+        "openconfig-ospfv2-ext:md5-authentication-key"]
 
     for index, message_digest in enumerate(intf["ip"]["ospf"]["message-digest-key"]):
         config = {
             "openconfig-ospfv2-ext:key-id": message_digest["id"],
             "openconfig-ospfv2-ext:config": {
-                "openconfig-ospfv2-ext:enabled": is_auth_enabled,
+                # "openconfig-ospfv2-ext:enabled": is_message_digest_present,
                 "openconfig-ospfv2-ext:key-id": message_digest["id"],
-                "openconfig-ospfv2-ext:md5-key": message_digest["md5"]["secret"]
+                "openconfig-ospfv2-ext:key": message_digest["md5"]["secret"]
             }
         }
-        auth_list.append(config)
+        mess_digest_list.append(config)
 
         if "message-digest-key" in intf_leftover["ip"]["ospf"]:
             intf_leftover["ip"]["ospf"]["message-digest-key"][index] = None
-    
-    return authentication
+        # mess_digest_list.append(config)
+    print(mess_digest)
+    return mess_digest
 
 def set_ospfv2_areas(ospfv2_area, area, area_key, ospf, ospf_leftover):
     area_by_id = get_area_by_id(ospfv2_area, area["id"])

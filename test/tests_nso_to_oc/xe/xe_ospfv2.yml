@@ -430,14 +430,23 @@
                     bfd: {}
                     cost: 10
                     priority: 10
-                    authentication: {}
+                    # authentication: {}
+                    authentication:
+                      null: ''
+                      message-digest: ''
                     message-digest-key: 
-                      - id: '2'
-                        md5: 
+                      - id: '1'
+                        md5:
+                          type: '0'
                           secret: 'pass1'
+                      - id: '2'
+                        md5:
+                          type: '0'
+                          secret: 'pass2'
                       - id: '3'
                         md5:
-                          secret: 'pass2'
+                          type: '7'
+                          secret: '140713181F56'
                   policy:
                     route-map: 'TEST'
                 shutdown: []
@@ -683,12 +692,14 @@
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['neighbors']['neighbor'][0]['router-id'] == '10.10.10.10'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['neighbors']['neighbor'][0]['config']['metric'] == 100"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['mpls']['config']['traffic-engineering-enabled'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['openconfig-ospfv2-ext:authentications']['authentication'][0]['config']['enabled'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['openconfig-ospfv2-ext:authentications']['authentication'][0]['config']['key-id'] == 2"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['openconfig-ospfv2-ext:authentications']['authentication'][0]['config']['md5-key'] == 'pass1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['openconfig-ospfv2-ext:authentications']['authentication'][1]['config']['enabled'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['openconfig-ospfv2-ext:authentications']['authentication'][1]['config']['key-id'] == 3"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['openconfig-ospfv2-ext:authentications']['authentication'][1]['config']['md5-key'] == 'pass2'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['authentication-type'][0] == 'NULL'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['authentication-type'] == 'MD5'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][0]['config']['key-id'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][0]['config']['key'] == 'pass1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][1]['config']['key-id'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][1]['config']['key'] == 'pass2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][2]['config']['key-id'] == 3"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][2]['config']['key'] == '140713181F56'"
           # This is testing for globals, but areas are required, so we test that portion of globals here.
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['src-area'] == 0"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['dst-area'] == 4"
