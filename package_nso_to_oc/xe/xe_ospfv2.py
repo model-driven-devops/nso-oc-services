@@ -41,8 +41,6 @@ def configure_xe_ospf(net_inst, vrf_interfaces, config_before, config_leftover):
             or (instance_type == "DEFAULT_INSTANCE" and not "vrf" in ospf)):
             process_ospf(net_protocols, vrf_interfaces, config_leftover, ospf_index, ospf)
 
-    print(f"{net_inst}\n\n")
-
 def get_interfaces_by_area(network_statements, vrf_interfaces):
     """
     Assigns OSPF enabled interfaces by area, based on OSPF network statements.
@@ -610,7 +608,6 @@ def set_authentication(intf, intf_leftover):
 
     return authentication
     
-
 def set_message_digest(intf, intf_leftover):
     # Configure md5 keys
     mess_digest = {"openconfig-ospfv2-ext:md5-authentication-keys": {
@@ -623,7 +620,6 @@ def set_message_digest(intf, intf_leftover):
         config = {
             "openconfig-ospfv2-ext:key-id": message_digest["id"],
             "openconfig-ospfv2-ext:config": {
-                # "openconfig-ospfv2-ext:enabled": is_message_digest_present,
                 "openconfig-ospfv2-ext:key-id": message_digest["id"],
                 "openconfig-ospfv2-ext:key": message_digest["md5"]["secret"]
             }
@@ -632,8 +628,7 @@ def set_message_digest(intf, intf_leftover):
 
         if "message-digest-key" in intf_leftover["ip"]["ospf"]:
             intf_leftover["ip"]["ospf"]["message-digest-key"][index] = None
-        # mess_digest_list.append(config)
-    print(mess_digest)
+
     return mess_digest
 
 def set_ospfv2_areas(ospfv2_area, area, area_key, ospf, ospf_leftover):
