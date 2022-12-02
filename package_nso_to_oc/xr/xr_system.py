@@ -35,7 +35,12 @@ openconfig_system = {
             "openconfig-system:servers": {
                 "openconfig-system:server": []}
         },
-        "openconfig-system:ssh-server": {"openconfig-system:config": {}},
+        "openconfig-system:ssh-server": {
+            "openconfig-system:config": {},
+            "openconfig-system-ext:algorithm": {
+                "openconfig-system-ext:config": {}
+            }
+        },
         "openconfig-system-ext:services": {"openconfig-system-ext:config": {}}
     }
 }
@@ -108,6 +113,16 @@ def xr_system_config(config_before: dict, config_leftover: dict) -> None:
         openconfig_system_config["openconfig-system-ext:console-exec-timeout-seconds"] = seconds
         del config_leftover["tailf-ned-cisco-ios-xr:line"]["console"]["exec-timeout"]
 
+def xr_system_ssh_server(config_before: dict, config_leftover: dict) -> None:
+    """
+    Translates NSO XR NED to MDD OpenConfig System SSH Server
+    """
+    openconfig_system_ssh_server_alg_config = openconfig_system["openconfig-system:system"]["openconfig-system:ssh-server"]["openconfig-system-ext:algorithm"]["openconfig-system-ext:config"]
+
+    if type(config_before.get("tailf-ned-cisco-ios-xr:ssh", {}).get("server", {}).get("algorithms", {}).get("cipher", '')) is list:
+        openconfig_system_ssh_server_alg_config["openconfig-system-ext:encryption"] = config_before.get("tailf-ned-cisco-ios-xr:ssh", {}).get("server", {}).get("algorithms", {}).get("cipher")
+        del config_leftover["tailf-ned-cisco-ios-xr:ssh"]["server"]["algorithms"]["cipher"]
+
 def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
     """
     Translates NSO Device configurations to MDD OpenConfig configurations.
@@ -126,6 +141,7 @@ def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
 
     xr_system_config(before, leftover)
     xr_system_services(before, leftover)
+    xr_system_ssh_server(before, leftover)
     translation_notes += system_notes
 
     return openconfig_system

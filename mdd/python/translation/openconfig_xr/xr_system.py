@@ -97,6 +97,12 @@ def xr_system_program_service(self) -> None:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for XR')
     if self.service.oc_sys__system.ssh_server.config.ssh_source_interface:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for XR')
+    if self.service.oc_sys__system.ssh_server.algorithm.config.encryption:
+        for enc in self.service.oc_sys__system.ssh_server.algorithm.config.encryption:
+            if enc == 'triple-des-cbc':
+                device_cdb.cisco_ios_xr__ssh.server.algorithms.cipher.create(enc.replace('triple-des-cbc', '3des-cbc'))
+            else:
+                device_cdb.cisco_ios_xr__ssh.server.algorithms.cipher.create(enc)
     # boot network
     if self.service.oc_sys__system.services.config.boot_network == "DISABLED":
         raise ValueError('boot_network not supported in XR')

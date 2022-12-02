@@ -436,10 +436,10 @@ def process_line(config_before, config_after):
 
         if "access-class" in access and "access-list" in access["access-class"]:
             process_vrf(access["access-class"]["access-list"], line_item)
+            vty_accesses_after[index]["access-class"]["access-list"] = None
         elif "access-class-vrf" in access and "access-class" in access["access-class-vrf"]:
             process_vrf(access["access-class-vrf"]["access-class"], line_item)
-        
-        vty_accesses_after[index] = None
+            vty_accesses_after[index]["access-class-vrf"]["access-class"] = None
 
 def process_vrf(access_list, line_item):
     for access in access_list:

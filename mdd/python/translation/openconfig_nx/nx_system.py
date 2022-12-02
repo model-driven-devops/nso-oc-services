@@ -98,6 +98,13 @@ def nx_system_program_service(self) -> None:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
     if self.service.oc_sys__system.ssh_server.config.ssh_source_interface:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
+    if self.service.oc_sys__system.ssh_server.algorithm.config.encryption:
+        device_cdb.ios__ip.ssh.server.algorithm.encryption.delete()
+        for enc in self.service.oc_sys__system.ssh_server.algorithm.config.encryption:
+            if enc == 'triple-des-cbc':
+                device_cdb.ios__ip.ssh.server.algorithm.encryption.create(enc.replace('triple-des-cbc', '3des-cbc'))
+            else:
+                device_cdb.ios__ip.ssh.server.algorithm.encryption.create(enc)
     # NTP
     if self.service.oc_sys__system.ntp.config.enabled:
         raise NotImplementedError('openconfig-system-ntp-config has not yet been implemented for NX')
