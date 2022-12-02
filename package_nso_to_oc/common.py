@@ -131,3 +131,9 @@ def get_interface_type_number_and_subinterface(interface: str) -> Tuple[str, str
     interface_number = rn.group(0)
 
     return interface_name, interface_number
+
+def get_index_or_default(obj, index, default = {}):
+    try:
+        return obj[index]
+    except:
+        return default
