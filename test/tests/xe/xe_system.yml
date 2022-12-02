@@ -1601,7 +1601,7 @@
                       - aes256-cbc
                       - aes256-ctr
                       - aes256-gcm
-        api_method: PATCH
+        api_method: PUT
         api_ignore_errors: false
         rollback: false
         assertion_ignore_errors: false
