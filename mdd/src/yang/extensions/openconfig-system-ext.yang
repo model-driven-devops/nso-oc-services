@@ -114,6 +114,50 @@ module openconfig-system-ext{
     description
       "Encryption type tls_rsa_with_aes_gcm_sha2(TLS1.2 & above) ciphersuite.";
   }
+  identity ENCRYPTION_ALGORITHM {
+    description
+      "Base identity to define encryption algorithms";
+  }
+  identity triple-des-cbc {
+    base ENCRYPTION_ALGORITHM;
+    description
+      "Encryption algorithm Three-key 3DES in CBC mode.";
+  }
+  identity aes128-cbc {
+    base ENCRYPTION_ALGORITHM;
+    description
+      "Encryption algorithm AES with 128-bit key in CBC mode.";
+  }
+  identity aes128-ctr {
+    base ENCRYPTION_ALGORITHM;
+    description
+      "Encryption algorithm AES with 128-bit key in CTR mode.";
+  }
+  identity aes192-cbc {
+    base ENCRYPTION_ALGORITHM;
+    description
+      "Encryption algorithm AES with 192-bit key in CBC mode.";
+  }
+  identity aes192-ctr {
+    base ENCRYPTION_ALGORITHM;
+    description
+      "Encryption algorithm AES with 192-bit key in CTR mode.";
+  }
+  identity aes256-cbc {
+    base ENCRYPTION_ALGORITHM;
+    description
+      "Encryption algorithm AES with 256-bit key in CBC mode.";
+  }
+  identity aes256-ctr {
+    base ENCRYPTION_ALGORITHM;
+    description
+      "Encryption algorithm AES with 256-bit key in CTR mode.";
+  }
+  identity aes256-gcm {
+    base ENCRYPTION_ALGORITHM;
+    description
+      "Encryption algorithm AES with 256-bit key GCM mode.";
+  }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system {
     container timestamps {
       description
@@ -393,7 +437,7 @@ module openconfig-system-ext{
         "Enables Network Time Protocol (NTP) message logging.";
     }
   }
-   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ntp/oc-sys:servers/oc-sys:server/oc-sys:config {
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ntp/oc-sys:servers/oc-sys:server/oc-sys:config {
     leaf ntp-auth-key-id {
       type uint16;
       description
@@ -412,7 +456,21 @@ module openconfig-system-ext{
         "VRF for communication with NTP servers.";
     }
   }
-   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ssh-server/oc-sys:config {
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ssh-server {
+    container algorithm {
+      container config {
+        description "Specifies the different algorithms used in SSH.";
+        leaf-list encryption {
+          type identityref {
+            base oc-system-ext:ENCRYPTION_ALGORITHM;
+          }
+          tailf:info "ios: ip ssh server algorithm encryption";
+          description "Specifies the Encryption algorithms advertised to other party.";
+        }
+      }
+    }
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:ssh-server/oc-sys:config {
     leaf absolute-timeout-minutes {
       type uint16 {
         range "0 .. 35791";
@@ -437,7 +495,7 @@ module openconfig-system-ext{
         In IOS, seconds from 1-120.";
     }
   }
-   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:logging/oc-sys:remote-servers/oc-sys:remote-server/oc-sys:config {
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:logging/oc-sys:remote-servers/oc-sys:remote-server/oc-sys:config {
     leaf use-vrf {
       type leafref {
         path "/ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:name";
@@ -446,14 +504,14 @@ module openconfig-system-ext{
         "VRF from which to reach the logging servers. '' for no VRF.";
     }
   }
-   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:logging/oc-sys:console/oc-sys:config {
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:logging/oc-sys:console/oc-sys:config {
       leaf enabled {
         type boolean;
         description
           "Enables logging messages output to console.";
       }
   }
-   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:logging {
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:logging {
     container buffered {
       container config {
         description "Specifies the logging buffer as a destination for system logging (syslog) messages.";
@@ -521,7 +579,7 @@ module openconfig-system-ext{
       }
     }
   }
-   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:dns/oc-sys:servers/oc-sys:server/oc-sys:config {
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-sys:dns/oc-sys:servers/oc-sys:server/oc-sys:config {
     leaf use-vrf {
       type leafref {
         path "/ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:name";

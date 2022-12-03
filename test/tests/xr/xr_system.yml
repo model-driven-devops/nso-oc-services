@@ -2,8 +2,6 @@
 - hosts: nso
   connection: local
   gather_facts: no
-  tags:
-    - always
   roles:
     - nso-rollback-save
   run_once: true
@@ -83,18 +81,39 @@
               openconfig-system-ext:services:
                 openconfig-system-ext:config:
                   openconfig-system-ext:service-udp-small-servers: true
-        api_method: PATCH
+        api_method: PUT
         api_ignore_errors: false
         rollback: false
         assertion_ignore_errors: false
         assertions:
           - "'+service ipv4 udp-small-servers max-servers 2147483647:' in changes"
 
+    - name: test ssh algorithm encryption (All Alg)
+      tags:
+        - ssh-algorithm-encryption-all
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system:ssh-server:
+                openconfig-system-ext:algorithm:
+                  openconfig-system-ext:config:
+                    openconfig-system-ext:encryption:
+                      - aes128-ctr
+                      - aes192-ctr
+                      - aes256-ctr
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ssh server algorithms cipher aes256-ctr aes192-ctr aes128-ctr:' in changes"
+
 - hosts: nso
   connection: local
   gather_facts: no
-  tags:
-    - always
   roles:
     - nso-rollback-load
   run_once: true

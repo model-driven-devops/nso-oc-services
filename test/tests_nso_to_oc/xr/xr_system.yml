@@ -133,6 +133,23 @@
                 max-servers: 2147483647
         api_method: PATCH
 
+    - name: NSO configure ssh algorithm encryption
+      tags:
+        - ssh_algorithm_encryption
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:ssh
+        content: |
+          tailf-ned-cisco-ios-xr:ssh:
+            server:
+              algorithms:
+                cipher:
+                  - aes128-ctr
+                  - aes192-ctr
+                  - aes256-ctr
+        api_method: PATCH
+
     - name: Execute NSO NED to OC script
       script: ../../../package_nso_to_oc/xr/xr_system.py
       args:
@@ -168,4 +185,6 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-domain-lookup'] == false"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-tcp-small-servers'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-udp-small-servers'] == true"
-
+          - "'openconfig-system-ext:aes128-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
+          - "'openconfig-system-ext:aes192-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
+          - "'openconfig-system-ext:aes256-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
