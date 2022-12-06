@@ -216,6 +216,24 @@
                     address:
                       ip: 10.6.6.1
                       mask: 255.255.255.0
+                - id: '0/0/0/7.5'
+                  description: "Sub interface 5"
+                  encapsulation:
+                    dot1q:
+                      vlan-id: 5
+                  ipv4:
+                    address:
+                      ip: 10.7.5.1
+                      mask: 255.255.255.0
+                - id: '0/0/0/7.6'
+                  description: "Sub interface 6"
+                  encapsulation:
+                    dot1q:
+                      vlan-id: 6
+                  ipv4:
+                    address:
+                      ip: 10.7.6.1
+                      mask: 255.255.255.0
         api_method: PATCH
     - name: NSO configure Interfaces
       tags:
@@ -282,6 +300,14 @@
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][2]['config']['enabled'] == True"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][2]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.6.6.1'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][2]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][1]['config']['description'] == 'Sub interface 5'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][1]['config']['enabled'] == True"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][1]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.7.5.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][1]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][2]['config']['description'] == 'Sub interface 6'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][2]['config']['enabled'] == True"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][2]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.7.6.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][2]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
       tags:
         - dot1q
 

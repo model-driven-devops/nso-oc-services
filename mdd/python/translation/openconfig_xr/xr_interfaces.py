@@ -174,8 +174,8 @@ def xr_process_interfaces(self) -> None:
                             xr_configure_vrrp_v2_legacy(self, subinterface_cdb, subinterface_service.ipv4, interface)
                     else:  # IPv4 for main interface
                         # Remove switchport
-                        if physical_interface.switchport:
-                            physical_interface.switchport.delete()
+                        if bundle_ether.switchport:
+                            bundle_ether.switchport.delete()
                         xr_interface_aggregation(self, interface, bundle_ether, routing_ipv6, interface_number)
 
         # Physical and Sub-interfaces
@@ -208,11 +208,12 @@ def xr_process_interfaces(self) -> None:
                     else:
                         if not subinterface_cdb.shutdown.exists():
                             subinterface_cdb.shutdown.create()
-                    if subinterface_cdb.encapsulation.dot1q.vlan_id.exists():
-                        subinterface_cdb.encapsulation.dot1q.vlan_id.delete()
-                        subinterface_cdb.encapsulation.dot1q.vlan_id.create(subinterface_service.vlan.config.vlan_id)
-                    else:
-                        subinterface_cdb.encapsulation.dot1q.vlan_id.create(subinterface_service.vlan.config.vlan_id)
+                    if subinterface_service.vlan.config.vlan_id:
+                        if subinterface_cdb.encapsulation.dot1q.vlan_id.exists():
+                            subinterface_cdb.encapsulation.dot1q.vlan_id.delete()
+                            subinterface_cdb.encapsulation.dot1q.vlan_id.create(subinterface_service.vlan.config.vlan_id)
+                        else:
+                            subinterface_cdb.encapsulation.dot1q.vlan_id.create(subinterface_service.vlan.config.vlan_id)
                     xr_configure_ipv4(self, subinterface_cdb, subinterface_service.ipv4)
                     xr_configure_hsrp_v1(self, subinterface_cdb, subinterface_service.ipv4, interface)
                     xr_configure_ipv6(self, subinterface_cdb, subinterface_service.ipv6)
