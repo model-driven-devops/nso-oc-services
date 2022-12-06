@@ -215,42 +215,6 @@
         content: |
           interface:
             GigabitEthernet:
-              - name: '7.10'
-                description: TESTDESCRIPT10
-                encapsulation:
-                  dot1Q:
-                    vlan-id: 10
-                ip:
-                  address:
-                    primary:
-                      address: 10.7.10.2
-                      mask: 255.255.255.0
-                  mtu: 1476
-                  unreachables: false
-                  redirects: false
-                  tcp:
-                    adjust-mss: 1400
-                  proxy-arp: true
-                  mask-reply: 
-                    - null
-              - name: '7.11'
-                description: TEST11
-                encapsulation:
-                  dot1Q:
-                    vlan-id: 11
-                ip:
-                  address:
-                    primary:
-                      address: 10.7.11.2
-                      mask: 255.255.255.0
-                  mtu: 1476
-                  unreachables: false
-                  redirects: false
-                  tcp:
-                    adjust-mss: 1400
-                  proxy-arp: true
-                  mask-reply: 
-                    - null
               - name: '8.10'
                 description: TESTDESCRIPT
                 encapsulation:
@@ -282,24 +246,6 @@
                         seconds: 3
                     ip:
                       address: 10.8.10.100
-              - name: '8.11'
-                description: TEST11
-                encapsulation:
-                  dot1Q:
-                    vlan-id: 11
-                ip:
-                  address:
-                    primary:
-                      address: 10.8.11.2
-                      mask: 255.255.255.0
-                  mtu: 1476
-                  unreachables: false
-                  redirects: false
-                  tcp:
-                    adjust-mss: 1400
-                  proxy-arp: true
-                  mask-reply: 
-                    - null
         api_method: PATCH
     - name: Execute NSO NED to OC script
       tags:
@@ -335,16 +281,10 @@
         - interfaces_subinterface
     - assert:
         that:
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][1]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.7.10.2'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][1]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][2]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.7.11.2'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][2]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][1]['config']['description'] == 'TESTDESCRIPT'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][1]['config']['enabled'] == True"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][1]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.8.10.2'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][1]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][2]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.8.11.2'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][2]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
       tags:
         - interfaces_subinterface
     - name: NSO configure Interfaces
