@@ -113,7 +113,7 @@ def xr_process_interfaces(self) -> None:
                 xr_configure_vrrp_v3(self, vlan, interface.routed_vlan.ipv6, interface, 'ipv6')
             else:
                 xr_configure_vrrp_v2_legacy(self, vlan, interface.routed_vlan.ipv4, interface)
-        
+
         # Layer 2 interfaces
         elif interface.config.type == 'ianaift:l2vlan' or (
                 interface.config.type == 'ianaift:ethernetCsmacd' and interface.ethernet.config.aggregate_id):
@@ -124,7 +124,7 @@ def xr_process_interfaces(self) -> None:
             xr_interface_config(interface, l2_interface)
             xr_interface_hold_time(interface, l2_interface)
             xr_interface_ethernet(self, interface, l2_interface)
-        
+
         # Bundle-Ether
         elif interface.config.type == 'ianaift:ieee8023adLag':
             interface_type, interface_number = get_interface_type_and_number(interface.config.name)
@@ -160,9 +160,11 @@ def xr_process_interfaces(self) -> None:
                                 subinterface_cdb.shutdown.create()
                         if subinterface_cdb.encapsulation.dot1q.vlan_id.exists():
                             subinterface_cdb.encapsulation.dot1q.vlan_id.delete()
-                            subinterface_cdb.encapsulation.dot1q.vlan_id.create(subinterface_service.vlan.config.vlan_id)
+                            subinterface_cdb.encapsulation.dot1q.vlan_id.create(
+                                subinterface_service.vlan.config.vlan_id)
                         else:
-                            subinterface_cdb.encapsulation.dot1q.vlan_id.create(subinterface_service.vlan.config.vlan_id)
+                            subinterface_cdb.encapsulation.dot1q.vlan_id.create(
+                                subinterface_service.vlan.config.vlan_id)
                         xr_configure_ipv4(self, subinterface_cdb, subinterface_service.ipv4)
                         # HSRP v1
                         xr_configure_hsrp_v1(self, subinterface_cdb, subinterface_service.ipv4, interface)
@@ -174,8 +176,8 @@ def xr_process_interfaces(self) -> None:
                             xr_configure_vrrp_v2_legacy(self, subinterface_cdb, subinterface_service.ipv4, interface)
                     else:  # IPv4 for main interface
                         # Remove switchport
-                        if bundle_ether.switchport:
-                            bundle_ether.switchport.delete()
+                        if physical_interface.switchport:
+                            physical_interface.switchport.delete()
                         xr_interface_aggregation(self, interface, bundle_ether, routing_ipv6, interface_number)
 
         # Physical and Sub-interfaces
@@ -192,7 +194,7 @@ def xr_process_interfaces(self) -> None:
             for subinterface_service in interface.subinterfaces.subinterface:
                 if subinterface_service.index != 0:
                     attribute1 = getattr(self.root.devices.device[self.device_name].config.cisco_ios_xr__interface,
-                          f'{interface_type}_subinterface')
+                                         f'{interface_type}_subinterface')
                     class_attribute_sub_if = getattr(attribute1, interface_type)
                     if not class_attribute_sub_if.exists(f'{interface_number}.{subinterface_service.index}'):
                         class_attribute_sub_if.create(f'{interface_number}.{subinterface_service.index}')
@@ -208,12 +210,11 @@ def xr_process_interfaces(self) -> None:
                     else:
                         if not subinterface_cdb.shutdown.exists():
                             subinterface_cdb.shutdown.create()
-                    if subinterface_service.vlan.config.vlan_id:
-                        if subinterface_cdb.encapsulation.dot1q.vlan_id.exists():
-                            subinterface_cdb.encapsulation.dot1q.vlan_id.delete()
-                            subinterface_cdb.encapsulation.dot1q.vlan_id.create(subinterface_service.vlan.config.vlan_id)
-                        else:
-                            subinterface_cdb.encapsulation.dot1q.vlan_id.create(subinterface_service.vlan.config.vlan_id)
+                    if subinterface_cdb.encapsulation.dot1q.vlan_id.exists():
+                        subinterface_cdb.encapsulation.dot1q.vlan_id.delete()
+                        subinterface_cdb.encapsulation.dot1q.vlan_id.create(subinterface_service.vlan.config.vlan_id)
+                    else:
+                        subinterface_cdb.encapsulation.dot1q.vlan_id.create(subinterface_service.vlan.config.vlan_id)
                     xr_configure_ipv4(self, subinterface_cdb, subinterface_service.ipv4)
                     xr_configure_hsrp_v1(self, subinterface_cdb, subinterface_service.ipv4, interface)
                     xr_configure_ipv6(self, subinterface_cdb, subinterface_service.ipv6)
@@ -238,13 +239,16 @@ def xr_process_interfaces(self) -> None:
         # Loopback interfaces
         elif interface.config.type == 'ianaift:softwareLoopback':
             interface_type, interface_number = get_interface_type_and_number(interface.config.name)
-            if not self.root.devices.device[self.device_name].config.cisco_ios_xr__interface.Loopback.exists(interface_number):
-                self.root.devices.device[self.device_name].config.cisco_ios_xr__interface.Loopback.create(interface_number)
-            loopback = self.root.devices.device[self.device_name].config.cisco_ios_xr__interface.Loopback[interface_number]
+            if not self.root.devices.device[self.device_name].config.cisco_ios_xr__interface.Loopback.exists(
+                    interface_number):
+                self.root.devices.device[self.device_name].config.cisco_ios_xr__interface.Loopback.create(
+                    interface_number)
+            loopback = self.root.devices.device[self.device_name].config.cisco_ios_xr__interface.Loopback[
+                interface_number]
             xr_interface_config(interface, loopback)
             xr_configure_ipv4(self, loopback, interface.subinterfaces.subinterface[0].ipv4)
             xr_configure_ipv6(self, loopback, interface.subinterfaces.subinterface[0].ipv6)
-        
+
         # VASI interfaces
         elif interface.config.type == 'iftext:vasi':
             raise ValueError('NSO XR CLI NED cisco-iosxr-cli-7.41 does not support VASI interfaces')
@@ -269,7 +273,8 @@ def xr_process_interfaces(self) -> None:
                 f'Interface type {interface.config.type} not supported by this NSO_OC_Services implementation. Please file an issue at https://github.com/model-driven-devops/nso-oc-services')
 
 
-def xr_configure_tunnel_interface(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
+def xr_configure_tunnel_interface(interface_service: ncs.maagic.ListElement,
+                                  interface_cdb: ncs.maagic.ListElement) -> None:
     if interface_service.oc_tun__tunnel.config.src:
         interface_cdb.tunnel.source = interface_service.oc_tun__tunnel.config.src
     if interface_service.oc_tun__tunnel.config.dst:
@@ -307,24 +312,30 @@ def xr_get_subinterfaces(self) -> list:
 
 def xr_interface_ethernet(s, interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
     # auto-negotiate
+    # This doesn't work on CML 2.4 IOS XRv 9000
     if interface_service.ethernet.config.auto_negotiate:
-        interface_cdb.negotiation.auto = interface_service.ethernet.config.auto_negotiate
+        interface_cdb.negotiation.auto.create()
     elif interface_service.ethernet.config.auto_negotiate is False:
-        interface_cdb.negotiation.auto = interface_service.ethernet.config.auto_negotiate
+        if interface_cdb.negotiation.auto.exists():
+            interface_cdb.negotiation.auto.delete()
         # port-speed - may need to be set before duplex is configured
+        # This doesn't work on CML 2.4 IOS XRv 9000
         if interface_service.ethernet.config.port_speed:
             interface_cdb.speed = speeds_oc_to_xr.get(interface_service.ethernet.config.port_speed)
         # duplex-mode
+        # This doesn't work on CML 2.4 IOS XRv 9000
         if interface_service.ethernet.config.duplex_mode:
             interface_cdb.duplex = str(interface_service.ethernet.config.duplex_mode).lower()
     # port-speed
+    # This doesn't work on CML 2.4 IOS XRv 9000
     if interface_service.ethernet.config.port_speed:
         interface_cdb.speed = speeds_oc_to_xr.get(interface_service.ethernet.config.port_speed)
     # enable-flow-control
+    # This doesn't work on CML 2.4 IOS XRv 9000
     if interface_service.ethernet.config.enable_flow_control is True:
-        interface_cdb.flow_control.ingress = 'on'
+        interface_cdb.flow_control = 'bidirectional'
     elif interface_service.ethernet.config.enable_flow_control is False:
-        interface_cdb.flow_control.ingress = None
+        interface_cdb.flow_control = None
     # mac-address
     if interface_service.ethernet.config.mac_address:
         xr_mac = f'{interface_service.ethernet.config.mac_address[0:2]}{interface_service.ethernet.config.mac_address[3:5]}.{interface_service.ethernet.config.mac_address[6:8]}{interface_service.ethernet.config.mac_address[9:11]}.{interface_service.ethernet.config.mac_address[12:14]}{interface_service.ethernet.config.mac_address[15:17]}'
@@ -332,7 +343,7 @@ def xr_interface_ethernet(s, interface_service: ncs.maagic.ListElement, interfac
     # poe
     if interface_service.ethernet.switched_vlan.config.interface_mode:
         raise ValueError('NSO XR CLI NED cisco-iosxr-cli-7.41 does not support poe')
-    
+
     # switched-vlan interface-mode
     if interface_service.ethernet.switched_vlan.config.interface_mode:
         xr_configure_switched_vlan(s, interface_cdb, interface_service.ethernet.switched_vlan)
@@ -492,9 +503,9 @@ def xr_configure_ipv6(s, interface_cdb: ncs.maagic.ListElement, service_ipv6: nc
 
 
 def xr_configure_vrrp_v3(s, interface_cdb: ncs.maagic.ListElement,
-                              service_ip: ncs.maagic.Container, 
-                              interface_service: ncs.maagic.ListElement,
-                              address_family: str) -> None:
+                         service_ip: ncs.maagic.Container,
+                         interface_service: ncs.maagic.ListElement,
+                         address_family: str) -> None:
     """
     Configures ipv4 vrrp v3 with ipv4 support
     """
@@ -506,18 +517,24 @@ def xr_configure_vrrp_v3(s, interface_cdb: ncs.maagic.ListElement,
                     if not vrrpv3_interface.exists(f'{interface_service.name}'):
                         vrrpv3_interface.create(f'{interface_service.name}')
                         if address_family == 'ipv4':
-                            vrrpv3_interface[f'{interface_service.name}'].address_family.ipv4.vrrp.create(v.virtual_router_id)
+                            vrrpv3_interface[f'{interface_service.name}'].address_family.ipv4.vrrp.create(
+                                v.virtual_router_id)
                         else:
-                            vrrpv3_interface[f'{interface_service.name}'].address_family.ipv6.vrrp.create(v.virtual_router_id)
+                            vrrpv3_interface[f'{interface_service.name}'].address_family.ipv6.vrrp.create(
+                                v.virtual_router_id)
                     else:
                         if address_family == 'ipv4':
-                            vrrpv3_interface[f'{interface_service.name}'].address_family.ipv4.vrrp.create(v.virtual_router_id)
+                            vrrpv3_interface[f'{interface_service.name}'].address_family.ipv4.vrrp.create(
+                                v.virtual_router_id)
                         else:
-                            vrrpv3_interface[f'{interface_service.name}'].address_family.ipv6.vrrp.create(v.virtual_router_id)
+                            vrrpv3_interface[f'{interface_service.name}'].address_family.ipv6.vrrp.create(
+                                v.virtual_router_id)
                     if address_family == 'ipv4':
-                        vrrpv3_group = vrrpv3_interface[f'{interface_service.name}'].address_family.ipv4.vrrp[v.virtual_router_id]
+                        vrrpv3_group = vrrpv3_interface[f'{interface_service.name}'].address_family.ipv4.vrrp[
+                            v.virtual_router_id]
                     else:
-                        vrrpv3_group = vrrpv3_interface[f'{interface_service.name}'].address_family.ipv6.vrrp[v.virtual_router_id]
+                        vrrpv3_group = vrrpv3_interface[f'{interface_service.name}'].address_family.ipv6.vrrp[
+                            v.virtual_router_id]
                     # priority
                     if v.config.priority:
                         vrrpv3_group.priority = v.config.priority
@@ -537,7 +554,8 @@ def xr_configure_vrrp_v3(s, interface_cdb: ncs.maagic.ListElement,
                     # VRRP interface tracking TODO
 
 
-def xr_configure_vrrp_v2_legacy(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container, interface_service: ncs.maagic.ListElement) -> None:
+def xr_configure_vrrp_v2_legacy(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container,
+                                interface_service: ncs.maagic.ListElement) -> None:
     """
     Configures ipv4 vrrp v2 legacy
     """
@@ -550,10 +568,13 @@ def xr_configure_vrrp_v2_legacy(s, interface_cdb: ncs.maagic.ListElement, servic
                     vrrpv2_interface = s.root.devices.device[s.device_name].config.cisco_ios_xr__router.vrrp.interface
                     if not vrrpv2_interface.exists(f'{interface_service.name}'):
                         vrrpv2_interface.create(f'{interface_service.name}')
-                        vrrpv2_interface[f'{interface_service.name}'].address_family.ipv4.vrrp.create(v.virtual_router_id)
+                        vrrpv2_interface[f'{interface_service.name}'].address_family.ipv4.vrrp.create(
+                            v.virtual_router_id)
                     else:
-                        vrrpv2_interface[f'{interface_service.name}'].address_family.ipv4.vrrp.create(v.virtual_router_id)
-                    vrrpv2_group = vrrpv2_interface[f'{interface_service.name}'].address_family.ipv4.vrrp[v.virtual_router_id]
+                        vrrpv2_interface[f'{interface_service.name}'].address_family.ipv4.vrrp.create(
+                            v.virtual_router_id)
+                    vrrpv2_group = vrrpv2_interface[f'{interface_service.name}'].address_family.ipv4.vrrp[
+                        v.virtual_router_id]
                     # priority
                     if v.config.priority:
                         vrrpv2_group.priority = v.config.priority
@@ -573,7 +594,8 @@ def xr_configure_vrrp_v2_legacy(s, interface_cdb: ncs.maagic.ListElement, servic
                     # VRRP interface tracking TODO
 
 
-def xr_configure_hsrp_v1(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container, interface_service: ncs.maagic.ListElement) -> None:
+def xr_configure_hsrp_v1(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container,
+                         interface_service: ncs.maagic.ListElement) -> None:
     """
     Configures ipv4 hsrp
     """
@@ -584,10 +606,16 @@ def xr_configure_hsrp_v1(s, interface_cdb: ncs.maagic.ListElement, service_ipv4:
                     hsrpv1_interface = s.root.devices.device[s.device_name].config.cisco_ios_xr__router.hsrp.interface
                     if not hsrpv1_interface.exists(f'{interface_service.name}'):
                         hsrpv1_interface.create(f'{interface_service.name}')
-                        hsrpv1_interface[f'{interface_service.name}'].address_family.ipv4.hsrp_version1_list.hsrp.create(v.group_number)
+                        hsrpv1_interface[
+                            f'{interface_service.name}'].address_family.ipv4.hsrp_version1_list.hsrp.create(
+                            v.group_number)
                     else:
-                        hsrpv1_interface[f'{interface_service.name}'].address_family.ipv4.hsrp_version1_list.hsrp.create(v.group_number)
-                    hsrpv1_group = hsrpv1_interface[f'{interface_service.name}'].address_family.ipv4.hsrp_version1_list.hsrp[v.group_number]
+                        hsrpv1_interface[
+                            f'{interface_service.name}'].address_family.ipv4.hsrp_version1_list.hsrp.create(
+                            v.group_number)
+                    hsrpv1_group = \
+                    hsrpv1_interface[f'{interface_service.name}'].address_family.ipv4.hsrp_version1_list.hsrp[
+                        v.group_number]
                     # priority
                     if v.config.priority:
                         hsrpv1_group.priority = v.config.priority
@@ -662,6 +690,7 @@ def xr_interface_config(interface_service: ncs.maagic.ListElement, interface_cdb
     # mtu
     if interface_service.config.mtu:
         interface_cdb.mtu = interface_service.config.mtu
+
 
 def xr_interface_hold_time(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
     if interface_service.hold_time.config.down:

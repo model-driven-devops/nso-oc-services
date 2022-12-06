@@ -304,9 +304,9 @@
                   ip:
                     access-group:
                       - direction: 'out'
-                        access-list: 'external-ingress'
-                      - direction: 'in'
                         access-list: '11'
+                      - direction: 'in'
+                        access-list: 'external-ingress'
                     address:
                       primary:
                         address: '10.5.0.2'
