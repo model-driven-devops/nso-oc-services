@@ -2,8 +2,6 @@
 - hosts: nso
   connection: local
   gather_facts: no
-  tags:
-    - always
   roles:
     - nso-rollback-save
   run_once: true
@@ -93,8 +91,6 @@
 - hosts: nso
   connection: local
   gather_facts: no
-  tags:
-    - always
   roles:
     - nso-rollback-load
   run_once: true
