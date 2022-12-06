@@ -34,7 +34,7 @@
 
 - block:
     - set_fact:
-        previous_rollback_id: "{{ nso_rollback_facts.data | selectattr('nr', 'equalto', previous_nr | int) | map(attribute='rollback_nr') | first }}"
+        previous_rollback_id: "{{ nso_rollback_facts.data | selectattr('nr', 'equalto', previous_nr | int) | map(attribute='rollback_nr') | first | default(0) }}"
       vars:
         previous_nr: "{{ ( current_nr | int ) - 1 }}"
 
