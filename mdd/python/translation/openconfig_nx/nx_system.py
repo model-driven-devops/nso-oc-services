@@ -170,7 +170,7 @@ def nx_system_program_service(self) -> None:
     elif self.service.oc_sys__system.services.config.archive_logging is False:
         raise ValueError('archive logging not supported in NX')
     # boot network
-    if self.service.oc_sys__system.services.config.boot_network == "DISABLED":
+    if self.service.oc_sys__system.services.boot_network.config.bootnetwork_enabled == "DISABLED":
         raise ValueError('boot_network not supported in NX')
     # IP bootp server
     if self.service.oc_sys__system.services.config.ip_bootp_server:

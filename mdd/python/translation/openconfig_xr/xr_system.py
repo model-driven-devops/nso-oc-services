@@ -98,7 +98,7 @@ def xr_system_program_service(self) -> None:
     if self.service.oc_sys__system.ssh_server.config.ssh_source_interface:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for XR')
     # boot network
-    if self.service.oc_sys__system.services.config.boot_network == "DISABLED":
+    if self.service.oc_sys__system.services.boot_network.config.bootnetwork_enabled == "DISABLED":
         raise ValueError('boot_network not supported in XR')
     # IP bootp server
     if self.service.oc_sys__system.services.config.ip_bootp_server:
