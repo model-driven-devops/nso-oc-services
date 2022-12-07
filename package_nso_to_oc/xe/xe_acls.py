@@ -82,6 +82,7 @@ class BaseAcl:
         self._xe_acl_set = xe_acl_set
         self._xe_acl_set_after = xe_acl_set_after
         self._xe_acl_name = self._xe_acl_set.get("name")
+        self.acl_success = True
 
     def process_acl(self):
         acl_set = {
@@ -96,8 +97,7 @@ class BaseAcl:
                 "openconfig-acl:acl-entry": []
             }
         }
-        self._oc_acl_set.append(acl_set)
-        acl_success = True
+        self.acl_success = True
 
         for rule_index, access_rule in enumerate(self._xe_acl_set.get(self._rule_list_key, [])):
             rule_success = self.__set_rule_parts(access_rule, acl_set)
@@ -105,10 +105,12 @@ class BaseAcl:
             if rule_success:
                 self._xe_acl_set_after[self._rule_list_key][rule_index] = None
             else:
-                acl_success = False
+                self.acl_success = False
 
         # We only delete if all entries processed successfully.
-        if acl_success:
+        # We only add the ACL to OpenConfig if all entries processed successfully.
+        if self.acl_success:
+            self._oc_acl_set.append(acl_set)
             del self._xe_acl_set_after["name"]
 
     def __set_rule_parts(self, access_rule, acl_set):
@@ -161,6 +163,7 @@ class BaseAcl:
             if not rule_parts[2] in protocols_oc_to_xe:
                 self.__add_acl_entry_note(" ".join(rule_parts),
                                           f"protocol {rule_parts[2]} does not exist in expected list of protocols")
+                self.acl_success = False
                 raise ValueError
             self.__get_ipv4_config(entry)["openconfig-acl:protocol"] = protocols_oc_to_xe[rule_parts[2]]
 
@@ -240,6 +243,7 @@ class BaseAcl:
         except Exception as err:
             self.__add_acl_entry_note(" ".join(rule_parts),
                                       f"Unable to convert service {current_port} to a port number")
+            self.acl_success = False
             raise Exception
 
         if rule_parts[current_index] == "range":
@@ -271,6 +275,7 @@ class BaseAcl:
         elif rule_parts[current_index] == "neq":
             self.__add_acl_entry_note(" ".join(rule_parts),
                                       "XE ACL use of 'neq' port operator does not have an OC equivalent.")
+            self.acl_success = False
             raise ValueError
 
         if not is_source:
@@ -489,9 +494,9 @@ def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
 
     :param before: Original NSO Device configuration: dict
     :param leftover: NSO Device configuration minus configs replaced with MDD OC: dict
+    :param translation_notes: notes from previous NSO to OC translations if any
     :return: MDD Openconfig Network Instances configuration: dict
     """
-
     xe_acls(before, leftover)
     translation_notes += acls_notes
 

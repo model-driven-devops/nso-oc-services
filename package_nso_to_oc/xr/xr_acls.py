@@ -97,6 +97,7 @@ class BaseAcl:
 
         for rule_index, access_rule in enumerate(self._xr_acl_set):
             rule_success = self.__set_rule_parts(access_rule, acl_set)
+
             if rule_success:
                 self._xr_acl_set_after['rule'][rule_index] = None
             else:
@@ -142,7 +143,7 @@ class BaseAcl:
             acl_set["openconfig-acl:acl-entries"]["openconfig-acl:acl-entry"].append(entry)
 
         return success
-    
+
     def __add_acl_entry_note(self, original_entry, note):
         acls_notes.append(f"""
             ACL name: {self._xr_acl_name}
@@ -157,7 +158,7 @@ class BaseAcl:
                 self.acl_success = False
                 raise ValueError
             self.__get_ipv4_config(entry)["openconfig-acl:protocol"] = protocols_oc_to_xr[rule_parts[1]]
-        
+
         return 2
 
     def __get_ipv4_config(self, entry):
@@ -165,7 +166,7 @@ class BaseAcl:
             entry[self._ipv4_key] = {}
         if not self._config_key in entry[self._ipv4_key]:
             entry[self._ipv4_key][self._config_key] = {}
-        
+
         return entry[self._ipv4_key][self._config_key]
 
     def __get_transport_config(self, entry):
@@ -173,11 +174,10 @@ class BaseAcl:
             entry["openconfig-acl:transport"] = {}
         if not "openconfig-acl:config" in entry["openconfig-acl:transport"]:
             entry["openconfig-acl:transport"]["openconfig-acl:config"] = {}
-        
+
         return entry["openconfig-acl:transport"]["openconfig-acl:config"]
 
     def __set_ip_and_port(self, rule_parts, current_index, entry, is_source):
-
         if len(rule_parts) <= current_index:
             return current_index
 
@@ -190,12 +190,13 @@ class BaseAcl:
 
     def __set_ip_and_network(self, rule_parts, current_index, entry, is_source):
         ip = rule_parts[current_index]
+
         if ip == "any":
             if is_source:
                 self.__get_ipv4_config(entry)[self._src_addr_key] = "0.0.0.0/0"
             else:
                 self.__get_ipv4_config(entry)["openconfig-acl:destination-address"] = "0.0.0.0/0"
-            
+
             return current_index + 1
         elif ip == "host":
             if is_source:
@@ -212,11 +213,10 @@ class BaseAcl:
             self.__get_ipv4_config(entry)[self._src_addr_key] = f"{ip}/{temp_ip.prefixlen}"
         else:
             self.__get_ipv4_config(entry)["openconfig-acl:destination-address"] = f"{ip}/{temp_ip.prefixlen}"
-        
+
         return current_index + 2
 
     def __set_port(self, rule_parts, current_index, entry, is_source):
-
         if len(rule_parts) <= current_index or not rule_parts[current_index] in port_operators:
             # We've either reached the end of the rule or there's no specified port
             if is_source:
@@ -224,10 +224,11 @@ class BaseAcl:
             else:
                 self.__get_transport_config(entry)["openconfig-acl:destination-port"] = "ANY"
                 current_index = self.__set_tcp_flags(rule_parts, current_index, entry)
-            
+
             return current_index
-        
+
         current_port = rule_parts[current_index + 1]
+
         try:
             current_port = current_port if current_port.isdigit() else socket.getservbyname(current_port)
         except Exception as err:
@@ -243,7 +244,7 @@ class BaseAcl:
             else:
                 self.__get_transport_config(entry)["openconfig-acl:destination-port"] = f"{current_port}..{end_port}"
                 current_index = self.__set_tcp_flags(rule_parts, current_index + 3, entry)
-            
+
             return current_index
         elif rule_parts[current_index] == "lt":
             if is_source:
@@ -264,7 +265,7 @@ class BaseAcl:
             self.__add_acl_entry_note(" ".join(rule_parts), "XR ACL use of 'neq' port operator does not have an OC equivalent.")
             self.acl_success = False
             raise ValueError
-        
+
         if not is_source:
             current_index = self.__set_tcp_flags(rule_parts, current_index + 2, entry)
 
@@ -320,25 +321,25 @@ def get_interfaces_by_acl(config_before, config_after):
             for access_group in interface["ipv4"]["access-group"]:
                 if interface_list_after[index].get("ipv4") and interface_list_after[index]["ipv4"].get("access-group"):
                     del interface_list_after[index]["ipv4"]["access-group"]
-                
+
                 intf = {
                     "id": intf_id,
                     "interface": f"{interface_type}{intf_num}",
                     "subinterface": subintf_num,
                     "direction": access_group["direction"]
                 }
-                
+
                 if not access_group["name"] in interfaces_by_acl:
                     interfaces_by_acl[access_group["name"]] = []
 
                 interfaces_by_acl[access_group["name"]].append(intf)
-                
+
     return interfaces_by_acl
 
 
 def process_interfaces(acl_type, acl_name, interfaces_by_acl, acl_interfaces):
     interfaces = interfaces_by_acl.get(acl_name, [])
-    
+
     for interface in interfaces:
         if interface["id"] in acl_interfaces:
             acl_interface = acl_interfaces[interface["id"]]
@@ -354,7 +355,7 @@ def process_interfaces(acl_type, acl_name, interfaces_by_acl, acl_interfaces):
                 }
             }
             acl_interfaces[interface["id"]] = acl_interface
-        
+
         intf_acl_set = get_intf_acl_set(acl_interface, interface["direction"])
         intf_acl_set.append({
             "openconfig-acl:set-name": acl_name,
@@ -373,7 +374,7 @@ def get_intf_acl_set(acl_interface, direction):
             acl_interface[f"{ingress_set}s"] = {ingress_set: []}
         if not ingress_set in acl_interface[f"{ingress_set}s"]:
             acl_interface[f"{ingress_set}s"][ingress_set] = []
-        
+
         return acl_interface[f"{ingress_set}s"][ingress_set]
     elif direction == "egress":
         egress_set = "openconfig-acl:egress-acl-set"
@@ -381,7 +382,7 @@ def get_intf_acl_set(acl_interface, direction):
             acl_interface[f"{egress_set}s"] = {egress_set: []}
         if not egress_set in acl_interface[f"{egress_set}s"]:
             acl_interface[f"{egress_set}s"][egress_set] = []
-        
+
         return acl_interface[f"{egress_set}s"][egress_set]
     else:
         raise ValueError("XR ACL not applied to interface with ingress or egress direction.")
@@ -407,7 +408,7 @@ def process_ntp(config_before, config_after):
             ntp_peer = {
                 "openconfig-acl-ext:peer": {
                     "openconfig-acl-ext:config": {
-                        "openconfig-acl-ext:server-acl-set": access_group.get("name")
+                        "openconfig-acl-ext:peer-acl-set": access_group.get("name")
                     }
                 }
             }
@@ -456,17 +457,22 @@ def process_line(config_before, config_after):
                     acl_lines.append({
                         "openconfig-acl-ext:id": "vty 0 99",
                         "openconfig-acl-ext:config": {
-                            "openconfig-acl-ext:id": "vty 0 99",
-                            "openconfig-acl-ext:ingress-acl-set": line_item.get("access-class").get("ingress")
-                        }})
+                            "openconfig-acl-ext:id": "vty 0 99"},
+                        "openconfig-acl-ext:ingress-acl-sets": {
+                            "openconfig-acl-ext:ingress-acl-set": [
+                                {"openconfig-acl-ext:ingress-acl-set-name": line_item.get("access-class").get(
+                                    "ingress"),
+                                 "openconfig-acl-ext:config": {
+                                     "openconfig-acl-ext:ingress-acl-set-name": line_item.get("access-class").get(
+                                         "ingress")}}]}})
                     config_after["tailf-ned-cisco-ios-xr:line"]["default"]["access-class"]["ingress"] = None
                 if line_item.get("access-class").get("egress"):
                     acl_lines.append({
                         "openconfig-acl-ext:id": "vty 0 99",
                         "openconfig-acl-ext:config": {
-                            "openconfig-acl-ext:id": "vty 0 99",
-                            "openconfig-acl-ext:egress-acl-set": line_item.get("access-class").get("egress")
-                        }})
+                            "openconfig-acl-ext:id": "vty 0 99"},
+                        "openconfig-acl-ext:egress-acl-set": line_item.get("access-class").get("egress")
+                        })
                     config_after["tailf-ned-cisco-ios-xr:line"]["default"]["access-class"]["egress"] = None
 
 

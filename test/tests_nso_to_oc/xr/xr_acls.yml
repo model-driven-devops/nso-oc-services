@@ -2,7 +2,7 @@
 - hosts: localhost
   gather_facts: no
   environment:
-    NSO_DEVICE: xe1
+    NSO_DEVICE: xr1
   vars:
     nso_host: "{{ lookup('env', 'NSO_HOST') }}"
     nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
@@ -209,7 +209,7 @@
                   - id: 10
                     line: "permit ipv4 192.0.0.0 0.255.255.255 any"
                   - id: 20
-                    line: "permit ipv4 10.0.0.0 10.0.0.0 any"
+                    line: "permit ipv4 host 10.0.0.0 any"
                   - id: 30
                     line: "deny ipv4 any any"
               - name: "auto-rp"
@@ -300,6 +300,23 @@
 
     - name: Init interface
       tags:
+        - if_g7
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios-xr:interface
+        content: |
+          interface:
+            GigabitEthernet-subinterface:
+              GigabitEthernet:
+                - id: '0/0/0/7.100'
+                  description: 'Description for G7.100'
+                - id: '0/0/0/7.200'
+                  description: 'Description for G7.200'
+        api_method: PATCH
+
+    - name: Init interface
+      tags:
         - if_g7_100
       import_role:
         name: nso-ned-device-configure
@@ -307,9 +324,9 @@
         api_path: config/tailf-ned-cisco-ios-xr:interface/GigabitEthernet-subinterface/GigabitEthernet=0%2F0%2F0%2F7.100/ipv4/access-group
         content: |
           access-group:
-            - direction: egress
-              name: 'auto-rp'
             - direction: ingress
+              name: 'deny-hosts'
+            - direction: egress
               name: 'deny-hosts'
         api_method: PATCH
 
@@ -322,9 +339,9 @@
         api_path: config/tailf-ned-cisco-ios-xr:interface/GigabitEthernet-subinterface/GigabitEthernet=0%2F0%2F0%2F7.200/ipv4/access-group
         content: |
           access-group:
-            - direction: egress
-              name: 'auto-rp'
             - direction: ingress
+              name: 'deny-hosts'
+            - direction: egress
               name: 'deny-hosts'
         api_method: PATCH
 
@@ -386,7 +403,7 @@
           default:
             first-vty: 0
             last-vty: 99
-
+        api_method: PATCH
     - name: NSO configure VTY
       tags:
         - vty_config
@@ -398,7 +415,7 @@
           default:
             access-class:
               ingress: ingress_vty
-
+        api_method: PATCH
     - name: Execute NSO NED to OC script
       tags:
         - acls
@@ -431,31 +448,21 @@
     - assert:
         that:
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['name'] == '11'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['type'] == 'openconfig-acl-ext:ACL_IPV4_STANDARD'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['type'] == 'openconfig-acl:ACL_IPV4'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['sequence-id'] == 10"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['actions']['config']['forwarding-action'] == 'openconfig-acl:ACCEPT'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['actions']['config']['log-action'] == 'openconfig-acl:LOG_NONE'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['openconfig-acl-ext:ipv4']['config']['source-address'] == '192.0.0.0/8'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['name'] == 'auto-rp'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['ipv4']['config']['source-address'] == '192.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['name'] == 'deny-hosts'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['type'] == 'openconfig-acl:ACL_IPV4'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['sequence-id'] == 30"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['actions']['config']['forwarding-action'] == 'openconfig-acl:REJECT'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['actions']['config']['log-action'] == 'openconfig-acl:LOG_SYSLOG'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['ipv4']['config']['source-address'] == '0.0.0.0/0'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['ipv4']['config']['destination-address'] == '0.0.0.0/0'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['name'] == 'deny-hosts'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['type'] == 'openconfig-acl:ACL_IPV4'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['sequence-id'] == 50"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['actions']['config']['forwarding-action'] == 'openconfig-acl:REJECT'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['actions']['config']['log-action'] == 'openconfig-acl:LOG_NONE'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['ipv4']['config']['source-address'] == '192.168.1.12/32'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['ipv4']['config']['destination-address'] == '0.0.0.0/0'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['transport']['config']['source-port'] == 'ANY'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['transport']['config']['destination-port'] == '1025..65535'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['id'] == 'vty 0 4'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['egress-acl-set'] == '11'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['ingress-acl-set-name'] == '11'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['vrf'] == 'global'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['vrf-also'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:ntp']['peer']['config']['peer-acl-set'] == '11'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:ntp']['server']['config']['server-acl-set'] == '11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['sequence-id'] == 50"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['actions']['config']['forwarding-action'] == 'openconfig-acl:REJECT'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['actions']['config']['log-action'] == 'openconfig-acl:LOG_NONE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['ipv4']['config']['source-address'] == '192.168.1.12/32'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['ipv4']['config']['destination-address'] == '0.0.0.0/0'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['transport']['config']['source-port'] == 'ANY'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['transport']['config']['destination-port'] == '1025..65535'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['id'] == 'vty 0 99'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['ingress-acl-set-name'] == 'ingress_vty'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:ntp']['peer']['config']['peer-acl-set'] == 'ntp_peer'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:ntp']['server']['config']['server-acl-set'] == 'ntp_serve'"
