@@ -328,7 +328,7 @@
                   ip:
                     access-group:
                       - direction: 'in'
-                        access-list: 'auto-rp'
+                        access-list: 'deny-hosts'
                       - direction: 'out'
                         access-list: '11'
                     address:
@@ -340,7 +340,7 @@
                   ip:
                     access-group:
                       - direction: 'out'
-                        access-list: 'auto-rp'
+                        access-list: '11'
                       - direction: 'in'
                         access-list: 'deny-hosts'
                 - name: '7.200'
@@ -348,7 +348,7 @@
                   ip:
                     access-group:
                       - direction: 'out'
-                        access-list: 'auto-rp'
+                        access-list: '11'
                       - direction: 'in'
                         access-list: 'deny-hosts'
               Port-channel:
@@ -443,22 +443,15 @@
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['actions']['config']['forwarding-action'] == 'openconfig-acl:ACCEPT'"
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['actions']['config']['log-action'] == 'openconfig-acl:LOG_NONE'"
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['openconfig-acl-ext:ipv4']['config']['source-address'] == '192.0.0.0/8'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['name'] == 'auto-rp'"
+            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['name'] == 'deny-hosts'"
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['type'] == 'openconfig-acl:ACL_IPV4'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['sequence-id'] == 30"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['actions']['config']['forwarding-action'] == 'openconfig-acl:REJECT'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['actions']['config']['log-action'] == 'openconfig-acl:LOG_SYSLOG'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['ipv4']['config']['source-address'] == '0.0.0.0/0'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][0]['ipv4']['config']['destination-address'] == '0.0.0.0/0'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['name'] == 'deny-hosts'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['type'] == 'openconfig-acl:ACL_IPV4'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['sequence-id'] == 50"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['actions']['config']['forwarding-action'] == 'openconfig-acl:REJECT'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['actions']['config']['log-action'] == 'openconfig-acl:LOG_NONE'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['ipv4']['config']['source-address'] == '192.168.1.12/32'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['ipv4']['config']['destination-address'] == '0.0.0.0/0'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['transport']['config']['source-port'] == 'ANY'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['transport']['config']['destination-port'] == '1025..65535'"
+            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['sequence-id'] == 50"
+            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['actions']['config']['forwarding-action'] == 'openconfig-acl:REJECT'"
+            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['actions']['config']['log-action'] == 'openconfig-acl:LOG_NONE'"
+            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['ipv4']['config']['source-address'] == '192.168.1.12/32'"
+            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['ipv4']['config']['destination-address'] == '0.0.0.0/0'"
+            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['transport']['config']['source-port'] == 'ANY'"
+            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['transport']['config']['destination-port'] == '1025..65535'"
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['id'] == 'vty 0 4'"
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['egress-acl-set'] == '11'"
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['ingress-acl-set-name'] == '11'"
