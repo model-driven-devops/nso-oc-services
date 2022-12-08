@@ -78,9 +78,11 @@ def process_prefix_sets(config_before, config_after):
         }
         prefixes = new_prefix_set["openconfig-routing-policy:prefixes"]["openconfig-routing-policy:prefix"]
         seq_list_after = common.get_index_or_default(xe_prefixes_after, prefix_index, {}).get("seq", [])
+        all_processed = True
 
         for seq_index, seq in enumerate(prefix.get("seq", [])):
             if "deny" in seq:
+                all_processed = False
                 routing_policy_notes.append(
 f"""
 Prefix Name: {prefix.get("name")}
@@ -108,6 +110,9 @@ This sequence contains a deny operation, which is not supported in OpenConfig. T
                 seq_list_after[seq_index] = None
         
         prefix_sets["openconfig-routing-policy:prefix-sets"]["openconfig-routing-policy:prefix-set"].append(new_prefix_set)
+
+        if all_processed:
+            common.get_index_or_default(xe_prefixes_after, prefix_index, {})["name"] = None
     
     openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:defined-sets"].update(prefix_sets)
 
@@ -115,6 +120,7 @@ def process_as_path_sets(config_before, config_after):
     as_path_sets = {"openconfig-bgp-policy:as-path-sets": {"openconfig-bgp-policy:as-path-set": []}}
     access_list = config_before.get("tailf-ned-cisco-ios:ip", {}).get("as-path", {}).get("access-list", [])
     access_list_after = config_after.get("tailf-ned-cisco-ios:ip", {}).get("as-path", {}).get("access-list", [])
+    all_processed = True
 
     for access_index, access in enumerate(access_list):
         new_path_set = {
@@ -131,6 +137,7 @@ def process_as_path_sets(config_before, config_after):
             if not "operation" in rule:
                 continue
             if rule["operation"] == "deny":
+                all_processed = False
                 routing_policy_notes.append(
 f"""
 AS Path Name: {access.get("name")}
@@ -147,6 +154,9 @@ This rule contains a deny operation, which is not supported in OpenConfig. Trans
 
         as_path_sets["openconfig-bgp-policy:as-path-sets"]["openconfig-bgp-policy:as-path-set"].append(new_path_set)
 
+        if all_processed:
+            common.get_index_or_default(access_list_after, access_index, {})["name"] = None
+
     openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:defined-sets"]["openconfig-bgp-policy:bgp-defined-sets"].update(as_path_sets)
 
 def process_community_sets(config_before, config_after):
@@ -158,6 +168,8 @@ def process_community_sets(config_before, config_after):
     openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:defined-sets"]["openconfig-bgp-policy:bgp-defined-sets"].update(community_sets)
 
 def process_community_members(community_sets, type, community_list, community_list_after):
+    all_processed = True
+
     for community_index, community in enumerate(community_list.get(type, [])):
         new_community_set = {
             "openconfig-bgp-policy:community-set-name": community.get("name"),
@@ -174,6 +186,7 @@ def process_community_members(community_sets, type, community_list, community_li
             if not "expr" in entry:
                 continue
             if entry["expr"].startswith("deny"):
+                all_processed = False
                 routing_policy_notes.append(
 f"""
 Community Name: {community.get("name")}
@@ -192,6 +205,9 @@ This entry contains a deny operation, which is not supported in OpenConfig. Tran
 
         community_sets["openconfig-bgp-policy:community-sets"]["openconfig-bgp-policy:community-set"].append(new_community_set)
 
+        if all_processed:
+            common.get_index_or_default(community_list_after.get(type, []), community_index, {})["name"] = None
+
 def process_ext_community_sets(config_before, config_after):
     ext_community_sets = {"openconfig-bgp-policy:ext-community-sets": {"openconfig-bgp-policy:ext-community-set": []}}
     ext_community_list = config_before.get("tailf-ned-cisco-ios:ip", {}).get("extcommunity-list", {})
@@ -201,6 +217,8 @@ def process_ext_community_sets(config_before, config_after):
     openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:defined-sets"]["openconfig-bgp-policy:bgp-defined-sets"].update(ext_community_sets)
 
 def process_ext_community_members(ext_community_sets, type, ext_community_list, ext_community_list_after):
+    all_processed = True
+
     for ext_community_index, ext_community in enumerate(ext_community_list.get(type, {"no-mode-list": []}).get("no-mode-list", [])):
         ext_new_community_set = {
             "openconfig-bgp-policy:ext-community-set-name": ext_community.get("name"),
@@ -216,6 +234,7 @@ def process_ext_community_members(ext_community_sets, type, ext_community_list, 
             if not "expr" in entry:
                 continue
             if entry["expr"].startswith("deny"):
+                all_processed = False
                 routing_policy_notes.append(
 f"""
 Ext Community Name: {ext_community.get("name")}
@@ -234,11 +253,14 @@ This ext entry contains a deny operation, which is not supported in OpenConfig. 
 
         ext_community_sets["openconfig-bgp-policy:ext-community-sets"]["openconfig-bgp-policy:ext-community-set"].append(ext_new_community_set)
 
+        if all_processed:
+            common.get_index_or_default(ext_community_list_after.get(type, {"no-mode-list": []}).get("no-mode-list", []), ext_community_index, {})["name"] = None
+
 def process_policy_definitions(config_before, config_after):
     prev_policy_name = ""
 
     for route_map_index, route_map in enumerate(config_before.get("tailf-ned-cisco-ios:route-map", [])):
-        was_processed = False
+        processed = False
 
         if (prev_policy_name != route_map.get("name")):
             prev_policy_name = route_map.get("name")
@@ -269,11 +291,11 @@ def process_policy_definitions(config_before, config_after):
 
         if "match" in route_map:
             process_match(route_map["match"], statement["openconfig-routing-policy:conditions"])
-            was_processed = True
+            processed = True
         if "set" in route_map:
             process_set(route_map["set"], statement["openconfig-routing-policy:actions"])
-            was_processed = True
-        if was_processed and common.get_index_or_default(config_after.get("tailf-ned-cisco-ios:route-map", []), route_map_index, None):
+            processed = True
+        if processed and common.get_index_or_default(config_after.get("tailf-ned-cisco-ios:route-map", []), route_map_index, None):
             config_after["tailf-ned-cisco-ios:route-map"][route_map_index] = None
 
 def process_match(route_map_match, conditions):
@@ -483,8 +505,8 @@ if __name__ == "__main__":
 
     (config_before_dict, config_leftover_dict, interface_ip_dict) = common_xe.init_xe_configs()
     main(config_before_dict, config_leftover_dict)
-    config_name = "ned_configuration_acls"
-    config_remaining_name = "ned_configuration_remaining_acls"
+    config_name = "ned_configuration_routing_policies"
+    config_remaining_name = "ned_configuration_remaining_routing_policies"
     oc_name = "openconfig_routing_policies"
     common.print_and_test_configs(
         "xe1", config_before_dict, config_leftover_dict, openconfig_routing_policies, 
@@ -497,18 +519,3 @@ else:
     else:
         from xe import common_xe
         import common
-
-
-
-# TODO stuff to translate
-def xe_routing_policy_program_service(self) -> None:
-    if len(self.service.oc_rpol__routing_policy.defined_sets.prefix_sets.prefix_set) > 0:
-        prefix_sets_configure(self)
-    if len(self.service.oc_rpol__routing_policy.defined_sets.bgp_defined_sets.as_path_sets.as_path_set) > 0:
-        as_path_sets_configure(self)
-    if len(self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.community_sets.community_set) > 0:
-        community_sets_configure(self)
-    if len(self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set) > 0:
-        ext_community_sets_configure(self)
-    if len(self.service.oc_rpol__routing_policy.policy_definitions.policy_definition) > 0:
-        policy_definitions_configure(self)
