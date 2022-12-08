@@ -576,6 +576,7 @@ def set_authentication(intf, intf_leftover):
     is_auth_enabled = "ip" in intf and "ospf" in intf["ip"] and "authentication" in intf["ip"]["ospf"]
     is_mess_digest = "ip" in intf and "ospf" in intf["ip"] and "message-digest-key" in intf["ip"]["ospf"]
     if not is_auth_enabled:
+        # Unconfigured
         config = {
             "openconfig-ospfv2-ext:authentication-type": 'UNCONFIGURED'
         }
