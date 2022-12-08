@@ -1,0 +1,667 @@
+---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  tags:
+    - save_rollback
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- name: test acls extended
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
+    ansible_network_os: 'cisco.iosxr.iosxr'
+  tasks:
+    - name: test set_up configurations
+      tags:
+        - set_up
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'Port-channel10'
+                  openconfig-if-aggregate:aggregation:
+                    openconfig-if-aggregate:config:
+                      openconfig-if-aggregate:lag-type: 'LACP'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'LACP Example PO10'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'Port-channel10'
+                    openconfig-interfaces:type: 'ieee8023adLag'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 105
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:description: 'Sub interface 105'
+                          openconfig-interfaces:enabled: true
+                          openconfig-interfaces:index: 105
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.105.105.105'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.105.105.105'
+                                  openconfig-if-ip:prefix-length: 24
+                        openconfig-vlan:vlan:
+                          openconfig-vlan:config:
+                            openconfig-vlan:vlan-id: 105
+                      - openconfig-interfaces:index: 106
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:description: 'Sub interface 106'
+                          openconfig-interfaces:enabled: true
+                          openconfig-interfaces:index: 106
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.106.106.106'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.106.106.106'
+                                  openconfig-if-ip:prefix-length: 24
+                        openconfig-vlan:vlan:
+                          openconfig-vlan:config:
+                            openconfig-vlan:vlan-id: 106
+                - openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 5'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                      openconfig-interfaces:up: 0
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.5.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.5.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+                - openconfig-interfaces:name: 'GigabitEthernet0/0/0/6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 6'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet0/0/0/6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                      openconfig-interfaces:up: 0
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+                - openconfig-interfaces:name: 'GigabitEthernet0/0/0/7'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 7'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet0/0/0/7'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:hold-time:
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:down: 10
+                      openconfig-interfaces:up: 0
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 100
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:description: 'Sub interface 100'
+                          openconfig-interfaces:enabled: true
+                          openconfig-interfaces:index: 100
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.7.100.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.7.100.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+                            openconfig-if-ip:enabled: true
+                            openconfig-if-ip:mtu: 1500
+                          openconfig-if-ip:proxy-arp:
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:mode: DISABLE
+                        openconfig-vlan:vlan:
+                          openconfig-vlan:config:
+                            openconfig-vlan:vlan-id: 100
+                      - openconfig-interfaces:index: 200
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:description: 'Sub interface 200'
+                          openconfig-interfaces:enabled: true
+                          openconfig-interfaces:index: 200
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.7.200.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.7.200.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+                            openconfig-if-ip:enabled: true
+                            openconfig-if-ip:mtu: 1500
+                          openconfig-if-ip:proxy-arp:
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:mode: DISABLE
+                        openconfig-vlan:vlan:
+                          openconfig-vlan:config:
+                            openconfig-vlan:vlan-id: 200
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions: false
+
+    - name: test acl_deny_bogons_egress configurations
+      tags:
+        - acl_deny_bogons_egress
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-acl:acl:
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
+                  - openconfig-acl:name: 'deny-bogons-egress'
+                    openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:config:
+                      openconfig-acl:description: 'bogons-aggregated'
+                      openconfig-acl:name: 'deny-bogons-egress'
+                      openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
+                        - openconfig-acl:sequence-id: 10
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 10
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/8'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                        - openconfig-acl:sequence-id: 20
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 20
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '10.0.0.0/8'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                        - openconfig-acl:sequence-id: 30
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 30
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '100.64.0.0/10'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                        - openconfig-acl:sequence-id: 40
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 40
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '127.0.0.0/8'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                        - openconfig-acl:sequence-id: 50
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 50
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '169.254.0.0/16'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                        - openconfig-acl:sequence-id: 60
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 60
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '172.16.0.0/12'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                        - openconfig-acl:sequence-id: 70
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 70
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '192.0.0.0/24'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                        - openconfig-acl:sequence-id: 80
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 80
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '192.0.2.0/24'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                        - openconfig-acl:sequence-id: 90
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 90
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '192.168.0.0/16'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                        - openconfig-acl:sequence-id: 100
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 100
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '198.18.0.0/15'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                        - openconfig-acl:sequence-id: 110
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 110
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '198.51.100.0/24'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                        - openconfig-acl:sequence-id: 120
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 120
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '203.0.113.0/24'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                        - openconfig-acl:sequence-id: 130
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 130
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '224.0.0.0/3'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                        - openconfig-acl:sequence-id: 140
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 140
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+        assertions:
+          - "'+ipv4 access-list deny-bogons-egress:' in changes"
+          - "'+ 10 deny ipv4 any 0.0.0.0 0.255.255.255 log-input:' in changes"
+          - "'+ 20 deny ipv4 any 10.0.0.0 0.255.255.255 log-input:' in changes"
+          - "'+ 30 deny ipv4 any 100.64.0.0 0.63.255.255 log-input:' in changes"
+          - "'+ 40 deny ipv4 any 127.0.0.0 0.255.255.255 log-input:' in changes"
+          - "'+ 50 deny ipv4 any 169.254.0.0 0.0.255.255 log-input:' in changes"
+          - "'+ 60 deny ipv4 any 172.16.0.0 0.15.255.255 log-input:' in changes"
+          - "'+ 70 deny ipv4 any 192.0.0.0 0.0.0.255 log-input:' in changes"
+          - "'+ 80 deny ipv4 any 192.0.2.0 0.0.0.255 log-input:' in changes"
+          - "'+ 90 deny ipv4 any 192.168.0.0 0.0.255.255 log-input:' in changes"
+          - "'+ 100 deny ipv4 any 198.18.0.0 0.1.255.255 log-input:' in changes"
+          - "'+ 110 deny ipv4 any 198.51.100.0 0.0.0.255 log-input:' in changes"
+          - "'+ 120 deny ipv4 any 203.0.113.0 0.0.0.255 log-input:' in changes"
+          - "'+ 130 deny ipv4 any 224.0.0.0 31.255.255.255 log-input:' in changes"
+          - "'+ 140 permit ipv4 any any:' in changes"
+        api_method: PATCH
+        rollback: false
+        assertion_ignore_errors: false
+
+    - name: test  acl_deny_bogons_ingress configurations
+      tags:
+        -  acl_deny_bogons_ingress
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-acl:acl:
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
+                  - openconfig-acl:name: 'deny-bogons-ingress'
+                    openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:config:
+                      openconfig-acl:description: 'bogons-aggregated'
+                      openconfig-acl:name: 'deny-bogons-ingress'
+                      openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
+                        - openconfig-acl:sequence-id: 10
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 10
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:source-address: '0.0.0.0/8'
+                        - openconfig-acl:sequence-id: 20
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 20
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:source-address: '10.0.0.0/8'
+                        - openconfig-acl:sequence-id: 30
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 30
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:source-address: '100.64.0.0/10'
+                        - openconfig-acl:sequence-id: 40
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 40
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:source-address: '127.0.0.0/8'
+                        - openconfig-acl:sequence-id: 50
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'bogons'
+                            openconfig-acl:sequence-id: 50
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:source-address: '169.254.0.0/16'
+        assertions:
+          - "'+ipv4 access-list deny-bogons-ingress:' in changes"
+          - "'+ 10 deny ipv4 0.0.0.0 0.255.255.255 any log-input:' in changes"
+          - "'+ 20 deny ipv4 10.0.0.0 0.255.255.255 any log-input:' in changes"
+          - "'+ 30 deny ipv4 100.64.0.0 0.63.255.255 any log-input:' in changes"
+          - "'+ 40 deny ipv4 127.0.0.0 0.255.255.255 any log-input:' in changes"
+          - "'+ 50 deny ipv4 169.254.0.0 0.0.255.255 any log-input:' in changes"
+        api_method: PATCH
+        rollback: false
+        assertion_ignore_errors: false
+
+    - name: test acl_external_ingress configurations
+      tags:
+        - acl_external_ingress
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-acl:acl:
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
+                  - openconfig-acl:name: 'external-ingress'
+                    openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:config:
+                      openconfig-acl:description: 'external to internal'
+                      openconfig-acl:name: 'external-ingress'
+                      openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
+                        - openconfig-acl:sequence-id: 10
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'ssh'
+                            openconfig-acl:sequence-id: 10
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:protocol: 'IP_TCP'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                          openconfig-acl:transport:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-port: 22
+                        - openconfig-acl:sequence-id: 20
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'established TCP traffic'
+                            openconfig-acl:sequence-id: 20
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:protocol: 'IP_TCP'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                          openconfig-acl:transport:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-port: '1024..65535'
+                              openconfig-acl:tcp-flags:
+                                - 'TCP_ACK'
+                                - 'TCP_RST'
+                        - openconfig-acl:sequence-id: 30
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'drop log other packets'
+                            openconfig-acl:sequence-id: 30
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+        assertions:
+          - "'+ipv4 access-list external-ingress:' in changes"
+          - "'+ 10 permit tcp any any eq ssh:' in changes"
+          - "'+ 20 permit tcp any any range 1024 65535 established:' in changes"
+          - "'+ 30 deny ipv4 any any log-input:' in changes"
+        api_method: PATCH
+        rollback: false
+        assertion_ignore_errors: false
+
+    - name: test acl_apply configurations
+      tags:
+        - acl_apply
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-acl:acl:
+              openconfig-acl:interfaces:
+                openconfig-acl:interface:
+                  - openconfig-acl:id: 'GigabitEthernet0/0/0/5'
+                    openconfig-acl:config:
+                      openconfig-acl:id: 'GigabitEthernet0/0/0/5'
+                    openconfig-acl:ingress-acl-sets:
+                      openconfig-acl:ingress-acl-set:
+                        - openconfig-acl:set-name: 'external-ingress'
+                          openconfig-acl:type: 'ACL_IPV4'
+                          openconfig-acl:config:
+                            openconfig-acl:set-name: 'external-ingress'
+                            openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:interface-ref:
+                      openconfig-acl:config:
+                        openconfig-acl:interface: 'GigabitEthernet0/0/0/5'
+                        openconfig-acl:subinterface: 0
+                  - openconfig-acl:id: 'GigabitEthernet0/0/0/6'
+                    openconfig-acl:config:
+                      openconfig-acl:id: 'GigabitEthernet0/0/0/6'
+                    openconfig-acl:egress-acl-sets:
+                      openconfig-acl:egress-acl-set:
+                        - openconfig-acl:set-name: 'deny-bogons-egress'
+                          openconfig-acl:type: 'ACL_IPV4'
+                          openconfig-acl:config:
+                            openconfig-acl:set-name: 'deny-bogons-egress'
+                            openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:ingress-acl-sets:
+                      openconfig-acl:ingress-acl-set:
+                        - openconfig-acl:set-name: 'deny-bogons-ingress'
+                          openconfig-acl:type: 'ACL_IPV4'
+                          openconfig-acl:config:
+                            openconfig-acl:set-name: 'deny-bogons-ingress'
+                            openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:interface-ref:
+                      openconfig-acl:config:
+                        openconfig-acl:interface: 'GigabitEthernet0/0/0/6'
+                        openconfig-acl:subinterface: 0
+                  - openconfig-acl:id: 'GigabitEthernet0/0/0/7.100'
+                    openconfig-acl:config:
+                      openconfig-acl:id: 'GigabitEthernet0/0/0/7.100'
+                    openconfig-acl:ingress-acl-sets:
+                      openconfig-acl:ingress-acl-set:
+                        - openconfig-acl:set-name: 'deny-bogons-ingress'
+                          openconfig-acl:type: 'ACL_IPV4'
+                          openconfig-acl:config:
+                            openconfig-acl:set-name: 'deny-bogons-ingress'
+                            openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:interface-ref:
+                      openconfig-acl:config:
+                        openconfig-acl:interface: 'GigabitEthernet0/0/0/7'
+                        openconfig-acl:subinterface: 100
+                  - openconfig-acl:id: 'GigabitEthernet0/0/0/7.200'
+                    openconfig-acl:config:
+                      openconfig-acl:id: 'GigabitEthernet0/0/0/7.200'
+                    openconfig-acl:ingress-acl-sets:
+                      openconfig-acl:ingress-acl-set:
+                        - openconfig-acl:set-name: 'deny-bogons-ingress'
+                          openconfig-acl:type: 'ACL_IPV4'
+                          openconfig-acl:config:
+                            openconfig-acl:set-name: 'deny-bogons-ingress'
+                            openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:interface-ref:
+                      openconfig-acl:config:
+                        openconfig-acl:interface: 'GigabitEthernet0/0/0/7'
+                        openconfig-acl:subinterface: 200
+                  - openconfig-acl:id: 'Port-channel10.105'
+                    openconfig-acl:config:
+                      openconfig-acl:id: 'Port-channel10.105'
+                    openconfig-acl:ingress-acl-sets:
+                      openconfig-acl:ingress-acl-set:
+                        - openconfig-acl:set-name: 'deny-bogons-ingress'
+                          openconfig-acl:type: 'ACL_IPV4'
+                          openconfig-acl:config:
+                            openconfig-acl:set-name: 'deny-bogons-ingress'
+                            openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:interface-ref:
+                      openconfig-acl:config:
+                        openconfig-acl:interface: 'Port-channel10'
+                        openconfig-acl:subinterface: 105
+        assertions:
+          - "' interface GigabitEthernet0/0/0/5:' in changes"
+          - "'+ ipv4 access-group external-ingress ingress:' in changes"
+          - "' interface GigabitEthernet0/0/0/6:' in changes"
+          - "'+ ipv4 access-group deny-bogons-egress egress:' in changes"
+          - "'+ ipv4 access-group deny-bogons-ingress ingress:' in changes"
+          - "' interface GigabitEthernet0/0/0/7.100:' in changes"
+          - "'+ ipv4 access-group deny-bogons-ingress ingress:' in changes"
+          - "' interface GigabitEthernet0/0/0/7.200:' in changes"
+          - "'+ ipv4 access-group deny-bogons-ingress ingress:' in changes"
+          - "' interface Bundle-Ether10.105:' in changes"
+          - "'+ ipv4 access-group deny-bogons-ingress ingress:' in changes"
+        api_method: PATCH
+        rollback: false
+        assertion_ignore_errors: false
+
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-load
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"

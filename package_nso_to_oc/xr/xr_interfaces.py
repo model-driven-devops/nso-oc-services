@@ -90,7 +90,7 @@ def create_interface_dict(config_before: dict) -> dict:
     'oc_sub_interface_number': 0, 'nso_interface_type': 'Vlan', 'oc_sub_interface_place_counter': 0}}}
     """
 
-    def index_subinterfaces(interface_type):
+    def index_subinterfaces(interface_type, nso_old_physical_interface_number):
         interface_dict[interface_type] = {}
         oc_sub_interface_place_counter = 0  # OC interface sub-if place counter
 
@@ -105,7 +105,9 @@ def create_interface_dict(config_before: dict) -> dict:
             interface_dict[interface_type.replace("-subinterface", "")][physical_interface_number][
                 "oc_interface_index"]
 
-            if oc_sub_interface_number != 0:
+            if oc_sub_interface_number != 0 and (nso_old_physical_interface_number != physical_interface_number):
+                oc_sub_interface_place_counter = 1
+            elif oc_sub_interface_number != 0 and (nso_old_physical_interface_number == physical_interface_number):
                 oc_sub_interface_place_counter += 1
             temp = {value["id"]:
                         {"oc_interface_index": oc_interface_index,
@@ -116,14 +118,15 @@ def create_interface_dict(config_before: dict) -> dict:
                          "oc_sub_interface_place_counter": oc_sub_interface_place_counter}
                     }
             interface_dict[interface_type].update(temp)
+            nso_old_physical_interface_number = physical_interface_number
         oc_interface_index += 1
 
     oc_interface_index = 0
     interface_dict = {}
     for interface_type in config_before.get("tailf-ned-cisco-ios-xr:interface", {}):
+        nso_old_physical_interface_number = None
         if "-subinterface" not in interface_type and nso_to_oc_interface_types.get(interface_type):
             interface_dict[interface_type] = {}
-            nso_old_physical_interface_number = None
             oc_sub_interface_place_counter = 0  # OC interface sub-if place counter
             old_nso_index = 0  # Needed to not increase oc_interface_index when using subinterfaces
             for nso_index, value in enumerate(config_before["tailf-ned-cisco-ios-xr:interface"][interface_type]):
@@ -170,7 +173,7 @@ def create_interface_dict(config_before: dict) -> dict:
                     oc_interface_index += 1
 
         if "-subinterface" in interface_type and nso_to_oc_interface_types.get(interface_type):
-            index_subinterfaces(interface_type)
+            index_subinterfaces(interface_type, nso_old_physical_interface_number)
     return interface_dict
 
 
@@ -427,6 +430,11 @@ def configure_port_channel(config_before: dict, config_leftover: dict, interface
 
             xr_interface_config(nso_before_interface, nso_leftover_interface, openconfig_interface_subif)
             xr_configure_ipv4_interface(nso_before_interface, nso_leftover_interface, openconfig_interface_subif)
+
+            # Add vlan-id for sub-if
+            if nso_before_interface.get("encapsulation", {}).get("dot1q", {}).get("vlan-id"):
+                openconfig_interface_subif.update({"openconfig-vlan:vlan": {"openconfig-vlan:config": {
+                    "openconfig-vlan:vlan-id": nso_before_interface["encapsulation"]["dot1q"]["vlan-id"][0]}}})
 
 
 def configure_csmacd(config_before: dict, config_leftover: dict, interface_data: dict) -> None:

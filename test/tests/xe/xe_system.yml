@@ -637,7 +637,7 @@
               openconfig-system-ext:services:
                 openconfig-system-ext:config:
                   openconfig-system-ext:finger: true
-        api_method: PATCH
+        api_method: PUT
         api_ignore_errors: false
         rollback: false
         assertion_ignore_errors: false
@@ -1459,7 +1459,7 @@
               openconfig-system-ext:services:
                 openconfig-system-ext:config:
                   openconfig-system-ext:ip-dns-server: true
-        api_method: PATCH
+        api_method: PUT
         api_ignore_errors: false
         rollback: false
         assertion_ignore_errors: false
@@ -1579,6 +1579,29 @@
         assertion_ignore_errors: false
         assertions:
           - "'+service password-encryption:' in changes"
+
+    - name: test ssh algorithm encryption (All Alg)
+      tags:
+        - ssh-algorithm-encryption-all
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system:ssh-server:
+                openconfig-system-ext:algorithm:
+                  openconfig-system-ext:config:
+                    openconfig-system-ext:encryption:
+                      - aes128-ctr
+                      - aes192-ctr
+                      - aes256-ctr
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip ssh server algorithm encryption aes256-ctr aes192-ctr aes128-ctr:' in changes"
 
 - hosts: nso
   connection: local

@@ -98,6 +98,9 @@ def nx_system_program_service(self) -> None:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
     if self.service.oc_sys__system.ssh_server.config.ssh_source_interface:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
+    if self.service.oc_sys__system.ssh_server.algorithm.config.encryption:
+        raise NotImplementedError('openconfig-system-ssh-server-algorithm-config-encryption has not yet been implemented for NX')
+
     # NTP
     if self.service.oc_sys__system.ntp.config.enabled:
         raise NotImplementedError('openconfig-system-ntp-config has not yet been implemented for NX')

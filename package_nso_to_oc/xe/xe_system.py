@@ -35,7 +35,12 @@ openconfig_system = {
             "openconfig-system:servers": {
                 "openconfig-system:server": []}
         },
-        "openconfig-system:ssh-server": {"openconfig-system:config": {}},
+        "openconfig-system:ssh-server": {
+            "openconfig-system:config": {},
+            "openconfig-system-ext:algorithm": {
+                "openconfig-system-ext:config": {}
+            }
+        },
         "openconfig-system-ext:services": {
             "openconfig-system-ext:http": {
                 "openconfig-system-ext:config": {}
@@ -216,8 +221,9 @@ def xe_system_ssh_server(config_before: dict, config_leftover: dict) -> None:
     """
     Translates NSO XE NED to MDD OpenConfig System SSH Server
     """
-    openconfig_system_ssh_server_config = openconfig_system["openconfig-system:system"]["openconfig-system:ssh-server"][
-        "openconfig-system:config"]
+    openconfig_system_ssh_server_config = openconfig_system["openconfig-system:system"]["openconfig-system:ssh-server"]["openconfig-system:config"]
+    openconfig_system_ssh_server_alg_config = openconfig_system["openconfig-system:system"]["openconfig-system:ssh-server"]["openconfig-system-ext:algorithm"]["openconfig-system-ext:config"]
+
 
     if config_before.get("tailf-ned-cisco-ios:ip", {}).get("ssh", {}).get("time-out"):
         openconfig_system_ssh_server_config["openconfig-system-ext:ssh-timeout"] = config_before.get(
@@ -254,6 +260,9 @@ def xe_system_ssh_server(config_before: dict, config_leftover: dict) -> None:
             "session-limit")
         del config_leftover["tailf-ned-cisco-ios:line"]["vty"][0]["session-limit"]
 
+    if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("ssh", {}).get("server", {}).get("algorithm", {}).get("encryption", '')) is list:
+        openconfig_system_ssh_server_alg_config["openconfig-system-ext:encryption"] = config_before.get("tailf-ned-cisco-ios:ip", {}).get("ssh", {}).get("server", {}).get("algorithm", {}).get("encryption")
+        del config_leftover["tailf-ned-cisco-ios:ip"]["ssh"]["server"]["algorithm"]["encryption"]
 
 def xe_add_oc_ntp_server(before_ntp_server_list: list, after_ntp_server_list: list, openconfig_ntp_server_list: list,
                          ntp_type: str, ntp_vrf: str, if_ip: dict) -> None:

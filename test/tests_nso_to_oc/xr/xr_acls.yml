@@ -11,12 +11,13 @@
 - hosts: localhost
   gather_facts: no
   environment:
-    NSO_DEVICE: xe1
+    NSO_DEVICE: xr1
+    DEVICE_OS: xr
   vars:
     nso_host: "{{ lookup('env', 'NSO_HOST') }}"
     nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
     nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
-    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+    device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
   tasks:
     - block:
       - name: Set up service config
@@ -28,20 +29,6 @@
           api_path: mdd:openconfig
           content: |
             mdd:openconfig:
-              openconfig-network-instance:network-instances:
-                openconfig-network-instance:network-instance:
-                  - openconfig-network-instance:name: 'default'
-                    openconfig-network-instance:config:
-                      openconfig-network-instance:name: 'default'
-                      openconfig-network-instance:type: 'DEFAULT_INSTANCE'
-                      openconfig-network-instance:enabled: true
-                  - openconfig-network-instance:name: 'internal_0'
-                    openconfig-network-instance:config:
-                      openconfig-network-instance:name: 'internal_0'
-                      openconfig-network-instance:type: 'L3VRF'
-                      openconfig-network-instance:enabled: true
-                      openconfig-network-instance:enabled-address-families:
-                        - 'IPV4'
               openconfig-interfaces:interfaces:
                 openconfig-interfaces:interface:
                   - openconfig-interfaces:name: 'Port-channel10'
@@ -86,17 +73,13 @@
                           openconfig-vlan:vlan:
                             openconfig-vlan:config:
                               openconfig-vlan:vlan-id: 106
-                  - openconfig-interfaces:name: 'GigabitEthernet5'
+                  - openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
                     openconfig-interfaces:config:
                       openconfig-interfaces:description: 'Physical Interface 5'
                       openconfig-interfaces:enabled: true
                       openconfig-interfaces:mtu: 1500
-                      openconfig-interfaces:name: 'GigabitEthernet5'
+                      openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
                       openconfig-interfaces:type: 'ethernetCsmacd'
-                    openconfig-if-ethernet:ethernet:
-                      openconfig-if-ethernet:config:
-                        openconfig-if-ethernet:auto-negotiate: true
-                        openconfig-if-ethernet:enable-flow-control: false
                     openconfig-interfaces:hold-time:
                       openconfig-interfaces:config:
                         openconfig-interfaces:down: 10
@@ -115,17 +98,13 @@
                                     openconfig-if-ip:prefix-length: 24
                             openconfig-if-ip:config:
                               openconfig-if-ip:dhcp-client: false
-                  - openconfig-interfaces:name: 'GigabitEthernet6'
+                  - openconfig-interfaces:name: 'GigabitEthernet0/0/0/6'
                     openconfig-interfaces:config:
                       openconfig-interfaces:description: 'Physical Interface 6'
                       openconfig-interfaces:enabled: true
                       openconfig-interfaces:mtu: 1500
-                      openconfig-interfaces:name: 'GigabitEthernet6'
+                      openconfig-interfaces:name: 'GigabitEthernet0/0/0/6'
                       openconfig-interfaces:type: 'ethernetCsmacd'
-                    openconfig-if-ethernet:ethernet:
-                      openconfig-if-ethernet:config:
-                        openconfig-if-ethernet:auto-negotiate: true
-                        openconfig-if-ethernet:enable-flow-control: false
                     openconfig-interfaces:hold-time:
                       openconfig-interfaces:config:
                         openconfig-interfaces:down: 10
@@ -144,16 +123,13 @@
                                     openconfig-if-ip:prefix-length: 24
                             openconfig-if-ip:config:
                               openconfig-if-ip:dhcp-client: false
-                  - openconfig-interfaces:name: 'GigabitEthernet7'
+                  - openconfig-interfaces:name: 'GigabitEthernet0/0/0/7'
                     openconfig-interfaces:config:
                       openconfig-interfaces:description: 'Physical Interface 7'
                       openconfig-interfaces:enabled: true
                       openconfig-interfaces:mtu: 1500
-                      openconfig-interfaces:name: 'GigabitEthernet7'
+                      openconfig-interfaces:name: 'GigabitEthernet0/0/0/7'
                       openconfig-interfaces:type: 'ethernetCsmacd'
-                    openconfig-if-ethernet:ethernet:
-                      openconfig-if-ethernet:config:
-                        openconfig-if-ethernet:auto-negotiate: true
                     openconfig-interfaces:hold-time:
                       openconfig-interfaces:config:
                         openconfig-interfaces:down: 10
@@ -204,16 +180,12 @@
                           openconfig-vlan:vlan:
                             openconfig-vlan:config:
                               openconfig-vlan:vlan-id: 200
-                  - openconfig-interfaces:name: 'GigabitEthernet8'
+                  - openconfig-interfaces:name: 'GigabitEthernet0/0/0/8'
                     openconfig-interfaces:config:
-                      openconfig-interfaces:name: 'GigabitEthernet8'
+                      openconfig-interfaces:name: 'GigabitEthernet0/0/0/8'
                       openconfig-interfaces:enabled: true
                       openconfig-interfaces:type: 'ethernetCsmacd'
                       openconfig-interfaces:description: 'Test gigabitethernet'
-                    openconfig-if-ethernet:ethernet:
-                      openconfig-if-ethernet:config:
-                        openconfig-if-ethernet:auto-negotiate: true
-                        openconfig-if-ethernet:enable-flow-control: false
                     openconfig-interfaces:hold-time:
                       openconfig-interfaces:config:
                         openconfig-interfaces:down: '10'
@@ -225,21 +197,9 @@
                           openconfig-if-ip:ipv4:
                             openconfig-if-ip:addresses:
                               openconfig-if-ip:address:
-                                - openconfig-if-ip:ip: '10.250.25.1'
+                                - openconfig-if-ip:ip: '10.8.0.1'
                                   openconfig-if-ip:config:
-                                    openconfig-if-ip:ip: '10.250.25.1'
-                                    openconfig-if-ip:prefix-length: 24
-                            openconfig-if-ip:config:
-                              openconfig-if-ip:dhcp-client: false
-                        - openconfig-interfaces:index: 10
-                          openconfig-interfaces:config:
-                            openconfig-interfaces:index: 10
-                          openconfig-if-ip:ipv4:
-                            openconfig-if-ip:addresses:
-                              openconfig-if-ip:address:
-                                - openconfig-if-ip:ip: '10.8.10.2'
-                                  openconfig-if-ip:config:
-                                    openconfig-if-ip:ip: '10.8.10.2'
+                                    openconfig-if-ip:ip: '10.8.0.1'
                                     openconfig-if-ip:prefix-length: 24
                             openconfig-if-ip:config:
                               openconfig-if-ip:dhcp-client: false
@@ -251,121 +211,180 @@
         import_role:
           name: nso-ned-device-configure
         vars:
-          api_path: config/tailf-ned-cisco-ios:ip/access-list
+          api_path: config/tailf-ned-cisco-ios-xr:ipv4/access-list
           content: |
             access-list:
-              standard:
-                std-named-acl:
-                  - name: '11'
-                    std-access-list-rule:
-                      - rule: '10 permit 192.0.0.0 0.255.255.255'
-                      - rule: '20 permit 10.0.0.0 0.255.255.255'
-                      - rule: '30 deny any'
-              extended:
-                ext-named-acl:
-                  - name: 'auto-rp'
-                    ext-access-list-rule:
-                      - rule: '10 permit tcp any host 224.0.1.39 eq pim-auto-rp'
-                      - rule: '20 permit tcp any host 224.0.1.40 eq pim-auto-rp'
-                      - rule: '30 deny ip any any log-input'
-                  - name: 'deny-hosts'
-                    ext-access-list-rule:
-                      - rule: '10 deny tcp host 192.168.1.10 host 10.1.1.1 eq www'
-                      - rule: '20 deny tcp host 192.168.1.10 host 10.1.1.2'
-                      - rule: '30 deny tcp 192.168.1.0 0.0.0.255 10.1.1.0 0.0.0.255'
-                      - rule: '40 deny tcp host 192.168.1.11 any eq www'
-                      - rule: '50 deny tcp host 192.168.1.12 any gt 1024'
-                      - rule: '60 permit ip any any'
-                  - name: 'service-cmd'
-                    ext-access-list-rule:
-                      - rule: '10 permit tcp any eq cmd any'
-                      - rule: '20 permit tcp any any eq cmd'
-                      - rule: '30 deny ip any any log-input'
-                  - name: 'external-ingress'
-                    ext-access-list-rule:
-                      - rule: '10 permit tcp any any eq 22'
-                      - rule: '20 permit tcp any any eq www'
-                      - rule: '30 permit tcp any any range 1024 65535 established'
-                      - rule: '40 deny ip any any log-input'
+              named-acl:
+                - name: "11"
+                  rule:
+                    - id: 10
+                      line: "permit ipv4 192.0.0.0 0.255.255.255 any"
+                    - id: 20
+                      line: "permit ipv4 host 10.0.0.0 any"
+                    - id: 30
+                      line: "deny ipv4 any any"
+                - name: "auto-rp"
+                  rule:
+                    - id: 10
+                      line: "permit tcp any host 224.0.1.39 eq pim-auto-rp"
+                    - id: 20
+                      line: "permit tcp any host 224.0.1.40 eq pim-auto-rp"
+                    - id: 30
+                      line: "deny ipv4 any any log-input"
+                - name: "deny-hosts"
+                  rule:
+                    - id: 10
+                      line: "deny tcp host 192.168.1.10 host 10.1.1.1 eq www"
+                    - id: 20
+                      line: "deny tcp host 192.168.1.10 host 10.1.1.2"
+                    - id: 30
+                      line: "deny tcp 192.168.1.0 0.0.0.255 10.1.1.0 0.0.0.255"
+                    - id: 40
+                      line: "deny tcp host 192.168.1.11 any eq www"
+                    - id: 50
+                      line: "deny tcp host 192.168.1.12 any gt 1024"
+                    - id: 60
+                      line: "permit ipv4 any any"
+                - name: "service-cmd"
+                  rule:
+                    - id: 10
+                      line: "permit tcp any eq cmd any"
+                    - id: 20
+                      line: "permit tcp any any eq cmd"
+                    - id: 30
+                      line: "deny ipv4 any any log-input"
+                - name: "external-ingress"
+                  rule:
+                    - id: 10
+                      line: "permit tcp any any eq 22"
+                    - id: 20
+                      line: "permit tcp any any eq www"
+                    - id: 30
+                      line: "permit tcp any any range 1024 65535 established"
+                    - id: 40
+                      line: "deny ipv4 any any log-input"
+                - name: "ntp_peer"
+                  rule:
+                    - id: 10
+                      line: "permit ipv4 host 10.4.4.4 any"
+                - name: "ntp_serve"
+                  rule:
+                    - id: 10
+                      line: "permit ipv4 host 10.2.2.2 any"
+                - name: "ingress_vty"
+                  rule:
+                    - id: 10
+                      line: "permit tcp any any eq 22"
+                    - id: 20
+                      line: "deny ipv4 any any log-input"
           api_method: PATCH
 
       - name: Init interface
         tags:
-          - init_intf
+          - if_g5
         import_role:
           name: nso-ned-device-configure
         vars:
-          api_path: config/tailf-ned-cisco-ios:interface
+          api_path: config/tailf-ned-cisco-ios-xr:interface/GigabitEthernet=0%2F0%2F0%2F5/ipv4/access-group
+          content: |
+            access-group:
+              - direction: egress
+                name: '11'
+              - direction: ingress
+                name: 'external-ingress'
+          api_method: PATCH
+
+      - name: Init interface
+        tags:
+          - if_g6
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios-xr:interface/GigabitEthernet=0%2F0%2F0%2F6/ipv4/access-group
+          content: |
+            access-group:
+              - direction: egress
+                name: 'deny-hosts'
+              - direction: ingress
+                name: 'service-cmd'
+          api_method: PATCH
+
+      - name: Init interface
+        tags:
+          - if_g7
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios-xr:interface
           content: |
             interface:
-              GigabitEthernet:
-                - name: '5'
-                  description: 'Description for GigabitEthernet5'
-                  ip:
-                    access-group:
-                      - direction: 'out'
-                        access-list: '11'
-                      - direction: 'in'
-                        access-list: 'external-ingress'
-                    address:
-                      primary:
-                        address: '10.5.0.2'
-                        mask: '255.255.255.0'
-                - name: '6'
-                  description: 'Description for GigabitEthernet6'
-                  ip:
-                    access-group:
-                      - direction: 'in'
-                        access-list: 'service-cmd'
-                      - direction: 'out'
-                        access-list: 'deny-hosts'
-                    address:
-                      primary:
-                        address: '10.6.0.1'
-                        mask: '255.255.255.0'
-                - name: '8'
-                  description: 'Description for GigabitEthernet8'
-                  ip:
-                    access-group:
-                      - direction: 'in'
-                        access-list: 'deny-hosts'
-                      - direction: 'out'
-                        access-list: '11'
-                    address:
-                      primary:
-                        address: '10.250.25.1'
-                        mask: '255.255.255.0'
-                - name: '7.100'
-                  description: 'Description for GigabitEthernet7.100'
-                  ip:
-                    access-group:
-                      - direction: 'out'
-                        access-list: '11'
-                      - direction: 'in'
-                        access-list: 'deny-hosts'
-                - name: '7.200'
-                  description: 'Description for GigabitEthernet7.200'
-                  ip:
-                    access-group:
-                      - direction: 'out'
-                        access-list: '11'
-                      - direction: 'in'
-                        access-list: 'deny-hosts'
-              Port-channel:
-                - name: 10
-                  negotiation:
-                    auto: true
-                  ip:
-                    no-address:
-                      address: true
-              Port-channel-subinterface:
-                Port-channel:
-                  - name: '10.105'
+              GigabitEthernet-subinterface:
+                GigabitEthernet:
+                  - id: '0/0/0/7.100'
+                    description: 'Description for G7.100'
+                  - id: '0/0/0/7.200'
+                    description: 'Description for G7.200'
+          api_method: PATCH
+
+      - name: Init interface
+        tags:
+          - if_g7_100
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios-xr:interface/GigabitEthernet-subinterface/GigabitEthernet=0%2F0%2F0%2F7.100/ipv4/access-group
+          content: |
+            access-group:
+              - direction: ingress
+                name: 'deny-hosts'
+              - direction: egress
+                name: 'deny-hosts'
+          api_method: PATCH
+
+      - name: Init interface
+        tags:
+          - if_g7_200
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios-xr:interface/GigabitEthernet-subinterface/GigabitEthernet=0%2F0%2F0%2F7.200/ipv4/access-group
+          content: |
+            access-group:
+              - direction: ingress
+                name: 'deny-hosts'
+              - direction: egress
+                name: 'deny-hosts'
+          api_method: PATCH
+
+      - name: Init interface
+        tags:
+          - if_bundle10
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios-xr:interface
+          content: |
+            interface:
+              Bundle-Ether:
+                - id: 10
+                  description: "LACP Example PO10"
+              Bundle-Ether-subinterface:
+                Bundle-Ether:
+                  - id: '10.105'
                     description: 'Description for Port-Channel10.105'
-                    ip:
-                      access-group:
-                        - direction: 'in'
-                          access-list: 'service-cmd'
+          api_method: PATCH
+
+      - name: Init interface
+        tags:
+          - if_bundle10_acl
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios-xr:interface/Bundle-Ether-subinterface/Bundle-Ether=10.105/ipv4/access-group
+          content: |
+            access-group:
+              - direction: ingress
+                name: 'service-cmd'
           api_method: PATCH
 
       - name: NSO configure NTP
@@ -374,49 +393,51 @@
         import_role:
           name: nso-ned-device-configure
         vars:
-          api_path: config/tailf-ned-cisco-ios:ntp/access-group
+          api_path: config/tailf-ned-cisco-ios-xr:ntp/access-group
           content: |
             access-group:
-              serve:
-                access-list: 11
-              peer:
-                access-list: 11
-      
+              - version: ipv4
+                type: peer
+                name: ntp_peer
+              - version: ipv4
+                type: serve
+                name: ntp_serve
+          api_method: PATCH
+      - name: NSO configure VTY
+        tags:
+          - vty_config_pool
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios-xr:vty-pool/default
+          content: |
+            default:
+              first-vty: 0
+              last-vty: 99
+          api_method: PATCH
       - name: NSO configure VTY
         tags:
           - vty_config
         import_role:
           name: nso-ned-device-configure
         vars:
-          api_path: config/tailf-ned-cisco-ios:line/vty
+          api_path: config/tailf-ned-cisco-ios-xr:line/default
           content: |
-            vty:
-              - first: 0
-                last: 4
-                access-class:
-                  access-list:
-                    - direction: 'in'
-                      access-list: 11
-                      vrf-also: [null]
-                    - direction: 'out'
-                      access-list: 11
-              - first: 5
-                last: 7
-                access-class-vrf:
-                  access-class:
-                    - direction: 'in'
-                      access-list: 11
-                      vrfname: 'internal_0'
-
+            default:
+              access-class:
+                ingress: ingress_vty
+          api_method: PATCH
       - name: Execute NSO NED to OC script
         tags:
-          - ospfv2_global
-        script: ../../../package_nso_to_oc/xe/xe_acls.py
+          - acls
+        script: ../../../package_nso_to_oc/xr/xr_acls.py
         args:
           executable: python3
         register: nso_to_oc_result
       - debug:
           msg: "{{nso_to_oc_result}}"
+        tags:
+          - acls
 
       - name: NSO API call
         uri:
@@ -438,11 +459,11 @@
       - assert:
           that:
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['name'] == '11'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['type'] == 'openconfig-acl-ext:ACL_IPV4_STANDARD'"
+            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['type'] == 'openconfig-acl:ACL_IPV4'"
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['sequence-id'] == 10"
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['actions']['config']['forwarding-action'] == 'openconfig-acl:ACCEPT'"
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['actions']['config']['log-action'] == 'openconfig-acl:LOG_NONE'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['openconfig-acl-ext:ipv4']['config']['source-address'] == '192.0.0.0/8'"
+            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['ipv4']['config']['source-address'] == '192.0.0.0/8'"
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['name'] == 'deny-hosts'"
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['type'] == 'openconfig-acl:ACL_IPV4'"
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['sequence-id'] == 50"
@@ -452,13 +473,10 @@
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['ipv4']['config']['destination-address'] == '0.0.0.0/0'"
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['transport']['config']['source-port'] == 'ANY'"
             - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['transport']['config']['destination-port'] == '1025..65535'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['id'] == 'vty 0 4'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['egress-acl-set'] == '11'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['ingress-acl-set-name'] == '11'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['vrf'] == 'global'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['vrf-also'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:ntp']['peer']['config']['peer-acl-set'] == '11'"
-            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:ntp']['server']['config']['server-acl-set'] == '11'"
+            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['id'] == 'vty 0 99'"
+            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['ingress-acl-set-name'] == 'ingress_vty'"
+            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:ntp']['peer']['config']['peer-acl-set'] == 'ntp_peer'"
+            - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:ntp']['server']['config']['server-acl-set'] == 'ntp_serve'"
       always:
         - name: Rollback NSO
           delegate_to: nso

@@ -1,4 +1,13 @@
 ---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
 - hosts: localhost
   gather_facts: no
   environment:
@@ -9,377 +18,378 @@
     nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
     device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
   tasks:
-    - name: Set up service config
-      tags:
-        - set_up
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: mdd:openconfig
-        content: |
-          mdd:openconfig:
-            openconfig-interfaces:interfaces:
-              openconfig-interfaces:interface:
-                - openconfig-interfaces:name: 'Loopback10'
-                  openconfig-interfaces:config:
-                    openconfig-interfaces:name: 'Loopback10'
-                    openconfig-interfaces:enabled: true
-                    openconfig-interfaces:type: 'softwareLoopback'
-                    openconfig-interfaces:description: 'Test loopback'
-                  openconfig-interfaces:subinterfaces:
-                    openconfig-interfaces:subinterface:
-                      - openconfig-interfaces:index: 0
-                        openconfig-interfaces:config:
-                          openconfig-interfaces:index: 0
-                        openconfig-if-ip:ipv4:
-                          openconfig-if-ip:addresses:
-                            openconfig-if-ip:address:
-                              - openconfig-if-ip:ip: '10.255.10.1'
-                                openconfig-if-ip:config:
-                                  openconfig-if-ip:ip: '10.255.10.1'
-                                  openconfig-if-ip:prefix-length: 24
-                          openconfig-if-ip:config:
-                            openconfig-if-ip:dhcp-client: false
-                - openconfig-interfaces:name: 'Loopback100'
-                  openconfig-interfaces:config:
-                    openconfig-interfaces:name: 'Loopback100'
-                    openconfig-interfaces:enabled: true
-                    openconfig-interfaces:type: 'softwareLoopback'
-                    openconfig-interfaces:description: 'Test loopback'
-                  openconfig-interfaces:subinterfaces:
-                    openconfig-interfaces:subinterface:
-                      - openconfig-interfaces:index: 0
-                        openconfig-interfaces:config:
-                          openconfig-interfaces:index: 0
-                        openconfig-if-ip:ipv4:
-                          openconfig-if-ip:addresses:
-                            openconfig-if-ip:address:
-                              - openconfig-if-ip:ip: '10.255.100.1'
-                                openconfig-if-ip:config:
-                                  openconfig-if-ip:ip: '10.255.100.1'
-                                  openconfig-if-ip:prefix-length: 24
-                          openconfig-if-ip:config:
-                            openconfig-if-ip:dhcp-client: false
-                - openconfig-interfaces:name: 'GigabitEthernet7'
-                  openconfig-interfaces:config:
-                    openconfig-interfaces:name: 'GigabitEthernet7'
-                    openconfig-interfaces:enabled: true
-                    openconfig-interfaces:type: 'ethernetCsmacd'
-                    openconfig-interfaces:description: 'Test gigabitethernet'
-                  openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
-                  openconfig-interfaces:hold-time:
+    - block:
+      - name: Set up service config
+        tags:
+          - set_up
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: mdd:openconfig
+          content: |
+            mdd:openconfig:
+              openconfig-interfaces:interfaces:
+                openconfig-interfaces:interface:
+                  - openconfig-interfaces:name: 'Loopback10'
                     openconfig-interfaces:config:
-                      openconfig-interfaces:down: '10'
-                  openconfig-interfaces:subinterfaces:
-                    openconfig-interfaces:subinterface:
-                      - openconfig-interfaces:index: 0
-                        openconfig-interfaces:config:
-                          openconfig-interfaces:index: 0
-                        openconfig-if-ip:ipv4:
-                          openconfig-if-ip:addresses:
-                            openconfig-if-ip:address:
-                              - openconfig-if-ip:ip: '10.250.20.1'
-                                openconfig-if-ip:config:
-                                  openconfig-if-ip:ip: '10.250.20.1'
-                                  openconfig-if-ip:prefix-length: 24
-                          openconfig-if-ip:config:
-                            openconfig-if-ip:dhcp-client: false
-                - openconfig-interfaces:name: 'GigabitEthernet3'
-                  openconfig-interfaces:config:
-                    openconfig-interfaces:name: 'GigabitEthernet3'
-                    openconfig-interfaces:enabled: true
-                    openconfig-interfaces:type: 'ethernetCsmacd'
-                    openconfig-interfaces:description: 'Test gigabitethernet'
-                  openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
-                  openconfig-interfaces:hold-time:
+                      openconfig-interfaces:name: 'Loopback10'
+                      openconfig-interfaces:enabled: true
+                      openconfig-interfaces:type: 'softwareLoopback'
+                      openconfig-interfaces:description: 'Test loopback'
+                    openconfig-interfaces:subinterfaces:
+                      openconfig-interfaces:subinterface:
+                        - openconfig-interfaces:index: 0
+                          openconfig-interfaces:config:
+                            openconfig-interfaces:index: 0
+                          openconfig-if-ip:ipv4:
+                            openconfig-if-ip:addresses:
+                              openconfig-if-ip:address:
+                                - openconfig-if-ip:ip: '10.255.10.1'
+                                  openconfig-if-ip:config:
+                                    openconfig-if-ip:ip: '10.255.10.1'
+                                    openconfig-if-ip:prefix-length: 24
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:dhcp-client: false
+                  - openconfig-interfaces:name: 'Loopback100'
                     openconfig-interfaces:config:
-                      openconfig-interfaces:down: '10'
-                  openconfig-interfaces:subinterfaces:
-                    openconfig-interfaces:subinterface:
-                      - openconfig-interfaces:index: 0
-                        openconfig-interfaces:config:
-                          openconfig-interfaces:index: 0
-                        openconfig-if-ip:ipv4:
-                          openconfig-if-ip:addresses:
-                            openconfig-if-ip:address:
-                              - openconfig-if-ip:ip: '10.3.0.2'
-                                openconfig-if-ip:config:
-                                  openconfig-if-ip:ip: '10.3.0.2'
-                                  openconfig-if-ip:prefix-length: 24
-                          openconfig-if-ip:config:
-                            openconfig-if-ip:dhcp-client: false
-                - openconfig-interfaces:name: 'GigabitEthernet5'
-                  openconfig-interfaces:config:
-                    openconfig-interfaces:name: 'GigabitEthernet5'
-                    openconfig-interfaces:enabled: true
-                    openconfig-interfaces:type: 'ethernetCsmacd'
-                    openconfig-interfaces:description: 'Test gigabitethernet'
-                  openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
-                  openconfig-interfaces:hold-time:
+                      openconfig-interfaces:name: 'Loopback100'
+                      openconfig-interfaces:enabled: true
+                      openconfig-interfaces:type: 'softwareLoopback'
+                      openconfig-interfaces:description: 'Test loopback'
+                    openconfig-interfaces:subinterfaces:
+                      openconfig-interfaces:subinterface:
+                        - openconfig-interfaces:index: 0
+                          openconfig-interfaces:config:
+                            openconfig-interfaces:index: 0
+                          openconfig-if-ip:ipv4:
+                            openconfig-if-ip:addresses:
+                              openconfig-if-ip:address:
+                                - openconfig-if-ip:ip: '10.255.100.1'
+                                  openconfig-if-ip:config:
+                                    openconfig-if-ip:ip: '10.255.100.1'
+                                    openconfig-if-ip:prefix-length: 24
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:dhcp-client: false
+                  - openconfig-interfaces:name: 'GigabitEthernet7'
                     openconfig-interfaces:config:
-                      openconfig-interfaces:down: '10'
-                  openconfig-interfaces:subinterfaces:
-                    openconfig-interfaces:subinterface:
-                      - openconfig-interfaces:index: 0
-                        openconfig-interfaces:config:
-                          openconfig-interfaces:index: 0
-                        openconfig-if-ip:ipv4:
-                          openconfig-if-ip:addresses:
-                            openconfig-if-ip:address:
-                              - openconfig-if-ip:ip: '10.5.0.2'
-                                openconfig-if-ip:config:
-                                  openconfig-if-ip:ip: '10.5.0.2'
-                                  openconfig-if-ip:prefix-length: 24
-                          openconfig-if-ip:config:
-                            openconfig-if-ip:dhcp-client: false
-                - openconfig-interfaces:name: 'GigabitEthernet6'
-                  openconfig-interfaces:config:
-                    openconfig-interfaces:name: 'GigabitEthernet6'
-                    openconfig-interfaces:enabled: true
-                    openconfig-interfaces:type: 'ethernetCsmacd'
-                    openconfig-interfaces:description: 'Test gigabitethernet'
-                  openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
-                  openconfig-interfaces:hold-time:
+                      openconfig-interfaces:name: 'GigabitEthernet7'
+                      openconfig-interfaces:enabled: true
+                      openconfig-interfaces:type: 'ethernetCsmacd'
+                      openconfig-interfaces:description: 'Test gigabitethernet'
+                    openconfig-if-ethernet:ethernet:
+                      openconfig-if-ethernet:config:
+                        openconfig-if-ethernet:auto-negotiate: true
+                        openconfig-if-ethernet:enable-flow-control: false
+                    openconfig-interfaces:hold-time:
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:down: '10'
+                    openconfig-interfaces:subinterfaces:
+                      openconfig-interfaces:subinterface:
+                        - openconfig-interfaces:index: 0
+                          openconfig-interfaces:config:
+                            openconfig-interfaces:index: 0
+                          openconfig-if-ip:ipv4:
+                            openconfig-if-ip:addresses:
+                              openconfig-if-ip:address:
+                                - openconfig-if-ip:ip: '10.250.20.1'
+                                  openconfig-if-ip:config:
+                                    openconfig-if-ip:ip: '10.250.20.1'
+                                    openconfig-if-ip:prefix-length: 24
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:dhcp-client: false
+                  - openconfig-interfaces:name: 'GigabitEthernet3'
                     openconfig-interfaces:config:
-                      openconfig-interfaces:down: '10'
-                  openconfig-interfaces:subinterfaces:
-                    openconfig-interfaces:subinterface:
-                      - openconfig-interfaces:index: 0
-                        openconfig-interfaces:config:
-                          openconfig-interfaces:index: 0
-                        openconfig-if-ip:ipv4:
-                          openconfig-if-ip:addresses:
-                            openconfig-if-ip:address:
-                              - openconfig-if-ip:ip: '10.6.0.1'
-                                openconfig-if-ip:config:
-                                  openconfig-if-ip:ip: '10.6.0.1'
-                                  openconfig-if-ip:prefix-length: 24
-                          openconfig-if-ip:config:
-                            openconfig-if-ip:dhcp-client: false
-                - openconfig-interfaces:name: 'GigabitEthernet8'
-                  openconfig-interfaces:config:
-                    openconfig-interfaces:name: 'GigabitEthernet8'
-                    openconfig-interfaces:enabled: true
-                    openconfig-interfaces:type: 'ethernetCsmacd'
-                    openconfig-interfaces:description: 'Test gigabitethernet'
-                  openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
-                  openconfig-interfaces:hold-time:
+                      openconfig-interfaces:name: 'GigabitEthernet3'
+                      openconfig-interfaces:enabled: true
+                      openconfig-interfaces:type: 'ethernetCsmacd'
+                      openconfig-interfaces:description: 'Test gigabitethernet'
+                    openconfig-if-ethernet:ethernet:
+                      openconfig-if-ethernet:config:
+                        openconfig-if-ethernet:auto-negotiate: true
+                        openconfig-if-ethernet:enable-flow-control: false
+                    openconfig-interfaces:hold-time:
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:down: '10'
+                    openconfig-interfaces:subinterfaces:
+                      openconfig-interfaces:subinterface:
+                        - openconfig-interfaces:index: 0
+                          openconfig-interfaces:config:
+                            openconfig-interfaces:index: 0
+                          openconfig-if-ip:ipv4:
+                            openconfig-if-ip:addresses:
+                              openconfig-if-ip:address:
+                                - openconfig-if-ip:ip: '10.3.0.2'
+                                  openconfig-if-ip:config:
+                                    openconfig-if-ip:ip: '10.3.0.2'
+                                    openconfig-if-ip:prefix-length: 24
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:dhcp-client: false
+                  - openconfig-interfaces:name: 'GigabitEthernet5'
                     openconfig-interfaces:config:
-                      openconfig-interfaces:down: '10'
-                  openconfig-interfaces:subinterfaces:
-                    openconfig-interfaces:subinterface:
-                      - openconfig-interfaces:index: 0
-                        openconfig-interfaces:config:
-                          openconfig-interfaces:index: 0
-                        openconfig-if-ip:ipv4:
-                          openconfig-if-ip:addresses:
-                            openconfig-if-ip:address:
-                              - openconfig-if-ip:ip: '10.250.25.1'
-                                openconfig-if-ip:config:
-                                  openconfig-if-ip:ip: '10.250.25.1'
-                                  openconfig-if-ip:prefix-length: 24
-                          openconfig-if-ip:config:
-                            openconfig-if-ip:dhcp-client: false
-                      - openconfig-interfaces:index: 10
-                        openconfig-interfaces:config:
-                          openconfig-interfaces:index: 10
-                        openconfig-if-ip:ipv4:
-                          openconfig-if-ip:addresses:
-                            openconfig-if-ip:address:
-                              - openconfig-if-ip:ip: '10.8.10.2'
-                                openconfig-if-ip:config:
-                                  openconfig-if-ip:ip: '10.8.10.2'
-                                  openconfig-if-ip:prefix-length: 24
-                          openconfig-if-ip:config:
-                            openconfig-if-ip:dhcp-client: false
-                - openconfig-interfaces:name: 'Tunnel1'
-                  openconfig-interfaces:config:
-                    openconfig-interfaces:name: 'Tunnel1'
-                    openconfig-interfaces:enabled: true
-                    openconfig-interfaces:type: 'tunnel'
-                    openconfig-interfaces:mtu: 1476
-                    openconfig-interfaces:description: 'Test tunnel'
-                  openconfig-if-tunnel:tunnel:
-                    openconfig-if-tunnel:config:
-                      openconfig-if-tunnel:src: '10.255.0.1'
-                      openconfig-if-tunnel:dst: '192.168.172.1'
-                      openconfig-if-tunnel:gre-key: 1
-                      openconfig-if-tunnel-ext:keepalives:
-                        openconfig-if-tunnel-ext:period: 5
-                        openconfig-if-tunnel-ext:retries: 3
-                  openconfig-interfaces:hold-time:
+                      openconfig-interfaces:name: 'GigabitEthernet5'
+                      openconfig-interfaces:enabled: true
+                      openconfig-interfaces:type: 'ethernetCsmacd'
+                      openconfig-interfaces:description: 'Test gigabitethernet'
+                    openconfig-if-ethernet:ethernet:
+                      openconfig-if-ethernet:config:
+                        openconfig-if-ethernet:auto-negotiate: true
+                        openconfig-if-ethernet:enable-flow-control: false
+                    openconfig-interfaces:hold-time:
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:down: '10'
+                    openconfig-interfaces:subinterfaces:
+                      openconfig-interfaces:subinterface:
+                        - openconfig-interfaces:index: 0
+                          openconfig-interfaces:config:
+                            openconfig-interfaces:index: 0
+                          openconfig-if-ip:ipv4:
+                            openconfig-if-ip:addresses:
+                              openconfig-if-ip:address:
+                                - openconfig-if-ip:ip: '10.5.0.2'
+                                  openconfig-if-ip:config:
+                                    openconfig-if-ip:ip: '10.5.0.2'
+                                    openconfig-if-ip:prefix-length: 24
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:dhcp-client: false
+                  - openconfig-interfaces:name: 'GigabitEthernet6'
                     openconfig-interfaces:config:
-                      openconfig-interfaces:down: '10'
-                  openconfig-interfaces:subinterfaces:
-                    openconfig-interfaces:subinterface:
-                      - openconfig-interfaces:index: 0
-                        openconfig-interfaces:config:
-                          openconfig-interfaces:index: 0
-                        openconfig-if-ip:ipv4:
-                          openconfig-if-ip:addresses:
-                            openconfig-if-ip:address:
-                              - openconfig-if-ip:ip: '10.254.0.1'
-                                openconfig-if-ip:config:
-                                  openconfig-if-ip:ip: '10.254.0.1'
-                                  openconfig-if-ip:prefix-length: 24
-                          openconfig-if-ip:config:
-                            openconfig-if-ip:dhcp-client: false
-                - openconfig-interfaces:name: 'vasileft1'
-                  openconfig-interfaces:config:
-                    openconfig-interfaces:name: 'vasileft1'
-                    openconfig-interfaces:enabled: true
-                    openconfig-interfaces:type: 'vasi'
-                    openconfig-interfaces:description: 'Test vasi'
-                  openconfig-interfaces:hold-time:
+                      openconfig-interfaces:name: 'GigabitEthernet6'
+                      openconfig-interfaces:enabled: true
+                      openconfig-interfaces:type: 'ethernetCsmacd'
+                      openconfig-interfaces:description: 'Test gigabitethernet'
+                    openconfig-if-ethernet:ethernet:
+                      openconfig-if-ethernet:config:
+                        openconfig-if-ethernet:auto-negotiate: true
+                        openconfig-if-ethernet:enable-flow-control: false
+                    openconfig-interfaces:hold-time:
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:down: '10'
+                    openconfig-interfaces:subinterfaces:
+                      openconfig-interfaces:subinterface:
+                        - openconfig-interfaces:index: 0
+                          openconfig-interfaces:config:
+                            openconfig-interfaces:index: 0
+                          openconfig-if-ip:ipv4:
+                            openconfig-if-ip:addresses:
+                              openconfig-if-ip:address:
+                                - openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:config:
+                                    openconfig-if-ip:ip: '10.6.0.1'
+                                    openconfig-if-ip:prefix-length: 24
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:dhcp-client: false
+                  - openconfig-interfaces:name: 'GigabitEthernet8'
                     openconfig-interfaces:config:
-                      openconfig-interfaces:down: '10'
-                  openconfig-interfaces:subinterfaces:
-                    openconfig-interfaces:subinterface:
-                      - openconfig-interfaces:index: 0
-                        openconfig-interfaces:config:
-                          openconfig-interfaces:index: 0
-                        openconfig-if-ip:ipv4:
-                          openconfig-if-ip:addresses:
-                            openconfig-if-ip:address:
-                              - openconfig-if-ip:ip: '192.168.1.1'
-                                openconfig-if-ip:config:
-                                  openconfig-if-ip:ip: '192.168.1.1'
-                                  openconfig-if-ip:prefix-length: 30
-                          openconfig-if-ip:config:
-                            openconfig-if-ip:dhcp-client: false
-                - openconfig-interfaces:name: 'vasiright1'
-                  openconfig-interfaces:config:
-                    openconfig-interfaces:name: 'vasiright1'
-                    openconfig-interfaces:enabled: true
-                    openconfig-interfaces:type: 'vasi'
-                    openconfig-interfaces:description: 'Test vasi'
-                  openconfig-interfaces:hold-time:
+                      openconfig-interfaces:name: 'GigabitEthernet8'
+                      openconfig-interfaces:enabled: true
+                      openconfig-interfaces:type: 'ethernetCsmacd'
+                      openconfig-interfaces:description: 'Test gigabitethernet'
+                    openconfig-if-ethernet:ethernet:
+                      openconfig-if-ethernet:config:
+                        openconfig-if-ethernet:auto-negotiate: true
+                        openconfig-if-ethernet:enable-flow-control: false
+                    openconfig-interfaces:hold-time:
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:down: '10'
+                    openconfig-interfaces:subinterfaces:
+                      openconfig-interfaces:subinterface:
+                        - openconfig-interfaces:index: 0
+                          openconfig-interfaces:config:
+                            openconfig-interfaces:index: 0
+                          openconfig-if-ip:ipv4:
+                            openconfig-if-ip:addresses:
+                              openconfig-if-ip:address:
+                                - openconfig-if-ip:ip: '10.250.25.1'
+                                  openconfig-if-ip:config:
+                                    openconfig-if-ip:ip: '10.250.25.1'
+                                    openconfig-if-ip:prefix-length: 24
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:dhcp-client: false
+                        - openconfig-interfaces:index: 10
+                          openconfig-interfaces:config:
+                            openconfig-interfaces:index: 10
+                          openconfig-if-ip:ipv4:
+                            openconfig-if-ip:addresses:
+                              openconfig-if-ip:address:
+                                - openconfig-if-ip:ip: '10.8.10.2'
+                                  openconfig-if-ip:config:
+                                    openconfig-if-ip:ip: '10.8.10.2'
+                                    openconfig-if-ip:prefix-length: 24
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:dhcp-client: false
+                  - openconfig-interfaces:name: 'Tunnel1'
                     openconfig-interfaces:config:
-                      openconfig-interfaces:down: '10'
-                  openconfig-interfaces:subinterfaces:
-                    openconfig-interfaces:subinterface:
-                      - openconfig-interfaces:index: 0
-                        openconfig-interfaces:config:
-                          openconfig-interfaces:index: 0
-                        openconfig-if-ip:ipv4:
-                          openconfig-if-ip:addresses:
-                            openconfig-if-ip:address:
-                              - openconfig-if-ip:ip: '192.168.2.2'
-                                openconfig-if-ip:config:
-                                  openconfig-if-ip:ip: '192.168.2.2'
-                                  openconfig-if-ip:prefix-length: 30
-                          openconfig-if-ip:config:
-                            openconfig-if-ip:dhcp-client: false
-            openconfig-routing-policy:routing-policy:
-              openconfig-routing-policy:defined-sets:
-                openconfig-routing-policy:prefix-sets:
-                  openconfig-routing-policy:prefix-set:
-                    - openconfig-routing-policy:name: 'prefix_test'
-                      openconfig-routing-policy:config:
-                        openconfig-routing-policy:name: 'prefix_test'
-                        openconfig-routing-policy:mode: 'IPV4'
-                      openconfig-routing-policy:prefixes:
-                        openconfig-routing-policy:prefix:
-                          - openconfig-routing-policy:ip-prefix: '10.0.0.0/24'
-                            openconfig-routing-policy:masklength-range: 'exact'
-                            openconfig-routing-policy:config:
-                              openconfig-routing-policy:ip-prefix: '10.0.0.0/24'
+                      openconfig-interfaces:name: 'Tunnel1'
+                      openconfig-interfaces:enabled: true
+                      openconfig-interfaces:type: 'tunnel'
+                      openconfig-interfaces:mtu: 1476
+                      openconfig-interfaces:description: 'Test tunnel'
+                    openconfig-if-tunnel:tunnel:
+                      openconfig-if-tunnel:config:
+                        openconfig-if-tunnel:src: '10.255.0.1'
+                        openconfig-if-tunnel:dst: '192.168.172.1'
+                        openconfig-if-tunnel:gre-key: 1
+                        openconfig-if-tunnel-ext:keepalives:
+                          openconfig-if-tunnel-ext:period: 5
+                          openconfig-if-tunnel-ext:retries: 3
+                    openconfig-interfaces:hold-time:
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:down: '10'
+                    openconfig-interfaces:subinterfaces:
+                      openconfig-interfaces:subinterface:
+                        - openconfig-interfaces:index: 0
+                          openconfig-interfaces:config:
+                            openconfig-interfaces:index: 0
+                          openconfig-if-ip:ipv4:
+                            openconfig-if-ip:addresses:
+                              openconfig-if-ip:address:
+                                - openconfig-if-ip:ip: '10.254.0.1'
+                                  openconfig-if-ip:config:
+                                    openconfig-if-ip:ip: '10.254.0.1'
+                                    openconfig-if-ip:prefix-length: 24
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:dhcp-client: false
+                  - openconfig-interfaces:name: 'vasileft1'
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:name: 'vasileft1'
+                      openconfig-interfaces:enabled: true
+                      openconfig-interfaces:type: 'vasi'
+                      openconfig-interfaces:description: 'Test vasi'
+                    openconfig-interfaces:hold-time:
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:down: '10'
+                    openconfig-interfaces:subinterfaces:
+                      openconfig-interfaces:subinterface:
+                        - openconfig-interfaces:index: 0
+                          openconfig-interfaces:config:
+                            openconfig-interfaces:index: 0
+                          openconfig-if-ip:ipv4:
+                            openconfig-if-ip:addresses:
+                              openconfig-if-ip:address:
+                                - openconfig-if-ip:ip: '192.168.1.1'
+                                  openconfig-if-ip:config:
+                                    openconfig-if-ip:ip: '192.168.1.1'
+                                    openconfig-if-ip:prefix-length: 30
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:dhcp-client: false
+                  - openconfig-interfaces:name: 'vasiright1'
+                    openconfig-interfaces:config:
+                      openconfig-interfaces:name: 'vasiright1'
+                      openconfig-interfaces:enabled: true
+                      openconfig-interfaces:type: 'vasi'
+                      openconfig-interfaces:description: 'Test vasi'
+                    openconfig-interfaces:hold-time:
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:down: '10'
+                    openconfig-interfaces:subinterfaces:
+                      openconfig-interfaces:subinterface:
+                        - openconfig-interfaces:index: 0
+                          openconfig-interfaces:config:
+                            openconfig-interfaces:index: 0
+                          openconfig-if-ip:ipv4:
+                            openconfig-if-ip:addresses:
+                              openconfig-if-ip:address:
+                                - openconfig-if-ip:ip: '192.168.2.2'
+                                  openconfig-if-ip:config:
+                                    openconfig-if-ip:ip: '192.168.2.2'
+                                    openconfig-if-ip:prefix-length: 30
+                            openconfig-if-ip:config:
+                              openconfig-if-ip:dhcp-client: false
+              openconfig-routing-policy:routing-policy:
+                openconfig-routing-policy:defined-sets:
+                  openconfig-routing-policy:prefix-sets:
+                    openconfig-routing-policy:prefix-set:
+                      - openconfig-routing-policy:name: 'prefix_test'
+                        openconfig-routing-policy:config:
+                          openconfig-routing-policy:name: 'prefix_test'
+                          openconfig-routing-policy:mode: 'IPV4'
+                        openconfig-routing-policy:prefixes:
+                          openconfig-routing-policy:prefix:
+                            - openconfig-routing-policy:ip-prefix: '10.0.0.0/24'
                               openconfig-routing-policy:masklength-range: 'exact'
-                              openconfig-routing-policy-ext:seq: 10
-                          - openconfig-routing-policy:ip-prefix: '10.0.0.0/23'
-                            openconfig-routing-policy:masklength-range: '24..30'
-                            openconfig-routing-policy:config:
-                              openconfig-routing-policy:ip-prefix: '10.0.0.0/23'
-                              openconfig-routing-policy:masklength-range: '24..30'
-                              openconfig-routing-policy-ext:seq: 20
-              openconfig-routing-policy:policy-definitions:
-                openconfig-routing-policy:policy-definition:
-                  - openconfig-routing-policy:name: 'TEST'
-                    openconfig-routing-policy:config:
-                      openconfig-routing-policy:name: 'TEST'
-                    openconfig-routing-policy:statements:
-                      openconfig-routing-policy:statement:
-                        - openconfig-routing-policy:name: '10'
-                          openconfig-routing-policy:config:
-                            openconfig-routing-policy:name: '10'
-                          openconfig-routing-policy:actions:
-                            openconfig-routing-policy:config:
-                              openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'
-                  - openconfig-routing-policy:name: 'test'
-                    openconfig-routing-policy:config:
-                      openconfig-routing-policy:name: 'test'
-                    openconfig-routing-policy:statements:
-                      openconfig-routing-policy:statement:
-                        - openconfig-routing-policy:name: '10'
-                          openconfig-routing-policy:config:
-                            openconfig-routing-policy:name: '10'
-                          openconfig-routing-policy:actions:
-                            openconfig-routing-policy:config:
-                              openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'
-                          openconfig-routing-policy:conditions:
-                            openconfig-routing-policy:match-prefix-set:
                               openconfig-routing-policy:config:
-                                openconfig-routing-policy:prefix-set: 'prefix_test'
-                                openconfig-routing-policy:match-set-options: 'ANY'
-            openconfig-network-instance:network-instances:
-              openconfig-network-instance:network-instance:
-                - openconfig-network-instance:name: 'default'
-                  openconfig-network-instance:config:
-                    openconfig-network-instance:name: 'default'
-                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
-                    openconfig-network-instance:enabled: true
-        api_method: PUT
+                                openconfig-routing-policy:ip-prefix: '10.0.0.0/24'
+                                openconfig-routing-policy:masklength-range: 'exact'
+                                openconfig-routing-policy-ext:seq: 10
+                            - openconfig-routing-policy:ip-prefix: '10.0.0.0/23'
+                              openconfig-routing-policy:masklength-range: '24..30'
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:ip-prefix: '10.0.0.0/23'
+                                openconfig-routing-policy:masklength-range: '24..30'
+                                openconfig-routing-policy-ext:seq: 20
+                openconfig-routing-policy:policy-definitions:
+                  openconfig-routing-policy:policy-definition:
+                    - openconfig-routing-policy:name: 'TEST'
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: 'TEST'
+                      openconfig-routing-policy:statements:
+                        openconfig-routing-policy:statement:
+                          - openconfig-routing-policy:name: '10'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:name: '10'
+                            openconfig-routing-policy:actions:
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'
+                    - openconfig-routing-policy:name: 'test'
+                      openconfig-routing-policy:config:
+                        openconfig-routing-policy:name: 'test'
+                      openconfig-routing-policy:statements:
+                        openconfig-routing-policy:statement:
+                          - openconfig-routing-policy:name: '10'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:name: '10'
+                            openconfig-routing-policy:actions:
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'
+                            openconfig-routing-policy:conditions:
+                              openconfig-routing-policy:match-prefix-set:
+                                openconfig-routing-policy:config:
+                                  openconfig-routing-policy:prefix-set: 'prefix_test'
+                                  openconfig-routing-policy:match-set-options: 'ANY'
+              openconfig-network-instance:network-instances:
+                openconfig-network-instance:network-instance:
+                  - openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:config:
+                      openconfig-network-instance:name: 'default'
+                      openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                      openconfig-network-instance:enabled: true
+          api_method: PUT
 
-    - name: NSO Init OSPF
-      tags:
-        - init_ospf
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:router/ospf
-        content: |
-          ospf:
-            - id: '2'
-            - id: '100'
-        api_method: PATCH
+      - name: NSO Init OSPF
+        tags:
+          - init_ospf
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:router/ospf
+          content: |
+            ospf:
+              - id: '2'
+              - id: '100'
+          api_method: PATCH
 
-    - name: NSO Init VRF
-      tags:
-        - init_vrf
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:vrf/definition
-        content: |
-          definition:
-            - name: 'internal_0'
-              address-family:
-                ipv4: {}
-                ipv6: {}
-            - name: abc
-              address-family:
-                ipv4: {}
-                ipv6: {}
-            - name: xyz
-              address-family:
-                ipv4: {}
-                ipv6: {}
-        api_method: PATCH
+      - name: NSO Init VRF
+        tags:
+          - init_vrf
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:vrf/definition
+          content: |
+            definition:
+              - name: 'internal_0'
+                address-family:
+                  ipv4: {}
+                  ipv6: {}
+              - name: abc
+                address-family:
+                  ipv4: {}
+                  ipv6: {}
+              - name: xyz
+                address-family:
+                  ipv4: {}
+                  ipv6: {}
+          api_method: PATCH
 
     - name: Init interface
       tags:
@@ -523,15 +533,15 @@
                 reference-bandwidth: '100000'
         api_method: PATCH
 
-    - name: Execute NSO NED to OC script
-      tags:
-        - ospfv2_global
-      script: ../../../package_nso_to_oc/xe/xe_network_instances.py
-      args:
-        executable: python3
-      register: nso_to_oc_result
-    - debug:
-        msg: "{{nso_to_oc_result}}"
+      - name: Execute NSO NED to OC script
+        tags:
+          - ospfv2_global
+        script: ../../../package_nso_to_oc/xe/xe_network_instances.py
+        args:
+          executable: python3
+        register: nso_to_oc_result
+      - debug:
+          msg: "{{nso_to_oc_result}}"
 
     - name: NSO API call
       uri:
@@ -579,82 +589,82 @@
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['spf']['config']['maximum-delay'] == 20000"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['spf']['config']['openconfig-ospfv2-ext:hold-time'] == 20000"
 
-      # Areas
-    - name: NSO configure areas config
-      tags:
-        - ospf_areas_config
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:router/ospf
-        content: |
-          ospf:
-            - id: '100'
-              area:
-                - id: '1'
-                  filter-list:
-                    - direction: 'in'
-                      prefix: 'test'
-              network:
-                - ip: '10.255.100.1'
-                  mask: '0.0.0.0'
-                  area: '1'
-                - ip: '0.0.0.0'
-                  mask: '255.255.255.255'
-                  area: '0'
-            - id: '2'
-              vrf: 'internal_0'
-              area:
-                - id: '1'
-                  stub:
-                    no-summary: {}
-                - id: '4'
-                  filter-list:
-                    - direction: 'in'
-                      prefix: 'test'
-                  # Getting error: "Area is configured as NSSA already"
-                  nssa:
-                    default-information-originate: {}
-                    no-summary: {}
-                - id: '5'
-                  filter-list:
-                    - direction: 'in'
-                      prefix: 'test'
-                  # Getting error: "Virtual links are not allowed in NSSA and stub areas"
-                  virtual-link:
-                    - id: '10.200.200.200'
-              passive-interface:
-                interface:
-                  - name: 'GigabitEthernet7'
-              network:
-                - ip: '10.250.0.0'
-                  mask: '0.0.255.255'
-                  area: '4'
-                - ip: '10.250.25.0'
-                  mask: '0.0.0.255'
-                  area: '5'
-                - ip: '0.0.0.0'
-                  mask: '255.255.255.255'
-                  area: '0'
-              mpls:
-                traffic-eng:
-                  area: ['4']
-              neighbor:
-                ip: '10.10.10.10'
-                cost-database-filter-container:
-                  cost: 100
-              
-        api_method: PATCH
+        # Areas
+      - name: NSO configure areas config
+        tags:
+          - ospf_areas_config
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:router/ospf
+          content: |
+            ospf:
+              - id: '100'
+                area:
+                  - id: '1'
+                    filter-list:
+                      - direction: 'in'
+                        prefix: 'test'
+                network:
+                  - ip: '10.255.100.1'
+                    mask: '0.0.0.0'
+                    area: '1'
+                  - ip: '0.0.0.0'
+                    mask: '255.255.255.255'
+                    area: '0'
+              - id: '2'
+                vrf: 'internal_0'
+                area:
+                  - id: '1'
+                    stub:
+                      no-summary: {}
+                  - id: '4'
+                    filter-list:
+                      - direction: 'in'
+                        prefix: 'test'
+                    # Getting error: "Area is configured as NSSA already"
+                    nssa:
+                      default-information-originate: {}
+                      no-summary: {}
+                  - id: '5'
+                    filter-list:
+                      - direction: 'in'
+                        prefix: 'test'
+                    # Getting error: "Virtual links are not allowed in NSSA and stub areas"
+                    virtual-link:
+                      - id: '10.200.200.200'
+                passive-interface:
+                  interface:
+                    - name: 'GigabitEthernet7'
+                network:
+                  - ip: '10.250.0.0'
+                    mask: '0.0.255.255'
+                    area: '4'
+                  - ip: '10.250.25.0'
+                    mask: '0.0.0.255'
+                    area: '5'
+                  - ip: '0.0.0.0'
+                    mask: '255.255.255.255'
+                    area: '0'
+                mpls:
+                  traffic-eng:
+                    area: ['4']
+                neighbor:
+                  ip: '10.10.10.10'
+                  cost-database-filter-container:
+                    cost: 100
+                
+          api_method: PATCH
 
-    - name: Execute NSO NED to OC script
-      tags:
-        - ospfv2_areas
-      script: ../../../package_nso_to_oc/xe/xe_network_instances.py
-      args:
-        executable: python3
-      register: nso_to_oc_result
-    - debug:
-        msg: "{{nso_to_oc_result}}"
+      - name: Execute NSO NED to OC script
+        tags:
+          - ospfv2_areas
+        script: ../../../package_nso_to_oc/xe/xe_network_instances.py
+        args:
+          executable: python3
+        register: nso_to_oc_result
+      - debug:
+          msg: "{{nso_to_oc_result}}"
 
     - name: NSO API call
       uri:

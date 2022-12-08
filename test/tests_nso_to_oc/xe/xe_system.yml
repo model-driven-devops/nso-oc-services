@@ -1,4 +1,13 @@
 ---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
 - hosts: localhost
   gather_facts: no
   environment:
@@ -9,837 +18,868 @@
     nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
     device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
   tasks:
-    - name: Set up service config
-      tags:
-        - set_up
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: mdd:openconfig
-        content: |
-          mdd:openconfig:
-            openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
-                  config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                - name: 'abc'
-                  config:
-                    name: 'abc'
-                    type: 'L3VRF'
-                    enabled: true
-                    enabled-address-families:
-                      - 'IPV4'
-                  interfaces:
-                    interface:
-                      - id: 'GigabitEthernet7'
-                        config:
-                          id: 'GigabitEthernet7'
-                          interface: 'GigabitEthernet7'
-                          subinterface: 0
-            openconfig-system:system:
-              config:
-                hostname: 'test'
-            openconfig-interfaces:interfaces:
-              interface:
-                - config:
+    - block:
+      - name: Set up service config
+        tags:
+          - set_up
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: mdd:openconfig
+          content: |
+            mdd:openconfig:
+              openconfig-network-instance:network-instances:
+                network-instance:
+                  - name: 'default'
+                    config:
+                      name: 'default'
+                      type: 'DEFAULT_INSTANCE'
+                      enabled: true
+                  - name: 'abc'
+                    config:
+                      name: 'abc'
+                      type: 'L3VRF'
+                      enabled: true
+                      enabled-address-families:
+                        - 'IPV4'
+                    interfaces:
+                      interface:
+                        - id: 'GigabitEthernet7'
+                          config:
+                            id: 'GigabitEthernet7'
+                            interface: 'GigabitEthernet7'
+                            subinterface: 0
+              openconfig-system:system:
+                config:
+                  hostname: 'test'
+              openconfig-interfaces:interfaces:
+                interface:
+                  - config:
+                      name: 'GigabitEthernet1'
+                      type: 'ethernetCsmacd'
+                      enabled: true
                     name: 'GigabitEthernet1'
-                    type: 'ethernetCsmacd'
-                    enabled: true
-                  name: 'GigabitEthernet1'
-                  subinterfaces:
-                    subinterface:
-                      - config:
+                    subinterfaces:
+                      subinterface:
+                        - config:
+                            index: 0
                           index: 0
-                        index: 0
-                        openconfig-if-ip:ipv4:
-                          config:
-                            dhcp-client: true
-                - config:
+                          openconfig-if-ip:ipv4:
+                            config:
+                              dhcp-client: true
+                  - config:
+                      name: 'GigabitEthernet2'
+                      type: 'ethernetCsmacd'
                     name: 'GigabitEthernet2'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet2'
-                  subinterfaces:
-                    subinterface:
-                      - config:
+                    subinterfaces:
+                      subinterface:
+                        - config:
+                            index: 0
                           index: 0
-                        index: 0
-                        openconfig-if-ip:ipv4:
-                          config:
-                            dhcp-client: true
-                - config:
+                          openconfig-if-ip:ipv4:
+                            config:
+                              dhcp-client: true
+                  - config:
+                      name: 'GigabitEthernet3'
+                      type: 'ethernetCsmacd'
                     name: 'GigabitEthernet3'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet3'
-                  subinterfaces:
-                    subinterface:
-                      - config:
+                    subinterfaces:
+                      subinterface:
+                        - config:
+                            index: 0
                           index: 0
-                        index: 0
-                        openconfig-if-ip:ipv4:
-                          config:
-                            dhcp-client: true
-                - config:
+                          openconfig-if-ip:ipv4:
+                            config:
+                              dhcp-client: true
+                  - config:
+                      name: 'GigabitEthernet4'
+                      type: 'ethernetCsmacd'
                     name: 'GigabitEthernet4'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet4'
-                  subinterfaces:
-                    subinterface:
-                      - config:
+                    subinterfaces:
+                      subinterface:
+                        - config:
+                            index: 0
                           index: 0
-                        index: 0
-                        openconfig-if-ip:ipv4:
-                          config:
-                            dhcp-client: true
-                - config:
+                          openconfig-if-ip:ipv4:
+                            config:
+                              dhcp-client: true
+                  - config:
+                      name: 'GigabitEthernet5'
+                      type: 'ethernetCsmacd'
                     name: 'GigabitEthernet5'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet5'
-                  subinterfaces:
-                    subinterface:
-                      - config:
+                    subinterfaces:
+                      subinterface:
+                        - config:
+                            index: 0
                           index: 0
-                        index: 0
-                        openconfig-if-ip:ipv4:
-                          config:
-                            dhcp-client: true
-                - config:
+                          openconfig-if-ip:ipv4:
+                            config:
+                              dhcp-client: true
+                  - config:
+                      name: 'GigabitEthernet6'
+                      type: 'ethernetCsmacd'
                     name: 'GigabitEthernet6'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet6'
-                  subinterfaces:
-                    subinterface:
-                      - config:
+                    subinterfaces:
+                      subinterface:
+                        - config:
+                            index: 0
                           index: 0
-                        index: 0
-                        openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
+                          openconfig-if-ip:ipv4:
+                            addresses:
+                              address:
+                                - config:
+                                    ip: '10.6.0.1'
+                                    prefix-length: 30
                                   ip: '10.6.0.1'
-                                  prefix-length: 30
-                                ip: '10.6.0.1'
-                          config:
-                            dhcp-client: false
-                - config:
+                            config:
+                              dhcp-client: false
+                  - config:
+                      name: 'GigabitEthernet7'
+                      type: 'ethernetCsmacd'
                     name: 'GigabitEthernet7'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet7'
-                  subinterfaces:
-                    subinterface:
-                      - config:
+                    subinterfaces:
+                      subinterface:
+                        - config:
+                            index: 0
                           index: 0
-                        index: 0
-                        openconfig-if-ip:ipv4:
-                          addresses:
-                            address:
-                              - config:
+                          openconfig-if-ip:ipv4:
+                            addresses:
+                              address:
+                                - config:
+                                    ip: '10.7.0.1'
+                                    prefix-length: 30
                                   ip: '10.7.0.1'
-                                  prefix-length: 30
-                                ip: '10.7.0.1'
-                          config:
-                            dhcp-client: false
-                - config:
+                            config:
+                              dhcp-client: false
+                  - config:
+                      name: 'GigabitEthernet8'
+                      type: 'ethernetCsmacd'
                     name: 'GigabitEthernet8'
-                    type: 'ethernetCsmacd'
-                  name: 'GigabitEthernet8'
-                  subinterfaces:
-                    subinterface:
-                      - config:
+                    subinterfaces:
+                      subinterface:
+                        - config:
+                            index: 0
                           index: 0
-                        index: 0
-                        openconfig-if-ip:ipv4:
-                          config:
-                            dhcp-client: true
-        api_method: PUT
-    - name: NSO configure Interfaces
-      tags:
-        - set_up
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:interface
-        content: |
-          interface:
-            GigabitEthernet:
-              - name: 6
-                ip:
-                  address:
-                    primary:
-                      address: 10.6.0.1
-                      mask: 255.255.255.0
-        api_method: PATCH
-    - name: NSO configure hostname
-      tags:
-        - hostname
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config
-        content: |
-          config:
-            tailf-ned-cisco-ios:hostname: test123
-        api_method: PATCH
-    - name: NSO configure banners
-      tags:
-        - banners
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:banner
-        content: |
-          tailf-ned-cisco-ios:banner:
-            login: login-banner
-            motd: motd-banner
-        api_method: PATCH
-    - name: NSO configure domain name
-      tags:
-        - domain_name
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ip
-        content: |
-          tailf-ned-cisco-ios:ip:
-            domain:
-              name: test.com
-        api_method: PATCH
-    - name: NSO configure ip options drop
-      tags:
-        - ip_options_drop
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ip
-        content: |
-          tailf-ned-cisco-ios:ip:
-            options:
-              drop: [null]
-        api_method: PATCH
-    - name: NSO configure enable secret
-      tags:
-        - enable_secret
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:enable
-        content: |
-          tailf-ned-cisco-ios:enable:
-            secret:
-              secret: admin
-              type: 0
-        api_method: PATCH
-    - name: NSO configure console exec timeout
-      tags:
-        - exec_timeout
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:line
-        content: |
-          tailf-ned-cisco-ios:line:
-            console:
-              - exec-timeout:
-                  minutes: 13
-                  seconds: 20
-                first: 0
-                stopbits: 1
-        api_method: PATCH
-    - name: NSO configure ssh timeout
-      tags:
-        - ssh_timeout
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ip
-        content: |
-          tailf-ned-cisco-ios:ip:
-            ssh:
-              time-out: 55
-        api_method: PATCH
-    - name: NSO configure ssh version
-      tags:
-        - ssh_version
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ip
-        content: |
-          tailf-ned-cisco-ios:ip:
-            ssh:
-              version: 2
-        api_method: PATCH
-    - name: NSO configure no ip domain lookup
-      tags:
-        - ip_domain_lookup
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ip
-        content: |
-          tailf-ned-cisco-ios:ip:
-            domain:
-              lookup-conf:
-                lookup: false
-        api_method: PATCH
-    - name: NSO configure login on-success
-      tags:
-        - login_on-success
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:login
-        content: |
-          tailf-ned-cisco-ios:login:
-            on-success:
+                          openconfig-if-ip:ipv4:
+                            config:
+                              dhcp-client: true
+          api_method: PUT
+      - name: NSO configure Interfaces
+        tags:
+          - set_up
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:interface
+          content: |
+            interface:
+              GigabitEthernet:
+                - name: 6
+                  ip:
+                    address:
+                      primary:
+                        address: 10.6.0.1
+                        mask: 255.255.255.0
+          api_method: PATCH
+      - name: NSO configure hostname
+        tags:
+          - hostname
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config
+          content: |
+            config:
+              tailf-ned-cisco-ios:hostname: test123
+          api_method: PATCH
+      - name: NSO configure banners
+        tags:
+          - banners
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:banner
+          content: |
+            tailf-ned-cisco-ios:banner:
+              login: login-banner
+              motd: motd-banner
+          api_method: PATCH
+      - name: NSO configure domain name
+        tags:
+          - domain_name
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              domain:
+                name: test.com
+          api_method: PATCH
+      - name: NSO configure ip options drop
+        tags:
+          - ip_options_drop
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              options:
+                drop: [null]
+          api_method: PATCH
+      - name: NSO configure enable secret
+        tags:
+          - enable_secret
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:enable
+          content: |
+            tailf-ned-cisco-ios:enable:
+              secret:
+                secret: admin
+                type: 0
+          api_method: PATCH
+      - name: NSO configure console exec timeout
+        tags:
+          - exec_timeout
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:line
+          content: |
+            tailf-ned-cisco-ios:line:
+              console:
+                - exec-timeout:
+                    minutes: 13
+                    seconds: 20
+                  first: 0
+                  stopbits: 1
+          api_method: PATCH
+      - name: NSO configure ssh timeout
+        tags:
+          - ssh_timeout
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              ssh:
+                time-out: 55
+          api_method: PATCH
+      - name: NSO configure ssh version
+        tags:
+          - ssh_version
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              ssh:
+                version: 2
+          api_method: PATCH
+      - name: NSO configure no ip domain lookup
+        tags:
+          - ip_domain_lookup
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              domain:
+                lookup-conf:
+                  lookup: false
+          api_method: PATCH
+      - name: NSO configure login on-success
+        tags:
+          - login_on-success
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:login
+          content: |
+            tailf-ned-cisco-ios:login:
+              on-success:
+                log:
+                  - null
+          api_method: PATCH
+      - name: NSO configure login on-failure
+        tags:
+          - login_on-failure
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:login
+          content: |
+            tailf-ned-cisco-ios:login:
+              on-failure:
+                log:
+                  - null
+          api_method: PATCH
+      - name: NSO configure login block-for
+        tags:
+          - login_block-for
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:login
+          content: |
+            tailf-ned-cisco-ios:login:
+              block-for:
+                seconds: 900
+                attempts: 3
+                within: 120
+          api_method: PATCH
+      - name: NSO configure archive_logging
+        tags:
+          - archive_logging
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:archive
+          content: |
+            tailf-ned-cisco-ios:archive:
               log:
-                - null
-        api_method: PATCH
-    - name: NSO configure login on-failure
-      tags:
-       - login_on-failure
-      import_role:
-       name: nso-ned-device-configure
-      vars:
-       api_path: config/tailf-ned-cisco-ios:login
-       content: |
-         tailf-ned-cisco-ios:login:
-           on-failure:
-             log:
-               - null
-       api_method: PATCH
-    - name: NSO configure login block-for
-      tags:
-       - login_block-for
-      import_role:
-       name: nso-ned-device-configure
-      vars:
-       api_path: config/tailf-ned-cisco-ios:login
-       content: |
-         tailf-ned-cisco-ios:login:
-           block-for:
-             seconds: 900
-             attempts: 3
-             within: 120
-       api_method: PATCH
-    - name: NSO configure archive_logging
-      tags:
-        - archive_logging
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:archive
-        content: |
-          tailf-ned-cisco-ios:archive:
-            log:
-              config:
-                logging:
-                  enable:
-                    - null
-        api_method: PATCH
+                config:
+                  logging:
+                    enable:
+                      - null
+          api_method: PATCH
 #    - name: NSO configure no boot network (no test for negative assertion)
 
-    - name: NSO configure ip bootp server
-      tags:
-        - ip_bootp_server
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ip
-        content: |
-          tailf-ned-cisco-ios:ip:
-            bootp:
-              server: true
-        api_method: PATCH
+      - name: NSO configure ip bootp server
+        tags:
+          - ip_bootp_server
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              bootp:
+                server: true
+          api_method: PATCH
 
-    - name: NSO configure ip dns server
-      tags:
-        - ip_dns_server
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ip
-        content: |
-          tailf-ned-cisco-ios:ip:
-            dns:
-              server: {}
-        api_method: PATCH
+      - name: NSO configure ip dns server
+        tags:
+          - ip_dns_server
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              dns:
+                server: {}
+          api_method: PATCH
 
-    - name: NSO configure ip identd
-      tags:
-        - ip_identd
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ip
-        content: |
-          tailf-ned-cisco-ios:ip:
-            identd:
-              - null
-        api_method: PATCH
-
-    - name: NSO configure no ip http server
-      tags:
-        - no_ip_http_server
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ip
-        content: |
-          tailf-ned-cisco-ios:ip:
-            http:
-              server: false
-        api_method: PATCH
-
-    - name: NSO configure ip rcmd rcp-enable
-      tags:
-        - ip_rcmd_rcp_enable
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ip
-        content: |
-          tailf-ned-cisco-ios:ip:
-            rcmd:
-              rcp-enable:
+      - name: NSO configure ip identd
+        tags:
+          - ip_identd
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              identd:
                 - null
-        api_method: PATCH
+          api_method: PATCH
 
-    - name: NSO configure ip rcmd rsh-enable
-      tags:
-        - ip_rcmd_rsh_enable
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ip
-        content: |
-          tailf-ned-cisco-ios:ip:
-            rcmd:
-              rsh-enable:
+      - name: NSO configure no ip http server
+        tags:
+          - no_ip_http_server
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              http:
+                server: false
+          api_method: PATCH
+
+      - name: NSO configure ip rcmd rcp-enable
+        tags:
+          - ip_rcmd_rcp_enable
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              rcmd:
+                rcp-enable:
+                  - null
+          api_method: PATCH
+
+      - name: NSO configure ip rcmd rsh-enable
+        tags:
+          - ip_rcmd_rsh_enable
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              rcmd:
+                rsh-enable:
+                  - null
+          api_method: PATCH
+
+      - name: NSO configure ip finger
+        tags:
+          - ip_finger
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              finger: {}
+          api_method: PATCH
+
+      - name: NSO configure service config
+        tags:
+          - service_config
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:service
+          content: |
+            tailf-ned-cisco-ios:service:
+              config:
                 - null
-        api_method: PATCH
+          api_method: PATCH
 
-    - name: NSO configure ip finger
-      tags:
-        - ip_finger
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ip
-        content: |
-          tailf-ned-cisco-ios:ip:
-            finger: {}
-        api_method: PATCH
+      - name: NSO configure service tcp-small-servers
+        tags:
+          - service_tcp_small_servers
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:service
+          content: |
+            tailf-ned-cisco-ios:service:
+              tcp-small-servers:
+                - null
+          api_method: PATCH
+      - name: NSO configure service udp-small-servers
+        tags:
+          - service_udp_small_servers
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:service
+          content: |
+            tailf-ned-cisco-ios:service:
+              udp-small-servers:
+                - null
+          api_method: PATCH
 
-    - name: NSO configure service config
-      tags:
-        - service_config
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:service
-        content: |
-          tailf-ned-cisco-ios:service:
-            config:
-              - null
-        api_method: PATCH
+      - name: NSO configure service pad
+        tags:
+          - service_pad
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:service
+          content: |
+            tailf-ned-cisco-ios:service:
+              conf:
+                pad: true
+          api_method: PATCH
 
-    - name: NSO configure service tcp-small-servers
-      tags:
-        - service_tcp_small_servers
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:service
-        content: |
-          tailf-ned-cisco-ios:service:
-            tcp-small-servers:
-              - null
-        api_method: PATCH
-    - name: NSO configure service udp-small-servers
-      tags:
-        - service_udp_small_servers
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:service
-        content: |
-          tailf-ned-cisco-ios:service:
-            udp-small-servers:
-              - null
-        api_method: PATCH
+      - name: NSO configure service password-encryption
+        tags:
+          - service_password_encryption
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:service
+          content: |
+            tailf-ned-cisco-ios:service:
+              password-encryption: {}
+          api_method: PATCH
 
-    - name: NSO configure service pad
-      tags:
-        - service_pad
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:service
-        content: |
-          tailf-ned-cisco-ios:service:
-            conf:
-              pad: true
-        api_method: PATCH
+      - name: NSO configure ssh algorithm encryption
+        tags:
+          - ssh_algorithm_encryption
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              ssh:
+                server:
+                  algorithm:
+                    encryption:
+                      - aes128-ctr
+                      - aes192-ctr
+                      - aes256-ctr
+          api_method: PATCH
 
-    - name: NSO configure service password-encryption
-      tags:
-        - service_password_encryption
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:service
-        content: |
-          tailf-ned-cisco-ios:service:
-            password-encryption: {}
-        api_method: PATCH
+      - name: NSO configure ssh source interface
+        tags:
+          - ssh_source_interface
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              ssh:
+                source-interface:
+                  GigabitEthernet: 6
+          api_method: PATCH
+      - name: NSO configure vty exec timeout
+        tags:
+          - vty_exec_timeout
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:line
+          content: |
+            tailf-ned-cisco-ios:line:
+              vty:
+                - exec-timeout:
+                    minutes: 13
+                    seconds: 20
+                  first: 0
+                  last: 4
+          api_method: PATCH
+      - name: NSO configure vty absolute timeout
+        tags:
+          - vty_absolute_timeout
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:line
+          content: |
+            tailf-ned-cisco-ios:line:
+              vty:
+                - absolute-timeout: 1200
+                  first: 0
+                  last: 4
+          api_method: PATCH
+      - name: NSO configure vty session limit
+        tags:
+          - vty_session_limit
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:line
+          content: |
+            tailf-ned-cisco-ios:line:
+              vty:
+                session-limit: 16
+                first: 0
+                last: 4
+          api_method: PATCH
+      - name: Execute NSO NED to OC script
+        script: ../../../package_nso_to_oc/xe/xe_system.py
+        args:
+          executable: python3
+        register: nso_to_oc_result
+      - debug:
+          msg: "{{nso_to_oc_result}}"
+      - name: NSO API call
+        uri:
+          url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+          url_username: "{{ nso_username }}"
+          url_password: "{{ nso_password }}"
+          force_basic_auth: yes
+          validate_certs: no
+          status_code: [200,201,204]
+          method: GET
+          headers: "{
+            'Content-Type': 'application/yang-data+json',
+            'Accept': 'application/yang-data+json'}"
+          body_format: json
+        delegate_to: localhost
+        register: oc_result
+      - debug:
+          msg: "{{ oc_result }}"
+      - assert:
+          that:
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['hostname'] == 'test123'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['login-banner'] == 'login-banner'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['motd-banner'] == 'motd-banner'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['domain-name'] == 'test.com'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:enable-secret'] == 'VALUE_SPECIFIED_IN_NO_LOG_PARAMETER'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:console-exec-timeout-seconds'] == 800"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:ip-options'] == 'openconfig-system-ext:DROP'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:ssh-timeout'] == 55"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['protocol-version'] == 'V2'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:ssh-source-interface'] == 'GigabitEthernet6'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['timeout'] == 800"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:absolute-timeout-minutes'] == 1200"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['session-limit'] == 16"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-domain-lookup'] == false"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-success'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-failure'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['seconds'] == 900"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['attempts'] == 3"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['within'] == 120"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['archive-logging'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-bootp-server'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-dns-server'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-identd'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['http']['config']['http-enabled'] == false"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rcp-enable'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rsh-enable'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['finger'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-config'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-tcp-small-servers'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-udp-small-servers'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-pad'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-password-encryption'] == true"
+            - "'openconfig-system-ext:aes128-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
+            - "'openconfig-system-ext:aes192-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
+            - "'openconfig-system-ext:aes256-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
 
-    - name: NSO configure ssh source interface
-      tags:
-        - ssh_source_interface
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ip
-        content: |
-          tailf-ned-cisco-ios:ip:
-            ssh:
-              source-interface:
+      - name: NSO configure ntp authenticate
+        tags:
+          - ntp_authenticate
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ntp
+          content: |
+            tailf-ned-cisco-ios:ntp:
+              authenticate: [null]
+          api_method: PATCH
+      - name: NSO configure ntp logging
+        tags:
+          - ntp_logging
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ntp
+          content: |
+            tailf-ned-cisco-ios:ntp:
+              logging: [null]
+          api_method: PATCH
+      - name: NSO configure ntp source
+        tags:
+          - ntp_source
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ntp
+          content: |
+            tailf-ned-cisco-ios:ntp:
+              source:
                 GigabitEthernet: 6
-        api_method: PATCH
-    - name: NSO configure vty exec timeout
-      tags:
-        - vty_exec_timeout
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:line
-        content: |
-          tailf-ned-cisco-ios:line:
-            vty:
-              - exec-timeout:
-                  minutes: 13
-                  seconds: 20
-                first: 0
-                last: 4
-        api_method: PATCH
-    - name: NSO configure vty absolute timeout
-      tags:
-        - vty_absolute_timeout
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:line
-        content: |
-          tailf-ned-cisco-ios:line:
-            vty:
-              - absolute-timeout: 1200
-                first: 0
-                last: 4
-        api_method: PATCH
-    - name: NSO configure vty session limit
-      tags:
-        - vty_session_limit
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:line
-        content: |
-          tailf-ned-cisco-ios:line:
-            vty:
-              session-limit: 16
-              first: 0
-              last: 4
-        api_method: PATCH
-    - name: Execute NSO NED to OC script
-      script: ../../../package_nso_to_oc/xe/xe_system.py
-      args:
-        executable: python3
-      register: nso_to_oc_result
-    - debug:
-        msg: "{{nso_to_oc_result}}"
-    - name: NSO API call
-      uri:
-        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-        url_username: "{{ nso_username }}"
-        url_password: "{{ nso_password }}"
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: GET
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-      delegate_to: localhost
-      register: oc_result
-    - debug:
-        msg: "{{ oc_result }}"
-    - assert:
-        that:
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['hostname'] == 'test123'"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['login-banner'] == 'login-banner'"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['motd-banner'] == 'motd-banner'"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['domain-name'] == 'test.com'"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:enable-secret'] == 'VALUE_SPECIFIED_IN_NO_LOG_PARAMETER'"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:console-exec-timeout-seconds'] == 800"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:ip-options'] == 'openconfig-system-ext:DROP'"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:ssh-timeout'] == 55"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['protocol-version'] == 'V2'"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:ssh-source-interface'] == 'GigabitEthernet6'"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['timeout'] == 800"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:absolute-timeout-minutes'] == 1200"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['session-limit'] == 16"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-domain-lookup'] == false"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-success'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-failure'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['seconds'] == 900"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['attempts'] == 3"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['within'] == 120"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['archive-logging'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-bootp-server'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-dns-server'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-identd'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['http']['config']['http-enabled'] == false"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rcp-enable'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rsh-enable'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['finger'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-config'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-tcp-small-servers'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-udp-small-servers'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-pad'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-password-encryption'] == true"
-
-    - name: NSO configure ntp authenticate
-      tags:
-        - ntp_authenticate
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ntp
-        content: |
-          tailf-ned-cisco-ios:ntp:
-            authenticate: [null]
-        api_method: PATCH
-    - name: NSO configure ntp logging
-      tags:
-        - ntp_logging
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ntp
-        content: |
-          tailf-ned-cisco-ios:ntp:
-            logging: [null]
-        api_method: PATCH
-    - name: NSO configure ntp source
-      tags:
-        - ntp_source
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ntp
-        content: |
-          tailf-ned-cisco-ios:ntp:
-            source:
-              GigabitEthernet: 6
-        api_method: PATCH
-    - name: NSO configure ntp authentication key
-      tags:
-        - ntp_authentication_key
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ntp
-        content: |
-          tailf-ned-cisco-ios:ntp:
-            authentication-key:
-              - md5:
-                  secret: password1
-                number: 1
-              - md5:
-                  secret: password2
-                number: 2
-            trusted-key:
-              - key-number: 1
-              - key-number: 2
-        api_method: PATCH
-    - set_fact:
-        ntp_auth_key_1:
-          key-id: 1
-          config:
+          api_method: PATCH
+      - name: NSO configure ntp authentication key
+        tags:
+          - ntp_authentication_key
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ntp
+          content: |
+            tailf-ned-cisco-ios:ntp:
+              authentication-key:
+                - md5:
+                    secret: password1
+                  number: 1
+                - md5:
+                    secret: password2
+                  number: 2
+              trusted-key:
+                - key-number: 1
+                - key-number: 2
+          api_method: PATCH
+      - set_fact:
+          ntp_auth_key_1:
             key-id: 1
-            key-type: openconfig-system:NTP_AUTH_MD5
-            key-value: password1
-    - name: Execute NSO NED to OC script
-      script: ../../../package_nso_to_oc/xe/xe_system.py
-      args:
-        executable: python3
-      register: nso_to_oc_result
-    - debug:
-        msg: "{{nso_to_oc_result}}"
-    - name: NSO API call
-      uri:
-        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-        url_username: "{{ nso_username }}"
-        url_password: "{{ nso_password }}"
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: GET
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-      delegate_to: localhost
-      register: oc_result
-    - debug:
-        msg: "{{ oc_result }}"
-    - assert:
-        that:
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['enable-ntp-auth'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['openconfig-system-ext:ntp-enable-logging'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['ntp-source-address'] == '10.6.0.1'"
-          - "ntp_auth_key_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key']"
-    - name: NSO configure ntp authenticate
-      tags:
-        - ntp_servers
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:vrf
-        content: |
-          tailf-ned-cisco-ios:vrf:
-            definition:
-              - name: abc
-                address-family:
-                  ipv4: {}
-                  ipv6: {}
-        api_method: PATCH
-    - name: NSO configure ntp authenticate
-      tags:
-        - ntp_servers
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:ntp
-        content: |
-          tailf-ned-cisco-ios:ntp:
-            peer:
-              peer-list:
-                - name: 10.0.0.1
-                  key: 1
-                  iburst:
-                    - null
-                  prefer:
-                    - null
-              vrf:
+            config:
+              key-id: 1
+              key-type: openconfig-system:NTP_AUTH_MD5
+              key-value: password1
+      - name: Execute NSO NED to OC script
+        script: ../../../package_nso_to_oc/xe/xe_system.py
+        args:
+          executable: python3
+        register: nso_to_oc_result
+      - debug:
+          msg: "{{nso_to_oc_result}}"
+      - name: NSO API call
+        uri:
+          url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+          url_username: "{{ nso_username }}"
+          url_password: "{{ nso_password }}"
+          force_basic_auth: yes
+          validate_certs: no
+          status_code: [200,201,204]
+          method: GET
+          headers: "{
+            'Content-Type': 'application/yang-data+json',
+            'Accept': 'application/yang-data+json'}"
+          body_format: json
+        delegate_to: localhost
+        register: oc_result
+      - debug:
+          msg: "{{ oc_result }}"
+      - assert:
+          that:
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['enable-ntp-auth'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['openconfig-system-ext:ntp-enable-logging'] == true"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['ntp-source-address'] == '10.6.0.1'"
+            - "ntp_auth_key_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key']"
+      - name: NSO configure ntp authenticate
+        tags:
+          - ntp_servers
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:vrf
+          content: |
+            tailf-ned-cisco-ios:vrf:
+              definition:
                 - name: abc
-                  peer-list:
-                    - name: 10.0.0.2
-                      key: 2
-                      version: 4
-            server:
-              peer-list:
-                - name: 10.0.0.3
-                - name: 10.0.0.4
-                  key: 1
-                  source:
-                    GigabitEthernet: 6
-                  version: 3
-              vrf:
-                - name: abc
-                  peer-list:
-                    - name: 10.0.0.5
-                      key: 2
-        api_method: PATCH
-    - set_fact:
-        ntp_1:
-          address: 10.0.0.1
-          config:
+                  address-family:
+                    ipv4: {}
+                    ipv6: {}
+          api_method: PATCH
+      - name: NSO configure ntp authenticate
+        tags:
+          - ntp_servers
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ntp
+          content: |
+            tailf-ned-cisco-ios:ntp:
+              peer:
+                peer-list:
+                  - name: 10.0.0.1
+                    key: 1
+                    iburst:
+                      - null
+                    prefer:
+                      - null
+                vrf:
+                  - name: abc
+                    peer-list:
+                      - name: 10.0.0.2
+                        key: 2
+                        version: 4
+              server:
+                peer-list:
+                  - name: 10.0.0.3
+                  - name: 10.0.0.4
+                    key: 1
+                    source:
+                      GigabitEthernet: 6
+                    version: 3
+                vrf:
+                  - name: abc
+                    peer-list:
+                      - name: 10.0.0.5
+                        key: 2
+          api_method: PATCH
+      - set_fact:
+          ntp_1:
             address: 10.0.0.1
-            association-type: PEER
-            iburst: true
-            openconfig-system-ext:ntp-auth-key-id: 1
-            port: 123
-            prefer: true
-            version: 4
-    - set_fact:
-        ntp_2:
-          address: 10.0.0.2
-          config:
+            config:
+              address: 10.0.0.1
+              association-type: PEER
+              iburst: true
+              openconfig-system-ext:ntp-auth-key-id: 1
+              port: 123
+              prefer: true
+              version: 4
+      - set_fact:
+          ntp_2:
             address: 10.0.0.2
-            association-type: PEER
-            iburst: false
-            openconfig-system-ext:ntp-auth-key-id: 2
-            openconfig-system-ext:ntp-use-vrf: abc
-            port: 123
-            prefer: false
-            version: 4
-    - set_fact:
-        ntp_3:
-          address: 10.0.0.3
-          config:
+            config:
+              address: 10.0.0.2
+              association-type: PEER
+              iburst: false
+              openconfig-system-ext:ntp-auth-key-id: 2
+              openconfig-system-ext:ntp-use-vrf: abc
+              port: 123
+              prefer: false
+              version: 4
+      - set_fact:
+          ntp_3:
             address: 10.0.0.3
-            association-type: SERVER
-            iburst: false
-            port: 123
-            prefer: false
-            version: 4
-    - set_fact:
-        ntp_4:
-          address: 10.0.0.4
-          config:
+            config:
+              address: 10.0.0.3
+              association-type: SERVER
+              iburst: false
+              port: 123
+              prefer: false
+              version: 4
+      - set_fact:
+          ntp_4:
             address: 10.0.0.4
-            association-type: SERVER
-            iburst: false
-            openconfig-system-ext:ntp-auth-key-id: 1
-            openconfig-system-ext:ntp-source-address: 10.6.0.1
-            port: 123
-            prefer: false
-            version: 3
-    - set_fact:
-        ntp_5:
-          address: 10.0.0.5
-          config:
+            config:
+              address: 10.0.0.4
+              association-type: SERVER
+              iburst: false
+              openconfig-system-ext:ntp-auth-key-id: 1
+              openconfig-system-ext:ntp-source-address: 10.6.0.1
+              port: 123
+              prefer: false
+              version: 3
+      - set_fact:
+          ntp_5:
             address: 10.0.0.5
-            association-type: SERVER
-            iburst: false
-            openconfig-system-ext:ntp-auth-key-id: 2
-            openconfig-system-ext:ntp-use-vrf: abc
-            port: 123
-            prefer: false
-            version: 4
-    - name: Execute NSO NED to OC script
-      script: ../../../package_nso_to_oc/xe/xe_system.py
-      args:
-        executable: python3
-      register: nso_to_oc_result
-    - debug:
-        msg: "{{nso_to_oc_result}}"
-    - name: NSO API call
-      uri:
-        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-        url_username: "{{ nso_username }}"
-        url_password: "{{ nso_password }}"
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [ 200,201,204 ]
-        method: GET
-        headers: "{
-      'Content-Type': 'application/yang-data+json',
-      'Accept': 'application/yang-data+json'}"
-        body_format: json
-      delegate_to: localhost
-      register: oc_result
-    - debug:
-        msg: "{{ oc_result }}"
-    - assert:
-        that:
-          - "ntp_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
-          - "ntp_2 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
-          - "ntp_3 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
-          - "ntp_4 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
-          - "ntp_5 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+            config:
+              address: 10.0.0.5
+              association-type: SERVER
+              iburst: false
+              openconfig-system-ext:ntp-auth-key-id: 2
+              openconfig-system-ext:ntp-use-vrf: abc
+              port: 123
+              prefer: false
+              version: 4
+      - name: Execute NSO NED to OC script
+        script: ../../../package_nso_to_oc/xe/xe_system.py
+        args:
+          executable: python3
+        register: nso_to_oc_result
+      - debug:
+          msg: "{{nso_to_oc_result}}"
+      - name: NSO API call
+        uri:
+          url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+          url_username: "{{ nso_username }}"
+          url_password: "{{ nso_password }}"
+          force_basic_auth: yes
+          validate_certs: no
+          status_code: [ 200,201,204 ]
+          method: GET
+          headers: "{
+        'Content-Type': 'application/yang-data+json',
+        'Accept': 'application/yang-data+json'}"
+          body_format: json
+        delegate_to: localhost
+        register: oc_result
+      - debug:
+          msg: "{{ oc_result }}"
+      - assert:
+          that:
+            - "ntp_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+            - "ntp_2 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+            - "ntp_3 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+            - "ntp_4 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+            - "ntp_5 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+      always:
+        - name: Rollback NSO
+          delegate_to: nso
+          connection: local
+          import_role:
+            name: nso-rollback-load
+          run_once: true
+          vars:
+            rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
