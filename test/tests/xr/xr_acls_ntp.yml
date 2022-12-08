@@ -1,0 +1,118 @@
+---
+- name: test acls ntp
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test apply_ntp_serve_acl
+      tags:
+        - apply_ntp_serve_acl
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-acl:acl:
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
+                  - openconfig-acl:name: 'ntp_serve'
+                    openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:config:
+                      openconfig-acl:name: 'ntp_serve'
+                      openconfig-acl:type: 'ACL_IPV4'
+                      openconfig-acl:description: 'ingress VTY'
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
+                        - openconfig-acl:sequence-id: 10
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:sequence-id: 10
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:source-address: '10.1.1.1/32'
+                        - openconfig-acl:sequence-id: 20
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:sequence-id: 20
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:source-address: '10.2.2.2/32'
+              openconfig-acl-ext:ntp:
+                openconfig-acl-ext:server:
+                  openconfig-acl-ext:config:
+                    openconfig-acl-ext:server-acl-set: 'ntp_serve'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ipv4 access-list ntp_serve:' in changes"
+          - "'+ 10 permit ipv4 host 10.1.1.1 any:' in changes"
+          - "'+ 20 permit ipv4 host 10.2.2.2 any:' in changes"
+          - "'+ access-group ipv4 serve ntp_serve:' in changes"
+#          - "'+ntp:' in changes" May not show in config it already there
+
+    - name: test apply_ntp_peer_acl
+      tags:
+        - apply_ntp_peer_acl
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-acl:acl:
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
+                  - openconfig-acl:name: 'ntp_peer'
+                    openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:config:
+                      openconfig-acl:name: 'ntp_peer'
+                      openconfig-acl:type: 'ACL_IPV4'
+                      openconfig-acl:description: 'ingress VTY'
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
+                        - openconfig-acl:sequence-id: 10
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:sequence-id: 10
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:source-address: '10.3.3.3/32'
+                        - openconfig-acl:sequence-id: 20
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:sequence-id: 20
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:source-address: '10.4.4.4/32'
+              openconfig-acl-ext:ntp:
+                openconfig-acl-ext:peer:
+                  openconfig-acl-ext:config:
+                    openconfig-acl-ext:peer-acl-set: 'ntp_peer'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ipv4 access-list ntp_peer:' in changes"
+          - "'+ 10 permit ipv4 host 10.3.3.3 any:' in changes"
+          - "'+ 20 permit ipv4 host 10.4.4.4 any:' in changes"
+          - "'+ access-group ipv4 peer ntp_peer:' in changes"
+#          - "'+ntp:' in changes" May not show in config it already there
