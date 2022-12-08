@@ -466,7 +466,6 @@ def set_ospfv2_intf_areas(ospfv2_area, intf_leftover, area, intf_name, intf, osp
     set_passive(ospf, ospf_leftover, intf_config, intf_name)
     set_priority(intf, intf_leftover, intf_config)
     area_intf = get_area_by_id(ospfv2_area, area["id"])
-    # intf_auth = {"openconfig-ospfv2-ext:authentication": intf_name}
 
     if not "openconfig-network-instance:interfaces" in area_intf:
         area_intf["openconfig-network-instance:interfaces"] = {"openconfig-network-instance:interface": []}
