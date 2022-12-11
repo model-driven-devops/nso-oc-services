@@ -533,15 +533,15 @@
                 reference-bandwidth: '100000'
         api_method: PATCH
 
-      - name: Execute NSO NED to OC script
-        tags:
-          - ospfv2_global
-        script: ../../../package_nso_to_oc/xe/xe_network_instances.py
-        args:
-          executable: python3
-        register: nso_to_oc_result
-      - debug:
-          msg: "{{nso_to_oc_result}}"
+    - name: Execute NSO NED to OC script
+      tags:
+        - ospfv2_global
+      script: ../../../package_nso_to_oc/xe/xe_network_instances.py
+      args:
+        executable: python3
+      register: nso_to_oc_result
+    - debug:
+        msg: "{{nso_to_oc_result}}"
 
     - name: NSO API call
       uri:
@@ -590,81 +590,81 @@
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['spf']['config']['openconfig-ospfv2-ext:hold-time'] == 20000"
 
         # Areas
-      - name: NSO configure areas config
-        tags:
-          - ospf_areas_config
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:router/ospf
-          content: |
-            ospf:
-              - id: '100'
-                area:
-                  - id: '1'
-                    filter-list:
-                      - direction: 'in'
-                        prefix: 'test'
-                network:
-                  - ip: '10.255.100.1'
-                    mask: '0.0.0.0'
-                    area: '1'
-                  - ip: '0.0.0.0'
-                    mask: '255.255.255.255'
-                    area: '0'
-              - id: '2'
-                vrf: 'internal_0'
-                area:
-                  - id: '1'
-                    stub:
-                      no-summary: {}
-                  - id: '4'
-                    filter-list:
-                      - direction: 'in'
-                        prefix: 'test'
-                    # Getting error: "Area is configured as NSSA already"
-                    nssa:
-                      default-information-originate: {}
-                      no-summary: {}
-                  - id: '5'
-                    filter-list:
-                      - direction: 'in'
-                        prefix: 'test'
-                    # Getting error: "Virtual links are not allowed in NSSA and stub areas"
-                    virtual-link:
-                      - id: '10.200.200.200'
-                passive-interface:
-                  interface:
-                    - name: 'GigabitEthernet7'
-                network:
-                  - ip: '10.250.0.0'
-                    mask: '0.0.255.255'
-                    area: '4'
-                  - ip: '10.250.25.0'
-                    mask: '0.0.0.255'
-                    area: '5'
-                  - ip: '0.0.0.0'
-                    mask: '255.255.255.255'
-                    area: '0'
-                mpls:
-                  traffic-eng:
-                    area: ['4']
-                neighbor:
-                  ip: '10.10.10.10'
-                  cost-database-filter-container:
-                    cost: 100
-                
-          api_method: PATCH
+    - name: NSO configure areas config
+      tags:
+        - ospf_areas_config
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:router/ospf
+        content: |
+          ospf:
+            - id: '100'
+              area:
+                - id: '1'
+                  filter-list:
+                    - direction: 'in'
+                      prefix: 'test'
+              network:
+                - ip: '10.255.100.1'
+                  mask: '0.0.0.0'
+                  area: '1'
+                - ip: '0.0.0.0'
+                  mask: '255.255.255.255'
+                  area: '0'
+            - id: '2'
+              vrf: 'internal_0'
+              area:
+                - id: '1'
+                  stub:
+                    no-summary: {}
+                - id: '4'
+                  filter-list:
+                    - direction: 'in'
+                      prefix: 'test'
+                  # Getting error: "Area is configured as NSSA already"
+                  nssa:
+                    default-information-originate: {}
+                    no-summary: {}
+                - id: '5'
+                  filter-list:
+                    - direction: 'in'
+                      prefix: 'test'
+                  # Getting error: "Virtual links are not allowed in NSSA and stub areas"
+                  virtual-link:
+                    - id: '10.200.200.200'
+              passive-interface:
+                interface:
+                  - name: 'GigabitEthernet7'
+              network:
+                - ip: '10.250.0.0'
+                  mask: '0.0.255.255'
+                  area: '4'
+                - ip: '10.250.25.0'
+                  mask: '0.0.0.255'
+                  area: '5'
+                - ip: '0.0.0.0'
+                  mask: '255.255.255.255'
+                  area: '0'
+              mpls:
+                traffic-eng:
+                  area: ['4']
+              neighbor:
+                ip: '10.10.10.10'
+                cost-database-filter-container:
+                  cost: 100
 
-      - name: Execute NSO NED to OC script
-        tags:
-          - ospfv2_areas
-        script: ../../../package_nso_to_oc/xe/xe_network_instances.py
-        args:
-          executable: python3
-        register: nso_to_oc_result
-      - debug:
-          msg: "{{nso_to_oc_result}}"
+        api_method: PATCH
+
+    - name: Execute NSO NED to OC script
+      tags:
+        - ospfv2_areas
+      script: ../../../package_nso_to_oc/xe/xe_network_instances.py
+      args:
+        executable: python3
+      register: nso_to_oc_result
+    - debug:
+        msg: "{{nso_to_oc_result}}"
 
     - name: NSO API call
       uri:
