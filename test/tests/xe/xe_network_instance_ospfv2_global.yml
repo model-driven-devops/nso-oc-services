@@ -725,27 +725,27 @@
                         openconfig-network-instance:ospfv2:
                           openconfig-network-instance:areas:
                             openconfig-network-instance:area:
-                            - openconfig-network-instance:identifier: 3
-                              openconfig-network-instance:config:
-                                openconfig-network-instance:identifier: 3
-                              openconfig-network-instance:interfaces:
-                                openconfig-network-instance:interface:
-                                - openconfig-network-instance:id: 'GigabitEthernet6'
-                                  openconfig-network-instance:config:
-                                    openconfig-network-instance:id: 'GigabitEthernet6'
-                                  openconfig-ospfv2-ext:authentication:
-                                    openconfig-ospfv2-ext:config:
-                                      openconfig-ospfv2-ext:authentication-type: MD5
-                                    openconfig-ospfv2-ext:md5-authentication-keys:
-                                      openconfig-ospfv2-ext:md5-authentication-key:
-                                        - openconfig-ospfv2-ext:key-id: 2
-                                          openconfig-ospfv2-ext:config:
-                                            openconfig-ospfv2-ext:key-id: 2
-                                            openconfig-ospfv2-ext:key: 'pass1'
-                                        - openconfig-ospfv2-ext:key-id: 3 
-                                          openconfig-ospfv2-ext:config:
-                                            openconfig-ospfv2-ext:key-id: 3
-                                            openconfig-ospfv2-ext:key: 'pass2'
+                              - openconfig-network-instance:identifier: 3
+                                openconfig-network-instance:config:
+                                  openconfig-network-instance:identifier: 3
+                                openconfig-network-instance:interfaces:
+                                  openconfig-network-instance:interface:
+                                    - openconfig-network-instance:id: 'GigabitEthernet6'
+                                      openconfig-network-instance:config:
+                                        openconfig-network-instance:id: 'GigabitEthernet6'
+                                      openconfig-ospfv2-ext:authentication:
+                                        openconfig-ospfv2-ext:config:
+                                          openconfig-ospfv2-ext:authentication-type: MD5
+                                        openconfig-ospfv2-ext:md5-authentication-keys:
+                                          openconfig-ospfv2-ext:md5-authentication-key:
+                                            - openconfig-ospfv2-ext:key-id: 2
+                                              openconfig-ospfv2-ext:config:
+                                                openconfig-ospfv2-ext:key-id: 2
+                                                openconfig-ospfv2-ext:key: 'pass1'
+                                            - openconfig-ospfv2-ext:key-id: 3 
+                                              openconfig-ospfv2-ext:config:
+                                                openconfig-ospfv2-ext:key-id: 3
+                                                openconfig-ospfv2-ext:key: 'pass2'
         api_method: PUT
         api_ignore_errors: false
         rollback: true

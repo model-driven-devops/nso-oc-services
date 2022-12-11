@@ -573,13 +573,23 @@ def set_authentication(intf, intf_leftover):
     # Authentication type: unconfigured, null, simple and md5
     authentication = {"openconfig-ospfv2-ext:config": []}
     auth_list = authentication["openconfig-ospfv2-ext:config"]
-    is_auth_enabled = "ip" in intf and "ospf" in intf["ip"] and "authentication" in intf["ip"]["ospf"]
+    is_auth_enabled = type(intf.get("ip", {}).get("ospf", {}).get("authentication", '')) is dict
     is_mess_digest = "ip" in intf and "ospf" in intf["ip"] and "message-digest-key" in intf["ip"]["ospf"]
     if not is_auth_enabled:
         # Unconfigured
         config = {
             "openconfig-ospfv2-ext:authentication-type": 'UNCONFIGURED'
         }
+        auth_list.append(config)
+    elif is_auth_enabled and len(intf["ip"]["ospf"]["authentication"]) == 0:
+        # Simple
+        config = {
+            "openconfig-ospfv2-ext:authentication-type": "SIMPLE",
+        }
+        del intf_leftover["ip"]["ospf"]["authentication"]
+        if intf.get("ip", {}).get("ospf", {}).get("authentication-key", {}).get("secret", ""):
+            config["openconfig-ospfv2-ext:simple-password"] = intf.get("ip", {}).get("ospf", {}).get("authentication-key", {}).get("secret", "")
+            intf["ip"]["ospf"]["authentication-key"]["secret"] = None
         auth_list.append(config)
     else:
         for index, auth in enumerate(intf["ip"]["ospf"]["authentication"]):
@@ -589,19 +599,14 @@ def set_authentication(intf, intf_leftover):
                     "openconfig-ospfv2-ext:authentication-type": 'NULL'
                 }
                 intf_leftover["ip"]["ospf"]["authentication"][index] = None
-            # Simple
-            if not "null" in intf["ip"]["ospf"]["authentication"] and not "message-digest" in intf["ip"]["ospf"]["authentication"]:
-                config = {
-                    "openconfig-ospfv2-ext:authentication-type": 'SIMPLE'
-                }
-                intf_leftover["ip"]["ospf"]["authentication"][index] = None
+                auth_list.append(config)
             # MD5
             if "message-digest" in intf["ip"]["ospf"]["authentication"]:
                 config = {
                     "openconfig-ospfv2-ext:authentication-type": 'MD5'
                 }
-                intf_leftover["ip"]["ospf"]["authentication"][index] = None        
-            auth_list.append(config)
+                intf_leftover["ip"]["ospf"]["authentication"][index] = None
+                auth_list.append(config)
 
     if is_mess_digest:        
         authentication.update(set_message_digest(intf, intf_leftover))
