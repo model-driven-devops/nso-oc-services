@@ -105,7 +105,7 @@ def xr_system_program_service(self) -> None:
             else:
                 device_cdb.cisco_ios_xr__ssh.server.algorithms.cipher.create(enc)
     # boot network
-    if self.service.oc_sys__system.services.config.boot_network == "DISABLED":
+    if self.service.oc_sys__system.services.boot_network.config.bootnetwork_enabled == "DISABLED":
         raise ValueError('boot_network not supported in XR')
     # IP bootp server
     if self.service.oc_sys__system.services.config.ip_bootp_server:

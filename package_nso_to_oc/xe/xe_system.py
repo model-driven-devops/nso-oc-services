@@ -49,6 +49,9 @@ openconfig_system = {
             "openconfig-system-ext:login-security-policy": {
                 "openconfig-system-ext:config": {},
                 "openconfig-system-ext:block-for": {"openconfig-system-ext:config": {}}
+            },
+            "openconfig-system-ext:boot-network": {
+                "openconfig-system-ext:config": {},
             }
         }
     }
@@ -99,7 +102,9 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:archive-logging"] = False
     # boot network
     if not config_before.get("tailf-ned-cisco-ios:boot", {}).get("network"):
-        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:boot-network"] = "DISABLED"
+        openconfig_system_services["openconfig-system-ext:boot-network"]["openconfig-system-ext:config"]["openconfig-system-ext:bootnetwork-enabled"] = "DISABLED"
+    else:
+        openconfig_system_services["openconfig-system-ext:boot-network"]["openconfig-system-ext:config"]["openconfig-system-ext:bootnetwork-enabled"] = "MANUAL_CONFIG"
     # IP bootp server
     if config_before.get("tailf-ned-cisco-ios:ip", {}).get("bootp", {}).get("server", True) is False:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-bootp-server"] = False

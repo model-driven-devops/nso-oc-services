@@ -240,14 +240,6 @@ module openconfig-system-ext{
           description
             "Enable the config logger.";
         }
-        leaf boot-network {
-          type enumeration {
-            enum MANUAL_CONFIG;
-            enum DISABLED;
-          }
-          description
-            "Configure a system to boot from network-wide config file.";
-        }
         leaf ip-bootp-server {
           type boolean;
           description
@@ -303,6 +295,20 @@ module openconfig-system-ext{
           type boolean;
           description
             "Encrypt system passwords.";
+        }
+      }
+      container boot-network  {
+        description
+          "boot-network configurations";
+        container config {
+          leaf bootnetwork-enabled {
+            type enumeration {
+              enum MANUAL_CONFIG;
+              enum DISABLED;
+            }
+            description
+              "Configure a system to boot from network-wide config file.";
+          }
         }
       }
       container login-security-policy {

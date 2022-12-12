@@ -1414,8 +1414,9 @@
           mdd:openconfig:
             openconfig-system:system:
               openconfig-system-ext:services:
-                openconfig-system-ext:config:
-                  openconfig-system-ext:boot-network: DISABLED
+                openconfig-system-ext:boot-network:
+                  openconfig-system-ext:config:
+                    openconfig-system-ext:bootnetwork-enabled: DISABLED
         api_method: PATCH
         api_ignore_errors: false
         rollback: false
@@ -1428,7 +1429,7 @@
           - "'-boot network tftp word 255.255.255.255:' in changes"
           - "'-boot network mop:unknown:' in changes"
 
-    - name: test ansible-playbook tests/xe/xe_system.yml --skip-tags="iosxr,nxos" -e rollback=true -t service_pad
+    - name: test ip_bootp_server
       tags:
         - ip_bootp_server
       import_role:
