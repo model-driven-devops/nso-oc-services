@@ -269,6 +269,10 @@ def xe_system_ssh_server(config_before: dict, config_leftover: dict) -> None:
         openconfig_system_ssh_server_alg_config["openconfig-system-ext:encryption"] = config_before.get("tailf-ned-cisco-ios:ip", {}).get("ssh", {}).get("server", {}).get("algorithm", {}).get("encryption")
         del config_leftover["tailf-ned-cisco-ios:ip"]["ssh"]["server"]["algorithm"]["encryption"]
 
+    if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("ssh", {}).get("server", {}).get("algorithm", {}).get("mac", '')) is list:
+        openconfig_system_ssh_server_alg_config["openconfig-system-ext:mac"] = config_before.get("tailf-ned-cisco-ios:ip", {}).get("ssh", {}).get("server", {}).get("algorithm", {}).get("mac")
+        del config_leftover["tailf-ned-cisco-ios:ip"]["ssh"]["server"]["algorithm"]["mac"]
+
 def xe_add_oc_ntp_server(before_ntp_server_list: list, after_ntp_server_list: list, openconfig_ntp_server_list: list,
                          ntp_type: str, ntp_vrf: str, if_ip: dict) -> None:
     """Generate Openconfig NTP server configurations"""
