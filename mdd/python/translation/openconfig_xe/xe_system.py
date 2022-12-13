@@ -353,6 +353,10 @@ def xe_system_program_service(self) -> None:
                 device_cdb.ios__ip.ssh.server.algorithm.encryption.create(enc.replace('triple-des-cbc', '3des-cbc'))
             else:
                 device_cdb.ios__ip.ssh.server.algorithm.encryption.create(enc)
+    if self.service.oc_sys__system.ssh_server.algorithm.config.mac:
+        device_cdb.ios__ip.ssh.server.algorithm.mac.delete()
+        for mac in self.service.oc_sys__system.ssh_server.algorithm.config.mac:
+            device_cdb.ios__ip.ssh.server.algorithm.mac.create(mac)
     # NTP
     if self.service.oc_sys__system.ntp.config.enabled:
         if self.service.oc_sys__system.ntp.config.ntp_source_address:

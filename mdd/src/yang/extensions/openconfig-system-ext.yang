@@ -158,6 +158,30 @@ module openconfig-system-ext{
     description
       "Encryption algorithm AES with 256-bit key GCM mode.";
   }
+  identity MAC_ALGORITHM {
+    description
+      "MAC algorithms advertised to other party";
+  }
+  identity hmac-sha1 {
+    base MAC_ALGORITHM;
+    description
+      "HMAC-SHA1 (digest length = key length = 160 bits).";
+  }
+  identity hmac-sha1-96 {
+    base MAC_ALGORITHM;
+    description
+      "HMAC-SHA1-96 (digest length = 96 bits, key length = 160 bits).";
+  }
+  identity hmac-sha2-256 {
+    base MAC_ALGORITHM;
+    description
+      "HMAC-SHA2-256 (digest length = 256 bits, key length = 256 bits).";
+  }
+  identity hmac-sha2-512 {
+    base MAC_ALGORITHM;
+    description
+      "HMAC-SHA2-512 (digest length = 512 bits, key length = 512 bits).";
+  }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system {
     container timestamps {
       description
@@ -472,6 +496,13 @@ module openconfig-system-ext{
           }
           tailf:info "ios: ip ssh server algorithm encryption";
           description "Specifies the Encryption algorithms advertised to other party.";
+        }
+        leaf-list mac {
+          type identityref {
+            base oc-system-ext:MAC_ALGORITHM;
+          }
+          tailf:info "ios: ip ssh server algorithm mac";
+          description "Specifies the MAC algorithms advertised to other party.";
         }
       }
     }

@@ -524,6 +524,23 @@
                       - aes256-ctr
           api_method: PATCH
 
+      - name: NSO configure ssh algorithm mac
+        tags:
+          - ssh_algorithm_mac
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            tailf-ned-cisco-ios:ip:
+              ssh:
+                server:
+                  algorithm:
+                    mac:
+                      - hmac-sha2-256
+                      - hmac-sha2-512
+          api_method: PATCH
+
       - name: NSO configure ssh source interface
         tags:
           - ssh_source_interface
@@ -642,6 +659,8 @@
             - "'openconfig-system-ext:aes128-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
             - "'openconfig-system-ext:aes192-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
             - "'openconfig-system-ext:aes256-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
+            - "'openconfig-system-ext:hmac-sha2-256' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['mac']"
+            - "'openconfig-system-ext:hmac-sha2-512' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['mac']"
 
       - name: NSO configure ntp authenticate
         tags:
