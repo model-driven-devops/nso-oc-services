@@ -428,7 +428,7 @@ def configure_port_channel(config_before: dict, config_leftover: dict, interface
 
             openconfig_interface_subif = return_nested_dict(openconfig_interfaces, path_oc_subif)
 
-            xr_interface_config(nso_before_interface, nso_leftover_interface, openconfig_interface_subif)
+            xr_interface_config(nso_before_interface, nso_leftover_interface, openconfig_interface_subif, True)
             xr_configure_ipv4_interface(nso_before_interface, nso_leftover_interface, openconfig_interface_subif)
 
             # Add vlan-id for sub-if
@@ -453,7 +453,7 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
             nso_leftover_interface = return_nested_dict(config_leftover, path_nso)
 
             # Configure sub-interface
-            xr_interface_config(nso_before_interface, nso_leftover_interface, openconfig_interface_sub_if)
+            xr_interface_config(nso_before_interface, nso_leftover_interface, openconfig_interface_sub_if, True)
 
             path_oc = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
                        interface_directory["oc_interface_index"]]
@@ -521,7 +521,7 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
 
             openconfig_interface_subif = return_nested_dict(openconfig_interfaces, path_oc_subif)
 
-            xr_interface_config(nso_before_interface, nso_leftover_interface, openconfig_interface_subif)
+            xr_interface_config(nso_before_interface, nso_leftover_interface, openconfig_interface_subif, True)
             xr_configure_ipv4_interface(nso_before_interface, nso_leftover_interface, openconfig_interface_subif)
 
             if nso_before_interface.get("encapsulation", {}).get("dot1q", {}).get("vlan-id"):
@@ -572,7 +572,7 @@ def configure_software_tunnel(config_before: dict, config_leftover: dict, interf
             del nso_leftover_interface["keepalive"]
 
 
-def xr_interface_config(nso_before_interface: dict, nso_leftover_interface: dict, openconfig_interface: dict) -> None:
+def xr_interface_config(nso_before_interface: dict, nso_leftover_interface: dict, openconfig_interface: dict, sub_interface: bool=False) -> None:
     """
     Configure basic interface functions, i.e. description, shutdown, MTU
     Note - subinterface 0 values are removed from config leftover during configuration of the physical interface
@@ -595,7 +595,7 @@ def xr_interface_config(nso_before_interface: dict, nso_leftover_interface: dict
     else:
         openconfig_interface["openconfig-interfaces:config"]["openconfig-interfaces:enabled"] = True
     # MTU
-    if nso_before_interface.get("mtu"):
+    if not sub_interface and nso_before_interface.get("mtu"):
         openconfig_interface["openconfig-interfaces:config"]["openconfig-interfaces:mtu"] = nso_before_interface.get(
             "mtu")
         try:

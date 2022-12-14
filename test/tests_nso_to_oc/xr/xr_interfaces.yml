@@ -34,6 +34,7 @@
           interface:
             GigabitEthernet:
               - id: 0/0/0/5
+                mtu: 1499
                 ipv4:
                   address:
                     ip: 10.5.0.2
@@ -112,6 +113,7 @@
         - interfaces_ipv4
     - assert:
         that:
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['config']['mtu'] == 1499"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.5.0.2'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['virtual-router-id'] == 6"
