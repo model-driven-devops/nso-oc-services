@@ -9,7 +9,7 @@ NSO device configuration minus parts replaced by OpenConfig to a file named
 {nso_device}_full_openconfig.json.
 
 The script requires the following environment variables:
-NSO_HOST - IP address or hostname for the NSO server
+NSO_URL - URL for the NSO server
 NSO_USERNAME
 NSO_PASSWORD
 NSO_DEVICE - NSO device name for configuration translation
@@ -23,7 +23,7 @@ import common
 from xe import main_xe
 from xr import main_xr
 
-nso_host = os.environ.get("NSO_HOST")
+nso_api_url = os.environ.get("NSO_URL")
 nso_username = os.environ.get("NSO_USERNAME", "ubuntu")
 nso_password = os.environ.get("NSO_PASSWORD", "admin")
 nso_device = os.environ.get("NSO_DEVICE", "xe1")
@@ -32,7 +32,7 @@ test = os.environ.get("TEST", "False")
 
 # Append any pertinent notes here. This will be printed out in output_data directory
 translation_notes = []
-config_before_dict = common.nso_get_device_config(nso_host, nso_username, nso_password, nso_device)
+config_before_dict = common.nso_get_device_config(nso_api_url, nso_username, nso_password, nso_device)
 configs_leftover = copy.deepcopy(config_before_dict)
 oc = {"mdd:openconfig": {}}
 

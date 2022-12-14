@@ -7,8 +7,8 @@ import re
 from pathlib import Path, os as path_os
 from typing import Tuple
 
-if not os.environ.get("NSO_HOST", False):
-    print("environment variable NSO_HOST must be set")
+if not os.environ.get("NSO_URL", False):
+    print("environment variable NSO_URL must be set")
     exit()
 
 # Different device OS
@@ -21,16 +21,16 @@ project_path = str(Path(__file__).resolve().parents[1])
 output_data_dir = f"{project_path}{path_os.sep}output_data{path_os.sep}"
 Path(output_data_dir).mkdir(parents=True, exist_ok=True)
 
-def nso_get_device_config(host: str, username: str, password: str, device: str) -> dict:
+def nso_get_device_config(nso_api_url: str, username: str, password: str, device: str) -> dict:
     """
     Get device configuration from NSO. Return configuration as python dict.
-    :param host: IP or hostname: str
+    :param nso_api_url: str
     :param username: str
     :param password: str
     :param device: str
     :return: NSO Device configuration
     """
-    url = f"http://{host}:8080/restconf/data/tailf-ncs:devices/device={device}/config"
+    url = f"{nso_api_url}/restconf/data/tailf-ncs:devices/device={device}/config"
     req = urllib3.PoolManager()
     headers = urllib3.make_headers(basic_auth=f"{username}:{password}")
     headers.update({"Content-Type": "application/yang-data+json",
@@ -63,17 +63,17 @@ def xe_system_get_interface_ip_address(config_before: dict) -> dict:
     return interface_ip_name
 
 
-def test_nso_program_oc(host: str, username: str, password: str, device: str, oc_config: dict) -> None:
+def test_nso_program_oc(nso_api_url: str, username: str, password: str, device: str, oc_config: dict) -> None:
     """
     Send translated Openconfig device configuration to NSO
-    :param host: str
+    :param nso_api_url: str
     :param username: str
     :param password: str
     :param device: str
     :param oc_config: dict
     :return: None
     """
-    url = f"http://{host}:8080/restconf/data/tailf-ncs:devices/device={device}/mdd:openconfig"
+    url = f"{nso_api_url}/restconf/data/tailf-ncs:devices/device={device}/mdd:openconfig"
     req = urllib3.PoolManager()
     headers = urllib3.make_headers(basic_auth=f"{username}:{password}")
     headers.update({"Content-Type": "application/yang-data+json",
@@ -90,7 +90,7 @@ def test_nso_program_oc(host: str, username: str, password: str, device: str, oc
 
 def print_and_test_configs(device_name, config_before_dict, config_leftover_dict, oc, config_name, 
     config_remaining_name, oc_name, translation_notes = []):
-    (nso_host, nso_username, nso_password) = get_nso_creds()
+    (nso_api_url, nso_username, nso_password) = get_nso_creds()
     nso_device = os.environ.get("NSO_DEVICE", device_name)
     test = os.environ.get("TEST", "False")
 
@@ -110,14 +110,14 @@ def print_and_test_configs(device_name, config_before_dict, config_leftover_dict
             o.write("\n\n".join(map(lambda note: str(note), translation_notes)))
 
     if test == "True":
-        test_nso_program_oc(nso_host, nso_username, nso_password, nso_device, oc)
+        test_nso_program_oc(nso_api_url, nso_username, nso_password, nso_device, oc)
 
 def get_nso_creds():
-    nso_host = os.environ.get("NSO_HOST")
+    nso_api_url = os.environ.get("NSO_URL")
     nso_username = os.environ.get("NSO_USERNAME", "ubuntu")
     nso_password = os.environ.get("NSO_PASSWORD", "admin")
 
-    return (nso_host, nso_username, nso_password)
+    return (nso_api_url, nso_username, nso_password)
 
 def get_interface_type_number_and_subinterface(interface: str) -> Tuple[str, str]:
     """

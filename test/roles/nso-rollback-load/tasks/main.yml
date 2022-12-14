@@ -1,4 +1,5 @@
 - set_fact:
+    nso_api_url: "{{ lookup('env', 'NSO_URL') }}"
     nso_host: "{{ lookup('env', 'NSO_HOST') }}"
     nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
     nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
