@@ -13,7 +13,7 @@
   environment:
     NSO_DEVICE: xe1
   vars:
-    nso_host: "{{ lookup('env', 'NSO_HOST') }}"
+    nso_api_url: "{{ lookup('env', 'NSO_URL') }}"
     nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
     nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
     device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
@@ -545,7 +545,7 @@
 
     - name: NSO API call
       uri:
-        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
         url_username: "{{ nso_username }}"
         url_password: "{{ nso_password }}"
         force_basic_auth: yes
@@ -668,7 +668,7 @@
 
     - name: NSO API call
       uri:
-        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
         url_username: "{{ nso_username }}"
         url_password: "{{ nso_password }}"
         force_basic_auth: yes

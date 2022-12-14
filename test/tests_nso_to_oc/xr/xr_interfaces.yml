@@ -5,7 +5,7 @@
     NSO_DEVICE: xr1
     DEVICE_OS: xr
   vars:
-    nso_host: "{{ lookup('env', 'NSO_HOST') }}"
+    nso_api_url: "{{ lookup('env', 'NSO_URL') }}"
     nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
     nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
     device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
@@ -93,7 +93,7 @@
       tags:
         - interfaces_ipv4
       uri:
-        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
         url_username: "{{ nso_username }}"
         url_password: "{{ nso_password }}"
         force_basic_auth: yes
@@ -164,7 +164,7 @@
       tags:
         - interfaces_loopback
       uri:
-        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
         url_username: "{{ nso_username }}"
         url_password: "{{ nso_password }}"
         force_basic_auth: yes
@@ -273,7 +273,7 @@
       tags:
         - dot1q
       uri:
-        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
         url_username: "{{ nso_username }}"
         url_password: "{{ nso_password }}"
         force_basic_auth: yes
@@ -353,7 +353,7 @@
       tags:
         - tunnel
       uri:
-        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
         url_username: "{{ nso_username }}"
         url_password: "{{ nso_password }}"
         force_basic_auth: yes
@@ -439,7 +439,7 @@
       tags:
         - hsrp
       uri:
-        url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+        url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
         url_username: "{{ nso_username }}"
         url_password: "{{ nso_password }}"
         force_basic_auth: yes

@@ -9,7 +9,7 @@ NSO device configuration minus parts replaced by MDD OpenConfig to a file named
 {nso_device}_openconfig_interfaces.json.
 
 The script requires the following environment variables:
-NSO_HOST - IP address or hostname for the NSO server
+NSO_URL - URL for the NSO server
 NSO_USERNAME
 NSO_PASSWORD
 NSO_DEVICE - NSO device name for configuration translation
@@ -758,7 +758,7 @@ def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
     Translates NSO Device configurations to MDD OpenConfig configurations.
 
     Requires environment variables:
-    NSO_HOST: str
+    NSO_URL: str
     NSO_USERNAME: str
     NSO_PASSWORD: str
     NSO_DEVICE: str
