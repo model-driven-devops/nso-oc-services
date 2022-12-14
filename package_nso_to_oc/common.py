@@ -31,7 +31,7 @@ def nso_get_device_config(nso_api_url: str, username: str, password: str, device
     :return: NSO Device configuration
     """
     url = f"{nso_api_url}/restconf/data/tailf-ncs:devices/device={device}/config"
-    req = urllib3.PoolManager()
+    req = urllib3.PoolManager(cert_reqs='CERT_NONE')
     headers = urllib3.make_headers(basic_auth=f"{username}:{password}")
     headers.update({"Content-Type": "application/yang-data+json",
                     "Accept": "application/yang-data+json"})
@@ -74,7 +74,7 @@ def test_nso_program_oc(nso_api_url: str, username: str, password: str, device: 
     :return: None
     """
     url = f"{nso_api_url}/restconf/data/tailf-ncs:devices/device={device}/mdd:openconfig"
-    req = urllib3.PoolManager()
+    req = urllib3.PoolManager(cert_reqs='CERT_NONE')
     headers = urllib3.make_headers(basic_auth=f"{username}:{password}")
     headers.update({"Content-Type": "application/yang-data+json",
                     "Accept": "application/yang-data+json"})
