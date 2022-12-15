@@ -6,6 +6,7 @@ from translation.openconfig_xr.xr_acls import xr_acls_program_service
 from translation.openconfig_xr.xr_acls import xr_acls_interfaces_program_service
 from translation.openconfig_xr.xr_acls import xr_acls_lines_program_service
 from translation.openconfig_xr.xr_acls import xr_acls_ntp_program_service
+from translation.openconfig_xr.xr_network_instances import xr_network_instances_program_service
 
 
 def check_xr_features(self) -> None:
@@ -35,7 +36,8 @@ def check_xr_features(self) -> None:
 
     # OpenConfig Network Instances
     if len(self.service.oc_netinst__network_instances.network_instance) > 0:
-        raise NotImplementedError('openconfig-network-instance has not yet been implemented for XR')
+        xr_network_instances_program_service(self)
+        # raise NotImplementedError('openconfig-network-instance has not yet been implemented for XR')
 
     # OpenConfig System
     xr_system_program_service(self)
