@@ -49,6 +49,8 @@ def xe_acls_program_service(self) -> None:
                     rule += 'ip' + ' '
                 if i.ipv4.config.source_address == '0.0.0.0/0':
                     rule += 'any '
+                elif "/32" in i.ipv4.config.source_address:
+                    rule += f'host {i.ipv4.config.source_address.split("/")[0]} '
                 else:
                     rule += prefix_to_network_and_mask(i.ipv4.config.source_address) + ' '
                 if (i.ipv4.config.protocol == 'oc-pkt-match-types:IP_TCP') or \
@@ -66,6 +68,8 @@ def xe_acls_program_service(self) -> None:
                             rule += f'range {ml[0]} {ml[1]} '
                 if i.ipv4.config.destination_address == '0.0.0.0/0':
                     rule += 'any '
+                elif "/32" in i.ipv4.config.destination_address:
+                    rule += f'host {i.ipv4.config.destination_address.split("/")[0]} '
                 else:
                     rule += prefix_to_network_and_mask(i.ipv4.config.destination_address) + ' '
                 if (i.ipv4.config.protocol == 'oc-pkt-match-types:IP_TCP') or \
@@ -95,6 +99,7 @@ def xe_acls_program_service(self) -> None:
                 if i.actions.config.log_action:
                     if i.actions.config.log_action == 'oc-acl:LOG_SYSLOG':
                         rule += 'log-input'
+                rule = rule.strip()
                 rules_oc_config.append(rule)
             for i in rules_oc_config:
                 self.log.debug(f'{self.device_name} ACL {service_acl.name} ACE: {i}')
@@ -110,11 +115,14 @@ def xe_acls_program_service(self) -> None:
                 rule = str(i.sequence_id) + ' ' + actions_oc_to_xe[i.actions.config.forwarding_action] + ' '
                 if i.oc_acl_ext__ipv4.config.source_address == '0.0.0.0/0':
                     rule += 'any '
+                elif "/32" in i.oc_acl_ext__ipv4.config.source_address:
+                    rule += f'{i.oc_acl_ext__ipv4.config.source_address.split("/")[0]} '
                 else:
                     rule += prefix_to_network_and_mask(i.oc_acl_ext__ipv4.config.source_address) + ' '
                 if i.actions.config.log_action:
                     if i.actions.config.log_action == 'oc-acl:LOG_SYSLOG':
                         rule += 'log-input'
+                rule = rule.strip()
                 rules_oc_config.append(rule)
             for i in rules_oc_config:
                 self.log.debug(f'{self.device_name} ACL {service_acl.name} ACE: {i}')
