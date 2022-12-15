@@ -175,9 +175,6 @@ def xr_process_interfaces(self) -> None:
                         else:
                             xr_configure_vrrp_v2_legacy(self, subinterface_cdb, subinterface_service.ipv4, interface)
                     else:  # IPv4 for main interface
-                        # Remove switchport
-                        if physical_interface.switchport:
-                            physical_interface.switchport.delete()
                         xr_interface_aggregation(self, interface, bundle_ether, routing_ipv6, interface_number)
 
         # Physical and Sub-interfaces
