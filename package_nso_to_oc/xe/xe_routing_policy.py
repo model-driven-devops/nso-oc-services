@@ -87,7 +87,7 @@ def process_prefix_sets(config_before, config_after):
 f"""
 Prefix Name: {prefix.get("name")}
 Sequence Number: {seq.get("no")}
-This sequence contains a deny operation, which is not supported in OpenConfig. Translation to OC was skipped.
+This sequence contains a deny operation, which is not supported in OpenConfig. Translation, of the entire list, to OC will be skipped.
 """)
                 continue
             if not "permit" in seq:
@@ -109,9 +109,8 @@ This sequence contains a deny operation, which is not supported in OpenConfig. T
             if common.get_index_or_default(seq_list_after, seq_index, None):
                 seq_list_after[seq_index] = None
         
-        prefix_sets["openconfig-routing-policy:prefix-sets"]["openconfig-routing-policy:prefix-set"].append(new_prefix_set)
-
         if all_processed:
+            prefix_sets["openconfig-routing-policy:prefix-sets"]["openconfig-routing-policy:prefix-set"].append(new_prefix_set)
             common.get_index_or_default(xe_prefixes_after, prefix_index, {})["name"] = None
     
     openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:defined-sets"].update(prefix_sets)
@@ -142,7 +141,7 @@ def process_as_path_sets(config_before, config_after):
 f"""
 AS Path Name: {access.get("name")}
 Rule: {rule.get("rule")}
-This rule contains a deny operation, which is not supported in OpenConfig. Translation to OC was skipped.
+This rule contains a deny operation, which is not supported in OpenConfig. Translation, of the entire list, to OC will be skipped.
 """)
                 continue
 
@@ -152,9 +151,8 @@ This rule contains a deny operation, which is not supported in OpenConfig. Trans
             if common.get_index_or_default(rule_list_after, rule_index, None):
                 rule_list_after[rule_index] = None
 
-        as_path_sets["openconfig-bgp-policy:as-path-sets"]["openconfig-bgp-policy:as-path-set"].append(new_path_set)
-
         if all_processed:
+            as_path_sets["openconfig-bgp-policy:as-path-sets"]["openconfig-bgp-policy:as-path-set"].append(new_path_set)
             common.get_index_or_default(access_list_after, access_index, {})["name"] = None
 
     openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:defined-sets"]["openconfig-bgp-policy:bgp-defined-sets"].update(as_path_sets)
@@ -192,7 +190,7 @@ f"""
 Community Name: {community.get("name")}
 Community Type: {type}
 Entry: {entry["expr"]}
-This entry contains a deny operation, which is not supported in OpenConfig. Translation to OC was skipped.
+This entry contains a deny operation, which is not supported in OpenConfig. Translation, of the entire list, to OC will be skipped.
 """)
                 continue
 
@@ -203,9 +201,8 @@ This entry contains a deny operation, which is not supported in OpenConfig. Tran
             if common.get_index_or_default(entry_after, entry_index, None):
                 entry_after[entry_index] = None
 
-        community_sets["openconfig-bgp-policy:community-sets"]["openconfig-bgp-policy:community-set"].append(new_community_set)
-
         if all_processed:
+            community_sets["openconfig-bgp-policy:community-sets"]["openconfig-bgp-policy:community-set"].append(new_community_set)
             common.get_index_or_default(community_list_after.get(type, []), community_index, {})["name"] = None
 
 def process_ext_community_sets(config_before, config_after):
@@ -240,7 +237,7 @@ f"""
 Ext Community Name: {ext_community.get("name")}
 Ext Community Type: {type}
 Ext Entry: {entry["expr"]}
-This ext entry contains a deny operation, which is not supported in OpenConfig. Translation to OC was skipped.
+This ext entry contains a deny operation, which is not supported in OpenConfig. Translation, of the entire list, to OC will be skipped.
 """)
                 continue
 
@@ -251,9 +248,8 @@ This ext entry contains a deny operation, which is not supported in OpenConfig. 
             if common.get_index_or_default(entry_after, entry_index, None):
                 entry_after[entry_index] = None
 
-        ext_community_sets["openconfig-bgp-policy:ext-community-sets"]["openconfig-bgp-policy:ext-community-set"].append(ext_new_community_set)
-
         if all_processed:
+            ext_community_sets["openconfig-bgp-policy:ext-community-sets"]["openconfig-bgp-policy:ext-community-set"].append(ext_new_community_set)
             common.get_index_or_default(ext_community_list_after.get(type, {"no-mode-list": []}).get("no-mode-list", []), ext_community_index, {})["name"] = None
 
 def process_policy_definitions(config_before, config_after):

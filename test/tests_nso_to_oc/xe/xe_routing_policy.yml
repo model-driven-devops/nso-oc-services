@@ -131,8 +131,6 @@
                         rule: '^$'
                       - operation: 'permit'
                         rule: '_100'
-                      - operation: 'deny'
-                        rule: '_999'
               prefix-list:
                 prefixes:
                   - name: 'LOCAL-PREFIXES'
@@ -145,9 +143,6 @@
                           ip: '2.2.2.0/23'
                           ge: 24
                           le: 30
-                      - 'no': 30
-                        deny:
-                          ip: '5.5.5.5/32'
                   - name: 'prefix-test'
                     seq:
                       - 'no': 10
