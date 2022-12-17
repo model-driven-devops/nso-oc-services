@@ -1,0 +1,436 @@
+---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- hosts: localhost
+  gather_facts: no
+  environment:
+    NSO_DEVICE: xe1
+  vars:
+    nso_host: "{{ lookup('env', 'NSO_HOST') }}"
+    nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
+    nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+  tasks:
+    - block:
+      - name: test set_up
+        tags:
+          - set_up
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: mdd:openconfig
+          content: |
+            mdd:openconfig:
+              openconfig-acl:acl:
+                openconfig-acl:acl-sets:
+                  openconfig-acl:acl-set:
+                    - openconfig-acl:name: '111'
+                      openconfig-acl:type: 'ACL_IPV4'
+                      openconfig-acl:config:
+                        openconfig-acl:description: 'extended_test'
+                        openconfig-acl:name: '111'
+                        openconfig-acl:type: 'ACL_IPV4'
+                      openconfig-acl:acl-entries:
+                        openconfig-acl:acl-entry:
+                          - openconfig-acl:sequence-id: 10
+                            openconfig-acl:actions:
+                              openconfig-acl:config:
+                                openconfig-acl:forwarding-action: 'ACCEPT'
+                                openconfig-acl:log-action: 'LOG_NONE'
+                            openconfig-acl:config:
+                              openconfig-acl:description: 'extended_test'
+                              openconfig-acl:sequence-id: 10
+                            openconfig-acl:ipv4:
+                              openconfig-acl:config:
+                                openconfig-acl:destination-address: '0.0.0.0/0'
+                                openconfig-acl:source-address: '0.0.0.0/0'
+                    - openconfig-acl:name: '12'
+                      openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                      openconfig-acl:config:
+                        openconfig-acl:name: '12'
+                        openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                      openconfig-acl:acl-entries:
+                        openconfig-acl:acl-entry:
+                          - openconfig-acl:sequence-id: 10
+                            openconfig-acl:actions:
+                              openconfig-acl:config:
+                                openconfig-acl:forwarding-action: 'ACCEPT'
+                                openconfig-acl:log-action: 'LOG_NONE'
+                            openconfig-acl:config:
+                              openconfig-acl:sequence-id: 10
+                            openconfig-acl-ext:ipv4:
+                              openconfig-acl-ext:config:
+                                openconfig-acl-ext:source-address: '0.0.0.0/0'
+          api_method: PUT
+
+      - name: NSO configure ip
+        tags:
+          - ip
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:ip
+          content: |
+            ip:
+              # Access list is here, because the other features in this test makes references to its values
+              access-list:
+                standard:
+                  std-named-acl:
+                    - name: 12
+                      std-access-list-rule:
+                        - rule: '10 permit any'
+                extended:
+                  ext-named-acl:
+                    - name: 111
+                      ext-access-list-rule:
+                        - rule: '10 permit ip any any'
+              community-list:
+                standard:
+                  - name: 'test'
+                    entry:
+                      - expr: 'permit 100:100'
+                      - expr: 'permit 200:200'
+                      - expr: 'permit no-export'
+                      - expr: 'permit no-advertise'
+                      - expr: 'permit local-as'
+                  - name: 'test-standard-delete'
+                    entry:
+                      - expr: 'permit 100:100'
+                expanded:
+                  - name: 'test-ex'
+                    entry:
+                      - expr: 'permit 6509[6-9]:4000'
+                      - expr: 'permit 6509[6-9]:3000'
+              extcommunity-list:
+                standard:
+                  no-mode-list:
+                    - name: 'ext-test'
+                      entry:
+                        - expr: 'permit rt 101:100'
+                    - name: 'test-ext-delete'
+                      entry:
+                        - expr: 'permit rt 1:1'
+                        - expr: 'permit rt 2:2'
+                expanded:
+                  no-mode-list:
+                    - name: 'ext-test-ex'
+                      entry:
+                        - expr: 'permit rt 500:[1-9]'
+              as-path:
+                access-list:
+                  - name: '12'
+                    as-path-rule:
+                      - operation: 'permit'
+                        rule: '^$'
+                      - operation: 'permit'
+                        rule: '_100'
+              prefix-list:
+                prefixes:
+                  - name: 'LOCAL-PREFIXES'
+                    seq:
+                      - 'no': 10
+                        permit:
+                          ip: '1.1.1.1/32'
+                      - 'no': 20
+                        permit:
+                          ip: '2.2.2.0/23'
+                          ge: 24
+                          le: 30
+                  - name: 'prefix-test'
+                    seq:
+                      - 'no': 10
+                        permit:
+                          ip: '10.0.0.0/8'
+          api_method: PATCH
+
+      - name: NSO configure route-map
+        tags:
+          - route_map
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:route-map
+          content: |
+            route-map:
+              - name: 'test-match'
+                sequence: 10
+                operation: 'permit'
+                match:
+                  ip:
+                    address:
+                      prefix-list: 
+                        - 'prefix-test'
+              - name: 'test-match'
+                sequence: 20
+                operation: 'permit'
+                match:
+                  as-path: 
+                    - '12'
+              - name: 'test-match'
+                sequence: 30
+                operation: 'permit'
+                match:
+                  community: 
+                    - 'test'
+              - name: 'test-match'
+                sequence: 40
+                operation: 'permit'
+                match:
+                  community:
+                    - 'test-ex'
+              - name: 'test-match'
+                sequence: 50
+                operation: 'permit'
+                match:
+                  ip:
+                    address:
+                      access-list:
+                        - 12
+              - name: 'test-match'
+                sequence: 60
+                operation: 'permit'
+                match:
+                  ip:
+                    address:
+                      access-list:
+                        - 111
+              - name: 'test-match'
+                sequence: 70
+                operation: 'permit'
+                match:
+                  tag:
+                    - 2000
+              - name: 'test-match'
+                sequence: 80
+                operation: 'permit'
+                match:
+                  extcommunity:
+                    - ext-test
+              - name: 'test-set'
+                sequence: 10
+                operation: 'permit'
+                set:
+                  tag: 9999
+              - name: 'test-set'
+                sequence: 20
+                operation: 'permit'
+                set:
+                  origin:
+                    origin-value: 'igp'
+              - name: 'test-set'
+                sequence: 30
+                operation: 'permit'
+                set:
+                  local-preference:
+                    value: 200
+              - name: 'test-set'
+                sequence: 40
+                operation: 'permit'
+                set:
+                  ip:
+                    next-hop:
+                      self: [null]
+              - name: 'test-set'
+                sequence: 50
+                operation: 'permit'
+                set:
+                  ip:
+                    next-hop:
+                      address:
+                        - '1.1.1.1'
+              - name: 'test-set'
+                sequence: 60
+                operation: 'permit'
+                set:
+                  metric:
+                    - '1000'
+              - name: 'test-set'
+                sequence: 70
+                operation: 'permit'
+                set:
+                  as-path:
+                    prepend:
+                      as-list: '100'
+              - name: 'test-set'
+                sequence: 80
+                operation: 'permit'
+                set:
+                  as-path:
+                    prepend:
+                      as-list: '100 100 100'
+              - name: 'test-set'
+                sequence: 90
+                operation: 'permit'
+                set:
+                  community:
+                    community-number:
+                      - 'additive'
+                      - '100:100'
+                      - '200:200'
+                      - '300:300'
+              - name: 'test-set'
+                sequence: 100
+                operation: 'permit'
+                set:
+                  community:
+                    community-number:
+                      - '100:100'
+                      - '200:200'
+                      - '300:300'
+              - name: 'test-set'
+                sequence: 110
+                operation: 'permit'
+                set:
+                  comm-list:
+                    name: 'test-standard-delete'
+                    delete: [null]
+              - name: 'test-set'
+                sequence: 120
+                operation: 'permit'
+                set:
+                  weight: 65000
+              - name: 'test-set'
+                sequence: 130
+                operation: 'permit'
+                set:
+                  extcommunity:
+                    rt:
+                      - '1:1'
+                      - '2:2'
+                      - 'additive'
+              - name: 'test-set'
+                sequence: 140
+                operation: 'permit'
+                set:
+                  extcommunity:
+                    rt:
+                      - '1:1'
+                      - '2:2'
+              - name: 'test-set'
+                sequence: 150
+                operation: 'permit'
+                set:
+                  extcomm-list:
+                    name: 'test-ext-delete'
+                    delete: [null]
+          api_method: PATCH
+
+      - name: Execute NSO NED to OC script
+        tags:
+          - ospfv2_global
+        script: ../../../package_nso_to_oc/xe/xe_routing_policy.py
+        args:
+          executable: python3
+        register: nso_to_oc_result
+      - debug:
+          msg: "{{nso_to_oc_result}}"
+
+      - name: NSO API call
+        uri:
+          url: "http://{{ nso_host }}:8080/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+          url_username: "{{ nso_username }}"
+          url_password: "{{ nso_password }}"
+          force_basic_auth: yes
+          validate_certs: no
+          status_code: [200,201,204]
+          method: GET
+          headers: "{
+            'Content-Type': 'application/yang-data+json',
+            'Accept': 'application/yang-data+json'}"
+          body_format: json
+        delegate_to: localhost
+        register: oc_result
+      - debug:
+          msg: "{{ oc_result }}"
+      - assert:
+          that:
+            # Defined sets
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['config']['name'] == 'LOCAL-PREFIXES'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][0]['config']['openconfig-routing-policy-ext:seq'] == 10"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][0]['config']['masklength-range'] == 'exact'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][0]['config']['ip-prefix'] == '1.1.1.1/32'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][1]['config']['openconfig-routing-policy-ext:seq'] == 20"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][1]['config']['masklength-range'] == '24..30'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][1]['config']['ip-prefix'] == '2.2.2.0/23'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['as-path-sets']['as-path-set'][0]['config']['as-path-set-name'] == '12'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['as-path-sets']['as-path-set'][0]['config']['as-path-set-member'][0] == '^$'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['as-path-sets']['as-path-set'][0]['config']['as-path-set-member'][1] == '_100'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['community-sets']['community-set'][0]['config']['community-set-name'] == 'test'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['community-sets']['community-set'][0]['config']['match-set-options'] == 'ANY'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['community-sets']['community-set'][0]['config']['community-member'][0] == '100:100'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['community-sets']['community-set'][0]['config']['community-member'][1] == '200:200'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['community-sets']['community-set'][0]['config']['community-member'][2] == 'NO_ADVERTISE'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['community-sets']['community-set'][0]['config']['community-member'][3] == 'NO_EXPORT'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['community-sets']['community-set'][0]['config']['community-member'][4] == 'NO_EXPORT_SUBCONFED'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['community-sets']['community-set'][1]['config']['community-set-name'] == 'test-ex'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['community-sets']['community-set'][1]['config']['match-set-options'] == 'ANY'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['community-sets']['community-set'][1]['config']['community-member'][0] == '6509[6-9]:3000'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['community-sets']['community-set'][1]['config']['community-member'][1] == '6509[6-9]:4000'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['ext-community-sets']['ext-community-set'][0]['config']['ext-community-set-name'] == 'ext-test'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['ext-community-sets']['ext-community-set'][0]['config']['ext-community-member'][0] == '101:100'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['ext-community-sets']['ext-community-set'][1]['config']['ext-community-set-name'] == 'ext-test-ex'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['ext-community-sets']['ext-community-set'][1]['config']['ext-community-member'][0] == '500:[1-9]'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['tag-sets']['tag-set'][0]['config']['name'] == '2000'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['tag-sets']['tag-set'][0]['config']['tag-value'][0] == 2000"
+            # Policy definitions
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][0]['config']['name'] == 'test-match'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][0]['statements']['statement'][0]['conditions']['match-prefix-set']['config']['prefix-set'] == 'prefix-test'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][0]['statements']['statement'][1]['conditions']['openconfig-bgp-policy:bgp-conditions']['match-as-path-set']['config']['as-path-set'] == '12'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][0]['statements']['statement'][2]['conditions']['openconfig-bgp-policy:bgp-conditions']['config']['community-set'] == 'test'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][0]['statements']['statement'][3]['conditions']['openconfig-bgp-policy:bgp-conditions']['config']['community-set'] == 'test-ex'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][0]['statements']['statement'][4]['conditions']['openconfig-routing-policy-ext:match-acl-ipv4-set']['config']['acl-set'] == '12'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][0]['statements']['statement'][5]['conditions']['openconfig-routing-policy-ext:match-acl-ipv4-set']['config']['acl-set'] == '111'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][0]['statements']['statement'][6]['conditions']['match-tag-set']['config']['tag-set'] == '2000'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][0]['statements']['statement'][7]['conditions']['openconfig-bgp-policy:bgp-conditions']['config']['ext-community-set'] == 'ext-test'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['config']['name'] == 'test-set'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][0]['actions']['set-tag']['config']['mode'] == 'INLINE'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][0]['actions']['set-tag']['inline']['config']['tag'][0] == 9999"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][1]['actions']['openconfig-bgp-policy:bgp-actions']['config']['set-route-origin'] == 'IGP'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][2]['actions']['openconfig-bgp-policy:bgp-actions']['config']['set-local-pref'] == 200"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][3]['actions']['openconfig-bgp-policy:bgp-actions']['config']['set-next-hop'] == 'SELF'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][4]['actions']['openconfig-bgp-policy:bgp-actions']['config']['set-next-hop'] == '1.1.1.1'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][5]['actions']['openconfig-bgp-policy:bgp-actions']['config']['set-med'] == 1000"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][6]['actions']['openconfig-bgp-policy:bgp-actions']['set-as-path-prepend']['config']['asn'] == 100"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][7]['actions']['openconfig-bgp-policy:bgp-actions']['set-as-path-prepend']['config']['asn'] == 100"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][7]['actions']['openconfig-bgp-policy:bgp-actions']['set-as-path-prepend']['config']['repeat-n'] == 3"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][8]['actions']['openconfig-bgp-policy:bgp-actions']['set-community']['config']['method'] == 'INLINE'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][8]['actions']['openconfig-bgp-policy:bgp-actions']['set-community']['config']['options'] == 'ADD'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][8]['actions']['openconfig-bgp-policy:bgp-actions']['set-community']['inline']['config']['communities'][0] == '100:100'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][8]['actions']['openconfig-bgp-policy:bgp-actions']['set-community']['inline']['config']['communities'][1] == '200:200'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][8]['actions']['openconfig-bgp-policy:bgp-actions']['set-community']['inline']['config']['communities'][2] == '300:300'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][9]['actions']['openconfig-bgp-policy:bgp-actions']['set-community']['config']['method'] == 'INLINE'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][9]['actions']['openconfig-bgp-policy:bgp-actions']['set-community']['config']['options'] == 'REPLACE'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][9]['actions']['openconfig-bgp-policy:bgp-actions']['set-community']['inline']['config']['communities'][0] == '100:100'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][9]['actions']['openconfig-bgp-policy:bgp-actions']['set-community']['inline']['config']['communities'][1] == '200:200'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][9]['actions']['openconfig-bgp-policy:bgp-actions']['set-community']['inline']['config']['communities'][2] == '300:300'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][10]['actions']['openconfig-bgp-policy:bgp-actions']['set-community']['config']['method'] == 'REFERENCE'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][10]['actions']['openconfig-bgp-policy:bgp-actions']['set-community']['config']['options'] == 'REMOVE'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][10]['actions']['openconfig-bgp-policy:bgp-actions']['set-community']['reference']['config']['community-set-ref'] == 'test-standard-delete'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][11]['actions']['openconfig-bgp-policy:bgp-actions']['config']['openconfig-routing-policy-ext:set-weight'] == 65000"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][12]['actions']['openconfig-bgp-policy:bgp-actions']['set-ext-community']['config']['method'] == 'INLINE'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][12]['actions']['openconfig-bgp-policy:bgp-actions']['set-ext-community']['config']['options'] == 'ADD'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][12]['actions']['openconfig-bgp-policy:bgp-actions']['set-ext-community']['inline']['config']['communities'][0] == '1:1'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][12]['actions']['openconfig-bgp-policy:bgp-actions']['set-ext-community']['inline']['config']['communities'][1] == '2:2'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][13]['actions']['openconfig-bgp-policy:bgp-actions']['set-ext-community']['config']['method'] == 'INLINE'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][13]['actions']['openconfig-bgp-policy:bgp-actions']['set-ext-community']['config']['options'] == 'REPLACE'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][13]['actions']['openconfig-bgp-policy:bgp-actions']['set-ext-community']['inline']['config']['communities'][0] == '1:1'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][13]['actions']['openconfig-bgp-policy:bgp-actions']['set-ext-community']['inline']['config']['communities'][1] == '2:2'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][14]['actions']['openconfig-bgp-policy:bgp-actions']['set-ext-community']['config']['method'] == 'REFERENCE'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][14]['actions']['openconfig-bgp-policy:bgp-actions']['set-ext-community']['config']['options'] == 'REMOVE'"
+            - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['policy-definitions']['policy-definition'][1]['statements']['statement'][14]['actions']['openconfig-bgp-policy:bgp-actions']['set-ext-community']['reference']['config']['ext-community-set-ref'] == 'test-ext-delete'"
+      always:
+        - name: Rollback NSO
+          delegate_to: nso
+          connection: local
+          import_role:
+            name: nso-rollback-load
+          run_once: true
+          vars:
+            rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
