@@ -82,7 +82,7 @@ def xe_acls(config_before, config_after):
         process_interfaces(ACL_EXT_TYPE, ext_acl["name"], interfaces_by_acl, acl_interfaces)
         if str(ext_acl["name"]).isdigit():
             numbered_acls_processed.append(int(ext_acl["name"]))
-    for numbered_index, numbered_acl in enumerate(numbered_access_list.get("access-list")):
+    for numbered_index, numbered_acl in enumerate(numbered_access_list.get("access-list", [])):
         if numbered_acl["id"] not in numbered_acls_processed:
             if (1 <= numbered_acl["id"] <= 99) or (1300 <=  numbered_acl["id"] <= 1999):
                 # process as standard
