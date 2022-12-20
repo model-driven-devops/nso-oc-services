@@ -74,13 +74,13 @@ def xe_acls(config_before, config_after):
         standard_acl = StandardAcl(oc_acl_set, std_acl, access_list_after["standard"]["std-named-acl"][std_index])
         standard_acl.process_acl()
         process_interfaces(ACL_STD_TYPE, std_acl["name"], interfaces_by_acl, acl_interfaces)
-        if std_acl["name"].isdigit():
+        if str(std_acl["name"]).isdigit():
             numbered_acls_processed.append(int(std_acl["name"]))
     for ext_index, ext_acl in enumerate(access_list.get("extended", {}).get("ext-named-acl", [])):
         extended_acl = ExtendedAcl(oc_acl_set, ext_acl, access_list_after["extended"]["ext-named-acl"][ext_index])
         extended_acl.process_acl()
         process_interfaces(ACL_EXT_TYPE, ext_acl["name"], interfaces_by_acl, acl_interfaces)
-        if ext_acl["name"].isdigit():
+        if str(ext_acl["name"]).isdigit():
             numbered_acls_processed.append(int(ext_acl["name"]))
     for numbered_index, numbered_acl in enumerate(numbered_access_list.get("access-list")):
         if numbered_acl["id"] not in numbered_acls_processed:
