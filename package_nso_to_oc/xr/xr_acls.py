@@ -210,10 +210,18 @@ class BaseAcl:
         hostmask = rule_parts[current_index + 1]
         temp_ip = IPv4Network((0, hostmask))
 
-        if is_source:
-            self.__get_ipv4_config(entry)[self._src_addr_key] = f"{ip}/{temp_ip.prefixlen}"
+        # 0.0.0.0 and 255.255.255.255 are wrong using IPv4Network.prefixlen()
+        if hostmask == "0.0.0.0":
+            prefixlen = "32"
+        elif hostmask == "255.255.255.255":
+            prefixlen = "0"
         else:
-            self.__get_ipv4_config(entry)["openconfig-acl:destination-address"] = f"{ip}/{temp_ip.prefixlen}"
+            prefixlen =temp_ip.prefixlen
+
+        if is_source:
+            self.__get_ipv4_config(entry)[self._src_addr_key] = f"{ip}/{prefixlen}"
+        else:
+            self.__get_ipv4_config(entry)["openconfig-acl:destination-address"] = f"{ip}/{prefixlen}"
 
         return current_index + 2
 
