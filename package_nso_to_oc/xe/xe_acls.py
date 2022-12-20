@@ -148,7 +148,7 @@ class BaseAcl:
 
         success = True
         seq_id = int(rule_parts[0])
-        if rule_parts[rule_parts[1]] == "remark":
+        if rule_parts[1] == "remark":
             acls_note_add(f"""
                 Access-list {self._xe_acl_set.get("id")} contains remarks.
                 ACL remarks are not supported in Openconfig
