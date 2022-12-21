@@ -394,17 +394,23 @@ def xe_configure_tunnel_ipv4_interface(nso_before_interface: dict, nso_leftover_
 def configure_software_loopback(config_before: dict, config_leftover: dict, interface_data: dict) -> None:
     """Configure Loopbacks"""
     for interface_directory in interface_data.values():
+        path_oc_sub_if = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
+                          interface_directory["oc_interface_index"], "openconfig-interfaces:subinterfaces",
+                          "openconfig-interfaces:subinterface", interface_directory["oc_sub_interface_place_counter"]]
         path_oc = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
-                   interface_directory["oc_interface_index"], "openconfig-interfaces:subinterfaces",
-                   "openconfig-interfaces:subinterface", interface_directory["oc_sub_interface_place_counter"]]
+                   interface_directory["oc_interface_index"]]
         path_nso = ["tailf-ned-cisco-ios:interface", interface_directory["nso_interface_type"],
                     interface_directory["nso_interface_index"]]
+        openconfig_interface_sub_if = return_nested_dict(openconfig_interfaces, path_oc_sub_if)
         openconfig_interface = return_nested_dict(openconfig_interfaces, path_oc)
         nso_before_interface = return_nested_dict(config_before, path_nso)
         nso_leftover_interface = return_nested_dict(config_leftover, path_nso)
 
+        # Main Interface
         xe_interface_config(nso_before_interface, nso_leftover_interface, openconfig_interface)
-        xe_configure_ipv4_interface(nso_before_interface, nso_leftover_interface, openconfig_interface)
+        # Sub Interface
+        xe_interface_config(nso_before_interface, nso_leftover_interface, openconfig_interface_sub_if)
+        xe_configure_ipv4_interface(nso_before_interface, nso_leftover_interface, openconfig_interface_sub_if)
 
 
 def configure_software_vasi(config_before: dict, config_leftover: dict, interface_data: dict) -> None:
