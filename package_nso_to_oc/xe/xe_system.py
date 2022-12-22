@@ -177,6 +177,35 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
         del config_leftover["tailf-ned-cisco-ios:service"]["password-encryption"]
     else:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-password-encryption"] = False
+    # aaa server-groups
+
+
+    # gather group and server configurations
+    if len(self.service.oc_sys__system.aaa.server_groups.server_group) > 0:
+        server_groups = list()
+        for group in self.service.oc_sys__system.aaa.server_groups.server_group:
+            server_group = dict(name=group.name, type=group.config.type, servers=[])
+            for server in group.servers.server:
+                if group.config.type == 'oc-aaa:TACACS':
+                    server_info = dict(address=server.address,
+                                       name=server.config.name,
+                                       timeout=server.config.timeout,
+                                       port=server.tacacs.config.port,
+                                       secret_key=server.tacacs.config.secret_key,
+                                       source_address=server.tacacs.config.source_address)
+                elif group.config.type == 'oc-aaa:RADIUS':
+                    server_info = dict(address=server.address,
+                                       name=server.config.name,
+                                       timeout=server.config.timeout,
+                                       acct_port=server.radius.config.acct_port,
+                                       auth_port=server.radius.config.auth_port,
+                                       retransmit_attempts=server.radius.config.retransmit_attempts,
+                                       secret_key=server.radius.config.secret_key,
+                                       source_address=server.radius.config.source_address)
+                server_group['servers'].append(server_info)
+            server_groups.append(server_group)
+
+
 def xe_system_config(config_before: dict, config_leftover: dict) -> None:
     """
     Translates NSO XE NED to MDD OpenConfig System Config
@@ -389,6 +418,154 @@ def xe_system_ntp(config_before: dict, config_leftover: dict, if_ip: dict) -> No
                     config_leftover["tailf-ned-cisco-ios:ntp"]["peer"]["vrf"][nso_vrf_index]["peer-list"],
                     openconfig_system_ntp_server_list, "PEER", vrf["name"], if_ip)
 
+# def xe_system_aaa(config_before: dict, config_leftover: dict) -> None:
+#     """
+#     Translates NSO XE NED to MDD OpenConfig System AAA
+#     """
+#     openconfig_system_aaa = openconfig_system["openconfig-system:system"]["openconfig-system:aaa"]
+
+#     if config_before.get("tailf-ned-cisco-ios:aaa", {}).get("accounting", {}).get("commands"):
+#         for aaa_level, aaa_accounting_list in config_before.get("tailf-ned-cisco-ios:aaa", {}).get("accounting", {}).get("commands", {}):
+#             aaa_accounting_temp = {"openconfig-system:accounting": 
+#                             {"openconfig-system:config": 
+#                                 "openconfig-system:accounting-method":
+#                                 "openconfig-system:address": ntp_server["name"],
+#                                 "openconfig-system:association-type": ntp_type,
+#                                 "openconfig-system:port": 123,
+#                                 "openconfig-system:version": 4
+#                             }}}
+
+ 
+#     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key") and config_before.get(
+#             "tailf-ned-cisco-ios:ntp", {}).get("authentication-key"):
+#         trusted_key_numbers = [x["key-number"] for x in
+#                                config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key")]
+#         for auth_key in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("authentication-key"):
+#             if auth_key["number"] in trusted_key_numbers and auth_key.get("md5"):
+#                 key_dict = {"openconfig-system:key-id": auth_key["number"],
+#                             "openconfig-system:config": {"openconfig-system:key-id": auth_key["number"],
+#                                                          "openconfig-system:key-type": "NTP_AUTH_MD5",
+#                                                          "openconfig-system:key-value": auth_key.get("md5").get(
+#                                                              "secret")}
+#                             }
+#                 openconfig_system_ntp["openconfig-system:ntp-keys"]["openconfig-system:ntp-key"].append(key_dict)
+
+#                 config_leftover["tailf-ned-cisco-ios:ntp"]["authentication-key"].remove(auth_key)
+#                 config_leftover["tailf-ned-cisco-ios:ntp"]["trusted-key"].remove({"key-number": auth_key["number"]})
+
+#     # NTP PEER
+#     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer", {}).get("peer-list"):
+#         xe_add_oc_ntp_server(config_before["tailf-ned-cisco-ios:ntp"]["peer"]["peer-list"],
+#                                 config_leftover["tailf-ned-cisco-ios:ntp"]["peer"]["peer-list"],
+#                                 openconfig_system_ntp_server_list, "PEER", "", if_ip)
+
+#     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("logging"):
+#         openconfig_system_ntp["openconfig-system:config"]["openconfig-system-ext:ntp-enable-logging"] = True
+#         del config_leftover["tailf-ned-cisco-ios:ntp"]["logging"]
+
+#     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source"):
+#         for i, n in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source").items():
+#             source_interface = f"{i}{n}"
+#             source_interface_ip = if_ip.get(source_interface)
+#             openconfig_system_ntp["openconfig-system:config"][
+#                 "openconfig-system:ntp-source-address"] = source_interface_ip
+#         del config_leftover["tailf-ned-cisco-ios:ntp"]["source"]
+
+#     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key") and config_before.get(
+#             "tailf-ned-cisco-ios:ntp", {}).get("authentication-key"):
+#         trusted_key_numbers = [x["key-number"] for x in
+#                                config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key")]
+#         for auth_key in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("authentication-key"):
+#             if auth_key["number"] in trusted_key_numbers and auth_key.get("md5"):
+#                 key_dict = {"openconfig-system:key-id": auth_key["number"],
+#                             "openconfig-system:config": {"openconfig-system:key-id": auth_key["number"],
+#                                                          "openconfig-system:key-type": "NTP_AUTH_MD5",
+#                                                          "openconfig-system:key-value": auth_key.get("md5").get(
+#                                                              "secret")}
+#                             }
+#                 openconfig_system_ntp["openconfig-system:ntp-keys"]["openconfig-system:ntp-key"].append(key_dict)
+
+#                 config_leftover["tailf-ned-cisco-ios:ntp"]["authentication-key"].remove(auth_key)
+#                 config_leftover["tailf-ned-cisco-ios:ntp"]["trusted-key"].remove({"key-number": auth_key["number"]})
+
+#     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer") or config_before.get("tailf-ned-cisco-ios:ntp",
+#                                                                                          {}).get("server"):
+#         openconfig_system_ntp.update({"openconfig-system:servers": {"openconfig-system:server": []}})
+#         openconfig_system_ntp_server_list = openconfig_system_ntp["openconfig-system:servers"][
+#             "openconfig-system:server"]
+#         # NTP SERVER
+#         if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("server", {}).get("peer-list"):
+#             xe_add_oc_ntp_server(config_before["tailf-ned-cisco-ios:ntp"]["server"]["peer-list"],
+#                                  config_leftover["tailf-ned-cisco-ios:ntp"]["server"]["peer-list"],
+#                                  openconfig_system_ntp_server_list, "SERVER", "", if_ip)
+#         # NTP PEER
+#         if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer", {}).get("peer-list"):
+#             xe_add_oc_ntp_server(config_before["tailf-ned-cisco-ios:ntp"]["peer"]["peer-list"],
+#                                  config_leftover["tailf-ned-cisco-ios:ntp"]["peer"]["peer-list"],
+#                                  openconfig_system_ntp_server_list, "PEER", "", if_ip)
+#         # VRF SERVER
+#         if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("server", {}).get("vrf"):
+#             for nso_vrf_index, vrf in enumerate(
+#                     config_before.get("tailf-ned-cisco-ios:ntp", {}).get("server", {}).get("vrf")):
+#                 xe_add_oc_ntp_server(
+#                     config_before["tailf-ned-cisco-ios:ntp"]["server"]["vrf"][nso_vrf_index]["peer-list"],
+#                     config_leftover["tailf-ned-cisco-ios:ntp"]["server"]["vrf"][nso_vrf_index]["peer-list"],
+#                     openconfig_system_ntp_server_list, "SERVER", vrf["name"], if_ip)
+#         # VRF PEER
+#         if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer", {}).get("vrf"):
+#             for nso_vrf_index, vrf in enumerate(
+#                     config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer", {}).get("vrf")):
+#                 xe_add_oc_ntp_server(
+#                     config_before["tailf-ned-cisco-ios:ntp"]["peer"]["vrf"][nso_vrf_index]["peer-list"],
+#                     config_leftover["tailf-ned-cisco-ios:ntp"]["peer"]["vrf"][nso_vrf_index]["peer-list"],
+#                     openconfig_system_ntp_server_list, "PEER", vrf["name"], if_ip)
+
+
+
+# def xe_add_oc_ntp_server(before_ntp_server_list: list, after_ntp_server_list: list, openconfig_ntp_server_list: list,
+#                          ntp_type: str, ntp_vrf: str, if_ip: dict) -> None:
+#     """Generate Openconfig NTP server configurations"""
+#     for ntp_server_index, ntp_server in enumerate(before_ntp_server_list):
+#         ntp_server_temp = {"openconfig-system:address": ntp_server["name"],
+#                            "openconfig-system:config": {
+#                                "openconfig-system:address": ntp_server["name"],
+#                                "openconfig-system:association-type": ntp_type,
+#                                "openconfig-system:port": 123,
+#                                "openconfig-system:version": 4
+#                            }}
+#         # version
+#         if ntp_server.get("version"):
+#             ntp_server_temp["openconfig-system:config"]["openconfig-system:version"] = ntp_server.get("version")
+#             del after_ntp_server_list[ntp_server_index]["version"]
+#         # iburst
+#         if type(ntp_server.get("iburst", "")) is list:
+#             ntp_server_temp["openconfig-system:config"]["openconfig-system:iburst"] = True
+#             del after_ntp_server_list[ntp_server_index]["iburst"]
+#         else:
+#             ntp_server_temp["openconfig-system:config"]["openconfig-system:iburst"] = False
+#         # prefer
+#         if type(ntp_server.get("prefer", "")) is list:
+#             ntp_server_temp["openconfig-system:config"]["openconfig-system:prefer"] = True
+#             del after_ntp_server_list[ntp_server_index]["prefer"]
+#         else:
+#             ntp_server_temp["openconfig-system:config"]["openconfig-system:prefer"] = False
+#         # authentication key
+#         if ntp_server.get("key"):
+#             ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-auth-key-id"] = ntp_server.get("key")
+#             del after_ntp_server_list[ntp_server_index]["key"]
+#         # source interface
+#         if ntp_server.get("source"):
+#             for k, v in ntp_server.get("source").items():
+#                 nso_source_interface = f"{k}{v}"
+#                 ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-source-address"] = if_ip.get(
+#                     nso_source_interface)
+#                 del after_ntp_server_list[ntp_server_index]["source"]
+#         # vrf
+#         if ntp_vrf:
+#             ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-use-vrf"] = ntp_vrf
+
+#         openconfig_ntp_server_list.append(ntp_server_temp)
+
 
 def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []) -> dict:
     """
@@ -410,6 +587,7 @@ def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []
     xe_system_services(before, leftover)
     xe_system_ssh_server(before, leftover)
     xe_system_ntp(before, leftover, if_ip)
+    xe_system_aaa(before, leftover)
     translation_notes += system_notes
 
     return openconfig_system

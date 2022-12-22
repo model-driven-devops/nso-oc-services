@@ -598,6 +598,59 @@
                 first: 0
                 last: 4
           api_method: PATCH
+
+      - name: NSO configure aaa servers
+        tags:
+          - aaa_server
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:aaa
+          content: |
+            tailf-ned-cisco-ios:aaa:
+              group:
+                server:
+                  tacacs-plus:
+                    - name: 'TACACS-GROUP-1'
+                      ip:
+                        tacacs:
+                          source_interface: 
+                            GigabitEthernet: '6'
+                    - name: 'TACACS-GROUP-2'
+                      ip:
+                        tacacs:
+                          source_interface: 
+                            GigabitEthernet: '6'
+          api_method: PATCH
+
+      - name: NSO configure tacacs servers
+        tags:
+          - tacacs_server
+        import_role:
+          name: nso-ned-device-configure
+        vars:
+          api_path: config/tailf-ned-cisco-ios:tacacs
+          content: |
+            tailf-ned-cisco-ios:tacacs:
+              server:
+                - name: 'TACACSSVR1'
+                  address: 
+                    ipv4: 10.1.1.1
+                  port: 123
+                  timeout: 10
+                  key:
+                    type: 0
+                    secret: password1
+                - name: 'TACACSSVR2'
+                  address:
+                    ipv4: 10.1.1.2
+                  port: 456
+                  timeout: 20
+                  key:
+                    type: 5
+                    secret: password2
+          api_method: PATCH
+
       - name: Execute NSO NED to OC script
         script: ../../../package_nso_to_oc/xe/xe_system.py
         args:
@@ -656,6 +709,25 @@
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-udp-small-servers'] == true"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-pad'] == true"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-password-encryption'] == true"
+
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['config']['name'] == 'TACACS-GROUP-1'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['config']['type'] == 'TACACS'
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['name'] == 'TACACS-GROUP-1'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['servers']['server']['0'] == 10.1.1.1"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['servers']['server']['0']['config']['address'] == 10.1.1.1"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['servers']['server']['0']['config']['name'] == 'TACACSSVR1'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['servers']['server']['0']['config']['timeout'] == 10"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['servers']['server']['0']['tacacs']['config']['port'] == 123"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['servers']['server']['0']['tacacs']['config']['secret-key'] == password1"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['servers']['server']['0']['tacacs']['config']['source-address'] == 10.6.0.1"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['servers']['server']['1'] == 10.1.1.2"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['servers']['server']['1']['config']['address'] == 10.1.1.2"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['servers']['server']['1']['config']['name'] == 'TACACSSVR2'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['servers']['server']['1']['config']['timeout'] == 20"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['servers']['server']['1']['tacacs']['config']['port'] == 456"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['servers']['server']['1']['tacacs']['config']['secret-key'] == password2"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group']['0']['servers']['server']['1']['tacacs']['config']['source-address'] == 10.6.0.1"
+
             - "'openconfig-system-ext:aes128-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
             - "'openconfig-system-ext:aes192-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
             - "'openconfig-system-ext:aes256-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
@@ -902,3 +974,44 @@
           run_once: true
           vars:
             rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+
+
+
+      # - name: NSO configure aaa authenticate
+      #   tags:
+      #     - ntp_servers
+      #   import_role:
+      #     name: nso-ned-device-configure
+      #   vars:
+      #     api_path: config/tailf-ned-cisco-ios:ntp
+      #     content: |
+      #       tailf-ned-cisco-ios:ntp:
+      #         peer:
+      #           peer-list:
+      #             - name: 10.0.0.1
+      #               key: 1
+      #               iburst:
+      #                 - null
+      #               prefer:
+      #                 - null
+      #           vrf:
+      #             - name: abc
+      #               peer-list:
+      #                 - name: 10.0.0.2
+      #                   key: 2
+      #                   version: 4
+      #         server:
+      #           peer-list:
+      #             - name: 10.0.0.3
+      #             - name: 10.0.0.4
+      #               key: 1
+      #               source:
+      #                 GigabitEthernet: 6
+      #               version: 3
+      #           vrf:
+      #             - name: abc
+      #               peer-list:
+      #                 - name: 10.0.0.5
+      #                   key: 2
+      #     api_method: PATCH
