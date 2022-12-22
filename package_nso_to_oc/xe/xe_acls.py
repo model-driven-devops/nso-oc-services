@@ -418,7 +418,7 @@ def get_interfaces_by_acl(config_before, config_after):
                 continue
 
             intf_id = f"{interface_type}{interface['name']}"
-            intf_numb_parts = re.split("[.]", interface["name"])
+            intf_numb_parts = re.split("[.]", str(interface["name"]))
             intf_num = intf_numb_parts[0]
             subintf_num = int(intf_numb_parts[1]) if len(intf_numb_parts) > 1 else 0
 
