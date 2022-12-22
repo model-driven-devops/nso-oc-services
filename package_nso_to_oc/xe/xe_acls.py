@@ -241,16 +241,8 @@ class BaseAcl:
 
     def __set_ip_and_network(self, rule_parts, current_index, entry, is_source):
         ip = rule_parts[current_index]
-        if (rule_parts[0].isdigit() and len(rule_parts) == 3) \
-                or (rule_parts[0].isdigit() and len(rule_parts) == 4 and rule_parts[-1] == "log") \
-                or (rule_parts[0].isdigit() and len(rule_parts) == 4 and rule_parts[-1] == "log-input") \
-                or len(rule_parts) == 2 \
-                or (len(rule_parts) == 3 and rule_parts[-1] == "log") \
-                or (len(rule_parts) == 3 and rule_parts[-1] == "log-input"):
-            self.__get_ipv4_config(entry)[self._src_addr_key] = f"{ip}/32"
 
-            return current_index + 1
-        elif ip == "any":
+        if ip == "any":
             if is_source:
                 self.__get_ipv4_config(entry)[self._src_addr_key] = "0.0.0.0/0"
             else:
@@ -265,7 +257,15 @@ class BaseAcl:
                     "openconfig-acl:destination-address"] = f"{rule_parts[current_index + 1]}/32"
 
             return current_index + 2
+        elif (rule_parts[0].isdigit() and len(rule_parts) == 3) \
+                or (rule_parts[0].isdigit() and len(rule_parts) == 4 and rule_parts[-1] == "log") \
+                or (rule_parts[0].isdigit() and len(rule_parts) == 4 and rule_parts[-1] == "log-input") \
+                or len(rule_parts) == 2 \
+                or (len(rule_parts) == 3 and rule_parts[-1] == "log") \
+                or (len(rule_parts) == 3 and rule_parts[-1] == "log-input"):
+            self.__get_ipv4_config(entry)[self._src_addr_key] = f"{ip}/32"
 
+            return current_index + 1
         hostmask = rule_parts[current_index + 1]
         temp_ip = IPv4Network((0, hostmask))
 
