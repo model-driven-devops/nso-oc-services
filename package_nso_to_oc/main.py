@@ -15,13 +15,25 @@ NSO_PASSWORD
 NSO_DEVICE - NSO device name for configuration translation
 TEST - True or False. True enables sending the OpenConfig to the NSO server after generation
 """
-import copy
-import json
-import os
 
-import common
-from xe import main_xe
-from xr import main_xr
+import sys
+import copy
+import os
+from importlib.util import find_spec
+
+sys.path.append(".")
+sys.path.append("../")
+sys.path.append("../../")
+sys.path.append("../../../")
+
+if (find_spec("package_nso_to_oc") is not None):
+    from package_nso_to_oc.xe import main_xe
+    from package_nso_to_oc.xr import main_xr
+    from package_nso_to_oc import common
+else:
+    import common
+    from xe import main_xe
+    from xr import main_xr
 
 nso_api_url = os.environ.get("NSO_URL")
 nso_username = os.environ.get("NSO_USERNAME", "ubuntu")
@@ -44,5 +56,5 @@ elif device_os == common.XR:
 config_name = "full_ned_configuration"
 config_remaining_name = "full_ned_configuration_remaining"
 oc_name = "full_openconfig"
-common.print_and_test_configs(nso_device, config_before_dict, configs_leftover, oc, config_name, 
+common.print_and_test_configs(nso_device, config_before_dict, configs_leftover, oc["mdd:openconfig"], config_name, 
     config_remaining_name, oc_name, translation_notes)

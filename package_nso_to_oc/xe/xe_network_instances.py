@@ -115,16 +115,20 @@ def configure_network_interfaces(net_inst, interfaces_by_vrf):
     for interface in interfaces_by_vrf.get(net_inst["openconfig-network-instance:name"], []):
         name_split = interface["name"].split(".")
         primary_interface = name_split[0]
-        subinterface = '0' if len(name_split) == 1 else name_split[1]
-
-        net_inst["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"].append({
+        new_interface = {
             "openconfig-network-instance:id": interface["type"] + interface["name"],
             "openconfig-network-instance:config": {
                 "openconfig-network-instance:id": interface["type"] + interface["name"],
-                "openconfig-network-instance:interface": interface["type"] + primary_interface,
-                "openconfig-network-instance:subinterface": subinterface,
+                "openconfig-network-instance:interface": interface["type"] + primary_interface
             }
-        })
+        }
+
+        if (interface["type"] != "Tunnel"):
+            subinterface = '0' if len(name_split) == 1 else name_split[1]
+            new_interface["openconfig-network-instance:config"]["openconfig-network-instance:subinterface"] = subinterface
+
+        net_inst["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"].append(new_interface)
+
 
 def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
     """
