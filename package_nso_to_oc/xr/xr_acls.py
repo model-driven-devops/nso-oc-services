@@ -520,9 +520,9 @@ if __name__ == "__main__":
 
     (config_before_dict, config_leftover_dict) = common_xr.init_xr_configs()
     main(config_before_dict, config_leftover_dict)
-    config_name = "ned_configuration_acls"
-    config_remaining_name = "ned_configuration_remaining_acls"
-    oc_name = "openconfig_acls"
+    config_name = "_acls"
+    config_remaining_name = "_remaining_acls"
+    oc_name = "_openconfig_acls"
     common.print_and_test_configs(
         "xr1", config_before_dict, config_leftover_dict, openconfig_acls,
         config_name, config_remaining_name, oc_name, acls_notes)

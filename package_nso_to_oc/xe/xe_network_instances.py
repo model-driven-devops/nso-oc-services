@@ -166,9 +166,9 @@ if __name__ == "__main__":
 
     (config_before_dict, config_leftover_dict, interface_ip_dict) = common_xe.init_xe_configs()
     main(config_before_dict, config_leftover_dict)
-    config_name = "ned_configuration_network_instances"
-    config_remaining_name = "ned_configuration_remaining_network_instances"
-    oc_name = "openconfig_network_instances"
+    config_name = "_network_instances"
+    config_remaining_name = "_remaining_network_instances"
+    oc_name = "_openconfig_network_instances"
     common.print_and_test_configs(
         "xe1", config_before_dict, config_leftover_dict, openconfig_network_instances, 
         config_name, config_remaining_name, oc_name, network_instances_notes)

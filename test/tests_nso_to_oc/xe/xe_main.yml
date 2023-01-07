@@ -436,6 +436,22 @@
                         access-list: 11
                         vrfname: 'internal_0'    
 
+          - name: Init route-map
+            tags:
+              - route_map
+            api_path: config/tailf-ned-cisco-ios:route-map
+            api_method: PATCH
+            content: |
+              route-map:
+                - name: 'test'
+                  sequence: 10
+                  operation: 'permit'
+                  match:
+                    ip:
+                      address:
+                        prefix-list: 
+                          - 'prefix-test'
+
           - name: Init OSPF
             tags:
               - ospf_set_up
@@ -608,6 +624,13 @@
                     GigabitEthernet: 6
                   time-out: 55
                   version: 2
+                prefix-list:
+                  prefixes:
+                    - name: 'prefix-test'
+                      seq:
+                        - 'no': 10
+                          permit:
+                            ip: '10.0.0.0/8'
 
           - name: Init enable
             tags:

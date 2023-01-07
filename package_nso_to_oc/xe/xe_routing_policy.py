@@ -501,9 +501,9 @@ if __name__ == "__main__":
 
     (config_before_dict, config_leftover_dict, interface_ip_dict) = common_xe.init_xe_configs()
     main(config_before_dict, config_leftover_dict)
-    config_name = "ned_configuration_routing_policies"
-    config_remaining_name = "ned_configuration_remaining_routing_policies"
-    oc_name = "openconfig_routing_policies"
+    config_name = "_routing_policies"
+    config_remaining_name = "_remaining_routing_policies"
+    oc_name = "_openconfig_routing_policies"
     common.print_and_test_configs(
         "xe1", config_before_dict, config_leftover_dict, openconfig_routing_policies, 
         config_name, config_remaining_name, oc_name, routing_policy_notes)

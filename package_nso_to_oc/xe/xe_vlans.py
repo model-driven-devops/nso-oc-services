@@ -100,9 +100,9 @@ if __name__ == "__main__":
 
     (config_before_dict, config_leftover_dict, interface_ip_dict) = common_xe.init_xe_configs()
     main(config_before_dict, config_leftover_dict)
-    config_name = "ned_configuration_vlans"
-    config_remaining_name = "ned_configuration_remaining_vlans"
-    oc_name = "openconfig_vlans"
+    config_name = "_vlans"
+    config_remaining_name = "_remaining_vlans"
+    oc_name = "_openconfig_vlans"
     common.print_and_test_configs("xe1", config_before_dict, config_leftover_dict, openconfig_vlans, 
         config_name, config_remaining_name, oc_name, vlans_notes)
 else:
