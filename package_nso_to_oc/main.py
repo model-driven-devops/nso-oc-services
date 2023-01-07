@@ -53,8 +53,8 @@ if device_os == common.XE:
 elif device_os == common.XR:
     main_xr.build_xr_to_oc(config_before_dict, configs_leftover, oc, translation_notes)
 
-config_name = "full_ned_configuration"
-config_remaining_name = "full_ned_configuration_remaining"
-oc_name = "full_openconfig"
-common.print_and_test_configs(nso_device, config_before_dict, configs_leftover, oc["mdd:openconfig"], config_name, 
+config_name = ""
+config_remaining_name = "_remaining"
+oc_name = "_openconfig"
+common.print_and_test_configs(nso_device, config_before_dict, configs_leftover, oc, config_name, 
     config_remaining_name, oc_name, translation_notes)

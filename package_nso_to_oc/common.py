@@ -95,22 +95,22 @@ def print_and_test_configs(device_name, config_before_dict, config_leftover_dict
     test = os.environ.get("TEST", "False")
 
     print(json.dumps(oc, indent=4))
-    with open(f"{output_data_dir}{nso_device}_{config_name}.json", "w") as b:
+    with open(f"{output_data_dir}{nso_device}{config_name}.json", "w") as b:
         b.write(json.dumps(config_before_dict, indent=4))
-    with open(f"{output_data_dir}{nso_device}_{config_remaining_name}.json", "w") as a:
+    with open(f"{output_data_dir}{nso_device}{config_remaining_name}.json", "w") as a:
         a.write(json.dumps(config_leftover_dict, indent=4))
-    with open(f"{output_data_dir}{nso_device}_{oc_name}.json", "w") as o:
+    with open(f"{output_data_dir}{nso_device}{oc_name}.json", "w") as o:
         o.write(json.dumps(oc, indent=4))
 
     if len(translation_notes) > 0:
         # Only print to file, if actual notes exist.
-        with open(f"{output_data_dir}{nso_device}_{oc_name}_notes.txt", "w") as o:
+        with open(f"{output_data_dir}{nso_device}{config_name}_notes.txt", "w") as o:
             # We run it through a map, just in case an element in our list of notes contain non-string type.
             # Otherwise, we risk an error when joining.
             o.write("\n\n".join(map(lambda note: str(note), translation_notes)))
 
     if test == "True":
-        test_nso_program_oc(nso_api_url, nso_username, nso_password, nso_device, oc)
+        test_nso_program_oc(nso_api_url, nso_username, nso_password, nso_device, oc["mdd:openconfig"] if "mdd:openconfig" in oc else oc)
 
 def get_nso_creds():
     nso_api_url = os.environ.get("NSO_URL")

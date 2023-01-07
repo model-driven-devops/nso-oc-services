@@ -795,9 +795,9 @@ if __name__ == "__main__":
 
     (config_before_dict, config_leftover_dict) = common_xr.init_xr_configs()
     main(config_before_dict, config_leftover_dict)
-    config_name = "ned_configuration_interfaces"
-    config_remaining_name = "ned_configuration_remaining_interfaces"
-    oc_name = "openconfig_interfaces"
+    config_name = "_interfaces"
+    config_remaining_name = "_remaining_interfaces"
+    oc_name = "_openconfig_interfaces"
     common.print_and_test_configs(
         "xr1", config_before_dict, config_leftover_dict, openconfig_interfaces,
         config_name, config_remaining_name, oc_name, interfaces_notes)
