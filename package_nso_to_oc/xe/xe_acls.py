@@ -178,14 +178,14 @@ class BaseAcl:
             if self._acl_type == "ACL_IPV4":
                 # Destination IP (if exists)
                 current_index = self.__set_ip_and_port(rule_parts, current_index, entry, False, starting_index)
+            if (len(rule_parts) > current_index and rule_parts[current_index] == "log-input") or (
+                    len(rule_parts) > current_index and rule_parts[current_index] == "log"):
+                entry["openconfig-acl:actions"]["openconfig-acl:config"]["openconfig-acl:log-action"] = "LOG_SYSLOG"
+            else:
+                entry["openconfig-acl:actions"]["openconfig-acl:config"]["openconfig-acl:log-action"] = "LOG_NONE"
+
         except Exception as err:
             success = False
-
-        if (len(rule_parts) > current_index and rule_parts[current_index] == "log-input") or (
-                len(rule_parts) > current_index and rule_parts[current_index] == "log"):
-            entry["openconfig-acl:actions"]["openconfig-acl:config"]["openconfig-acl:log-action"] = "LOG_SYSLOG"
-        else:
-            entry["openconfig-acl:actions"]["openconfig-acl:config"]["openconfig-acl:log-action"] = "LOG_NONE"
 
         if success:
             acl_set["openconfig-acl:acl-entries"]["openconfig-acl:acl-entry"].append(entry)

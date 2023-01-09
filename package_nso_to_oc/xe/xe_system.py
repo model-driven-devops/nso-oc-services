@@ -355,7 +355,10 @@ def xe_system_ntp(config_before: dict, config_leftover: dict, if_ip: dict) -> No
                 openconfig_system_ntp["openconfig-system:ntp-keys"]["openconfig-system:ntp-key"].append(key_dict)
 
                 config_leftover["tailf-ned-cisco-ios:ntp"]["authentication-key"].remove(auth_key)
-                config_leftover["tailf-ned-cisco-ios:ntp"]["trusted-key"].remove({"key-number": auth_key["number"]})
+                try:  # trusted-keys can use a starting number, hyphen, and ending number in NED. Skip remove if this is the case.
+                    config_leftover["tailf-ned-cisco-ios:ntp"]["trusted-key"].remove({"key-number": auth_key["number"]})
+                except:
+                    pass
 
     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer") or config_before.get("tailf-ned-cisco-ios:ntp",
                                                                                          {}).get("server"):
