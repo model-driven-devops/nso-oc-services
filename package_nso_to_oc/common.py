@@ -55,6 +55,12 @@ def xe_system_get_interface_ip_address(config_before: dict) -> dict:
                 if number.get("ip", {}).get("address", {}).get("primary", {}).get("address"):
                     temp_dict.update({f"Port-channel{number['name']}": f"{number.get('ip', {}).get('address', {}).get('primary', {}).get('address')}"})
             interface_ip_name.update(temp_dict)
+        elif if_type == "LISP-subinterface":
+            for number in config_before["tailf-ned-cisco-ios:interface"]["LISP-subinterface"]["LISP"]:
+                if number.get("ip", {}).get("address", {}).get("primary", {}).get("address"):
+                    temp_dict.update({
+                                         f"LISP{number['name']}": f"{number.get('ip', {}).get('address', {}).get('primary', {}).get('address')}"})
+            interface_ip_name.update(temp_dict)
         else:
             for number in config_before["tailf-ned-cisco-ios:interface"][if_type]:
                 if number.get("ip", {}).get("address", {}).get("primary", {}).get("address"):
