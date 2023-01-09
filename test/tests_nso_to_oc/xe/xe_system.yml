@@ -598,6 +598,7 @@
                 first: 0
                 last: 4
           api_method: PATCH
+<<<<<<< HEAD
 
       - name: NSO configure aaa servers
         tags:
