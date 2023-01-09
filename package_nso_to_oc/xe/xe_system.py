@@ -23,7 +23,13 @@ system_notes = []
 
 openconfig_system = {
     "openconfig-system:system": {
-        "openconfig-system:aaa": {},
+        "openconfig-system:aaa": {
+            "openconfig-system:server-groups": {
+                "openconfig-system:server-group": []},
+            "openconfig-system:accounting": {},
+            "openconfig-system:authorization": {},
+            "openconfig-system:authentication": {}
+        },
         "openconfig-system:clock": {},
         "openconfig-system:config": {},
         "openconfig-system:dns": {},
@@ -179,31 +185,7 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-password-encryption"] = False
     # aaa server-groups
 
-
     # gather group and server configurations
-    if len(self.service.oc_sys__system.aaa.server_groups.server_group) > 0:
-        server_groups = list()
-        for group in self.service.oc_sys__system.aaa.server_groups.server_group:
-            server_group = dict(name=group.name, type=group.config.type, servers=[])
-            for server in group.servers.server:
-                if group.config.type == 'oc-aaa:TACACS':
-                    server_info = dict(address=server.address,
-                                       name=server.config.name,
-                                       timeout=server.config.timeout,
-                                       port=server.tacacs.config.port,
-                                       secret_key=server.tacacs.config.secret_key,
-                                       source_address=server.tacacs.config.source_address)
-                elif group.config.type == 'oc-aaa:RADIUS':
-                    server_info = dict(address=server.address,
-                                       name=server.config.name,
-                                       timeout=server.config.timeout,
-                                       acct_port=server.radius.config.acct_port,
-                                       auth_port=server.radius.config.auth_port,
-                                       retransmit_attempts=server.radius.config.retransmit_attempts,
-                                       secret_key=server.radius.config.secret_key,
-                                       source_address=server.radius.config.source_address)
-                server_group['servers'].append(server_info)
-            server_groups.append(server_group)
 
 
 def xe_system_config(config_before: dict, config_leftover: dict) -> None:
@@ -418,154 +400,404 @@ def xe_system_ntp(config_before: dict, config_leftover: dict, if_ip: dict) -> No
                     config_leftover["tailf-ned-cisco-ios:ntp"]["peer"]["vrf"][nso_vrf_index]["peer-list"],
                     openconfig_system_ntp_server_list, "PEER", vrf["name"], if_ip)
 
-# def xe_system_aaa(config_before: dict, config_leftover: dict) -> None:
-#     """
-#     Translates NSO XE NED to MDD OpenConfig System AAA
-#     """
-#     openconfig_system_aaa = openconfig_system["openconfig-system:system"]["openconfig-system:aaa"]
+def xe_system_aaa(config_before: dict, config_leftover: dict, if_ip: dict) -> None:
+    """
+    Translates NSO XE NED to MDD OpenConfig System AAA
+    """
+    oc_system_server_group = openconfig_system["openconfig-system:system"]["openconfig-system:aaa"]["openconfig-system:server-groups"]["openconfig-system:server-group"]
+    oc_system_aaa_accounting = openconfig_system["openconfig-system:system"]["openconfig-system:aaa"]["openconfig-system:accounting"]
+    oc_system_aaa_authorization = openconfig_system["openconfig-system:system"]["openconfig-system:aaa"]["openconfig-system:authorization"]
+    oc_system_aaa_authentication = openconfig_system["openconfig-system:system"]["openconfig-system:aaa"]["openconfig-system:authentication"]
+    tacacs_group_list = config_before.get("tailf-ned-cisco-ios:aaa", {}).get("group", {}).get("server", {}).get("tacacs-plus")
+    radius_group_list = config_before.get("tailf-ned-cisco-ios:aaa", {}).get("group", {}).get("server", {}).get("radius")
+    tacacs_server_list = config_before.get("tailf-ned-cisco-ios:tacacs", {}).get("server") 
+    radius_server_list = config_before.get("tailf-ned-cisco-ios:radius", {}).get("server")
+    accounting_dict = config_before.get("tailf-ned-cisco-ios:aaa", {}).get("accounting")
+    authorization_dict = config_before.get("tailf-ned-cisco-ios:aaa", {}).get("authorization")
+    authentication_dict = config_before.get("tailf-ned-cisco-ios:aaa", {}).get("authentication")
+    authentication_user_list = config_before.get("tailf-ned-cisco-ios:username")
 
-#     if config_before.get("tailf-ned-cisco-ios:aaa", {}).get("accounting", {}).get("commands"):
-#         for aaa_level, aaa_accounting_list in config_before.get("tailf-ned-cisco-ios:aaa", {}).get("accounting", {}).get("commands", {}):
-#             aaa_accounting_temp = {"openconfig-system:accounting": 
-#                             {"openconfig-system:config": 
-#                                 "openconfig-system:accounting-method":
-#                                 "openconfig-system:address": ntp_server["name"],
-#                                 "openconfig-system:association-type": ntp_type,
-#                                 "openconfig-system:port": 123,
-#                                 "openconfig-system:version": 4
-#                             }}}
+    # TACACS GROUP
+    if tacacs_group_list:
+        for tacacs_group_index, tacacs_group in enumerate(tacacs_group_list):
+            process_aaa_tacacs(oc_system_server_group, config_leftover, if_ip, tacacs_group_index, tacacs_group, tacacs_server_list)
+    
+    # RADIUS GROUP
+    if radius_group_list:
+        for radius_group_index, radius_group in enumerate(radius_group_list):
+            process_aaa_radius(oc_system_server_group, config_leftover, if_ip, radius_group_index, radius_group, radius_server_list)
+    
+    # AAA ACCOUNTING
+    if accounting_dict:
+        if accounting_dict.get("commands") or accounting_dict.get("exec"):
+            temp_aaa_accounting = {
+                "openconfig-system:config": set_accounting_method(oc_system_aaa_accounting, config_leftover, accounting_dict),
+                "openconfig-system:events": set_accounting_event(oc_system_aaa_accounting, config_leftover, accounting_dict)
+            }
+            oc_system_aaa_accounting.update(temp_aaa_accounting)
 
- 
-#     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key") and config_before.get(
-#             "tailf-ned-cisco-ios:ntp", {}).get("authentication-key"):
-#         trusted_key_numbers = [x["key-number"] for x in
-#                                config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key")]
-#         for auth_key in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("authentication-key"):
-#             if auth_key["number"] in trusted_key_numbers and auth_key.get("md5"):
-#                 key_dict = {"openconfig-system:key-id": auth_key["number"],
-#                             "openconfig-system:config": {"openconfig-system:key-id": auth_key["number"],
-#                                                          "openconfig-system:key-type": "NTP_AUTH_MD5",
-#                                                          "openconfig-system:key-value": auth_key.get("md5").get(
-#                                                              "secret")}
-#                             }
-#                 openconfig_system_ntp["openconfig-system:ntp-keys"]["openconfig-system:ntp-key"].append(key_dict)
+    # AAA AUTHORIZATION
+    if authorization_dict:
+        if authorization_dict.get("commands") or authorization_dict.get("exec"):
+            temp_aaa_authorization = {
+                "openconfig-system:config": set_authorization_method(oc_system_aaa_authorization, config_leftover, authorization_dict),
+                "openconfig-system:events": set_authorization_event(oc_system_aaa_authorization, config_leftover, authorization_dict)
+            }
+            oc_system_aaa_authorization.update(temp_aaa_authorization)
 
-#                 config_leftover["tailf-ned-cisco-ios:ntp"]["authentication-key"].remove(auth_key)
-#                 config_leftover["tailf-ned-cisco-ios:ntp"]["trusted-key"].remove({"key-number": auth_key["number"]})
+    # AAA AUTHENTICATION
+    if authentication_dict or authentication_user_list:
+        temp_aaa_authentication = {
+            "openconfig-system:config": set_authentication_method(oc_system_aaa_authentication, config_leftover, authentication_dict),
+            "openconfig-system:admin-user": set_authentication_admin(oc_system_aaa_authentication, config_leftover, authentication_user_list),
+            "openconfig-system:users": set_authentication_user(oc_system_aaa_authentication, config_leftover, authentication_user_list)
+        }
+        oc_system_aaa_authentication.update(temp_aaa_authentication)
+    
+def process_aaa_tacacs(oc_system_server_group, config_leftover, if_ip, tacacs_group_index, tacacs_group, tacacs_server_list):
+    tacacs_group_leftover = config_leftover.get("tailf-ned-cisco-ios:aaa", {}).get("group", {}).get("server", {}).get("tacacs-plus")[tacacs_group_index]
+    # If we got here, we init an empty dict and append to oc_system_server_group list for future use.
+    oc_system_server_group.append({})
+    tac_group_index = len(oc_system_server_group) - 1
+    set_tacacs_group_config(tacacs_group_leftover, config_leftover, oc_system_server_group, if_ip, tac_group_index, tacacs_group, tacacs_server_list)
 
-#     # NTP PEER
-#     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer", {}).get("peer-list"):
-#         xe_add_oc_ntp_server(config_before["tailf-ned-cisco-ios:ntp"]["peer"]["peer-list"],
-#                                 config_leftover["tailf-ned-cisco-ios:ntp"]["peer"]["peer-list"],
-#                                 openconfig_system_ntp_server_list, "PEER", "", if_ip)
+def process_aaa_radius(oc_system_server_group, config_leftover, if_ip, radius_group_index, radius_group, radius_server_list):
+    radius_group_leftover = config_leftover.get("tailf-ned-cisco-ios:aaa", {}).get("group", {}).get("server", {}).get("radius")[radius_group_index]
+    # If we got here, we init an empty dict and append to oc_system_server_group list for future use.
+    oc_system_server_group.append({})
+    rad_group_index = len(oc_system_server_group) - 1
+    set_radius_group_config(radius_group_leftover, config_leftover, oc_system_server_group, if_ip, rad_group_index, radius_group, radius_server_list)
 
-#     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("logging"):
-#         openconfig_system_ntp["openconfig-system:config"]["openconfig-system-ext:ntp-enable-logging"] = True
-#         del config_leftover["tailf-ned-cisco-ios:ntp"]["logging"]
+def set_tacacs_group_config(tacacs_group_leftover, config_leftover, oc_system_server_group, if_ip, tac_group_index, tacacs_group, tacacs_server_list):
+    # TACACS SERVER-GROUPS
+    oc_system_server_group[tac_group_index]["openconfig-system:name"] = f'{tacacs_group.get("name")}'
+    temp_tacacs_group = {"openconfig-system:config": {
+        "openconfig-system:type": "TACACS",
+        "openconfig-system:name": f'{tacacs_group.get("name")}'}, 
+        "openconfig-system:servers": set_server_tacacs_config(tacacs_group_leftover, config_leftover, oc_system_server_group, if_ip, tac_group_index, tacacs_group, tacacs_server_list)
+    }
+    oc_system_server_group[tac_group_index].update(temp_tacacs_group)
 
-#     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source"):
-#         for i, n in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source").items():
-#             source_interface = f"{i}{n}"
-#             source_interface_ip = if_ip.get(source_interface)
-#             openconfig_system_ntp["openconfig-system:config"][
-#                 "openconfig-system:ntp-source-address"] = source_interface_ip
-#         del config_leftover["tailf-ned-cisco-ios:ntp"]["source"]
+def set_radius_group_config(radius_group_leftover, config_leftover, oc_system_server_group, if_ip, rad_group_index, radius_group, radius_server_list):
+    # RADIUS SERVER-GROUPS
+    oc_system_server_group[rad_group_index]["openconfig-system:name"] = f'{radius_group.get("name")}'
+    # RADIUS SERVER-GROUP NAME AND TYPE
+    temp_radius_group = {"openconfig-system:config": {
+        "openconfig-system:type": "RADIUS",
+        "openconfig-system:name": f'{radius_group.get("name")}'},
+        "openconfig-system:servers": set_server_radius_config(radius_group_leftover, config_leftover, oc_system_server_group, if_ip, rad_group_index, radius_group, radius_server_list)
+    }
+    oc_system_server_group[rad_group_index].update(temp_radius_group)
 
-#     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key") and config_before.get(
-#             "tailf-ned-cisco-ios:ntp", {}).get("authentication-key"):
-#         trusted_key_numbers = [x["key-number"] for x in
-#                                config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key")]
-#         for auth_key in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("authentication-key"):
-#             if auth_key["number"] in trusted_key_numbers and auth_key.get("md5"):
-#                 key_dict = {"openconfig-system:key-id": auth_key["number"],
-#                             "openconfig-system:config": {"openconfig-system:key-id": auth_key["number"],
-#                                                          "openconfig-system:key-type": "NTP_AUTH_MD5",
-#                                                          "openconfig-system:key-value": auth_key.get("md5").get(
-#                                                              "secret")}
-#                             }
-#                 openconfig_system_ntp["openconfig-system:ntp-keys"]["openconfig-system:ntp-key"].append(key_dict)
+def set_server_tacacs_config(tacacs_group_leftover, config_leftover, oc_system_server_group, if_ip, tac_group_index, tacacs_group, tacacs_server_list):
+    tac_server = {"openconfig-system:server": []}
+    tac_server_list = tac_server["openconfig-system:server"]
+    # TACACS SOURCE-INTERFACE
+    for i, n in tacacs_group["ip"]["tacacs"]["source-interface"].items():
+        source_interface = f"{i}{n}"
+        source_interface_ip = if_ip.get(source_interface)
 
-#                 config_leftover["tailf-ned-cisco-ios:ntp"]["authentication-key"].remove(auth_key)
-#                 config_leftover["tailf-ned-cisco-ios:ntp"]["trusted-key"].remove({"key-number": auth_key["number"]})
+    if tacacs_server_list:
+        for server_list_index, server in enumerate(tacacs_server_list):
+            for i in range(len(tacacs_group["server"]["name"])):
+                if server.get("name") in tacacs_group["server"]["name"][i]["name"]:
+                    # TACACS SERVER NAME, ADDRESS AND TIMEOUT
+                    temp_tacacs_server = {"openconfig-system:address": f'{server.get("address", {}).get("ipv4")}',
+                    "openconfig-system:config": {
+                        "openconfig-system:address": f'{server.get("address", {}).get("ipv4")}',
+                        "openconfig-system:name": f'{server.get("name")}',
+                        "openconfig-system:timeout": f'{server.get("timeout")}'},
+                    "openconfig-system:tacacs": {"openconfig-system:config": {
+                        "openconfig-system:port": f'{server.get("port")}',
+                        "openconfig-system:secret-key": f'{server.get("key", {}).get("secret")}',
+                        "openconfig-system:source-address": f'{source_interface_ip}'
+                    }}}
+                    tac_server_list.append(temp_tacacs_server)
+                    config_leftover["tailf-ned-cisco-ios:aaa"]["group"]["server"]["tacacs-plus"][i] = None
+            config_leftover["tailf-ned-cisco-ios:tacacs"]["server"][server_list_index] = None
 
-#     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer") or config_before.get("tailf-ned-cisco-ios:ntp",
-#                                                                                          {}).get("server"):
-#         openconfig_system_ntp.update({"openconfig-system:servers": {"openconfig-system:server": []}})
-#         openconfig_system_ntp_server_list = openconfig_system_ntp["openconfig-system:servers"][
-#             "openconfig-system:server"]
-#         # NTP SERVER
-#         if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("server", {}).get("peer-list"):
-#             xe_add_oc_ntp_server(config_before["tailf-ned-cisco-ios:ntp"]["server"]["peer-list"],
-#                                  config_leftover["tailf-ned-cisco-ios:ntp"]["server"]["peer-list"],
-#                                  openconfig_system_ntp_server_list, "SERVER", "", if_ip)
-#         # NTP PEER
-#         if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer", {}).get("peer-list"):
-#             xe_add_oc_ntp_server(config_before["tailf-ned-cisco-ios:ntp"]["peer"]["peer-list"],
-#                                  config_leftover["tailf-ned-cisco-ios:ntp"]["peer"]["peer-list"],
-#                                  openconfig_system_ntp_server_list, "PEER", "", if_ip)
-#         # VRF SERVER
-#         if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("server", {}).get("vrf"):
-#             for nso_vrf_index, vrf in enumerate(
-#                     config_before.get("tailf-ned-cisco-ios:ntp", {}).get("server", {}).get("vrf")):
-#                 xe_add_oc_ntp_server(
-#                     config_before["tailf-ned-cisco-ios:ntp"]["server"]["vrf"][nso_vrf_index]["peer-list"],
-#                     config_leftover["tailf-ned-cisco-ios:ntp"]["server"]["vrf"][nso_vrf_index]["peer-list"],
-#                     openconfig_system_ntp_server_list, "SERVER", vrf["name"], if_ip)
-#         # VRF PEER
-#         if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer", {}).get("vrf"):
-#             for nso_vrf_index, vrf in enumerate(
-#                     config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer", {}).get("vrf")):
-#                 xe_add_oc_ntp_server(
-#                     config_before["tailf-ned-cisco-ios:ntp"]["peer"]["vrf"][nso_vrf_index]["peer-list"],
-#                     config_leftover["tailf-ned-cisco-ios:ntp"]["peer"]["vrf"][nso_vrf_index]["peer-list"],
-#                     openconfig_system_ntp_server_list, "PEER", vrf["name"], if_ip)
+    return tac_server
 
+def set_server_radius_config(radius_group_leftover, config_leftover, oc_system_server_group, if_ip, rad_group_index, radius_group, radius_server_list):
+    rad_server = {"openconfig-system:server": []}
+    rad_server_list = rad_server["openconfig-system:server"]
+    # RADIUS SOURCE-INTERFACE
+    for i, n in radius_group["ip"]["radius"]["source-interface"].items():
+        source_interface = f"{i}{n}"
+        source_interface_ip = if_ip.get(source_interface)
 
+    if radius_server_list:
+        for server_list_index, server in enumerate(radius_server_list):
+            for i in range(len(radius_group["server"]["name"])):
+                if server.get("id") in radius_group["server"]["name"][i]["name"]:
+                    # RADIUS SERVER NAME, ADDRESS AND TIMEOUT
+                    temp_radius_server = {"openconfig-system:address": f'{server.get("address", {}).get("ipv4", {}).get("host")}',
+                    "openconfig-system:config": {
+                        "openconfig-system:address": f'{server.get("address", {}).get("ipv4", {}).get("host")}',
+                        "openconfig-system:name": f'{server.get("id")}',
+                        "openconfig-system:timeout": f'{server.get("timeout")}'},
+                    "openconfig-system:radius": {"openconfig-system:config": {
+                        "openconfig-system:acct-port": f'{server.get("address", {}).get("ipv4", {}).get("acct-port")}',
+                        "openconfig-system:auth-port": f'{server.get("address", {}).get("ipv4", {}).get("auth-port")}',
+                        "openconfig-system:secret-key": f'{server.get("key", {}).get("secret")}',
+                        "openconfig-system:source-address": f'{source_interface_ip}'
+                    }}}
+                    rad_server_list.append(temp_radius_server)
+                    config_leftover["tailf-ned-cisco-ios:aaa"]["group"]["server"]["radius"][i] = None
+            config_leftover["tailf-ned-cisco-ios:radius"]["server"][server_list_index] = None
 
-# def xe_add_oc_ntp_server(before_ntp_server_list: list, after_ntp_server_list: list, openconfig_ntp_server_list: list,
-#                          ntp_type: str, ntp_vrf: str, if_ip: dict) -> None:
-#     """Generate Openconfig NTP server configurations"""
-#     for ntp_server_index, ntp_server in enumerate(before_ntp_server_list):
-#         ntp_server_temp = {"openconfig-system:address": ntp_server["name"],
-#                            "openconfig-system:config": {
-#                                "openconfig-system:address": ntp_server["name"],
-#                                "openconfig-system:association-type": ntp_type,
-#                                "openconfig-system:port": 123,
-#                                "openconfig-system:version": 4
-#                            }}
-#         # version
-#         if ntp_server.get("version"):
-#             ntp_server_temp["openconfig-system:config"]["openconfig-system:version"] = ntp_server.get("version")
-#             del after_ntp_server_list[ntp_server_index]["version"]
-#         # iburst
-#         if type(ntp_server.get("iburst", "")) is list:
-#             ntp_server_temp["openconfig-system:config"]["openconfig-system:iburst"] = True
-#             del after_ntp_server_list[ntp_server_index]["iburst"]
-#         else:
-#             ntp_server_temp["openconfig-system:config"]["openconfig-system:iburst"] = False
-#         # prefer
-#         if type(ntp_server.get("prefer", "")) is list:
-#             ntp_server_temp["openconfig-system:config"]["openconfig-system:prefer"] = True
-#             del after_ntp_server_list[ntp_server_index]["prefer"]
-#         else:
-#             ntp_server_temp["openconfig-system:config"]["openconfig-system:prefer"] = False
-#         # authentication key
-#         if ntp_server.get("key"):
-#             ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-auth-key-id"] = ntp_server.get("key")
-#             del after_ntp_server_list[ntp_server_index]["key"]
-#         # source interface
-#         if ntp_server.get("source"):
-#             for k, v in ntp_server.get("source").items():
-#                 nso_source_interface = f"{k}{v}"
-#                 ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-source-address"] = if_ip.get(
-#                     nso_source_interface)
-#                 del after_ntp_server_list[ntp_server_index]["source"]
-#         # vrf
-#         if ntp_vrf:
-#             ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-use-vrf"] = ntp_vrf
+    return rad_server
 
-#         openconfig_ntp_server_list.append(ntp_server_temp)
+def set_accounting_method(oc_system_aaa_accounting, config_leftover, accounting_dict):
+    # AAA ACCOUNTING GROUPS
+    acc_method = {"openconfig-system:accounting-method": []}
+    acc_method_list = acc_method["openconfig-system:accounting-method"]
+    group = group2 = group3 = None
 
+    if accounting_dict.get("commands"):
+        for i, command in enumerate(accounting_dict.get("commands")):
+            if command["group"]:
+                if command["group"] == 'tacacs+':
+                    group = 'TACACS_ALL'
+                else:
+                    group = command["group"]
+                acc_method_list.append(group)
+            if command["group2"] and command["group2"]["group"]:
+                if command["group2"]["group"] == 'tacacs+':
+                    group2 = 'TACACS_ALL'
+                elif command["group2"]["group"]:
+                    group2 = command["group2"]["group"]
+                acc_method_list.append(group2)
+            if command["group3"] and command["group3"]["group"]:
+                if command["group2"]["group"] and command["group3"]["group"] == 'tacacs+':
+                    group3 = 'TACACS_ALL'
+                elif command["group2"]["group"] and command["group3"]["group"]:
+                    group3 = command["group3"]["group"]
+                acc_method_list.append(group3)
+        del config_leftover["tailf-ned-cisco-ios:aaa"]["accounting"]["commands"]
+    if accounting_dict.get("exec"):
+        for i, exe in enumerate(accounting_dict.get("exec")):
+            if exe["group"]:
+                if exe["group"] == 'tacacs+':
+                    group = 'TACACS_ALL'
+                else:
+                    group = exe["group"]
+                acc_method_list.append(group)
+            if exe["group2"] and exe["group2"]["group"]:
+                if exe["group2"]["group"] == 'tacacs+':
+                    group2 = 'TACACS_ALL'
+                elif exe["group2"]["group"]:
+                    group2 = exe["group2"]["group"]
+                acc_method_list.append(group2)
+            if exe["group3"] and exe["group3"]["group"]:
+                if exe["group2"]["group"] and exe["group3"]["group"] == 'tacacs+':
+                    group3 = 'TACACS_ALL'
+                elif exe["group2"]["group"] and exe["group3"]["group"]:
+                    group3 = exe["group3"]["group"]
+                acc_method_list.append(group3)
+        del config_leftover["tailf-ned-cisco-ios:aaa"]["accounting"]["exec"]
+    
+    return acc_method
+
+def set_accounting_event(oc_system_aaa_accounting, config_leftover, accounting_dict):
+    acc_event = {"openconfig-system:event": []}
+    acc_event_list = acc_event["openconfig-system:event"]
+    # AAA ACCOUNTING EVENT-TYPE AND RECORD
+    if accounting_dict.get("commands"):
+        for key in accounting_dict.get("commands"):
+            if key["level"] == 15 and key["name"] == 'default':
+                event_type = 'AAA_ACCOUNTING_EVENT_COMMAND'
+                if key["action-type"] == 'stop-only':
+                    action = 'STOP'
+                elif key["action-type"] == 'start-stop':
+                    action = "START_STOP"
+                temp_event = {"openconfig-system:event-type": f'{event_type}',
+                            "openconfig-system:config": {
+                                "openconfig-system:event-type": f'{event_type}',
+                                "openconfig-system:record": f'{action}'
+                            }}
+                acc_event_list.append(temp_event)
+    if accounting_dict.get("exec"):
+        for key in accounting_dict.get("exec"):
+            if key["name"] == 'default':
+                event_type = 'AAA_ACCOUNTING_EVENT_LOGIN'
+                if key["action-type"] == 'stop-only':
+                    action = 'STOP'
+                elif key["action-type"] == 'start-stop':
+                    action = "START_STOP"
+                temp_event = {"openconfig-system:event-type": f'{event_type}',
+                            "openconfig-system:config": {
+                                "openconfig-system:event-type": f'{event_type}',
+                                "openconfig-system:record": f'{action}'
+                            }}
+                acc_event_list.append(temp_event)
+
+    return acc_event
+
+def set_authorization_event(oc_system_aaa_authorization, config_leftover, authorization_dict):
+    autho_event = {"openconfig-system:event": []}
+    autho_event_list = autho_event["openconfig-system:event"]
+    # AAA AUTHORIZATION EVENT-TYPE AND RECORD
+    if authorization_dict.get("commands"):
+        for key in authorization_dict.get("commands"):
+            if key["level"] == 15 and key["name"] == 'default':
+                event_type = 'AAA_AUTHORIZATION_EVENT_COMMAND'
+                temp_event = {"openconfig-system:event-type": f'{event_type}',
+                            "openconfig-system:config": {
+                                "openconfig-system:event-type": f'{event_type}'
+                            }}
+                autho_event_list.append(temp_event)
+        del config_leftover["tailf-ned-cisco-ios:aaa"]["authorization"]["commands"]
+    if authorization_dict.get("exec"):
+        for key in authorization_dict.get("exec"):
+            if key["name"] == 'default':
+                event_type = 'AAA_AUTHORIZATION_EVENT_CONFIG'
+                temp_event = {"openconfig-system:event-type": f'{event_type}',
+                            "openconfig-system:config": {
+                                "openconfig-system:event-type": f'{event_type}'
+                            }}
+                autho_event_list.append(temp_event)
+        del config_leftover["tailf-ned-cisco-ios:aaa"]["authorization"]["exec"]
+
+    return autho_event
+
+def set_authorization_method(oc_system_aaa_authorization, config_leftover, authorization_dict):
+    # AAA AUTHORIZATION GROUPS
+    autho_method = {"openconfig-system:authorization-method": []}
+    autho_method_list = autho_method["openconfig-system:authorization-method"]
+    group = group2 = group3 = None
+
+    if authorization_dict.get("commands"):
+        for i, command in enumerate(authorization_dict.get("commands")):
+            if command["tacacsplus"]:
+                group = 'TACACS_ALL'
+            autho_method_list.append(group)
+            if command["local"]:
+                group = 'LOCAL'
+            autho_method_list.append(group)
+            if command["group"]:
+                if command["group"] == 'tacacs+':
+                    group = 'TACACS_ALL'
+                else:
+                    group = command["group"]
+                autho_method_list.append(group)
+            if command["group2"] and command["group2"]["group"]:
+                if command["group2"]["group"] == 'tacacs+':
+                    group2 = 'TACACS_ALL'
+                elif command["group2"]["group"]:
+                    group2 = command["group2"]["group"]
+                autho_method_list.append(group2)
+            if command["group3"] and command["group3"]["group"]:
+                if command["group2"]["group"] and command["group3"]["group"] == 'tacacs+':
+                    group3 = 'TACACS_ALL'
+                elif command["group2"]["group"] and command["group3"]["group"]:
+                    group3 = command["group3"]["group"]
+                autho_method_list.append(group3)
+    if authorization_dict.get("exec"):
+        for i, exe in enumerate(authorization_dict.get("exec")):
+            if exe["tacacsplus"]:
+                group = 'TACACS_ALL'
+            autho_method_list.append(group)
+            if exe["local"]:
+                group = 'LOCAL'
+            autho_method_list.append(group)
+            if exe["group"]:
+                if exe["group"] == 'tacacs+':
+                    group = 'TACACS_ALL'
+                else:
+                    group = exe["group"]
+                autho_method_list.append(group)
+            if exe["group2"] and exe["group2"]["group"]:
+                if exe["group2"]["group"] == 'tacacs+':
+                    group2 = 'TACACS_ALL'
+                elif exe["group2"]["group"]:
+                    group2 = exe["group2"]["group"]
+                autho_method_list.append(group2)
+            if exe["group3"] and exe["group3"]["group"]:
+                if exe["group2"]["group"] and exe["group3"]["group"] == 'tacacs+':
+                    group3 = 'TACACS_ALL'
+                elif exe["group2"]["group"] and exe["group3"]["group"]:
+                    group3 = exe["group3"]["group"]
+                autho_method_list.append(group3)
+    
+    return autho_method
+
+def set_authentication_method(oc_system_aaa_authentication, config_leftover, authentication_dict):
+    # AAA AUTHENTICATION GROUPS
+    authe_method = {"openconfig-system:authentication-method": []}
+    authe_method_list = authe_method["openconfig-system:authentication-method"]
+    group = group2 = group3 = None
+
+    if authentication_dict:
+        if authentication_dict.get("login"):
+            for i, login in enumerate(authentication_dict.get("login")):
+                if login["local"]:
+                    group = 'LOCAL'
+                authe_method_list.append(group)
+                if login["tacacsplus"]:
+                    group = 'TACACS_ALL'
+                authe_method_list.append(group)
+                if login["group"]:
+                    if login["group"] == 'tacacs+':
+                        group = 'TACACS_ALL'
+                    else:
+                        group = login["group"]
+                    authe_method_list.append(group)
+                if login["group2"] and login["group2"]["group"]:
+                    if login["group2"]["group"] == 'tacacs+':
+                        group2 = 'TACACS_ALL'
+                    elif login["group2"]["group"]:
+                        group2 = login["group2"]["group"]
+                    authe_method_list.append(group2)
+                if login["group3"] and login["group3"]["group"]:
+                    if login["group2"]["group"] and login["group3"]["group"] == 'tacacs+':
+                        group3 = 'TACACS_ALL'
+                    elif login["group2"]["group"] and login["group3"]["group"]:
+                        group3 = login["group3"]["group"]
+                    authe_method_list.append(group3)
+            del config_leftover["tailf-ned-cisco-ios:aaa"]["authentication"]["login"]
+
+    return authe_method
+
+def set_authentication_admin(oc_system_aaa_authentication, config_leftover, authentication_user_list):
+    authe_admin = {"openconfig-system:config": {}}
+    authe_admin_dict = authe_admin["openconfig-system:config"]
+    pwd = pwd_hashed = ssh_key = None
+    temp_user = {}
+    # AAA AUTHENTICATION ADMIN-USER
+    if authentication_user_list:
+        for i, user in enumerate(authentication_user_list):
+            if "admin" in user.get("name"):
+                pwd_hashed = user.get("secret", {}).get("secret")
+                temp_user = {"openconfig-system:admin-password": 'admin',
+                                "openconfig-system:admin-password-hashed": f'{pwd_hashed}'
+                            }
+                config_leftover["tailf-ned-cisco-ios:username"][i] = None
+        authe_admin_dict.update(temp_user)
+    return authe_admin
+
+def set_authentication_user(oc_system_aaa_authentication, config_leftover, authentication_user_list):
+    authe_user = {"openconfig-system:user": []}
+    authe_user_list = authe_user["openconfig-system:user"]
+    pwd = pwd_hashed = ssh_key = None
+    # AAA AUTHENTICATION USERS
+    if authentication_user_list:
+        for i, user in enumerate(authentication_user_list):
+            if "admin" not in user.get("name"):
+                role = 'SYSTEM_ROLE_ADMIN'
+                pwd = user.get("secret", {}).get("secret")
+                temp_user = {"openconfig-system:username": f'{user.get("name")}',
+                            "openconfig-system:config": {
+                                "openconfig-system:username": f'{user.get("name")}',
+                                "openconfig-system:password": f'{pwd}',
+                                "openconfig-system:password-hashed": f'{pwd_hashed}', # TODO
+                                "openconfig-system:role": f'{role}',
+                                "openconfig-system:ssh-key:": f'{ssh_key}' # TODO
+                            }}
+                authe_user_list.append(temp_user)
+                config_leftover["tailf-ned-cisco-ios:username"][i] = None
+
+    return authe_user
 
 def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []) -> dict:
     """
@@ -587,7 +819,7 @@ def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []
     xe_system_services(before, leftover)
     xe_system_ssh_server(before, leftover)
     xe_system_ntp(before, leftover, if_ip)
-    xe_system_aaa(before, leftover)
+    xe_system_aaa(before, leftover, if_ip)
     translation_notes += system_notes
 
     return openconfig_system
