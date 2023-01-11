@@ -48,6 +48,10 @@ nso_to_oc_interface_types = {
 }
 
 
+def interfaces_notes_add(note):
+    interfaces_notes.append(note)
+
+
 def return_nested_dict(root_dict: dict, keys_list: list) -> dict:
     """
     Return object of nested dictionary
@@ -165,7 +169,7 @@ def create_interface_dict(config_before: dict) -> dict:
 
 
 def configure_switched_vlan(nso_before_interface: dict, nso_leftover_interface: dict,
-                            openconfig_interface: dict) -> None:
+                            openconfig_interface: dict, interface_name: str) -> None:
     """Configure L2 interfaces: TRUNK and ACCESS"""
     openconfig_interface.update(
         {"openconfig-vlan:switched-vlan": {"openconfig-vlan:config": {}}})
@@ -179,7 +183,7 @@ def configure_switched_vlan(nso_before_interface: dict, nso_leftover_interface: 
             nso_before_interface["switchport"].get("access", {}).get("vlan")
         del nso_leftover_interface["switchport"]["access"]
     # Mode TRUNK
-    if (type(nso_before_interface["switchport"].get("mode", {}).get("trunk")) is dict) and (
+    elif (type(nso_before_interface["switchport"].get("mode", {}).get("trunk")) is dict) and (
             nso_before_interface["switchport"].get("trunk", {}).get("encapsulation") == "dot1q"):
         openconfig_interface["openconfig-vlan:switched-vlan"][
             "openconfig-vlan:config"]["openconfig-vlan:interface-mode"] = "TRUNK"
@@ -195,6 +199,25 @@ def configure_switched_vlan(nso_before_interface: dict, nso_leftover_interface: 
                 "openconfig-vlan:config"]["openconfig-vlan:trunk-vlans"] = \
                 nso_before_interface["switchport"].get("trunk").get("allowed", {}).get("vlan", {}).get("vlans")
             del nso_leftover_interface["switchport"]["trunk"]["allowed"]
+    # Mode dynamic: desirable or dynamic: auto will be a converted to TRUNK in OC
+    elif nso_before_interface["switchport"].get("mode", {}).get("dynamic"):
+        openconfig_interface["openconfig-vlan:switched-vlan"][
+            "openconfig-vlan:config"]["openconfig-vlan:interface-mode"] = "TRUNK"
+        del nso_leftover_interface["switchport"]["mode"]
+        if nso_before_interface["switchport"].get("trunk").get("native", {}).get("vlan"):
+            openconfig_interface["openconfig-vlan:switched-vlan"][
+                "openconfig-vlan:config"]["openconfig-vlan:native-vlan"] = \
+                nso_before_interface["switchport"]["trunk"].get("native", {}).get("vlan")
+            del nso_leftover_interface["switchport"]["trunk"]["native"]
+        if nso_before_interface["switchport"].get("trunk").get("allowed", {}).get("vlan", {}).get("vlans"):
+            openconfig_interface["openconfig-vlan:switched-vlan"][
+                "openconfig-vlan:config"]["openconfig-vlan:trunk-vlans"] = \
+                nso_before_interface["switchport"].get("trunk").get("allowed", {}).get("vlan", {}).get("vlans")
+            del nso_leftover_interface["switchport"]["trunk"]["allowed"]
+        interfaces_notes_add(f"""
+            Interface {interface_name} was set to trunking dynamic {nso_before_interface["switchport"].get("mode", {}).get("dynamic")}.
+            OpenConfig configuration is now mode TRUNK. Review for issues.
+        """)
 
 
 def xe_configure_ipv4_interface(nso_before_interface: dict, nso_leftover_interface: dict,
@@ -295,10 +318,11 @@ def xe_configure_ipv4_interface(nso_before_interface: dict, nso_leftover_interfa
 
 
 def xe_configure_tunnel_ipv4_interface(nso_before_interface: dict, nso_leftover_interface: dict,
-                                openconfig_interface: dict) -> None:
+                                       openconfig_interface: dict) -> None:
     """Tunnel IPv4 interface configurations"""
-    oc_ipv4_structure = {"openconfig-if-tunnel:ipv4": {"openconfig-if-tunnel:addresses": {"openconfig-if-tunnel:address": []},
-                                                   "openconfig-if-tunnel:config": {}}}
+    oc_ipv4_structure = {
+        "openconfig-if-tunnel:ipv4": {"openconfig-if-tunnel:addresses": {"openconfig-if-tunnel:address": []},
+                                      "openconfig-if-tunnel:config": {}}}
     if (nso_before_interface.get("ip") and not nso_before_interface.get("ip", {}).get("no-address")) or (
             nso_before_interface.get("vrrp")):
         openconfig_interface.update(oc_ipv4_structure)
@@ -314,7 +338,7 @@ def xe_configure_tunnel_ipv4_interface(nso_before_interface: dict, nso_leftover_
             del nso_leftover_interface["ip"]["address"]["primary"]
             ipv4_address_structure.update({"openconfig-if-tunnel:ip": ip,
                                            "openconfig-if-tunnel:config": {"openconfig-if-tunnel:ip": ip,
-                                                                       "openconfig-if-tunnel:prefix-length": mask}})
+                                                                           "openconfig-if-tunnel:prefix-length": mask}})
         if len(ipv4_address_structure) > 0:
             openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:addresses"][
                 "openconfig-if-tunnel:address"].append(ipv4_address_structure)
@@ -382,11 +406,13 @@ def xe_configure_tunnel_ipv4_interface(nso_before_interface: dict, nso_leftover_
             del nso_leftover_interface["ip"]["mask-reply"]
         # NAT interface
         if nso_before_interface.get("ip", {}).get("nat", {}).get("inside"):
-            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"]["openconfig-if-ip-mdd-ext:nat"] = {
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"][
+                "openconfig-if-ip-mdd-ext:nat"] = {
                 "openconfig-if-ip-mdd-ext:nat-choice": "inside"}
             del nso_leftover_interface["ip"]["nat"]["inside"]
         elif nso_before_interface.get("ip", {}).get("nat", {}).get("outside"):
-            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"]["openconfig-if-ip-mdd-ext:nat"] = {
+            openconfig_interface["openconfig-if-tunnel:ipv4"]["openconfig-if-tunnel:config"][
+                "openconfig-if-ip-mdd-ext:nat"] = {
                 "openconfig-if-ip-mdd-ext:nat-choice": "outside"}
             del nso_leftover_interface["ip"]["nat"]["outside"]
 
@@ -460,6 +486,9 @@ def configure_port_channel(config_before: dict, config_leftover: dict, interface
             path_oc_physical = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
                                 interface_directory["oc_interface_index"]]
             openconfig_interface_physical = return_nested_dict(openconfig_interfaces, path_oc_physical)
+            interface_name = interface_directory["nso_interface_type"] + str(
+                config_before["tailf-ned-cisco-ios:interface"][interface_directory["nso_interface_type"]][
+                    interface_directory["nso_interface_index"]]["name"])
             path_nso_physical = ["tailf-ned-cisco-ios:interface", interface_directory["nso_interface_type"],
                                  interface_directory["nso_interface_index"]]
             nso_before_interface = return_nested_dict(config_before, path_nso_physical)
@@ -471,7 +500,8 @@ def configure_port_channel(config_before: dict, config_leftover: dict, interface
                            interface_directory["oc_interface_index"], "openconfig-if-aggregate:aggregation"]
             openconfig_interface_agg = return_nested_dict(openconfig_interfaces, path_oc_agg)
             if nso_before_interface.get("switchport"):
-                configure_switched_vlan(nso_before_interface, nso_leftover_interface, openconfig_interface_agg)
+                configure_switched_vlan(nso_before_interface, nso_leftover_interface, openconfig_interface_agg,
+                                        interface_name)
             xe_configure_ipv4_interface(nso_before_interface, nso_leftover_interface, openconfig_interface_agg)
         # Configure port-channel sub-interfaces
         if interface_directory["nso_interface_type"] == "Port-channel-subinterface":
@@ -548,7 +578,7 @@ def configure_software_tunnel(config_before: dict, config_leftover: dict, interf
         # keepalives
         if nso_before_interface.get("keepalive-period-retries", {}).get("keepalive", {}).get(
                 "period") and nso_before_interface.get("keepalive-period-retries", {}).get("keepalive", {}).get(
-                "retries"):
+            "retries"):
             openconfig_interface_tunnel["openconfig-if-tunnel:config"]["openconfig-if-tunnel-ext:keepalives"] = {
                 "openconfig-if-tunnel-ext:period": nso_before_interface.get("keepalive-period-retries", {}).get(
                     "keepalive", {}).get("period"),
@@ -699,7 +729,9 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
                    interface_directory["oc_interface_index"], "openconfig-interfaces:subinterfaces",
                    "openconfig-interfaces:subinterface", interface_directory["oc_sub_interface_place_counter"]]
         openconfig_interface = return_nested_dict(openconfig_interfaces, path_oc)
-
+        interface_name = interface_directory["nso_interface_type"] + str(
+            config_before["tailf-ned-cisco-ios:interface"][interface_directory["nso_interface_type"]][
+                interface_directory["nso_interface_index"]]["name"])
         path_nso = ["tailf-ned-cisco-ios:interface", interface_directory["nso_interface_type"],
                     interface_directory["nso_interface_index"]]
         nso_before_interface = return_nested_dict(config_before, path_nso)
@@ -747,7 +779,7 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
             path_oc = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
                        interface_directory["oc_interface_index"], "openconfig-if-ethernet:ethernet"]
             openconfig_interface = return_nested_dict(openconfig_interfaces, path_oc)
-            configure_switched_vlan(nso_before_interface, nso_leftover_interface, openconfig_interface)
+            configure_switched_vlan(nso_before_interface, nso_leftover_interface, openconfig_interface, interface_name)
         else:
             path_oc = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
                        interface_directory["oc_interface_index"], "openconfig-interfaces:subinterfaces",
@@ -832,6 +864,7 @@ def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
 
     return openconfig_interfaces
 
+
 if __name__ == "__main__":
     sys.path.append("../../")
     sys.path.append("../../../")
@@ -849,7 +882,7 @@ if __name__ == "__main__":
     config_remaining_name = "_remaining_interfaces"
     oc_name = "_openconfig_interfaces"
     common.print_and_test_configs(
-        "xe1", config_before_dict, config_leftover_dict, openconfig_interfaces, 
+        "xe1", config_before_dict, config_leftover_dict, openconfig_interfaces,
         config_name, config_remaining_name, oc_name, interfaces_notes)
 else:
     # This is needed for now due to top level __init__.py. We need to determine if contents in __init__.py is still necessary.
@@ -859,4 +892,3 @@ else:
     else:
         from xe import common_xe
         import common
-        
