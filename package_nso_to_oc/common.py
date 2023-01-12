@@ -15,6 +15,11 @@ if not os.environ.get("NSO_URL", False):
 XE = "xe"
 XR = "xr"
 
+# In case Host OS can't resolve port name to number for ACLs
+port_name_number_mapping = {"netbios-ss": 139,
+                            "non500-isakmp": 4500,
+                            "lpd": 515}
+
 # Determine the project root dir, where we will create our output_data dir (if it doesn't exist).
 # output_data_dir is meant to contain data/config files that we don't want in version control.
 project_path = str(Path(__file__).resolve().parents[1])
