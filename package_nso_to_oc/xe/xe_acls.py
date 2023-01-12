@@ -17,7 +17,6 @@ TEST - True or False. True enables sending the OpenConfig to the NSO server afte
 """
 
 import sys
-from common import port_name_number_mapping
 from importlib.util import find_spec
 from ipaddress import IPv4Network
 import socket
@@ -302,7 +301,7 @@ class BaseAcl:
             current_port = current_port if current_port.isdigit() else socket.getservbyname(current_port)
         except OSError:
             try:
-                current_port = port_name_number_mapping[current_port]
+                current_port = common.port_name_number_mapping[current_port]
             except Exception as err:
                 self.__add_acl_entry_note(" ".join(rule_parts),
                                           f"Unable to convert service {current_port} to a port number")
