@@ -332,7 +332,10 @@ def check_areas(ospf_leftover, net_protocols, vrf_interfaces, config_leftover, p
         for current_intf in interfaces_by_area.get(area.get("id", 0), []):
             intf_type, intf_number = (current_intf["type"], current_intf["name"])
             intf_name = intf_type + intf_number
-            intf_attr_leftover = intf_config_leftover.get(intf_type, {})
+            if (intf_type == "Port-channel" or intf_type == "LISP") and "." in str(intf_number):
+                intf_attr_leftover = intf_config_leftover.get(f"{intf_type}-subinterface", {}).get(intf_type, {})
+            else:
+                intf_attr_leftover = intf_config_leftover.get(intf_type, {})
             intf_leftover = get_intf_by_intf_number(intf_attr_leftover, intf_number)
             set_ospfv2_intf_areas(ospfv2_area, intf_leftover, area, intf_name, current_intf, ospf, ospf_leftover)
 
