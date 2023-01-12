@@ -143,3 +143,8 @@ def get_index_or_default(obj, index, default = {}):
         return obj[index]
     except:
         return default
+
+def get_interface_number_split(interface_number: str) -> Tuple[int, int]:
+    number_split = interface_number.split('.')
+
+    return tuple(number_split) if len(number_split) > 1 else (number_split[0], 0)
