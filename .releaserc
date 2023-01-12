@@ -7,7 +7,12 @@
     "@semantic-release/release-notes-generator",
     "@semantic-release/github",
     ["@semantic-release/exec", {
-        "publishCmd" : "/bin/true"
+        "prepareCmd": "/bin/sed -i -E 's;<package-version>[0-9\\.]+<;<package-version>${nextRelease.version}<;' ./mdd/package-meta-data.xml",
+        "publishCmd": "/bin/true"
+    }],
+    ["@semantic-release/git", {
+      "assets": "mdd/package-meta-data.xml",
+      "message": "chore(release): Update NSO package version to ${nextRelease.version} [skip ci]"
     }]
   ]
 }
