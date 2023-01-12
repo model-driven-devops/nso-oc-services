@@ -158,7 +158,7 @@ class BaseAcl:
             starting_index = 0
         if rule_parts[starting_index] == "remark":
             acls_note_add(f"""
-                Access-list {self._xe_acl_set.get("id")} sequence number {seq_id} in a remark.
+                Access-list {self._xe_acl_set.get("id")} sequence number {seq_id} is a remark.
                 ACL remarks are not supported in Openconfig
                 If you want to keep the below remark, you should add it to your source of truth:
                 "{seq_id} {access_rule["rule"]}"
