@@ -256,7 +256,6 @@ def process_policy_definitions(config_before, config_after):
     prev_policy_name = ""
 
     for route_map_index, route_map in enumerate(config_before.get("tailf-ned-cisco-ios:route-map", [])):
-        processed = False
 
         if (prev_policy_name != route_map.get("name")):
             prev_policy_name = route_map.get("name")
@@ -287,11 +286,9 @@ def process_policy_definitions(config_before, config_after):
 
         if "match" in route_map:
             process_match(route_map["match"], statement["openconfig-routing-policy:conditions"])
-            processed = True
         if "set" in route_map:
             process_set(route_map["set"], statement["openconfig-routing-policy:actions"])
-            processed = True
-        if processed and common.get_index_or_default(config_after.get("tailf-ned-cisco-ios:route-map", []), route_map_index, None):
+        if common.get_index_or_default(config_after.get("tailf-ned-cisco-ios:route-map", []), route_map_index, None):
             config_after["tailf-ned-cisco-ios:route-map"][route_map_index] = None
 
 def process_match(route_map_match, conditions):

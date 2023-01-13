@@ -23,7 +23,7 @@ jobs:
 
       # actual configuration of semantic-release is done in .releaserc
       - name: Install dependencies
-        run: npm install semantic-release && npm install @semantic-release/exec @semantic-release/git conventional-changelog-conventionalcommits
+        run: npm install semantic-release && npm install @semantic-release/exec conventional-changelog-conventionalcommits
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

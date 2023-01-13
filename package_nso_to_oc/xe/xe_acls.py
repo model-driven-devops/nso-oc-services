@@ -157,10 +157,10 @@ class BaseAcl:
             starting_index = 0
         if rule_parts[starting_index] == "remark":
             acls_note_add(f"""
-                Access-list {self._xe_acl_set.get("id")} contains remarks.
+                Access-list {self._xe_acl_set.get("id")} sequence number {seq_id} is a remark.
                 ACL remarks are not supported in Openconfig
                 If you want to keep the below remark, you should add it to your source of truth:
-                "{access_rule["rule"]}"
+                "{seq_id} {access_rule["rule"]}"
             """)
             return success
         entry = {
@@ -299,11 +299,14 @@ class BaseAcl:
 
         try:
             current_port = current_port if current_port.isdigit() else socket.getservbyname(current_port)
-        except Exception as err:
-            self.__add_acl_entry_note(" ".join(rule_parts),
-                                      f"Unable to convert service {current_port} to a port number")
-            self.acl_success = False
-            raise Exception
+        except OSError:
+            try:
+                current_port = common.port_name_number_mapping[current_port]
+            except Exception as err:
+                self.__add_acl_entry_note(" ".join(rule_parts),
+                                          f"Unable to convert service {current_port} to a port number")
+                self.acl_success = False
+                raise Exception
 
         if rule_parts[current_index] == "range":
             end_port = rule_parts[current_index + 2]
