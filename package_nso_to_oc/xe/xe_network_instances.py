@@ -64,6 +64,11 @@ def xe_network_instances(config_before: dict, config_leftover: dict) -> None:
                     "openconfig-network-instance:protocols": {"openconfig-network-instance:protocol": []},
                     "openconfig-network-instance:interfaces": {"openconfig-network-instance:interface": []}
                 }
+
+                if "rd" in vrf:
+                    temp_vrf["openconfig-network-instance:config"][
+                        "openconfig-network-instance:route-distinguisher"] = vrf["rd"]
+
                 del config_leftover["tailf-ned-cisco-ios:vrf"]["definition"][vrf_index]["address-family"]
             openconfig_network_instances["openconfig-network-instance:network-instances"][
                 "openconfig-network-instance:network-instance"].append(temp_vrf)
