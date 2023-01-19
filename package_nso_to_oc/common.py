@@ -15,6 +15,11 @@ if not os.environ.get("NSO_URL", False):
 XE = "xe"
 XR = "xr"
 
+# In case Host OS can't resolve port name to number for ACLs
+port_name_number_mapping = {"netbios-ss": 139,
+                            "non500-isakmp": 4500,
+                            "lpd": 515}
+
 # Determine the project root dir, where we will create our output_data dir (if it doesn't exist).
 # output_data_dir is meant to contain data/config files that we don't want in version control.
 project_path = str(Path(__file__).resolve().parents[1])
@@ -54,6 +59,12 @@ def xe_system_get_interface_ip_address(config_before: dict) -> dict:
             for number in config_before["tailf-ned-cisco-ios:interface"]["Port-channel-subinterface"]["Port-channel"]:
                 if number.get("ip", {}).get("address", {}).get("primary", {}).get("address"):
                     temp_dict.update({f"Port-channel{number['name']}": f"{number.get('ip', {}).get('address', {}).get('primary', {}).get('address')}"})
+            interface_ip_name.update(temp_dict)
+        elif if_type == "LISP-subinterface":
+            for number in config_before["tailf-ned-cisco-ios:interface"]["LISP-subinterface"]["LISP"]:
+                if number.get("ip", {}).get("address", {}).get("primary", {}).get("address"):
+                    temp_dict.update({
+                                         f"LISP{number['name']}": f"{number.get('ip', {}).get('address', {}).get('primary', {}).get('address')}"})
             interface_ip_name.update(temp_dict)
         else:
             for number in config_before["tailf-ned-cisco-ios:interface"][if_type]:
@@ -95,22 +106,22 @@ def print_and_test_configs(device_name, config_before_dict, config_leftover_dict
     test = os.environ.get("TEST", "False")
 
     print(json.dumps(oc, indent=4))
-    with open(f"{output_data_dir}{nso_device}_{config_name}.json", "w") as b:
+    with open(f"{output_data_dir}{nso_device}{config_name}.json", "w") as b:
         b.write(json.dumps(config_before_dict, indent=4))
-    with open(f"{output_data_dir}{nso_device}_{config_remaining_name}.json", "w") as a:
+    with open(f"{output_data_dir}{nso_device}{config_remaining_name}.json", "w") as a:
         a.write(json.dumps(config_leftover_dict, indent=4))
-    with open(f"{output_data_dir}{nso_device}_{oc_name}.json", "w") as o:
+    with open(f"{output_data_dir}{nso_device}{oc_name}.json", "w") as o:
         o.write(json.dumps(oc, indent=4))
 
     if len(translation_notes) > 0:
         # Only print to file, if actual notes exist.
-        with open(f"{output_data_dir}{nso_device}_{oc_name}_notes.txt", "w") as o:
+        with open(f"{output_data_dir}{nso_device}{config_name}_notes.txt", "w") as o:
             # We run it through a map, just in case an element in our list of notes contain non-string type.
             # Otherwise, we risk an error when joining.
             o.write("\n\n".join(map(lambda note: str(note), translation_notes)))
 
     if test == "True":
-        test_nso_program_oc(nso_api_url, nso_username, nso_password, nso_device, oc)
+        test_nso_program_oc(nso_api_url, nso_username, nso_password, nso_device, oc["mdd:openconfig"] if "mdd:openconfig" in oc else oc)
 
 def get_nso_creds():
     nso_api_url = os.environ.get("NSO_URL")
@@ -137,3 +148,8 @@ def get_index_or_default(obj, index, default = {}):
         return obj[index]
     except:
         return default
+
+def get_interface_number_split(interface_number: str) -> Tuple[int, int]:
+    number_split = interface_number.split('.')
+
+    return tuple(number_split) if len(number_split) > 1 else (number_split[0], 0)

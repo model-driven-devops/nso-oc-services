@@ -416,6 +416,30 @@
                       address: 10.255.100.1
                       mask: 255.255.255.255
             GigabitEthernet:
+              - name: '5'
+                description: 'Description for GigabitEthernet5'
+                ip:
+                  address:
+                    primary:
+                      address: '10.5.0.2'
+                      mask: '255.255.255.0'
+              - name: '6'
+                description: 'Description for GigabitEthernet6'
+                ip:
+                  address:
+                    primary:
+                      address: '10.6.0.1'
+                      mask: '255.255.255.0'
+              - name: '8.10'
+                description: TESTDESCRIPT
+                encapsulation:
+                  dot1Q:
+                    vlan-id: 10
+                ip:
+                  address:
+                    primary:
+                      address: '10.8.10.2'
+                      mask: 255.255.255.0
               - name: '7'
                 vrf:
                   forwarding: 'internal_0'
@@ -532,6 +556,65 @@
               auto-cost:
                 reference-bandwidth: '100000'
         api_method: PATCH
+    
+    - name: NSO configure static route
+      tags:
+        - static_route_config
+      import_role:
+        name: nso-ned-device-configure
+      vars:
+        api_path: config/tailf-ned-cisco-ios:ip/route
+        api_method: PATCH
+        content: |
+          route:
+            ip-route-interface-forwarding-list:
+              - prefix: '101.0.0.0'
+                mask: '255.0.0.0'
+                interface: 'GigabitEthernet5'
+                forwarding-address: '199.10.0.1'
+            ip-route-interface-list:
+              - prefix: '102.0.0.0'
+                mask: '255.0.0.0'
+                interface: 'Null0'
+                tag: '179'
+                metric: 200
+                name: 'to_bgp'
+              - prefix: '103.0.0.0'
+                mask: '255.0.0.0'
+                interface: 'dhcp'
+              - prefix: '104.0.0.0'
+                mask: '255.0.0.0'
+                interface: 'GigabitEthernet6'
+              - prefix: '105.0.0.0'
+                mask: '255.0.0.0'
+                interface: 'GigabitEthernet8.10'
+            ip-route-forwarding-list:
+              - prefix: '100.0.0.0'
+                mask: '255.0.0.0'
+                forwarding-address: '1.1.1.1'
+            vrf:
+              - name: 'internal_0'
+                ip-route-interface-list:
+                  - prefix: '70.0.0.0'
+                    mask: '255.0.0.0'
+                    interface: 'Null0'
+                    tag: '179'
+                    metric: 200
+                    name: 'vrf_abc_to_bgp'
+              - name: 'abc'
+                ip-route-interface-list:
+                  - prefix: '90.0.0.0'
+                    mask: '255.0.0.0'
+                    interface: 'dhcp'
+              - name: 'xyz'
+                ip-route-interface-list:
+                  - prefix: '80.0.0.0'
+                    mask: '255.0.0.0'
+                    interface: 'Null0'
+                ip-route-forwarding-list:
+                  - prefix: '81.0.0.0'
+                    mask: '255.0.0.0'
+                    forwarding-address: '5.5.5.5'
 
     - name: Execute NSO NED to OC script
       tags:
@@ -566,6 +649,26 @@
           - "'default' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
           - "'abc' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
           - "'xyz' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
+
+          # Testing static routes
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][0]['config']['prefix'] == '90.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][0]['next-hops']['next-hop'][0]['index'] == 'DHCP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][0]['config']['prefix'] == '100.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][0]['next-hops']['next-hop'][0]['index'] == '1.1.1.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][1]['config']['prefix'] == '101.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][1]['next-hops']['next-hop'][0]['index'] == 'GigabitEthernet5'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][2]['config']['prefix'] == '102.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][2]['config']['description'] == 'to_bgp'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][2]['next-hops']['next-hop'][0]['index'] == 'DROP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][3]['config']['prefix'] == '103.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][3]['next-hops']['next-hop'][0]['index'] == 'DHCP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][4]['config']['prefix'] == '104.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][4]['next-hops']['next-hop'][0]['index'] == 'GigabitEthernet6'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][4]['next-hops']['next-hop'][0]['config']['next-hop'] == 'openconfig-local-routing:LOCAL_LINK'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][5]['config']['prefix'] == '105.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][5]['next-hops']['next-hop'][0]['index'] == 'GigabitEthernet8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][5]['next-hops']['next-hop'][0]['interface-ref']['config']['subinterface'] == 10"
+
 
           # The rest of these are for OC
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['name'] == '2'"

@@ -366,7 +366,10 @@ def xe_system_ntp(config_before: dict, config_leftover: dict, if_ip: dict) -> No
                 openconfig_system_ntp["openconfig-system:ntp-keys"]["openconfig-system:ntp-key"].append(key_dict)
 
                 config_leftover["tailf-ned-cisco-ios:ntp"]["authentication-key"].remove(auth_key)
-                config_leftover["tailf-ned-cisco-ios:ntp"]["trusted-key"].remove({"key-number": auth_key["number"]})
+                try:  # trusted-keys can use a starting number, hyphen, and ending number in NED. Skip remove if this is the case.
+                    config_leftover["tailf-ned-cisco-ios:ntp"]["trusted-key"].remove({"key-number": auth_key["number"]})
+                except:
+                    pass
 
     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer") or config_before.get("tailf-ned-cisco-ios:ntp",
                                                                                          {}).get("server"):
@@ -556,44 +559,44 @@ def set_accounting_method(oc_system_aaa_accounting, config_leftover, accounting_
 
     if accounting_dict.get("commands"):
         for i, command in enumerate(accounting_dict.get("commands")):
-            if command["group"]:
-                if command["group"] == 'tacacs+':
+            if command.get("group"):
+                if command.get("group") == 'tacacs+':
                     group = 'TACACS_ALL'
                 else:
-                    group = command["group"]
+                    group = command.get("group")
                 acc_method_list.append(group)
-            if command["group2"] and command["group2"]["group"]:
-                if command["group2"]["group"] == 'tacacs+':
+            if command.get("group2") and command.get("group2", {}).get("group"):
+                if command.get("group2", {}).get("group") == 'tacacs+':
                     group2 = 'TACACS_ALL'
-                elif command["group2"]["group"]:
-                    group2 = command["group2"]["group"]
+                elif command.get("group2", {}).get("group"):
+                    group2 = command.get("group2", {}).get("group")
                 acc_method_list.append(group2)
-            if command["group3"] and command["group3"]["group"]:
-                if command["group2"]["group"] and command["group3"]["group"] == 'tacacs+':
+            if command.get("group3") and command.get("group3", {}).get("group"):
+                if command.get("group2", {}).get("group") and command.get("group3", {}).get("group") == 'tacacs+':
                     group3 = 'TACACS_ALL'
-                elif command["group2"]["group"] and command["group3"]["group"]:
-                    group3 = command["group3"]["group"]
+                elif command.get("group2", {}).get("group") and command.get("group3", {}).get("group"):
+                    group3 = command.get("group3", {}).get("group")
                 acc_method_list.append(group3)
         del config_leftover["tailf-ned-cisco-ios:aaa"]["accounting"]["commands"]
     if accounting_dict.get("exec"):
         for i, exe in enumerate(accounting_dict.get("exec")):
-            if exe["group"]:
-                if exe["group"] == 'tacacs+':
+            if exe.get("group"):
+                if exe.get("group") == 'tacacs+':
                     group = 'TACACS_ALL'
                 else:
-                    group = exe["group"]
+                    group = exe.get("group")
                 acc_method_list.append(group)
-            if exe["group2"] and exe["group2"]["group"]:
-                if exe["group2"]["group"] == 'tacacs+':
+            if exe.get("group2") and exe.get("group2", {}).get("group"):
+                if exe.get("group2", {}).get("group") == 'tacacs+':
                     group2 = 'TACACS_ALL'
-                elif exe["group2"]["group"]:
-                    group2 = exe["group2"]["group"]
+                elif exe.get("group2", {}).get("group"):
+                    group2 = exe.get("group2", {}).get("group")
                 acc_method_list.append(group2)
-            if exe["group3"] and exe["group3"]["group"]:
-                if exe["group2"]["group"] and exe["group3"]["group"] == 'tacacs+':
+            if exe.get("group3") and exe.get("group3", {}).get("group"):
+                if exe.get("group2", {}).get("group") and exe.get("group3", {}).get("group") == 'tacacs+':
                     group3 = 'TACACS_ALL'
-                elif exe["group2"]["group"] and exe["group3"]["group"]:
-                    group3 = exe["group3"]["group"]
+                elif exe.get("group2", {}).get("group") and exe.get("group3", {}).get("group"):
+                    group3 = exe.get("group3", {}).get("group")
                 acc_method_list.append(group3)
         del config_leftover["tailf-ned-cisco-ios:aaa"]["accounting"]["exec"]
     
@@ -605,11 +608,11 @@ def set_accounting_event(oc_system_aaa_accounting, config_leftover, accounting_d
     # AAA ACCOUNTING EVENT-TYPE AND RECORD
     if accounting_dict.get("commands"):
         for key in accounting_dict.get("commands"):
-            if key["level"] == 15 and key["name"] == 'default':
+            if key.get("level") == 15 and key.get("name") == 'default':
                 event_type = 'AAA_ACCOUNTING_EVENT_COMMAND'
-                if key["action-type"] == 'stop-only':
+                if key.get("action-type") == 'stop-only':
                     action = 'STOP'
-                elif key["action-type"] == 'start-stop':
+                elif key.get("action-type") == 'start-stop':
                     action = "START_STOP"
                 temp_event = {"openconfig-system:event-type": f'{event_type}',
                             "openconfig-system:config": {
@@ -619,11 +622,11 @@ def set_accounting_event(oc_system_aaa_accounting, config_leftover, accounting_d
                 acc_event_list.append(temp_event)
     if accounting_dict.get("exec"):
         for key in accounting_dict.get("exec"):
-            if key["name"] == 'default':
+            if key.get("name") == 'default':
                 event_type = 'AAA_ACCOUNTING_EVENT_LOGIN'
-                if key["action-type"] == 'stop-only':
+                if key.get("action-type") == 'stop-only':
                     action = 'STOP'
-                elif key["action-type"] == 'start-stop':
+                elif key.get("action-type") == 'start-stop':
                     action = "START_STOP"
                 temp_event = {"openconfig-system:event-type": f'{event_type}',
                             "openconfig-system:config": {
@@ -640,7 +643,7 @@ def set_authorization_event(oc_system_aaa_authorization, config_leftover, author
     # AAA AUTHORIZATION EVENT-TYPE AND RECORD
     if authorization_dict.get("commands"):
         for key in authorization_dict.get("commands"):
-            if key["level"] == 15 and key["name"] == 'default':
+            if key.get("level") == 15 and key.get("name") == 'default':
                 event_type = 'AAA_AUTHORIZATION_EVENT_COMMAND'
                 temp_event = {"openconfig-system:event-type": f'{event_type}',
                             "openconfig-system:config": {
@@ -650,7 +653,7 @@ def set_authorization_event(oc_system_aaa_authorization, config_leftover, author
         del config_leftover["tailf-ned-cisco-ios:aaa"]["authorization"]["commands"]
     if authorization_dict.get("exec"):
         for key in authorization_dict.get("exec"):
-            if key["name"] == 'default':
+            if key.get("name") == 'default':
                 event_type = 'AAA_AUTHORIZATION_EVENT_CONFIG'
                 temp_event = {"openconfig-system:event-type": f'{event_type}',
                             "openconfig-system:config": {
@@ -669,57 +672,56 @@ def set_authorization_method(oc_system_aaa_authorization, config_leftover, autho
 
     if authorization_dict.get("commands"):
         for i, command in enumerate(authorization_dict.get("commands")):
-            if command["tacacsplus"]:
+            if command.get("tacacsplus"):
                 group = 'TACACS_ALL'
             autho_method_list.append(group)
-            if command["local"]:
+            if command.get("local"):
                 group = 'LOCAL'
             autho_method_list.append(group)
-            if command["group"]:
-                if command["group"] == 'tacacs+':
+            if command.get("group"):
+                if command.get("group") == 'tacacs+':
                     group = 'TACACS_ALL'
                 else:
-                    group = command["group"]
+                    group = command.get("group")
                 autho_method_list.append(group)
-            if command["group2"] and command["group2"]["group"]:
-                if command["group2"]["group"] == 'tacacs+':
+            if command.get("group2") and command.get("group2", {}).get("group"):
+                if command.get("group2", {}).get("group") == 'tacacs+':
                     group2 = 'TACACS_ALL'
-                elif command["group2"]["group"]:
-                    group2 = command["group2"]["group"]
+                elif command.get("group2", {}).get("group"):
+                    group2 = command.get("group2", {}).get("group")
                 autho_method_list.append(group2)
-            if command["group3"] and command["group3"]["group"]:
-                if command["group2"]["group"] and command["group3"]["group"] == 'tacacs+':
+            if command.get("group3") and command.get("group3", {}).get("group"):
+                if command.get("group2", {}).get("group") and command.get("group3", {}).get("group") == 'tacacs+':
                     group3 = 'TACACS_ALL'
-                elif command["group2"]["group"] and command["group3"]["group"]:
-                    group3 = command["group3"]["group"]
+                elif command.get("group2", {}).get("group") and command.get("group3", {}).get("group"):
+                    group3 = command.get("group3", {}).get("group")
                 autho_method_list.append(group3)
     if authorization_dict.get("exec"):
         for i, exe in enumerate(authorization_dict.get("exec")):
-            if exe["tacacsplus"]:
+            if exe.get("tacacsplus"):
                 group = 'TACACS_ALL'
             autho_method_list.append(group)
-            if exe["local"]:
+            if exe.get("local"):
                 group = 'LOCAL'
             autho_method_list.append(group)
-            if exe["group"]:
-                if exe["group"] == 'tacacs+':
+            if exe.get("group"):
+                if exe.get("group") == 'tacacs+':
                     group = 'TACACS_ALL'
                 else:
-                    group = exe["group"]
+                    group = exe.get("group")
                 autho_method_list.append(group)
-            if exe["group2"] and exe["group2"]["group"]:
-                if exe["group2"]["group"] == 'tacacs+':
+            if exe.get("group2") and exe.get("group2", {}).get("group"):
+                if exe.get("group2", {}).get("group") == 'tacacs+':
                     group2 = 'TACACS_ALL'
-                elif exe["group2"]["group"]:
-                    group2 = exe["group2"]["group"]
+                elif exe.get("group2", {}).get("group"):
+                    group2 = exe.get("group2", {}).get("group")
                 autho_method_list.append(group2)
-            if exe["group3"] and exe["group3"]["group"]:
-                if exe["group2"]["group"] and exe["group3"]["group"] == 'tacacs+':
+            if exe.get("group3") and exe.get("group3", {}).get("group"):
+                if exe.get("group2", {}).get("group") and exe.get("group3", {}).get("group") == 'tacacs+':
                     group3 = 'TACACS_ALL'
-                elif exe["group2"]["group"] and exe["group3"]["group"]:
-                    group3 = exe["group3"]["group"]
+                elif exe.get("group2", {}).get("group") and exe.get("group3", {}).get("group"):
+                    group3 = exe.get("group3", {}).get("group")
                 autho_method_list.append(group3)
-    
     return autho_method
 
 def set_authentication_method(oc_system_aaa_authentication, config_leftover, authentication_dict):
@@ -731,29 +733,29 @@ def set_authentication_method(oc_system_aaa_authentication, config_leftover, aut
     if authentication_dict:
         if authentication_dict.get("login"):
             for i, login in enumerate(authentication_dict.get("login")):
-                if login["local"]:
+                if login.get("local"):
                     group = 'LOCAL'
                 authe_method_list.append(group)
-                if login["tacacsplus"]:
+                if login.get("tacacsplus"):
                     group = 'TACACS_ALL'
                 authe_method_list.append(group)
-                if login["group"]:
-                    if login["group"] == 'tacacs+':
+                if login.get("group"):
+                    if login.get("group") == 'tacacs+':
                         group = 'TACACS_ALL'
                     else:
-                        group = login["group"]
+                        group = login.get("group")
                     authe_method_list.append(group)
-                if login["group2"] and login["group2"]["group"]:
-                    if login["group2"]["group"] == 'tacacs+':
+                if login.get("group2") and login.get("group2", {}).get("group"):
+                    if login.get("group2", {}).get("group") == 'tacacs+':
                         group2 = 'TACACS_ALL'
-                    elif login["group2"]["group"]:
-                        group2 = login["group2"]["group"]
+                    elif login.get("group2", {}).get("group"):
+                        group2 = login.get("group2", {}).get("group")
                     authe_method_list.append(group2)
-                if login["group3"] and login["group3"]["group"]:
-                    if login["group2"]["group"] and login["group3"]["group"] == 'tacacs+':
+                if login.get("group3") and login.get("group3", {}).get("group"):
+                    if login.get("group2", {}).get("group") and login.get("group3", {}).get("group") == 'tacacs+':
                         group3 = 'TACACS_ALL'
-                    elif login["group2"]["group"] and login["group3"]["group"]:
-                        group3 = login["group3"]["group"]
+                    elif login.get("group2", {}).get("group") and login.get("group3", {}).get("group"):
+                        group3 = login.get("group3", {}).get("group")
                     authe_method_list.append(group3)
             del config_leftover["tailf-ned-cisco-ios:aaa"]["authentication"]["login"]
 
@@ -837,9 +839,9 @@ if __name__ == "__main__":
 
     (config_before_dict, config_leftover_dict, interface_ip_dict) = common_xe.init_xe_configs()
     main(config_before_dict, config_leftover_dict, interface_ip_dict)
-    config_name = "configuration"
-    config_remaining_name = "configuration_remaining"
-    oc_name = "openconfig_system"
+    config_name = "_system"
+    config_remaining_name = "_remaining_system"
+    oc_name = "_openconfig_system"
     common.print_and_test_configs("xe1", config_before_dict, config_leftover_dict, openconfig_system, 
         config_name, config_remaining_name, oc_name, system_notes)
 else:

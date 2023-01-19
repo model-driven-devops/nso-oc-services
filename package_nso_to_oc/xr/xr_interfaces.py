@@ -357,17 +357,23 @@ def xr_configure_tunnel_ipv4_interface(nso_before_interface: dict, nso_leftover_
 def configure_software_loopback(config_before: dict, config_leftover: dict, interface_data: dict) -> None:
     """Configure Loopbacks"""
     for interface_directory in interface_data.values():
+        path_oc_sub_if = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
+                          interface_directory["oc_interface_index"], "openconfig-interfaces:subinterfaces",
+                          "openconfig-interfaces:subinterface", interface_directory["oc_sub_interface_place_counter"]]
         path_oc = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
-                   interface_directory["oc_interface_index"], "openconfig-interfaces:subinterfaces",
-                   "openconfig-interfaces:subinterface", interface_directory["oc_sub_interface_place_counter"]]
+                   interface_directory["oc_interface_index"]]
         path_nso = ["tailf-ned-cisco-ios-xr:interface", interface_directory["nso_interface_type"],
                     interface_directory["nso_interface_index"]]
+        openconfig_interface_sub_if = return_nested_dict(openconfig_interfaces, path_oc_sub_if)
         openconfig_interface = return_nested_dict(openconfig_interfaces, path_oc)
         nso_before_interface = return_nested_dict(config_before, path_nso)
         nso_leftover_interface = return_nested_dict(config_leftover, path_nso)
 
+        # Main Interface
         xr_interface_config(nso_before_interface, nso_leftover_interface, openconfig_interface)
-        xr_configure_ipv4_interface(nso_before_interface, nso_leftover_interface, openconfig_interface)
+        # Sub Interface
+        xr_interface_config(nso_before_interface, nso_leftover_interface, openconfig_interface_sub_if)
+        xr_configure_ipv4_interface(nso_before_interface, nso_leftover_interface, openconfig_interface_sub_if)
 
 
 def configure_software_l3ipvlan(config_before: dict, config_leftover: dict, interface_data: dict) -> None:
@@ -789,9 +795,9 @@ if __name__ == "__main__":
 
     (config_before_dict, config_leftover_dict) = common_xr.init_xr_configs()
     main(config_before_dict, config_leftover_dict)
-    config_name = "ned_configuration_interfaces"
-    config_remaining_name = "ned_configuration_remaining_interfaces"
-    oc_name = "openconfig_interfaces"
+    config_name = "_interfaces"
+    config_remaining_name = "_remaining_interfaces"
+    oc_name = "_openconfig_interfaces"
     common.print_and_test_configs(
         "xr1", config_before_dict, config_leftover_dict, openconfig_interfaces,
         config_name, config_remaining_name, oc_name, interfaces_notes)

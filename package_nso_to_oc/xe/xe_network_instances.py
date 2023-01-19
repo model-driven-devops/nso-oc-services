@@ -40,7 +40,6 @@ openconfig_network_instances = {
     }
 }
 
-
 def xe_network_instances(config_before: dict, config_leftover: dict) -> None:
     """
     Translates NSO XE NED to MDD OpenConfig Network Instances
@@ -70,7 +69,8 @@ def xe_network_instances(config_before: dict, config_leftover: dict) -> None:
                 "openconfig-network-instance:network-instance"].append(temp_vrf)
 
     interfaces_by_vrf = get_interfaces_by_vrf(config_before)
-    configure_network_instances(config_before, config_leftover, interfaces_by_vrf)
+    route_forwarding_list_by_vrf = get_route_forwarding_list_by_vrf(config_before)
+    configure_network_instances(config_before, config_leftover, interfaces_by_vrf, route_forwarding_list_by_vrf)
 
 def get_interfaces_by_vrf(config_before):
     interfaces_by_vrf = {}
@@ -102,7 +102,27 @@ def get_interfaces_by_vrf(config_before):
 
     return interfaces_by_vrf
 
-def configure_network_instances(config_before, config_leftover, interfaces_by_vrf):
+def get_route_forwarding_list_by_vrf(config_before):
+    route_forwarding_list_by_vrf = {}
+    ip_obj = config_before.get("tailf-ned-cisco-ios:ip", {"route": {}}).get("route", {})
+
+    route_forwarding_list_by_vrf["default"] = {
+        common_xe.IP_FORWARDING_LIST: copy.deepcopy(ip_obj.get(common_xe.IP_FORWARDING_LIST, [])),
+        common_xe.INTF_LIST: copy.deepcopy(ip_obj.get(common_xe.INTF_LIST, [])),
+        common_xe.IP_INTF_FORWARDING_LIST: copy.deepcopy(ip_obj.get(common_xe.IP_INTF_FORWARDING_LIST, []))
+    }
+
+    for index, vrf in enumerate(ip_obj.get("vrf", [])):
+        route_forwarding_list_by_vrf[vrf["name"]] = {
+            "vrf-index": index,
+            common_xe.IP_FORWARDING_LIST: copy.deepcopy(vrf.get(common_xe.IP_FORWARDING_LIST, [])),
+            common_xe.INTF_LIST: copy.deepcopy(vrf.get(common_xe.INTF_LIST, [])),
+            common_xe.IP_INTF_FORWARDING_LIST: copy.deepcopy(vrf.get(common_xe.IP_INTF_FORWARDING_LIST, []))
+        }
+
+    return route_forwarding_list_by_vrf
+
+def configure_network_instances(config_before, config_leftover, interfaces_by_vrf, route_forwarding_list_by_vrf):
     for net_inst in openconfig_network_instances["openconfig-network-instance:network-instances"][
         "openconfig-network-instance:network-instance"]:
         configure_network_interfaces(net_inst, interfaces_by_vrf)
@@ -110,21 +130,28 @@ def configure_network_instances(config_before, config_leftover, interfaces_by_vr
         if len(interfaces_by_vrf.get(net_inst["openconfig-network-instance:name"], [])) > 0:
             vrf_interfaces = interfaces_by_vrf.get(net_inst["openconfig-network-instance:name"])
             xe_ospfv2.configure_xe_ospf(net_inst, vrf_interfaces, config_before, config_leftover)
+        if len(route_forwarding_list_by_vrf.get(net_inst["openconfig-network-instance:name"], [])) > 0:
+            vrf_forwarding_list = route_forwarding_list_by_vrf.get(net_inst["openconfig-network-instance:name"])
+            xe_static_route.configure_xe_static_routes(net_inst, vrf_forwarding_list, config_leftover, network_instances_notes)
 
 def configure_network_interfaces(net_inst, interfaces_by_vrf):
     for interface in interfaces_by_vrf.get(net_inst["openconfig-network-instance:name"], []):
         name_split = interface["name"].split(".")
         primary_interface = name_split[0]
-        subinterface = '0' if len(name_split) == 1 else name_split[1]
-
-        net_inst["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"].append({
+        new_interface = {
             "openconfig-network-instance:id": interface["type"] + interface["name"],
             "openconfig-network-instance:config": {
                 "openconfig-network-instance:id": interface["type"] + interface["name"],
-                "openconfig-network-instance:interface": interface["type"] + primary_interface,
-                "openconfig-network-instance:subinterface": subinterface,
+                "openconfig-network-instance:interface": interface["type"] + primary_interface
             }
-        })
+        }
+
+        if (interface["type"] != "Tunnel"):
+            subinterface = '0' if len(name_split) == 1 else name_split[1]
+            new_interface["openconfig-network-instance:config"]["openconfig-network-instance:subinterface"] = subinterface
+
+        net_inst["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"].append(new_interface)
+
 
 def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
     """
@@ -154,17 +181,19 @@ if __name__ == "__main__":
     if (find_spec("package_nso_to_oc") is not None):
         from package_nso_to_oc.xe import common_xe
         from package_nso_to_oc.xe import xe_ospfv2
+        from package_nso_to_oc.xe import xe_static_route
         from package_nso_to_oc import common
     else:
         import common_xe
         import xe_ospfv2
+        import xe_static_route
         import common
 
     (config_before_dict, config_leftover_dict, interface_ip_dict) = common_xe.init_xe_configs()
     main(config_before_dict, config_leftover_dict)
-    config_name = "ned_configuration_network_instances"
-    config_remaining_name = "ned_configuration_remaining_network_instances"
-    oc_name = "openconfig_network_instances"
+    config_name = "_network_instances"
+    config_remaining_name = "_remaining_network_instances"
+    oc_name = "_openconfig_network_instances"
     common.print_and_test_configs(
         "xe1", config_before_dict, config_leftover_dict, openconfig_network_instances, 
         config_name, config_remaining_name, oc_name, network_instances_notes)
@@ -173,8 +202,10 @@ else:
     if (find_spec("package_nso_to_oc") is not None):
         from package_nso_to_oc.xe import common_xe
         from package_nso_to_oc.xe import xe_ospfv2
+        from package_nso_to_oc.xe import xe_static_route
         from package_nso_to_oc import common
     else:
         from xe import common_xe
         from xe import xe_ospfv2
+        from xe import xe_static_route
         import common

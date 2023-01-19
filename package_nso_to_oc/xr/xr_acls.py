@@ -61,7 +61,8 @@ def xr_acls(config_before, config_after):
     acl_interfaces = {}
 
     for ext_index, ext_acl in enumerate(access_list.get("named-acl", [])):
-        extended_acl = ExtendedAcl(oc_acl_set, ext_acl["rule"], ext_acl["name"], access_list_after["named-acl"][ext_index])
+        extended_acl = ExtendedAcl(oc_acl_set, ext_acl["rule"], ext_acl["name"],
+                                   access_list_after["named-acl"][ext_index])
         extended_acl.process_acl()
         process_interfaces(ACL_EXT_TYPE, ext_acl["name"], interfaces_by_acl, acl_interfaces)
 
@@ -85,9 +86,9 @@ class BaseAcl:
             "openconfig-acl:name": self._xr_acl_name,
             "openconfig-acl:type": self._acl_type,
             "openconfig-acl:config": {
-                "openconfig-acl:name":  self._xr_acl_name,
+                "openconfig-acl:name": self._xr_acl_name,
                 "openconfig-acl:type": self._acl_type,
-                "openconfig-acl:description":  self._xr_acl_name,  # XR doesn't seem to have a description.
+                "openconfig-acl:description": self._xr_acl_name,  # XR doesn't seem to have a description.
             },
             "openconfig-acl:acl-entries": {
                 "openconfig-acl:acl-entry": []
@@ -111,7 +112,7 @@ class BaseAcl:
 
     def __set_rule_parts(self, access_rule, acl_set):
         rule_parts = access_rule.get("line", "").split()
-        
+
         if len(rule_parts) < 1:
             return
 
@@ -155,7 +156,8 @@ class BaseAcl:
     def __set_protocol(self, entry, rule_parts):
         if rule_parts[1] != 'ipv4':
             if not rule_parts[1] in protocols_oc_to_xr:
-                self.__add_acl_entry_note(" ".join(rule_parts), f"protocol {rule_parts[1]} does not exist in expected list of protocols")
+                self.__add_acl_entry_note(" ".join(rule_parts),
+                                          f"protocol {rule_parts[1]} does not exist in expected list of protocols")
                 self.acl_success = False
                 raise ValueError
             self.__get_ipv4_config(entry)["openconfig-acl:protocol"] = protocols_oc_to_xr[rule_parts[1]]
@@ -203,17 +205,26 @@ class BaseAcl:
             if is_source:
                 self.__get_ipv4_config(entry)[self._src_addr_key] = f"{rule_parts[current_index + 1]}/32"
             else:
-                self.__get_ipv4_config(entry)["openconfig-acl:destination-address"] = f"{rule_parts[current_index + 1]}/32"
+                self.__get_ipv4_config(entry)[
+                    "openconfig-acl:destination-address"] = f"{rule_parts[current_index + 1]}/32"
 
             return current_index + 2
 
         hostmask = rule_parts[current_index + 1]
         temp_ip = IPv4Network((0, hostmask))
 
-        if is_source:
-            self.__get_ipv4_config(entry)[self._src_addr_key] = f"{ip}/{temp_ip.prefixlen}"
+        # 0.0.0.0 and 255.255.255.255 are wrong using IPv4Network.prefixlen()
+        if hostmask == "0.0.0.0":
+            prefixlen = "32"
+        elif hostmask == "255.255.255.255":
+            prefixlen = "0"
         else:
-            self.__get_ipv4_config(entry)["openconfig-acl:destination-address"] = f"{ip}/{temp_ip.prefixlen}"
+            prefixlen = temp_ip.prefixlen
+
+        if is_source:
+            self.__get_ipv4_config(entry)[self._src_addr_key] = f"{ip}/{prefixlen}"
+        else:
+            self.__get_ipv4_config(entry)["openconfig-acl:destination-address"] = f"{ip}/{prefixlen}"
 
         return current_index + 2
 
@@ -232,10 +243,14 @@ class BaseAcl:
 
         try:
             current_port = current_port if current_port.isdigit() else socket.getservbyname(current_port)
-        except Exception as err:
-            self.__add_acl_entry_note(" ".join(rule_parts), f"Unable to convert service {current_port} to a port number")
-            self.acl_success = False
-            raise Exception
+        except OSError:
+            try:
+                current_port = common.port_name_number_mapping[current_port]
+            except Exception as err:
+                self.__add_acl_entry_note(" ".join(rule_parts),
+                                          f"Unable to convert service {current_port} to a port number")
+                self.acl_success = False
+                raise Exception
 
         if rule_parts[current_index] == "range":
             end_port = rule_parts[current_index + 2]
@@ -256,14 +271,16 @@ class BaseAcl:
             if is_source:
                 self.__get_transport_config(entry)["openconfig-acl:source-port"] = f"{int(current_port) + 1}..65535"
             else:
-                self.__get_transport_config(entry)["openconfig-acl:destination-port"] = f"{int(current_port) + 1}..65535"
+                self.__get_transport_config(entry)[
+                    "openconfig-acl:destination-port"] = f"{int(current_port) + 1}..65535"
         elif rule_parts[current_index] == "eq":
             if is_source:
                 self.__get_transport_config(entry)["openconfig-acl:source-port"] = int(current_port)
             else:
                 self.__get_transport_config(entry)["openconfig-acl:destination-port"] = int(current_port)
         elif rule_parts[current_index] == "neq":
-            self.__add_acl_entry_note(" ".join(rule_parts), "XR ACL use of 'neq' port operator does not have an OC equivalent.")
+            self.__add_acl_entry_note(" ".join(rule_parts),
+                                      "XR ACL use of 'neq' port operator does not have an OC equivalent.")
             self.acl_success = False
             raise ValueError
 
@@ -311,7 +328,8 @@ def get_interfaces_by_acl(config_before, config_after):
             interface_type = "Port-channel"
 
         for index, interface in enumerate(interface_list):
-            if not "ipv4" in interface or not "access-group" in interface["ipv4"] or len(interface["ipv4"]["access-group"]) < 1:
+            if not "ipv4" in interface or not "access-group" in interface["ipv4"] or len(
+                    interface["ipv4"]["access-group"]) < 1:
                 continue
 
             intf_id = f"{interface_type}{interface['id']}"
@@ -427,11 +445,11 @@ def check_default_profile_for_all_vty_lines(config_before) -> bool:
     """return True if default profile contains all vty-lines"""
     if not config_before.get("tailf-ned-cisco-ios-xr:vty-pool") or (
             len(config_before.get("tailf-ned-cisco-ios-xr:vty-pool")) == 1 and config_before.get(
-            "tailf-ned-cisco-ios-xr:vty-pool").get("default")):
+        "tailf-ned-cisco-ios-xr:vty-pool").get("default")):
         return True
     elif config_before.get("tailf-ned-cisco-ios-xr:vty-pool", {}).get("default", {}).get(
             "first-vty") == 0 and config_before.get("tailf-ned-cisco-ios-xr:vty-pool", {}).get("default").get(
-            "first-vty") == 99:
+        "first-vty") == 99:
         return True
     else:
         return False
@@ -463,9 +481,9 @@ def process_line(config_before, config_after):
                             "openconfig-acl-ext:ingress-acl-set": [
                                 {"openconfig-acl-ext:ingress-acl-set-name": line_item.get("access-class").get(
                                     "ingress"),
-                                 "openconfig-acl-ext:config": {
-                                     "openconfig-acl-ext:ingress-acl-set-name": line_item.get("access-class").get(
-                                         "ingress")}}]}})
+                                    "openconfig-acl-ext:config": {
+                                        "openconfig-acl-ext:ingress-acl-set-name": line_item.get("access-class").get(
+                                            "ingress")}}]}})
                     config_after["tailf-ned-cisco-ios-xr:line"]["default"]["access-class"]["ingress"] = None
                 if line_item.get("access-class").get("egress"):
                     acl_lines.append({
@@ -473,7 +491,7 @@ def process_line(config_before, config_after):
                         "openconfig-acl-ext:config": {
                             "openconfig-acl-ext:id": "vty 0 99"},
                         "openconfig-acl-ext:egress-acl-set": line_item.get("access-class").get("egress")
-                        })
+                    })
                     config_after["tailf-ned-cisco-ios-xr:line"]["default"]["access-class"]["egress"] = None
 
 
@@ -512,9 +530,9 @@ if __name__ == "__main__":
 
     (config_before_dict, config_leftover_dict) = common_xr.init_xr_configs()
     main(config_before_dict, config_leftover_dict)
-    config_name = "ned_configuration_acls"
-    config_remaining_name = "ned_configuration_remaining_acls"
-    oc_name = "openconfig_acls"
+    config_name = "_acls"
+    config_remaining_name = "_remaining_acls"
+    oc_name = "_openconfig_acls"
     common.print_and_test_configs(
         "xr1", config_before_dict, config_leftover_dict, openconfig_acls,
         config_name, config_remaining_name, oc_name, acls_notes)

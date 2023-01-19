@@ -53,22 +53,49 @@ ACL_STD_TYPE = "ACL_IPV4_STANDARD"
 ACL_EXT_TYPE = "ACL_IPV4"
 
 
+def acls_note_add(note):
+    acls_notes.append(note)
+
+
 def xe_acls(config_before, config_after):
     oc_acl_set = openconfig_acls["openconfig-acl:acl"]["openconfig-acl:acl-sets"]["openconfig-acl:acl-set"]
     oc_acl_interface = openconfig_acls["openconfig-acl:acl"]["openconfig-acl:interfaces"]["openconfig-acl:interface"]
     access_list = config_before.get("tailf-ned-cisco-ios:ip", {}).get("access-list", {})
     access_list_after = config_after.get("tailf-ned-cisco-ios:ip", {}).get("access-list", {})
+    numbered_access_list = config_before.get("tailf-ned-cisco-ios:access-list", {})
+    numbered_access_list_after = config_after.get("tailf-ned-cisco-ios:access-list", {})
     interfaces_by_acl = get_interfaces_by_acl(config_before, config_after)
     acl_interfaces = {}
+    # Numbered ACLs can be under tailf-ned-cisco-ios:ip/tailf-ned-cisco-ios:ip, tailf-ned-cisco-ios:access-list/access-list, or both
+    # Store processes numbered ACLs in numbered_acls_processed
+    numbered_acls_processed = []
 
     for std_index, std_acl in enumerate(access_list.get("standard", {}).get("std-named-acl", [])):
         standard_acl = StandardAcl(oc_acl_set, std_acl, access_list_after["standard"]["std-named-acl"][std_index])
         standard_acl.process_acl()
         process_interfaces(ACL_STD_TYPE, std_acl["name"], interfaces_by_acl, acl_interfaces)
+        if str(std_acl["name"]).isdigit():
+            numbered_acls_processed.append(int(std_acl["name"]))
     for ext_index, ext_acl in enumerate(access_list.get("extended", {}).get("ext-named-acl", [])):
         extended_acl = ExtendedAcl(oc_acl_set, ext_acl, access_list_after["extended"]["ext-named-acl"][ext_index])
         extended_acl.process_acl()
         process_interfaces(ACL_EXT_TYPE, ext_acl["name"], interfaces_by_acl, acl_interfaces)
+        if str(ext_acl["name"]).isdigit():
+            numbered_acls_processed.append(int(ext_acl["name"]))
+    for numbered_index, numbered_acl in enumerate(numbered_access_list.get("access-list", [])):
+        if numbered_acl["id"] not in numbered_acls_processed:
+            if (1 <= numbered_acl["id"] <= 99) or (1300 <=  numbered_acl["id"] <= 1999):
+                # process as standard
+                standard_acl = NumberedStandardAcl(oc_acl_set, numbered_acl, numbered_access_list_after["access-list"][ numbered_index])
+                standard_acl.process_acl()
+            elif (100 <= numbered_acl["id"] <= 199) or (2000 <=  numbered_acl["id"] <= 2699):
+                # process as extended
+                extended_acl = NumberedExtendedAcl(oc_acl_set, numbered_acl, numbered_access_list_after["access-list"][ numbered_index])
+                extended_acl.process_acl()
+            else:
+                acls_note_add(f"""
+                    Access-list Number {numbered_acl["id"]} has not been implemented in MDD OpenConfig
+                """)
     for interface in acl_interfaces.values():
         oc_acl_interface.append(interface)
 
@@ -82,16 +109,18 @@ class BaseAcl:
         self._xe_acl_set = xe_acl_set
         self._xe_acl_set_after = xe_acl_set_after
         self._xe_acl_name = self._xe_acl_set.get("name")
+        self._xe_acl_key = "name"
         self.acl_success = True
+        self.ace_seq_begin = 10
 
     def process_acl(self):
         acl_set = {
-            "openconfig-acl:name": self._xe_acl_set.get("name"),
+            "openconfig-acl:name": str(self._xe_acl_name),
             "openconfig-acl:type": self._acl_type,
             "openconfig-acl:config": {
-                "openconfig-acl:name": self._xe_acl_set.get("name"),
+                "openconfig-acl:name": str(self._xe_acl_name),
                 "openconfig-acl:type": self._acl_type,
-                "openconfig-acl:description": self._xe_acl_set.get("name"),  # XE doesn't seem to have a description.
+                "openconfig-acl:description": str(self._xe_acl_name),  # XE doesn't seem to have a description.
             },
             "openconfig-acl:acl-entries": {
                 "openconfig-acl:acl-entry": []
@@ -101,7 +130,6 @@ class BaseAcl:
 
         for rule_index, access_rule in enumerate(self._xe_acl_set.get(self._rule_list_key, [])):
             rule_success = self.__set_rule_parts(access_rule, acl_set)
-
             if rule_success:
                 self._xe_acl_set_after[self._rule_list_key][rule_index] = None
             else:
@@ -111,7 +139,7 @@ class BaseAcl:
         # We only add the ACL to OpenConfig if all entries processed successfully.
         if self.acl_success:
             self._oc_acl_set.append(acl_set)
-            del self._xe_acl_set_after["name"]
+            del self._xe_acl_set_after[self._xe_acl_key]
 
     def __set_rule_parts(self, access_rule, acl_set):
         rule_parts = access_rule.get("rule", "").split()
@@ -120,30 +148,44 @@ class BaseAcl:
             return
 
         success = True
-        seq_id = int(rule_parts[0])
+        if rule_parts[0].isdigit():  # if isdigit, then has sequence number
+            seq_id = int(rule_parts[0])
+            starting_index = 1
+        else:
+            seq_id = self.ace_seq_begin
+            self.ace_seq_begin += 10
+            starting_index = 0
+        if rule_parts[starting_index] == "remark":
+            acls_note_add(f"""
+                Access-list {self._xe_acl_set.get("id")} sequence number {seq_id} is a remark.
+                ACL remarks are not supported in Openconfig
+                If you want to keep the below remark, you should add it to your source of truth:
+                "{seq_id} {access_rule["rule"]}"
+            """)
+            return success
         entry = {
             "openconfig-acl:sequence-id": seq_id,
             "openconfig-acl:config": {"openconfig-acl:sequence-id": seq_id},
             "openconfig-acl:actions": {
-                "openconfig-acl:config": {"openconfig-acl:forwarding-action": actions_xe_to_oc[rule_parts[1]]}
+                "openconfig-acl:config": {"openconfig-acl:forwarding-action": actions_xe_to_oc[rule_parts[starting_index]]}
             }
         }
 
         try:
-            current_index = self.__set_protocol(entry, rule_parts)
+            current_index = self.__set_protocol(entry, rule_parts, starting_index)
             # Source IP
-            current_index = self.__set_ip_and_port(rule_parts, current_index, entry, True)
+            current_index = self.__set_ip_and_port(rule_parts, current_index, entry, True, starting_index)
             if self._acl_type == "ACL_IPV4":
                 # Destination IP (if exists)
-                current_index = self.__set_ip_and_port(rule_parts, current_index, entry, False)
+                current_index = self.__set_ip_and_port(rule_parts, current_index, entry, False, starting_index)
+            if (len(rule_parts) > current_index and rule_parts[current_index] == "log-input") or (
+                    len(rule_parts) > current_index and rule_parts[current_index] == "log"):
+                entry["openconfig-acl:actions"]["openconfig-acl:config"]["openconfig-acl:log-action"] = "LOG_SYSLOG"
+            else:
+                entry["openconfig-acl:actions"]["openconfig-acl:config"]["openconfig-acl:log-action"] = "LOG_NONE"
+
         except Exception as err:
             success = False
-
-        if (len(rule_parts) > current_index and rule_parts[current_index] == "log-input") or (
-                len(rule_parts) > current_index and rule_parts[current_index] == "log"):
-            entry["openconfig-acl:actions"]["openconfig-acl:config"]["openconfig-acl:log-action"] = "LOG_SYSLOG"
-        else:
-            entry["openconfig-acl:actions"]["openconfig-acl:config"]["openconfig-acl:log-action"] = "LOG_NONE"
 
         if success:
             acl_set["openconfig-acl:acl-entries"]["openconfig-acl:acl-entry"].append(entry)
@@ -157,18 +199,18 @@ class BaseAcl:
             {note} 
         """)
 
-    def __set_protocol(self, entry, rule_parts):
+    def __set_protocol(self, entry, rule_parts, index):
         if self._acl_type == "ACL_IPV4_STANDARD":
-            return 2
-        if rule_parts[2] != 'ip':
-            if not rule_parts[2] in protocols_oc_to_xe:
+            return index + 1
+        if rule_parts[index + 1] != 'ip':
+            if not rule_parts[index + 1] in protocols_oc_to_xe:
                 self.__add_acl_entry_note(" ".join(rule_parts),
-                                          f"protocol {rule_parts[2]} does not exist in expected list of protocols")
+                                          f"protocol {rule_parts[index + 1]} does not exist in expected list of protocols")
                 self.acl_success = False
                 raise ValueError
-            self.__get_ipv4_config(entry)["openconfig-acl:protocol"] = protocols_oc_to_xe[rule_parts[2]]
+            self.__get_ipv4_config(entry)["openconfig-acl:protocol"] = protocols_oc_to_xe[rule_parts[index + 1]]
 
-        return 3
+        return index + 2
 
     def __get_ipv4_config(self, entry):
         if not self._ipv4_key in entry:
@@ -186,13 +228,13 @@ class BaseAcl:
 
         return entry["openconfig-acl:transport"]["openconfig-acl:config"]
 
-    def __set_ip_and_port(self, rule_parts, current_index, entry, is_source):
+    def __set_ip_and_port(self, rule_parts, current_index, entry, is_source, index):
         if len(rule_parts) <= current_index:
             return current_index
 
         current_index = self.__set_ip_and_network(rule_parts, current_index, entry, is_source)
 
-        if rule_parts[2] == "tcp" or rule_parts[2] == "udp":
+        if rule_parts[index + 1] == "tcp" or rule_parts[index + 1] == "udp":
             current_index = self.__set_port(rule_parts, current_index, entry, is_source)
 
         return current_index
@@ -215,14 +257,30 @@ class BaseAcl:
                     "openconfig-acl:destination-address"] = f"{rule_parts[current_index + 1]}/32"
 
             return current_index + 2
+        elif (rule_parts[0].isdigit() and len(rule_parts) == 3) \
+                or (rule_parts[0].isdigit() and len(rule_parts) == 4 and rule_parts[-1] == "log") \
+                or (rule_parts[0].isdigit() and len(rule_parts) == 4 and rule_parts[-1] == "log-input") \
+                or len(rule_parts) == 2 \
+                or (len(rule_parts) == 3 and rule_parts[-1] == "log") \
+                or (len(rule_parts) == 3 and rule_parts[-1] == "log-input"):
+            self.__get_ipv4_config(entry)[self._src_addr_key] = f"{ip}/32"
 
+            return current_index + 1
         hostmask = rule_parts[current_index + 1]
         temp_ip = IPv4Network((0, hostmask))
 
-        if is_source:
-            self.__get_ipv4_config(entry)[self._src_addr_key] = f"{ip}/{temp_ip.prefixlen}"
+        # 0.0.0.0 and 255.255.255.255 are wrong using IPv4Network.prefixlen()
+        if hostmask == "0.0.0.0":
+            prefixlen = "32"
+        elif hostmask == "255.255.255.255":
+            prefixlen = "0"
         else:
-            self.__get_ipv4_config(entry)["openconfig-acl:destination-address"] = f"{ip}/{temp_ip.prefixlen}"
+            prefixlen =temp_ip.prefixlen
+
+        if is_source:
+            self.__get_ipv4_config(entry)[self._src_addr_key] = f"{ip}/{prefixlen}"
+        else:
+            self.__get_ipv4_config(entry)["openconfig-acl:destination-address"] = f"{ip}/{prefixlen}"
 
         return current_index + 2
 
@@ -241,11 +299,14 @@ class BaseAcl:
 
         try:
             current_port = current_port if current_port.isdigit() else socket.getservbyname(current_port)
-        except Exception as err:
-            self.__add_acl_entry_note(" ".join(rule_parts),
-                                      f"Unable to convert service {current_port} to a port number")
-            self.acl_success = False
-            raise Exception
+        except OSError:
+            try:
+                current_port = common.port_name_number_mapping[current_port]
+            except Exception as err:
+                self.__add_acl_entry_note(" ".join(rule_parts),
+                                          f"Unable to convert service {current_port} to a port number")
+                self.acl_success = False
+                raise Exception
 
         if rule_parts[current_index] == "range":
             end_port = rule_parts[current_index + 2]
@@ -318,6 +379,30 @@ class ExtendedAcl(BaseAcl):
         self._src_addr_key = "openconfig-acl:source-address"
 
 
+class NumberedStandardAcl(BaseAcl):
+    def __init__(self, oc_acl_set, xe_acl_set, xe_acl_set_after):
+        super(NumberedStandardAcl, self).__init__(oc_acl_set, xe_acl_set, xe_acl_set_after)
+        self._xe_acl_name = self._xe_acl_set.get("id")
+        self._xe_acl_key = "id"
+        self._rule_list_key = "rule"
+        self._acl_type = "ACL_IPV4_STANDARD"
+        self._ipv4_key = "openconfig-acl-ext:ipv4"
+        self._config_key = "openconfig-acl-ext:config"
+        self._src_addr_key = "openconfig-acl-ext:source-address"
+
+
+class NumberedExtendedAcl(BaseAcl):
+    def __init__(self, oc_acl_set, xe_acl_set, xe_acl_set_after):
+        super(NumberedExtendedAcl, self).__init__(oc_acl_set, xe_acl_set, xe_acl_set_after)
+        self._xe_acl_name = self._xe_acl_set.get("id")
+        self._xe_acl_key = "id"
+        self._rule_list_key = "rule"
+        self._acl_type = "ACL_IPV4"
+        self._ipv4_key = "openconfig-acl:ipv4"
+        self._config_key = "openconfig-acl:config"
+        self._src_addr_key = "openconfig-acl:source-address"
+
+
 def get_interfaces_by_acl(config_before, config_after):
     interfaces_by_acl = {}
     interfaces = config_before.get("tailf-ned-cisco-ios:interface", {})
@@ -336,7 +421,7 @@ def get_interfaces_by_acl(config_before, config_after):
                 continue
 
             intf_id = f"{interface_type}{interface['name']}"
-            intf_numb_parts = re.split("[.]", interface["name"])
+            intf_numb_parts = re.split("[.]", str(interface["name"]))
             intf_num = intf_numb_parts[0]
             subintf_num = int(intf_numb_parts[1]) if len(intf_numb_parts) > 1 else 0
 
@@ -517,9 +602,9 @@ if __name__ == "__main__":
 
     (config_before_dict, config_leftover_dict, interface_ip_dict) = common_xe.init_xe_configs()
     main(config_before_dict, config_leftover_dict)
-    config_name = "ned_configuration_acls"
-    config_remaining_name = "ned_configuration_remaining_acls"
-    oc_name = "openconfig_acls"
+    config_name = "_acls"
+    config_remaining_name = "_remaining_acls"
+    oc_name = "_openconfig_acls"
     common.print_and_test_configs(
         "xe1", config_before_dict, config_leftover_dict, openconfig_acls,
         config_name, config_remaining_name, oc_name, acls_notes)

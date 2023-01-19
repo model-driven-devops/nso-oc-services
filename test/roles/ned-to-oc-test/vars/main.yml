@@ -1,0 +1,4 @@
+---
+nso_api_url: "{{ lookup('env', 'NSO_URL') }}"
+nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
+nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"

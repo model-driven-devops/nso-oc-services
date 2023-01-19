@@ -93,7 +93,7 @@ This sequence contains a deny operation, which is not supported in OpenConfig. T
             if not "permit" in seq:
                 continue
 
-            masklength = "exact" if not "le" in seq["permit"] else f'{seq["permit"]["ge"]}..{seq["permit"]["le"]}'
+            masklength = "exact" if not "le" in seq["permit"] else f'{seq["permit"].get("ge", 0)}..{seq["permit"]["le"]}'
             new_prefix = {
                 "openconfig-routing-policy:ip-prefix": seq["permit"].get("ip"),
                 "openconfig-routing-policy:masklength-range": masklength,
@@ -104,15 +104,15 @@ This sequence contains a deny operation, which is not supported in OpenConfig. T
                 }
             }
             prefixes.append(new_prefix)
-            
+
             # Ensure the value we're nullifying does exist
             if common.get_index_or_default(seq_list_after, seq_index, None):
                 seq_list_after[seq_index] = None
-        
+
         if all_processed:
             prefix_sets["openconfig-routing-policy:prefix-sets"]["openconfig-routing-policy:prefix-set"].append(new_prefix_set)
             common.get_index_or_default(xe_prefixes_after, prefix_index, {})["name"] = None
-    
+
     openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:defined-sets"].update(prefix_sets)
 
 def process_as_path_sets(config_before, config_after):
@@ -256,7 +256,6 @@ def process_policy_definitions(config_before, config_after):
     prev_policy_name = ""
 
     for route_map_index, route_map in enumerate(config_before.get("tailf-ned-cisco-ios:route-map", [])):
-        processed = False
 
         if (prev_policy_name != route_map.get("name")):
             prev_policy_name = route_map.get("name")
@@ -267,7 +266,7 @@ def process_policy_definitions(config_before, config_after):
             }
             openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:policy-definitions"][
                 "openconfig-routing-policy:policy-definition"].append(policy_def)
-        
+
         statement = {
             "openconfig-routing-policy:name": route_map["sequence"],
             "openconfig-routing-policy:config": {"openconfig-routing-policy:name": route_map["sequence"]},
@@ -287,11 +286,9 @@ def process_policy_definitions(config_before, config_after):
 
         if "match" in route_map:
             process_match(route_map["match"], statement["openconfig-routing-policy:conditions"])
-            processed = True
         if "set" in route_map:
             process_set(route_map["set"], statement["openconfig-routing-policy:actions"])
-            processed = True
-        if processed and common.get_index_or_default(config_after.get("tailf-ned-cisco-ios:route-map", []), route_map_index, None):
+        if common.get_index_or_default(config_after.get("tailf-ned-cisco-ios:route-map", []), route_map_index, None):
             config_after["tailf-ned-cisco-ios:route-map"][route_map_index] = None
 
 def process_match(route_map_match, conditions):
@@ -411,7 +408,7 @@ def process_set(route_map_set, actions):
         else:
             actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-community"]["openconfig-bgp-policy:config"][
                 "openconfig-bgp-policy:options"] = "REPLACE"
-        
+
         actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-community"].update({
             "openconfig-bgp-policy:inline": {
                 "openconfig-bgp-policy:config": {
@@ -446,7 +443,7 @@ def process_set(route_map_set, actions):
         else:
             actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-ext-community"]["openconfig-bgp-policy:config"][
                 "openconfig-bgp-policy:options"] = "REPLACE"
-        
+
         actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-ext-community"].update({
             "openconfig-bgp-policy:inline": {
                 "openconfig-bgp-policy:config": {
@@ -501,11 +498,11 @@ if __name__ == "__main__":
 
     (config_before_dict, config_leftover_dict, interface_ip_dict) = common_xe.init_xe_configs()
     main(config_before_dict, config_leftover_dict)
-    config_name = "ned_configuration_routing_policies"
-    config_remaining_name = "ned_configuration_remaining_routing_policies"
-    oc_name = "openconfig_routing_policies"
+    config_name = "_routing_policies"
+    config_remaining_name = "_remaining_routing_policies"
+    oc_name = "_openconfig_routing_policies"
     common.print_and_test_configs(
-        "xe1", config_before_dict, config_leftover_dict, openconfig_routing_policies, 
+        "xe1", config_before_dict, config_leftover_dict, openconfig_routing_policies,
         config_name, config_remaining_name, oc_name, routing_policy_notes)
 else:
     # This is needed for now due to top level __init__.py. We need to determine if contents in __init__.py is still necessary.

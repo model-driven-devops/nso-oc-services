@@ -1,0 +1,941 @@
+---
+- hosts: localhost
+  gather_facts: no
+  environment:
+    NSO_DEVICE: xe1
+    DEVICE_OS: xe
+    TEST: True
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+  tasks:
+    - set_fact:
+        ntp_auth_key_1:
+          key-id: 1
+          config:
+            key-id: 1
+            key-type: openconfig-system:NTP_AUTH_MD5
+            key-value: password1
+        ntp_1:
+          address: 10.0.0.1
+          config:
+            address: 10.0.0.1
+            association-type: PEER
+            iburst: true
+            openconfig-system-ext:ntp-auth-key-id: 1
+            port: 123
+            prefer: true
+            version: 4
+        ntp_2:
+          address: 10.0.0.2
+          config:
+            address: 10.0.0.2
+            association-type: PEER
+            iburst: false
+            openconfig-system-ext:ntp-auth-key-id: 2
+            openconfig-system-ext:ntp-use-vrf: abc
+            port: 123
+            prefer: false
+            version: 4
+        ntp_3:
+          address: 10.0.0.3
+          config:
+            address: 10.0.0.3
+            association-type: SERVER
+            iburst: false
+            port: 123
+            prefer: false
+            version: 4
+        ntp_4:
+          address: 10.0.0.4
+          config:
+            address: 10.0.0.4
+            association-type: SERVER
+            iburst: false
+            openconfig-system-ext:ntp-auth-key-id: 1
+            openconfig-system-ext:ntp-source-address: 10.6.0.1
+            port: 123
+            prefer: false
+            version: 3
+        ntp_5:
+          address: 10.0.0.5
+          config:
+            address: 10.0.0.5
+            association-type: SERVER
+            iburst: false
+            openconfig-system-ext:ntp-auth-key-id: 2
+            openconfig-system-ext:ntp-use-vrf: abc
+            port: 123
+            prefer: false
+            version: 4
+    - name: Run all XE tests on xe1 device
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        script_path: ../../../package_nso_to_oc/main.py
+        api_test_data:
+          - name: Init VRF definition
+            tags:
+              - vrf_definition_set_up
+            api_path: config/tailf-ned-cisco-ios:vrf/definition
+            api_method: PATCH
+            content: |
+              definition:
+                - name: 'internal_0'
+                  address-family:
+                    ipv4: {}
+                    ipv6: {}
+                - name: abc
+                  address-family:
+                    ipv4: {}
+                    ipv6: {}
+                - name: xyz
+                  address-family:
+                    ipv4: {}
+                    ipv6: {}          
+
+          - name: NSO configure ACLs
+            tags:
+              - acl_config
+            api_path: config/tailf-ned-cisco-ios:ip/access-list
+            api_method: PATCH
+            content: |
+              access-list:
+                standard:
+                  std-named-acl:
+                    - name: '11'
+                      std-access-list-rule:
+                        - rule: '10 permit 192.0.0.0 0.255.255.255'
+                        - rule: '20 permit 10.0.0.0 0.255.255.255'
+                        - rule: '30 deny any'
+                extended:
+                  ext-named-acl:
+                    - name: 'auto-rp'
+                      ext-access-list-rule:
+                        - rule: '10 permit tcp any host 224.0.1.39 eq pim-auto-rp'
+                        - rule: '20 permit tcp any host 224.0.1.40 eq pim-auto-rp'
+                        - rule: '30 deny ip any any log-input'
+                    - name: 'deny-hosts'
+                      ext-access-list-rule:
+                        - rule: '10 deny tcp host 192.168.1.10 host 10.1.1.1 eq www'
+                        - rule: '20 deny tcp host 192.168.1.10 host 10.1.1.2'
+                        - rule: '30 deny tcp 192.168.1.0 0.0.0.255 10.1.1.0 0.0.0.255'
+                        - rule: '40 deny tcp host 192.168.1.11 any eq www'
+                        - rule: '50 deny tcp host 192.168.1.12 any gt 1024'
+                        - rule: '60 permit ip any any'
+                    - name: 'service-cmd'
+                      ext-access-list-rule:
+                        - rule: '10 permit tcp any eq cmd any'
+                        - rule: '20 permit tcp any any eq cmd'
+                        - rule: '30 deny ip any any log-input'
+                    - name: 'external-ingress'
+                      ext-access-list-rule:
+                        - rule: '10 permit tcp any any eq 22'
+                        - rule: '20 permit tcp any any eq www'
+                        - rule: '30 permit tcp any any range 1024 65535 established'
+                        - rule: '40 deny ip any any log-input'
+
+          - name: NSO configure NTP
+            tags:
+              - ntp_config
+            api_path: config/tailf-ned-cisco-ios:ntp/access-group
+            api_method: PATCH
+            content: |
+              access-group:
+                serve:
+                  access-list: 11
+                peer:
+                  access-list: 11
+
+          - name: Init interfaces
+            tags:
+              - interfaces_set_up
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                Loopback:
+                  - name: '10'
+                    vrf:
+                      forwarding: 'internal_0'
+                    ip:
+                      address:
+                        primary:
+                          address: 10.255.10.1
+                          mask: 255.255.255.255
+                      nat:
+                        inside:
+                          - null
+                  - name: 100
+                    ip:
+                      address:
+                        primary:
+                          address: 10.255.100.1
+                          mask: 255.255.255.255
+                      nat:
+                        outside:
+                          - null
+                GigabitEthernet:
+                  - name: 3
+                    ip:
+                      address:
+                        primary:
+                          address: 10.3.0.2
+                          mask: 255.255.255.0
+                    standby:
+                      standby-list:
+                        - group-number: 3
+                          ip:
+                            address: 10.3.0.110
+                          priority: 200
+                          preempt:
+                            delay:
+                              minimum: 3500
+                          timers:
+                            hello-interval:
+                              seconds: 30
+                            hold-time:
+                              seconds: 100
+                  - name: '5'
+                    description: 'Description for GigabitEthernet5'
+                    ip:
+                      access-group:
+                        - direction: 'out'
+                          access-list: '11'
+                        - direction: 'in'
+                          access-list: 'external-ingress'
+                      address:
+                        primary:
+                          address: '10.5.0.2'
+                          mask: '255.255.255.0'
+                      mtu: 1476
+                      unreachables: false
+                      redirects: false
+                      tcp:
+                        adjust-mss: 1400
+                      proxy-arp: true
+                      mask-reply: 
+                        - null
+                      nat:
+                        inside:
+                          - null
+                    vrrp:
+                      - id: 6
+                        preempt:
+                          delay:
+                            minimum: 10
+                        timers:
+                          advertise:
+                            seconds: 3
+                        ip:
+                          address: 10.5.0.100
+                  - name: '6'
+                    description: 'Description for GigabitEthernet6'
+                    ip:
+                      access-group:
+                        - direction: 'in'
+                          access-list: 'service-cmd'
+                        - direction: 'out'
+                          access-list: 'deny-hosts'
+                      address:
+                        primary:
+                          address: '10.6.0.1'
+                          mask: '255.255.255.0'
+                  - name: '7'
+                    vrf:
+                      forwarding: 'internal_0'
+                    description: 'Description for GigabitEthernet7'
+                    negotiation:
+                      auto: True
+                    mop:
+                      xenabled: False
+                      sysid: False
+                    ip:
+                      address:
+                        primary:
+                          address: '10.250.20.1'
+                          mask: '255.255.255.0'
+                      ospf:
+                        network: 
+                          - 'non-broadcast'
+                        dead-interval:
+                          seconds: 60
+                        hello-interval: 15
+                        retransmit-interval: 10
+                        bfd: {}
+                        cost: 10
+                        priority: 10
+                        authentication:
+                          message-digest: ''
+                        message-digest-key: 
+                          - id: '1'
+                            md5:
+                              type: '0'
+                              secret: 'pass1'
+                          - id: '2'
+                            md5:
+                              type: '7'
+                              secret: '140713181F56'
+                      policy:
+                        route-map: 'TEST'
+                    shutdown: []
+                    carrier-delay:
+                      msec: 10
+                  - name: '7.100'
+                    description: 'Description for GigabitEthernet7.100'
+                    ip:
+                      access-group:
+                        - direction: 'out'
+                          access-list: '11'
+                        - direction: 'in'
+                          access-list: 'deny-hosts'
+                  - name: '7.200'
+                    description: 'Description for GigabitEthernet7.200'
+                    ip:
+                      access-group:
+                        - direction: 'out'
+                          access-list: '11'
+                        - direction: 'in'
+                          access-list: 'deny-hosts'
+                  - name: '8'
+                    vrf:
+                      forwarding: 'internal_0'
+                    description: 'Description for GigabitEthernet8'
+                    negotiation:
+                      auto: True
+                    mop:
+                      xenabled: False
+                      sysid: False
+                    ip:
+                      access-group:
+                        - direction: 'in'
+                          access-list: 'deny-hosts'
+                        - direction: 'out'
+                          access-list: '11'
+                      address:
+                        primary:
+                          address: '10.250.25.1'
+                          mask: '255.255.255.0'
+                      ospf:
+                        network: 
+                          - 'non-broadcast'
+                        dead-interval:
+                          seconds: 60
+                        hello-interval: 15
+                        retransmit-interval: 10
+                        bfd: {}
+                        cost: 10
+                        priority: 10
+                        authentication:
+                          null: ''
+                      policy:
+                        route-map: 'TEST'
+                    shutdown: []
+                    carrier-delay:
+                      msec: 10
+                  - name: '8.10'
+                    description: TESTDESCRIPT
+                    encapsulation:
+                      dot1Q:
+                        vlan-id: 10
+                    ip:
+                      address:
+                        primary:
+                          address: 10.8.10.2
+                          mask: 255.255.255.0
+                      mtu: 1476
+                      unreachables: false
+                      redirects: false
+                      tcp:
+                        adjust-mss: 1400
+                      proxy-arp: true
+                      mask-reply: 
+                        - null
+                      nat:
+                        inside:
+                          - null
+                    vrrp:
+                      - id: 6
+                        preempt:
+                          delay:
+                            minimum: 10
+                        timers:
+                          advertise:
+                            seconds: 3
+                        ip:
+                          address: 10.8.10.100
+                Port-channel:
+                  - name: 10
+                    negotiation:
+                      auto: true
+                    ip:
+                      no-address:
+                        address: true
+                Port-channel-subinterface:
+                  Port-channel:
+                    - name: '10.105'
+                      description: 'Description for Port-Channel10.105'
+                      ip:
+                        access-group:
+                          - direction: 'in'
+                            access-list: 'service-cmd'
+                Tunnel:
+                  - name: '1'
+                    keepalive-period-retries:
+                      keepalive:
+                        period: 5
+                        retries: 3
+                    ip:
+                      address:
+                        primary:
+                          address: 10.254.0.1
+                          mask: 255.255.255.0
+                      tcp:
+                        adjust-mss: 1460
+                      mtu: 1476
+                    tunnel:
+                      source: 10.255.0.1
+                      destination: 192.168.172.1
+                      key: 1
+                      path-mtu-discovery: {}
+                vasileft:
+                  - name: '1'
+                    ip:
+                      address:
+                        primary:
+                          address: 192.168.1.1
+                          mask: 255.255.255.252
+                vasiright:
+                  - name: '1'
+                    ip:
+                      address:
+                        primary:
+                          address: 192.168.2.2
+                          mask: 255.255.255.252  
+
+          - name: NSO configure VTY
+            tags:
+              - vty_config
+            api_path: config/tailf-ned-cisco-ios:line/vty
+            api_method: PATCH
+            content: |
+              vty:
+                - first: 0
+                  last: 4
+                  access-class:
+                    access-list:
+                      - direction: 'in'
+                        access-list: 11
+                        vrf-also: [null]
+                      - direction: 'out'
+                        access-list: 11
+                - first: 5
+                  last: 7
+                  access-class-vrf:
+                    access-class:
+                      - direction: 'in'
+                        access-list: 11
+                        vrfname: 'internal_0'    
+
+          - name: Init route-map
+            tags:
+              - route_map
+            api_path: config/tailf-ned-cisco-ios:route-map
+            api_method: PATCH
+            content: |
+              route-map:
+                - name: 'test'
+                  sequence: 10
+                  operation: 'permit'
+                  match:
+                    ip:
+                      address:
+                        prefix-list: 
+                          - 'prefix-test'
+
+          - name: Init OSPF
+            tags:
+              - ospf_set_up
+            api_path: config/tailf-ned-cisco-ios:router/ospf
+            api_method: PATCH
+            content: |
+              ospf:
+                - id: '2'
+                - id: '100'
+
+          - name: Init OSPF global
+            tags:
+              - ospf_global_set_up
+            api_path: config/tailf-ned-cisco-ios:router/ospf
+            api_method: PATCH
+            content: |
+              ospf:
+                - id: '2'
+                  vrf: 'internal_0'
+                  router-id: '1.1.1.1'
+                  log-adjacency-changes:
+                    detail: ''
+                  compatible:
+                    rfc1583: True
+                  prefix-suppression: ''
+                  nsf-ietf:
+                    nsf:
+                      ietf: {}
+                  default-information:
+                    originate:
+                      always: {}
+                      metric: '5'
+                      metric-type: '1'
+                      route-map: 'TEST'
+                  mpls:
+                    ldp:
+                      sync: {}
+                  timers:
+                    throttle:
+                      lsa:
+                        start-interval: 1000
+                        hold-interval: 10000
+                        max-interval: 10000
+                      spf:
+                        spf-start: 10000
+                        spf-hold: 20000
+                        spf-max-wait: 20000
+                  auto-cost:
+                    reference-bandwidth: '100000'
+
+          - name: Init OSPF areas
+            tags:
+              - ospf_areas_set_up
+            api_path: config/tailf-ned-cisco-ios:router/ospf
+            api_method: PATCH
+            content: |
+              ospf:
+                - id: '100'
+                  area:
+                    - id: '1'
+                      filter-list:
+                        - direction: 'in'
+                          prefix: 'test'
+                  network:
+                    - ip: '10.255.100.1'
+                      mask: '0.0.0.0'
+                      area: '1'
+                    - ip: '0.0.0.0'
+                      mask: '255.255.255.255'
+                      area: '0'
+                - id: '2'
+                  vrf: 'internal_0'
+                  area:
+                    - id: '1'
+                      stub:
+                        no-summary: {}
+                    - id: '4'
+                      filter-list:
+                        - direction: 'in'
+                          prefix: 'test'
+                      # Getting error: "Area is configured as NSSA already"
+                      nssa:
+                        default-information-originate: {}
+                        no-summary: {}
+                    - id: '5'
+                      filter-list:
+                        - direction: 'in'
+                          prefix: 'test'
+                      # Getting error: "Virtual links are not allowed in NSSA and stub areas"
+                      virtual-link:
+                        - id: '10.200.200.200'
+                  passive-interface:
+                    interface:
+                      - name: 'GigabitEthernet7'
+                  network:
+                    - ip: '10.250.0.0'
+                      mask: '0.0.255.255'
+                      area: '4'
+                    - ip: '10.250.25.0'
+                      mask: '0.0.0.255'
+                      area: '5'
+                    - ip: '0.0.0.0'
+                      mask: '255.255.255.255'
+                      area: '0'
+                  mpls:
+                    traffic-eng:
+                      area: ['4']
+                  neighbor:
+                    ip: '10.10.10.10'
+                    cost-database-filter-container:
+                      cost: 100
+
+          - name: Init hostname
+            tags:
+              - hostname_set_up
+            api_path: config
+            api_method: PATCH
+            content: |
+              config:
+                tailf-ned-cisco-ios:hostname: test123
+
+          - name: Init banners
+            tags:
+              - banners_set_up
+            api_path: config/tailf-ned-cisco-ios:banner
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:banner:
+                login: login-banner
+                motd: motd-banner
+
+          - name: Init system IP
+            tags:
+              - domain_name_set_up
+            api_path: config/tailf-ned-cisco-ios:ip
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:ip:
+                bootp:
+                  server: true
+                dns:
+                  server: {}
+                domain:
+                  name: test.com
+                  lookup-conf:
+                    lookup: false
+                finger: {}
+                http:
+                  server: false
+                identd:
+                  - null
+                options:
+                  drop: [null]
+                rcmd:
+                  rcp-enable:
+                    - null
+                  rsh-enable:
+                    - null
+                ssh:
+                  server:
+                    algorithm:
+                      encryption:
+                        - aes128-ctr
+                        - aes192-ctr
+                        - aes256-ctr
+                      mac:
+                        - hmac-sha2-256
+                        - hmac-sha2-512
+                  source-interface:
+                    GigabitEthernet: 6
+                  time-out: 55
+                  version: 2
+                prefix-list:
+                  prefixes:
+                    - name: 'prefix-test'
+                      seq:
+                        - 'no': 10
+                          permit:
+                            ip: '10.0.0.0/8'
+
+          - name: Init enable
+            tags:
+              - enable_set_up
+            api_path: config/tailf-ned-cisco-ios:enable
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:enable:
+                secret:
+                  secret: admin
+                  type: 0
+
+          - name: Init line
+            tags:
+              - line_set_up
+            api_path: config/tailf-ned-cisco-ios:line
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:line:
+                console:
+                  - exec-timeout:
+                      minutes: 13
+                      seconds: 20
+                    first: 0
+                    stopbits: 1
+                vty:
+                  - exec-timeout:
+                      minutes: 13
+                      seconds: 20
+                    first: 0
+                    last: 4
+                  - absolute-timeout: 1200
+                    first: 0
+                    last: 4
+
+          - name: Init line vty session limit
+            tags:
+              - line_set_up
+            api_path: config/tailf-ned-cisco-ios:line
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:line:
+                vty:
+                  session-limit: 16
+                  first: 0
+                  last: 4
+
+          - name: Init login
+            tags:
+              - login_set_up
+            api_path: config/tailf-ned-cisco-ios:login
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:login:
+                block-for:
+                  seconds: 900
+                  attempts: 3
+                  within: 120
+                on-success:
+                  log:
+                    - null
+                on-failure:
+                  log:
+                    - null
+
+          - name: Init archive
+            tags:
+              - archive_set_up
+            api_path: config/tailf-ned-cisco-ios:archive
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:archive:
+                log:
+                  config:
+                    logging:
+                      enable:
+                        - null
+
+          - name: Init service
+            tags:
+              - service_set_up
+            api_path: config/tailf-ned-cisco-ios:service
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:service:
+                conf:
+                  pad: true
+                config:
+                  - null
+                password-encryption: {}
+                tcp-small-servers:
+                  - null
+                udp-small-servers:
+                  - null
+
+          - name: Init NTP
+            tags:
+              - ntp_set_up
+            api_path: config/tailf-ned-cisco-ios:ntp
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:ntp:
+                authenticate: [null]
+                authentication-key:
+                  - md5:
+                      secret: password1
+                    number: 1
+                  - md5:
+                      secret: password2
+                    number: 2
+                logging: [null]
+                peer:
+                  peer-list:
+                    - name: 10.0.0.1
+                      key: 1
+                      iburst:
+                        - null
+                      prefer:
+                        - null
+                  vrf:
+                    - name: abc
+                      peer-list:
+                        - name: 10.0.0.2
+                          key: 2
+                          version: 4
+                server:
+                  peer-list:
+                    - name: 10.0.0.3
+                    - name: 10.0.0.4
+                      key: 1
+                      source:
+                        GigabitEthernet: 6
+                      version: 3
+                  vrf:
+                    - name: abc
+                      peer-list:
+                        - name: 10.0.0.5
+                          key: 2
+                source:
+                  GigabitEthernet: 6
+                trusted-key:
+                  - key-number: 1
+                  - key-number: 2
+        assertions:
+          # System assertions
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['hostname'] == 'test123'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['login-banner'] == 'login-banner'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['motd-banner'] == 'motd-banner'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['domain-name'] == 'test.com'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:enable-secret'] == 'VALUE_SPECIFIED_IN_NO_LOG_PARAMETER'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:console-exec-timeout-seconds'] == 800"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:ip-options'] == 'openconfig-system-ext:DROP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:ssh-timeout'] == 55"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['protocol-version'] == 'V2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:ssh-source-interface'] == 'GigabitEthernet6'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['timeout'] == 800"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:absolute-timeout-minutes'] == 1200"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['session-limit'] == 16"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-domain-lookup'] == false"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-success'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-failure'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['seconds'] == 900"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['attempts'] == 3"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['within'] == 120"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['archive-logging'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-bootp-server'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-dns-server'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-identd'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['http']['config']['http-enabled'] == false"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rcp-enable'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rsh-enable'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['finger'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-config'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-tcp-small-servers'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-udp-small-servers'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-pad'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-password-encryption'] == true"
+          - "'openconfig-system-ext:aes128-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
+          - "'openconfig-system-ext:aes192-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
+          - "'openconfig-system-ext:aes256-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
+          - "'openconfig-system-ext:hmac-sha2-256' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['mac']"
+          - "'openconfig-system-ext:hmac-sha2-512' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['mac']"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['enable-ntp-auth'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['openconfig-system-ext:ntp-enable-logging'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['ntp-source-address'] == '10.6.0.1'"
+          - "ntp_auth_key_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key']"
+          - "ntp_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+          - "ntp_2 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+          - "ntp_3 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+          - "ntp_4 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+          - "ntp_5 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+          # TODO confirm tests before uncommenting
+          # # ACL assertions
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['name'] == '11'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['type'] == 'openconfig-acl-ext:ACL_IPV4_STANDARD'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['sequence-id'] == 10"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['actions']['config']['forwarding-action'] == 'openconfig-acl:ACCEPT'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['actions']['config']['log-action'] == 'openconfig-acl:LOG_NONE'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['openconfig-acl-ext:ipv4']['config']['source-address'] == '192.0.0.0/8'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['name'] == 'deny-hosts'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['type'] == 'openconfig-acl:ACL_IPV4'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['sequence-id'] == 50"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['actions']['config']['forwarding-action'] == 'openconfig-acl:REJECT'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['actions']['config']['log-action'] == 'openconfig-acl:LOG_NONE'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['ipv4']['config']['source-address'] == '192.168.1.12/32'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['ipv4']['config']['destination-address'] == '0.0.0.0/0'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['transport']['config']['source-port'] == 'ANY'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['transport']['config']['destination-port'] == '1025..65535'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['id'] == 'vty 0 4'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['egress-acl-set'] == '11'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['ingress-acl-set-name'] == '11'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['vrf'] == 'global'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['vrf-also'] == true"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:ntp']['peer']['config']['peer-acl-set'] == '11'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:ntp']['server']['config']['server-acl-set'] == '11'"
+          # # Interface assertions
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.5.0.2'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['virtual-router-id'] == 6"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['preempt'] == True"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['preempt-delay'] == 10"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['advertisement-interval'] == 300"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['mtu'] == 1476"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:tcp-adjust-mss'] == 1400"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:redirects'] == False"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:unreachables'] == False"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['proxy-arp']['config']['mode'] == 'REMOTE_ONLY'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:mask-reply'] == true"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:nat']['nat-choice'] == 'inside'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:nat']['nat-choice'] == 'outside'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.255.10.1'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:nat']['nat-choice'] == 'inside'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][9]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:nat']['nat-choice'] == 'outside'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][1]['config']['description'] == 'TESTDESCRIPT'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][1]['config']['enabled'] == True"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][1]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.8.10.2'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][7]['subinterfaces']['subinterface'][1]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['name'] == 'Tunnel1'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['config']['src'] == '10.255.0.1'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['config']['dst'] == '192.168.172.1'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['config']['gre-key'] == 1"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['config']['openconfig-if-tunnel-ext:tunnel-path-mtu-discovery'] == True"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['config']['openconfig-if-tunnel-ext:keepalives']['period'] == 5"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['config']['openconfig-if-tunnel-ext:keepalives']['retries'] == 3"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['ipv4']['addresses']['address'][0]['config']['ip'] == '10.254.0.1'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['ipv4']['config']['mtu'] == 1476"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][10]['openconfig-if-tunnel:tunnel']['ipv4']['config']['openconfig-if-ip-mdd-ext:tcp-adjust-mss'] == 1460"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['name'] == 'vasileft1'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.1.1'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][11]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 30"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['name'] == 'vasiright1'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.2.2'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 30"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['virtual-address'][0] == '10.3.0.110'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['group-number'] == 3"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['preempt'] == True"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['preempt-delay'] == 3500"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['priority'] == 200"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['timers']['hello-interval'] == 30"
+          # - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['timers']['holdtime'] == 100"
+          # # OSPFv2 assertions
+          # - "'default' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
+          # - "'abc' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
+          # - "'xyz' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['name'] == '2'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['hide-transit-only-networks'] == true"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['log-adjacency-changes'] == true"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['router-id'] == '1.1.1.1'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['summary-route-cost-mode'] == 'RFC1583_COMPATIBLE'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['graceful-restart']['config']['enabled'] == true"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['openconfig-ospfv2-ext:capability-vrf-lite'] == false"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['openconfig-ospfv2-ext:default-information-originate']['config']['metric'] == '5'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['openconfig-ospfv2-ext:default-information-originate']['config']['metric-type'] == 1"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['openconfig-ospfv2-ext:auto-cost-ref-bandwidth'] == 100000"
+          # # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['openconfig-ospfv2-ext:default-information-originate']['config']['route-map'] == 'TEST'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['openconfig-ospfv2-ext:default-information-originate']['config']['always'] == true"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['mpls']['igp-ldp-sync']['config']['enabled'] == true"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['lsa-generation']['config']['initial-delay'] == 1000"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['lsa-generation']['config']['maximum-delay'] == 10000"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['lsa-generation']['config']['openconfig-ospfv2-ext:hold-time'] == 10000"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['spf']['config']['initial-delay'] == 10000"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['spf']['config']['maximum-delay'] == 20000"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['spf']['config']['openconfig-ospfv2-ext:hold-time'] == 20000"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][0]['interfaces']['interface'][0]['config']['id'] == 'Loopback10'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][0]['interfaces']['interface'][0]['config']['passive'] == false"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][1]['openconfig-ospfv2-ext:stub-options']['totally-stubby']['config']['enabled'] == true"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['id'] == 'GigabitEthernet7'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['passive'] == true"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['metric'] == 10"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['network-type'] == 'openconfig-ospf-types:NON_BROADCAST_NETWORK'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['openconfig-ospfv2-ext:stub-options']['nssa']['config']['no-summary'] == true"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][3]['virtual-links']['virtual-link'][0]['config']['remote-router-id'] == '10.200.200.200'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['passive'] == true"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['neighbors']['neighbor'][0]['router-id'] == '10.10.10.10'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['neighbors']['neighbor'][0]['config']['metric'] == 100"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['mpls']['config']['traffic-engineering-enabled'] == true"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['authentication-type'] == 'MD5'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][3]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['authentication-type'] == 'NULL'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][0]['config']['key-id'] == 1"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][0]['config']['key'] == 'pass1'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][1]['config']['key-id'] == 2"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][1]['config']['key'] == '140713181F56'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['src-area'] == 0"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['dst-area'] == 4"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['config']['src-area'] == 0"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['config']['dst-area'] == 4"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['config']['import-policy'][0] == 'test'"

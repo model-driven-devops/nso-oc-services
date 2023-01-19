@@ -526,9 +526,9 @@ if __name__ == "__main__":
 
     (config_before_dict, config_leftover_dict, interface_ip_dict) = common_xe.init_xe_configs()
     main(config_before_dict, config_leftover_dict)
-    config_name = "ned_configuration_spanning_tree"
-    config_remaining_name = "ned_configuration_remaining_spanning_tree"
-    oc_name = "openconfig_spanning_tree"
+    config_name = "_spanning_tree"
+    config_remaining_name = "_remaining_spanning_tree"
+    oc_name = "_openconfig_spanning_tree"
     common.print_and_test_configs(
         "xeswitch1", config_before_dict, config_leftover_dict, openconfig_spanning_tree,
         config_name, config_remaining_name, oc_name, stp_notes)

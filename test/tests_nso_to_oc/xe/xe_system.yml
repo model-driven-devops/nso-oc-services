@@ -608,6 +608,7 @@
           api_path: config/tailf-ned-cisco-ios:aaa
           content: |
             tailf-ned-cisco-ios:aaa:
+              new-model: {}
               group:
                 server:
                   tacacs-plus:
@@ -788,20 +789,12 @@
                   tacacsplus: {}
                   local: {}
                   group: 'TACACS-GROUP-1'
-                  group2:
-                    group: 'TACACS-GROUP-2'
-                  group3:
-                    group: 'tacacs+'
               commands:
                 - level: 15
                   name: 'default'
                   tacacsplus: {}
                   local: {}
                   group: 'TACACS-GROUP-1'
-                  group2:
-                    group: 'TACACS-GROUP-2'
-                  group3:
-                    group: 'tacacs+'
           api_method: PATCH
 
       - name: NSO configure aaa authentication
@@ -818,10 +811,6 @@
                   local: {}
                   tacacsplus: {}
                   group: 'TACACS-GROUP-1'
-                  group2:
-                    group: 'TACACS-GROUP-2'
-                  group3:
-                    group: 'tacacs+'
           api_method: PATCH
 
       - name: NSO configure username
@@ -994,7 +983,6 @@
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['config']['authorization-method'][0] == 'openconfig-aaa-types:TACACS_ALL'"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['config']['authorization-method'][1] == 'openconfig-aaa-types:LOCAL'"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['config']['authorization-method'][2] == 'TACACS-GROUP-1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['config']['authorization-method'][3] == 'TACACS-GROUP-2'"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['username'] == 'user1'"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['config']['username'] == 'user1'"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['config']['password'] == 'Password123'"
@@ -1006,7 +994,6 @@
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][0] == 'openconfig-aaa-types:LOCAL'"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][1] == 'openconfig-aaa-types:TACACS_ALL'"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][2] == 'TACACS-GROUP-1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][3] == 'TACACS-GROUP-2'"
             - "'openconfig-system-ext:aes128-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
             - "'openconfig-system-ext:aes192-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
             - "'openconfig-system-ext:aes256-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
