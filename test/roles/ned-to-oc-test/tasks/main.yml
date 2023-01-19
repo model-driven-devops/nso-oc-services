@@ -2,9 +2,28 @@
 - set_fact:
     nso_rest_url: "{{ lookup('env', 'NSO_URL') }}"
     rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
-    
+    is_initial_task_success: True
+
 - block:
-  - name: Rollback NSO
+  # In case the calling test doesn't init OC data, we must ensure existence of MDD OC to avoid "patch to a nonexistent resource" error. 
+  - name: Init OC
+    include_role:
+      name: nso-ned-device-configure
+    vars:
+      api_path: mdd:openconfig
+      content: |
+        mdd:openconfig: {}
+      api_method: PUT
+
+  # Perform only the first task, so NSO can create the initial rollback state we want.
+  - name: Complete first task
+    include_role:
+      name: ned-to-oc-test
+      tasks_from: iteratable_task
+    loop: "{{ (api_test_data | flatten(levels = 1))[:1] if api_test_data is defined and (api_test_data | length > 0) else [] }}"
+  
+  # Fetch the rollback ID, of the initial state, prior to making further changes.
+  - name: Save initial rollback state ID
     delegate_to: nso
     connection: local
     import_role:
@@ -12,11 +31,20 @@
     run_once: true
     when: will_save_rollback | default(True)
 
-  - name: iterate_tasks
+  rescue:
+    - name: Initial task rescue
+      set_fact:
+        is_initial_task_success: False
+    - debug:
+        msg: Initial task failed. No further processing will occur...
+
+- block:
+  # This will skip the first task as it was previously completed. Complete any remaining tasks.
+  - name: Complete remaining tasks
     include_role:
       name: ned-to-oc-test
       tasks_from: iteratable_task
-    loop: "{{ (api_test_data | flatten(levels = 1)) if api_test_data is defined and (api_test_data | length > 0) else [] }}"
+    loop: "{{ (api_test_data | flatten(levels = 1))[1:] if api_test_data is defined and (api_test_data | length > 0) else [] }}"
 
   - name: Execute NSO NED to OC script
     script: "{{ script_path }}"
@@ -44,25 +72,31 @@
     delegate_to: localhost
     register: oc_result
     when: will_fetch_oc_result | default(True)
+
   - debug:
       msg: "{{ oc_result }}"
     when: will_fetch_oc_result | default(True)
+
   - assert:
       that: "{{ assertions | default([]) }}"
-  # This rescue is here just in case the calling task set will_load_rollback = False
+
+  # This rescue is here just in case the calling task set will_load_rollback = False and any task happen to fail.
   rescue:
-    - name: Read Rollback File
+    - name: Perform rescue rollback
       include_vars: "{{ rollback_file }}"
     - name: Rollback NSO
       include_role:
         name: ciscops.mdd.nso
         tasks_from: rollback
       when: will_load_rollback | default(True)
+
   always:
-    - name: Read Rollback File
+    - name: Perform default rollback
       include_vars: "{{ rollback_file }}"
     - name: Rollback NSO
       include_role:
         name: ciscops.mdd.nso
         tasks_from: rollback
       when: will_load_rollback | default(True)
+  
+  when: is_initial_task_success
