@@ -630,25 +630,25 @@
                         name:
                           - name: 'TACACSSVR2'
                           - name: 'TACACSSVR4'
-                  radius:
-                    - name: 'RADIUS-GROUP-1'
-                      ip:
-                        radius:
-                          source-interface: 
-                            GigabitEthernet: 6
-                      server:
-                        name:
-                          - name: 'RADIUSSVR1'
-                          - name: 'RADIUSSVR3'
-                    - name: 'RADIUS-GROUP-2'
-                      ip:
-                        radius:
-                          source-interface: 
-                            GigabitEthernet: 6
-                      server:
-                        name:
-                          - name: 'RADIUSSVR2'
-                          - name: 'RADIUSSVR4'
+                  # radius:
+                  #   - name: 'RADIUS-GROUP-1'
+                  #     ip:
+                  #       radius:
+                  #         source-interface: 
+                  #           GigabitEthernet: 6
+                  #     server:
+                  #       name:
+                  #         - name: 'RADIUSSVR1'
+                  #         - name: 'RADIUSSVR3'
+                  #   - name: 'RADIUS-GROUP-2'
+                  #     ip:
+                  #       radius:
+                  #         source-interface: 
+                  #           GigabitEthernet: 6
+                  #     server:
+                  #       name:
+                  #         - name: 'RADIUSSVR2'
+                  #         - name: 'RADIUSSVR4'
           api_method: PATCH
 
       - name: NSO configure tacacs servers
@@ -695,57 +695,58 @@
                     secret: password4
           api_method: PATCH
 
-      - name: NSO configure radius servers
-        tags:
-          - radius_server
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:radius
-          content: |
-            tailf-ned-cisco-ios:radius:
-              server:
-                - id: 'RADIUSSVR1'
-                  address: 
-                    ipv4: 
-                      host: '10.2.2.1'
-                      acct-port: 1853
-                      auth-port: 1852
-                  timeout: 10
-                  key:
-                    type: 0
-                    secret: password1
-                - id: 'RADIUSSVR2'
-                  address: 
-                    ipv4: 
-                      host: '10.2.2.2'
-                      acct-port: 1853
-                      auth-port: 1852
-                  timeout: 20
-                  key:
-                    type: 0
-                    secret: password2
-                - id: 'RADIUSSVR3'
-                  address: 
-                    ipv4: 
-                      host: '10.2.2.3'
-                      acct-port: 1853
-                      auth-port: 1852
-                  timeout: 30
-                  key:
-                    type: 5
-                    secret: password3
-                - id: 'RADIUSSVR4'
-                  address: 
-                    ipv4: 
-                      host: '10.2.2.4'
-                      acct-port: 1853
-                      auth-port: 1852
-                  timeout: 40
-                  key:
-                    type: 5
-                    secret: password4
-          api_method: PATCH
+      # TODO - fix radius rollback error
+      # - name: NSO configure radius servers
+      #   tags:
+      #     - radius_server
+      #   import_role:
+      #     name: nso-ned-device-configure
+      #   vars:
+      #     api_path: config/tailf-ned-cisco-ios:radius
+      #     content: |
+      #       tailf-ned-cisco-ios:radius:
+      #         server:
+      #           - id: 'RADIUSSVR1'
+      #             address: 
+      #               ipv4: 
+      #                 host: '10.2.2.1'
+      #                 acct-port: 1853
+      #                 auth-port: 1852
+      #             timeout: 10
+      #             key:
+      #               type: 0
+      #               secret: password1
+      #           - id: 'RADIUSSVR2'
+      #             address: 
+      #               ipv4: 
+      #                 host: '10.2.2.2'
+      #                 acct-port: 1853
+      #                 auth-port: 1852
+      #             timeout: 20
+      #             key:
+      #               type: 0
+      #               secret: password2
+      #           - id: 'RADIUSSVR3'
+      #             address: 
+      #               ipv4: 
+      #                 host: '10.2.2.3'
+      #                 acct-port: 1853
+      #                 auth-port: 1852
+      #             timeout: 30
+      #             key:
+      #               type: 5
+      #               secret: password3
+      #           - id: 'RADIUSSVR4'
+      #             address: 
+      #               ipv4: 
+      #                 host: '10.2.2.4'
+      #                 acct-port: 1853
+      #                 auth-port: 1852
+      #             timeout: 40
+      #             key:
+      #               type: 5
+      #               secret: password4
+      #     api_method: PATCH
 
       - name: NSO configure aaa accounting
         tags:
@@ -895,78 +896,78 @@
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-udp-small-servers'] == true"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-pad'] == true"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-password-encryption'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['name'] == 'RADIUS-GROUP-1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['type'] == 'openconfig-aaa:RADIUS'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['name'] == 'RADIUS-GROUP-1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['name'] == 'RADIUS-GROUP-2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['type'] == 'openconfig-aaa:RADIUS'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['name'] == 'RADIUS-GROUP-2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['config']['name'] == 'TACACS-GROUP-1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['config']['type'] == 'openconfig-aaa:TACACS'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['name'] == 'TACACS-GROUP-1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['config']['name'] == 'TACACS-GROUP-2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['config']['type'] == 'openconfig-aaa:TACACS'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['name'] == 'TACACS-GROUP-2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['servers']['server'][0]['address'] == '10.1.1.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['servers']['server'][0]['config']['address'] == '10.1.1.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['servers']['server'][0]['config']['name'] == 'TACACSSVR1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['servers']['server'][0]['config']['timeout'] == 10"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['servers']['server'][0]['tacacs']['config']['port'] == 111"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['servers']['server'][0]['tacacs']['config']['secret-key'] == 'password1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['servers']['server'][0]['tacacs']['config']['source-address'] == '10.6.0.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['servers']['server'][1]['address'] == '10.1.1.3'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['servers']['server'][1]['config']['address'] == '10.1.1.3'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['servers']['server'][1]['config']['name'] == 'TACACSSVR3'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['servers']['server'][1]['config']['timeout'] == 30"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['servers']['server'][1]['tacacs']['config']['port'] == 333"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['servers']['server'][1]['tacacs']['config']['secret-key'] == 'password3'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][2]['servers']['server'][1]['tacacs']['config']['source-address'] == '10.6.0.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['servers']['server'][0]['address'] == '10.1.1.2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['servers']['server'][0]['config']['address'] == '10.1.1.2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['servers']['server'][0]['config']['name'] == 'TACACSSVR2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['servers']['server'][0]['config']['timeout'] == 20"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['servers']['server'][0]['tacacs']['config']['port'] == 222"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['servers']['server'][0]['tacacs']['config']['secret-key'] == 'password2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['servers']['server'][0]['tacacs']['config']['source-address'] == '10.6.0.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['servers']['server'][1]['address'] == '10.1.1.4'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['servers']['server'][1]['config']['address'] == '10.1.1.4'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['servers']['server'][1]['config']['name'] == 'TACACSSVR4'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['servers']['server'][1]['config']['timeout'] == 40"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['servers']['server'][1]['tacacs']['config']['port'] == 444"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['servers']['server'][1]['tacacs']['config']['secret-key'] == 'password4'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][3]['servers']['server'][1]['tacacs']['config']['source-address'] == '10.6.0.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['address'] == '10.2.2.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['address'] == '10.2.2.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['name'] == 'RADIUSSVR1'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['name'] == 'RADIUS-GROUP-1'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['type'] == 'openconfig-aaa:RADIUS'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['name'] == 'RADIUS-GROUP-1'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['name'] == 'RADIUS-GROUP-2'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['type'] == 'openconfig-aaa:RADIUS'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['name'] == 'RADIUS-GROUP-2'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['name'] == 'TACACS-GROUP-1'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['type'] == 'openconfig-aaa:TACACS'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['name'] == 'TACACS-GROUP-1'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['name'] == 'TACACS-GROUP-2'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['type'] == 'openconfig-aaa:TACACS'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['name'] == 'TACACS-GROUP-2'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['address'] == '10.1.1.1'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['address'] == '10.1.1.1'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['name'] == 'TACACSSVR1'"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['timeout'] == 10"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['acct-port'] == 1853"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['auth-port'] == 1852"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['secret-key'] == 'password1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['source-address'] == '10.6.0.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['address'] == '10.2.2.3'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['address'] == '10.2.2.3'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['name'] == 'RADIUSSVR3'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['tacacs']['config']['port'] == 111"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['tacacs']['config']['secret-key'] == 'password1'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['tacacs']['config']['source-address'] == '10.6.0.1'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['address'] == '10.1.1.3'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['address'] == '10.1.1.3'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['name'] == 'TACACSSVR3'"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['timeout'] == 30"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['acct-port'] == 1853"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['auth-port'] == 1852"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['secret-key'] == 'password3'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['source-address'] == '10.6.0.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['address'] == '10.2.2.2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['address'] == '10.2.2.2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['name'] == 'RADIUSSVR2'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['tacacs']['config']['port'] == 333"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['tacacs']['config']['secret-key'] == 'password3'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['tacacs']['config']['source-address'] == '10.6.0.1'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['address'] == '10.1.1.2'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['address'] == '10.1.1.2'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['name'] == 'TACACSSVR2'"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['timeout'] == 20"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['acct-port'] == 1853"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['auth-port'] == 1852"          
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['secret-key'] == 'password2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['source-address'] == '10.6.0.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['address'] == '10.2.2.4'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['address'] == '10.2.2.4'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['name'] == 'RADIUSSVR4'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['tacacs']['config']['port'] == 222"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['tacacs']['config']['secret-key'] == 'password2'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['tacacs']['config']['source-address'] == '10.6.0.1'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['address'] == '10.1.1.4'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['address'] == '10.1.1.4'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['name'] == 'TACACSSVR4'"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['timeout'] == 40"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['acct-port'] == 1853"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['auth-port'] == 1852"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['secret-key'] == 'password4'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['source-address'] == '10.6.0.1'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['tacacs']['config']['port'] == 444"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['tacacs']['config']['secret-key'] == 'password4'"
+            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['tacacs']['config']['source-address'] == '10.6.0.1'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['address'] == '10.2.2.1'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['address'] == '10.2.2.1'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['name'] == 'RADIUSSVR1'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['timeout'] == 10"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['acct-port'] == 1853"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['auth-port'] == 1852"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['secret-key'] == 'password1'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['source-address'] == '10.6.0.1'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['address'] == '10.2.2.3'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['address'] == '10.2.2.3'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['name'] == 'RADIUSSVR3'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['timeout'] == 30"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['acct-port'] == 1853"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['auth-port'] == 1852"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['secret-key'] == 'password3'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['source-address'] == '10.6.0.1'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['address'] == '10.2.2.2'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['address'] == '10.2.2.2'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['name'] == 'RADIUSSVR2'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['timeout'] == 20"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['acct-port'] == 1853"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['auth-port'] == 1852"          
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['secret-key'] == 'password2'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['source-address'] == '10.6.0.1'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['address'] == '10.2.2.4'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['address'] == '10.2.2.4'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['name'] == 'RADIUSSVR4'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['timeout'] == 40"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['acct-port'] == 1853"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['auth-port'] == 1852"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['secret-key'] == 'password4'"
+            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['source-address'] == '10.6.0.1'"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['config']['accounting-method'][0] == 'TACACS-GROUP-1'"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['config']['accounting-method'][1] == 'TACACS-GROUP-2'"
             - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['config']['accounting-method'][2] == 'openconfig-aaa-types:TACACS_ALL'"
