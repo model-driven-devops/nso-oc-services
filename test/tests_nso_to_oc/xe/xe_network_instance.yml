@@ -385,6 +385,14 @@
                 address-family:
                   ipv4: {}
                   ipv6: {}
+                rd: '1:1'
+                route-target:
+                  import:
+                    - asn-ip: '100:100'
+                    - asn-ip: '101:101'
+                  export:
+                    - asn-ip: '200:200'
+                    - asn-ip: '202:202'
               - name: xyz
                 address-family:
                   ipv4: {}
@@ -650,6 +658,11 @@
           - "'abc' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
           - "'xyz' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
 
+          # Testing RDs and RTs
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['route-distinguisher'] == '1:1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['openconfig-network-instance-ext:route-targets-import'][0] == '100:100'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['openconfig-network-instance-ext:route-targets-export'][1] == '202:202'"
+
           # Testing static routes
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][0]['config']['prefix'] == '90.0.0.0/8'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][0]['next-hops']['next-hop'][0]['index'] == 'DHCP'"
@@ -668,7 +681,6 @@
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][5]['config']['prefix'] == '105.0.0.0/8'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][5]['next-hops']['next-hop'][0]['index'] == 'GigabitEthernet8'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][5]['next-hops']['next-hop'][0]['interface-ref']['config']['subinterface'] == 10"
-
 
           # The rest of these are for OC
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['name'] == '2'"

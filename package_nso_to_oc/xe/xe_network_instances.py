@@ -64,6 +64,8 @@ def xe_network_instances(config_before: dict, config_leftover: dict) -> None:
                     "openconfig-network-instance:protocols": {"openconfig-network-instance:protocol": []},
                     "openconfig-network-instance:interfaces": {"openconfig-network-instance:interface": []}
                 }
+                process_rd_rt(temp_vrf, vrf, vrf_index, config_leftover)
+
                 del config_leftover["tailf-ned-cisco-ios:vrf"]["definition"][vrf_index]["address-family"]
             openconfig_network_instances["openconfig-network-instance:network-instances"][
                 "openconfig-network-instance:network-instance"].append(temp_vrf)
@@ -152,6 +154,28 @@ def configure_network_interfaces(net_inst, interfaces_by_vrf):
 
         net_inst["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"].append(new_interface)
 
+def process_rd_rt(temp_vrf, vrf, vrf_index, config_leftover):
+    if "rd" in vrf:
+        temp_vrf["openconfig-network-instance:config"][
+            "openconfig-network-instance:route-distinguisher"] = vrf["rd"]
+        temp_vrf["openconfig-network-instance:config"][
+            "openconfig-network-instance-ext:route-targets-import"] = []
+        temp_vrf["openconfig-network-instance:config"][
+            "openconfig-network-instance-ext:route-targets-export"] = []
+        
+        # RD is required to create RTs
+        if "route-target" in vrf:
+            process_rt(temp_vrf, vrf, "import")
+            process_rt(temp_vrf, vrf, "export")
+    
+        del config_leftover["tailf-ned-cisco-ios:vrf"]["definition"][vrf_index]["rd"]
+        del config_leftover["tailf-ned-cisco-ios:vrf"]["definition"][vrf_index]["route-target"]
+
+def process_rt(temp_vrf, vrf, rt_type):
+    for rt in vrf["route-target"].get(rt_type, []):
+        if "asn-ip" in rt:
+            temp_vrf["openconfig-network-instance:config"][
+                f"openconfig-network-instance-ext:route-targets-{rt_type}"].append(rt["asn-ip"])
 
 def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
     """
