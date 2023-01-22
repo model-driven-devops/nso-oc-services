@@ -506,7 +506,7 @@ def set_server_tacacs_config(tacacs_group_leftover, config_leftover, oc_system_s
 
     if tacacs_server_list:
         for server_list_index, server in enumerate(tacacs_server_list):
-            for i in range(len(tacacs_group["server"]["name"])):
+            for i in range(len(tacacs_group.get("server", {}).get("name", []))):
                 if server.get("name") in tacacs_group["server"]["name"][i]["name"]:
                     # TACACS SERVER NAME, ADDRESS AND TIMEOUT
                     temp_tacacs_server = {"openconfig-system:address": f'{server.get("address", {}).get("ipv4")}',
