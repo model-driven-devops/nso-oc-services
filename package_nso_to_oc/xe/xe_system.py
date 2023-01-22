@@ -499,6 +499,8 @@ def set_server_tacacs_config(tacacs_group_leftover, config_leftover, oc_system_s
     for i, n in tacacs_group["ip"]["tacacs"]["source-interface"].items():
         source_interface = f"{i}{n}"
         source_interface_ip = if_ip.get(source_interface)
+        del config_leftover["tailf-ned-cisco-ios:aaa"]["group"]["server"]["tacacs-plus"][tac_group_index]["ip"]["tacacs"][
+            "source-interface"]
 
     if tacacs_server_list:
         for server_list_index, server in enumerate(tacacs_server_list):
@@ -509,9 +511,9 @@ def set_server_tacacs_config(tacacs_group_leftover, config_leftover, oc_system_s
                     "openconfig-system:config": {
                         "openconfig-system:address": f'{server.get("address", {}).get("ipv4")}',
                         "openconfig-system:name": f'{server.get("name")}',
-                        "openconfig-system:timeout": f'{server.get("timeout")}'},
+                        "openconfig-system:timeout": f'{server.get("timeout", 5)}'},
                     "openconfig-system:tacacs": {"openconfig-system:config": {
-                        "openconfig-system:port": f'{server.get("port")}',
+                        "openconfig-system:port": f'{server.get("port", 49)}',
                         "openconfig-system:secret-key": f'{server.get("key", {}).get("secret")}',
                         "openconfig-system:source-address": f'{source_interface_ip}'
                     }}}
