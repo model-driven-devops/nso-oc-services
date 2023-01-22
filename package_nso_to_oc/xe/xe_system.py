@@ -516,7 +516,8 @@ def set_server_tacacs_config(tacacs_group_leftover, config_leftover, oc_system_s
                         "openconfig-system:source-address": f'{source_interface_ip}'
                     }}}
                     tac_server_list.append(temp_tacacs_server)
-                    config_leftover["tailf-ned-cisco-ios:aaa"]["group"]["server"]["tacacs-plus"][i] = None
+                    config_leftover["tailf-ned-cisco-ios:aaa"]["group"]["server"]["tacacs-plus"][tac_group_index][
+                        "server"]["name"][i] = None
             config_leftover["tailf-ned-cisco-ios:tacacs"]["server"][server_list_index] = None
 
     return tac_server
