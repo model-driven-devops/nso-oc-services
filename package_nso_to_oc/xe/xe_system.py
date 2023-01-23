@@ -495,58 +495,76 @@ def set_radius_group_config(radius_group_leftover, config_leftover, oc_system_se
 def set_server_tacacs_config(tacacs_group_leftover, config_leftover, oc_system_server_group, if_ip, tac_group_index, tacacs_group, tacacs_server_list):
     tac_server = {"openconfig-system:server": []}
     tac_server_list = tac_server["openconfig-system:server"]
+    source_interface_ip = None
     # TACACS SOURCE-INTERFACE
-    for i, n in tacacs_group["ip"]["tacacs"]["source-interface"].items():
+    for i, n in tacacs_group.get("ip", {}).get("tacacs", {}).get("source-interface", {}).items():
         source_interface = f"{i}{n}"
         source_interface_ip = if_ip.get(source_interface)
+        if source_interface_ip:
+            del config_leftover["tailf-ned-cisco-ios:aaa"]["group"]["server"]["tacacs-plus"][tac_group_index]["ip"]["tacacs"][
+                "source-interface"]
 
     if tacacs_server_list:
         for server_list_index, server in enumerate(tacacs_server_list):
-            for i in range(len(tacacs_group["server"]["name"])):
+            for i in range(len(tacacs_group.get("server", {}).get("name", []))):
                 if server.get("name") in tacacs_group["server"]["name"][i]["name"]:
                     # TACACS SERVER NAME, ADDRESS AND TIMEOUT
                     temp_tacacs_server = {"openconfig-system:address": f'{server.get("address", {}).get("ipv4")}',
-                    "openconfig-system:config": {
-                        "openconfig-system:address": f'{server.get("address", {}).get("ipv4")}',
-                        "openconfig-system:name": f'{server.get("name")}',
-                        "openconfig-system:timeout": f'{server.get("timeout")}'},
-                    "openconfig-system:tacacs": {"openconfig-system:config": {
-                        "openconfig-system:port": f'{server.get("port")}',
-                        "openconfig-system:secret-key": f'{server.get("key", {}).get("secret")}',
-                        "openconfig-system:source-address": f'{source_interface_ip}'
-                    }}}
+                                          "openconfig-system:config": {
+                                              "openconfig-system:address": f'{server.get("address", {}).get("ipv4")}',
+                                              "openconfig-system:name": f'{server.get("name")}',
+                                              "openconfig-system:timeout": f'{server.get("timeout", 5)}'},
+                                          "openconfig-system:tacacs": {"openconfig-system:config": {
+                                              "openconfig-system:port": f'{server.get("port", 49)}',
+                                              "openconfig-system:secret-key": f'{server.get("key", {}).get("secret")}'
+                                          }}}
+                    if source_interface_ip:
+                        temp_tacacs_server["openconfig-system:tacacs"]["openconfig-system:config"]["openconfig-system:source-address"] = source_interface_ip
                     tac_server_list.append(temp_tacacs_server)
-                    config_leftover["tailf-ned-cisco-ios:aaa"]["group"]["server"]["tacacs-plus"][i] = None
+                    config_leftover["tailf-ned-cisco-ios:aaa"]["group"]["server"]["tacacs-plus"][tac_group_index][
+                        "server"]["name"][i] = None
             config_leftover["tailf-ned-cisco-ios:tacacs"]["server"][server_list_index] = None
 
     return tac_server
 
-def set_server_radius_config(radius_group_leftover, config_leftover, oc_system_server_group, if_ip, rad_group_index, radius_group, radius_server_list):
+def set_server_radius_config(radius_group_leftover, config_leftover, oc_system_server_group, if_ip, rad_group_index,
+                             radius_group, radius_server_list):
     rad_server = {"openconfig-system:server": []}
     rad_server_list = rad_server["openconfig-system:server"]
+    source_interface_ip = None
     # RADIUS SOURCE-INTERFACE
-    for i, n in radius_group["ip"]["radius"]["source-interface"].items():
+    for i, n in radius_group.get("ip", {}).get("radius", {}).get("source-interface", {}).items():
         source_interface = f"{i}{n}"
         source_interface_ip = if_ip.get(source_interface)
+        if source_interface_ip:
+            del \
+            config_leftover["tailf-ned-cisco-ios:aaa"]["group"]["server"]["radius"][rad_group_index]["ip"]["radius"][
+                "source-interface"]
 
     if radius_server_list:
         for server_list_index, server in enumerate(radius_server_list):
-            for i in range(len(radius_group["server"]["name"])):
+            for i in range(len(radius_group.get("server", {}).get("name", []))):
                 if server.get("id") in radius_group["server"]["name"][i]["name"]:
                     # RADIUS SERVER NAME, ADDRESS AND TIMEOUT
-                    temp_radius_server = {"openconfig-system:address": f'{server.get("address", {}).get("ipv4", {}).get("host")}',
-                    "openconfig-system:config": {
+                    temp_radius_server = {
                         "openconfig-system:address": f'{server.get("address", {}).get("ipv4", {}).get("host")}',
-                        "openconfig-system:name": f'{server.get("id")}',
-                        "openconfig-system:timeout": f'{server.get("timeout")}'},
-                    "openconfig-system:radius": {"openconfig-system:config": {
-                        "openconfig-system:acct-port": f'{server.get("address", {}).get("ipv4", {}).get("acct-port")}',
-                        "openconfig-system:auth-port": f'{server.get("address", {}).get("ipv4", {}).get("auth-port")}',
-                        "openconfig-system:secret-key": f'{server.get("key", {}).get("secret")}',
-                        "openconfig-system:source-address": f'{source_interface_ip}'
-                    }}}
+                        "openconfig-system:config": {
+                            "openconfig-system:address": f'{server.get("address", {}).get("ipv4", {}).get("host")}',
+                            "openconfig-system:name": f'{server.get("id")}',
+                            "openconfig-system:timeout": f'{server.get("timeout", 5)}'},
+                        "openconfig-system:radius": {"openconfig-system:config": {
+                            "openconfig-system:acct-port": f'{server.get("address", {}).get("ipv4", {}).get("acct-port")}',
+                            "openconfig-system:auth-port": f'{server.get("address", {}).get("ipv4", {}).get("auth-port")}'
+                        }}}
+                    if source_interface_ip:
+                        temp_radius_server["openconfig-system:radius"]["openconfig-system:config"][
+                            "openconfig-system:source-address"] = source_interface_ip
+                    if server.get("key", {}).get("secret"):
+                        temp_radius_server["openconfig-system:radius"]["openconfig-system:config"][
+                            "openconfig-system:secret-key"] = server.get("key", {}).get("secret")
                     rad_server_list.append(temp_radius_server)
-                    config_leftover["tailf-ned-cisco-ios:aaa"]["group"]["server"]["radius"][i] = None
+                    config_leftover["tailf-ned-cisco-ios:aaa"]["group"]["server"]["radius"][rad_group_index][
+                        "server"]["name"][i] = None
             config_leftover["tailf-ned-cisco-ios:radius"]["server"][server_list_index] = None
 
     return rad_server

@@ -162,14 +162,14 @@ def process_rd_rt(temp_vrf, vrf, vrf_index, config_leftover):
             "openconfig-network-instance-ext:route-targets-import"] = []
         temp_vrf["openconfig-network-instance:config"][
             "openconfig-network-instance-ext:route-targets-export"] = []
-        
+
         # RD is required to create RTs
         if "route-target" in vrf:
             process_rt(temp_vrf, vrf, "import")
             process_rt(temp_vrf, vrf, "export")
-    
+            del config_leftover["tailf-ned-cisco-ios:vrf"]["definition"][vrf_index]["route-target"]
+
         del config_leftover["tailf-ned-cisco-ios:vrf"]["definition"][vrf_index]["rd"]
-        del config_leftover["tailf-ned-cisco-ios:vrf"]["definition"][vrf_index]["route-target"]
 
 def process_rt(temp_vrf, vrf, rt_type):
     for rt in vrf["route-target"].get(rt_type, []):
