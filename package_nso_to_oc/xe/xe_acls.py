@@ -96,12 +96,31 @@ def xe_acls(config_before, config_after):
                 acls_note_add(f"""
                     Access-list Number {numbered_acl["id"]} has not been implemented in MDD OpenConfig
                 """)
+
     for interface in acl_interfaces.values():
         oc_acl_interface.append(interface)
 
     process_ntp(config_before, config_after)
     process_line(config_before, config_after)
 
+    cleanup_empty_access_list(access_list_after.get("standard", {}), "std-named-acl")
+    cleanup_empty_access_list(access_list_after.get("extended", {}), "ext-named-acl")
+    cleanup_empty_access_list(numbered_access_list, "access-list")
+
+def cleanup_empty_access_list(access_list_after, key):
+    if len(access_list_after.get(key, [])) == 0:
+        return
+
+    updated_access_list = []
+
+    for access_list_item in access_list_after[key]:
+        if len(access_list_item) > 0:
+            updated_access_list.append(access_list_item)
+    
+    if len(updated_access_list) > 0:
+        access_list_after[key] = updated_access_list
+    else:
+        del access_list_after[key]
 
 class BaseAcl:
     def __init__(self, oc_acl_set, xe_acl_set, xe_acl_set_after):
@@ -127,6 +146,7 @@ class BaseAcl:
             }
         }
         self.acl_success = True
+        updated_rule_list = []
 
         for rule_index, access_rule in enumerate(self._xe_acl_set.get(self._rule_list_key, [])):
             rule_success = self.__set_rule_parts(access_rule, acl_set)
@@ -134,6 +154,15 @@ class BaseAcl:
                 self._xe_acl_set_after[self._rule_list_key][rule_index] = None
             else:
                 self.acl_success = False
+
+        for rule_item in self._xe_acl_set_after.get(self._rule_list_key, []):
+            if rule_item and len(rule_item) > 0:
+                updated_rule_list.append(rule_item)
+        
+        if len(updated_rule_list) > 0:
+            self._xe_acl_set_after[self._rule_list_key] = updated_rule_list
+        elif self._rule_list_key in self._xe_acl_set_after:
+            del self._xe_acl_set_after[self._rule_list_key]
 
         # We only delete if all entries processed successfully.
         # We only add the ACL to OpenConfig if all entries processed successfully.
@@ -542,10 +571,10 @@ def process_line(config_before, config_after):
 
         if "access-class" in access and "access-list" in access["access-class"]:
             process_vrf(access["access-class"]["access-list"], line_item)
-            vty_accesses_after[index]["access-class"]["access-list"] = None
+            del vty_accesses_after[index]["access-class"]["access-list"]
         elif "access-class-vrf" in access and "access-class" in access["access-class-vrf"]:
             process_vrf(access["access-class-vrf"]["access-class"], line_item)
-            vty_accesses_after[index]["access-class-vrf"]["access-class"] = None
+            del vty_accesses_after[index]["access-class-vrf"]["access-class"]
 
 
 def process_vrf(access_list, line_item):
