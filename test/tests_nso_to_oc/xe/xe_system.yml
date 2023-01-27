@@ -599,407 +599,407 @@
                 last: 4
           api_method: PATCH
 
-      - name: NSO configure aaa servers
-        tags:
-          - aaa_server
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:aaa
-          content: |
-            tailf-ned-cisco-ios:aaa:
-              new-model: {}
-              group:
-                server:
-                  tacacs-plus:
-                    - name: 'TACACS-GROUP-1'
-                      ip:
-                        tacacs:
-                          source-interface: 
-                            GigabitEthernet: 6
-                      server:
-                        name:
-                          - name: 'TACACSSVR1'
-                          - name: 'TACACSSVR3'
-                    - name: 'TACACS-GROUP-2'
-                      ip:
-                        tacacs:
-                          source-interface: 
-                            GigabitEthernet: 6
-                      server:
-                        name:
-                          - name: 'TACACSSVR2'
-                          - name: 'TACACSSVR4'
-                  # radius:
-                  #   - name: 'RADIUS-GROUP-1'
-                  #     ip:
-                  #       radius:
-                  #         source-interface: 
-                  #           GigabitEthernet: 6
-                  #     server:
-                  #       name:
-                  #         - name: 'RADIUSSVR1'
-                  #         - name: 'RADIUSSVR3'
-                  #   - name: 'RADIUS-GROUP-2'
-                  #     ip:
-                  #       radius:
-                  #         source-interface: 
-                  #           GigabitEthernet: 6
-                  #     server:
-                  #       name:
-                  #         - name: 'RADIUSSVR2'
-                  #         - name: 'RADIUSSVR4'
-          api_method: PATCH
-
-      - name: NSO configure tacacs servers
-        tags:
-          - tacacs_server
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:tacacs
-          content: |
-            tailf-ned-cisco-ios:tacacs:
-              server:
-                - name: 'TACACSSVR1'
-                  address: 
-                    ipv4: '10.1.1.1'
-                  port: 111
-                  timeout: 10
-                  key:
-                    type: 0
-                    secret: password1
-                - name: 'TACACSSVR2'
-                  address:
-                    ipv4: '10.1.1.2'
-                  port: 222
-                  timeout: 20
-                  key:
-                    type: 0
-                    secret: password2
-                - name: 'TACACSSVR3'
-                  address:
-                    ipv4: '10.1.1.3'
-                  port: 333
-                  timeout: 30
-                  key:
-                    type: 5
-                    secret: password3
-                - name: 'TACACSSVR4'
-                  address:
-                    ipv4: '10.1.1.4'
-                  port: 444
-                  timeout: 40
-                  key:
-                    type: 5
-                    secret: password4
-          api_method: PATCH
-
-      # TODO - fix radius rollback error
-      # - name: NSO configure radius servers
-      #   tags:
-      #     - radius_server
-      #   import_role:
-      #     name: nso-ned-device-configure
-      #   vars:
-      #     api_path: config/tailf-ned-cisco-ios:radius
-      #     content: |
-      #       tailf-ned-cisco-ios:radius:
-      #         server:
-      #           - id: 'RADIUSSVR1'
-      #             address: 
-      #               ipv4: 
-      #                 host: '10.2.2.1'
-      #                 acct-port: 1853
-      #                 auth-port: 1852
-      #             timeout: 10
-      #             key:
-      #               type: 0
-      #               secret: password1
-      #           - id: 'RADIUSSVR2'
-      #             address: 
-      #               ipv4: 
-      #                 host: '10.2.2.2'
-      #                 acct-port: 1853
-      #                 auth-port: 1852
-      #             timeout: 20
-      #             key:
-      #               type: 0
-      #               secret: password2
-      #           - id: 'RADIUSSVR3'
-      #             address: 
-      #               ipv4: 
-      #                 host: '10.2.2.3'
-      #                 acct-port: 1853
-      #                 auth-port: 1852
-      #             timeout: 30
-      #             key:
-      #               type: 5
-      #               secret: password3
-      #           - id: 'RADIUSSVR4'
-      #             address: 
-      #               ipv4: 
-      #                 host: '10.2.2.4'
-      #                 acct-port: 1853
-      #                 auth-port: 1852
-      #             timeout: 40
-      #             key:
-      #               type: 5
-      #               secret: password4
-      #     api_method: PATCH
-
-      - name: NSO configure aaa accounting
-        tags:
-          - aaa_accounting
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:aaa/accounting
-          content: |
-            accounting:
-              commands:
-                - level: '15'
-                  name: 'default'
-                  action-type: 'stop-only'
-                  group: 'TACACS-GROUP-1'
-                  group2:
-                    group: 'TACACS-GROUP-2'
-                  group3:
-                    group: 'tacacs+'
-              exec:
-                - name: 'default'
-                  action-type: 'start-stop'
-                  group: 'TACACS-GROUP-1'
-                  group2:
-                    group: 'TACACS-GROUP-2'
-                  group3:
-                    group: 'tacacs+'
-          api_method: PATCH
-
-      - name: NSO configure aaa authorization
-        tags:
-          - aaa_authorization
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:aaa/authorization
-          content: |
-            authorization:
-              exec:
-                - name: 'default'
-                  tacacsplus: {}
-                  local: {}
-                  group: 'TACACS-GROUP-1'
-              commands:
-                - level: 15
-                  name: 'default'
-                  tacacsplus: {}
-                  local: {}
-                  group: 'TACACS-GROUP-1'
-          api_method: PATCH
-
-      - name: NSO configure aaa authentication
-        tags:
-          - aaa_authentication
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:aaa/authentication
-          content: |
-            authentication:
-              login:
-                - name: 'default'
-                  local: {}
-                  tacacsplus: {}
-                  group: 'TACACS-GROUP-1'
-          api_method: PATCH
-
-      - name: NSO configure username
-        tags:
-          - username
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:username
-          content: |
-            username: 
-              - name: 'admin-user'
-                privilege: 15
-                secret:
-                  type: 0
-                  secret: 'Password'
-              - name: 'user1'
-                secret:
-                  type: 0
-                  secret: 'Password123'
-              - name: 'user2'
-                secret:
-                  type: 0
-                  secret: 'Password456'
-          api_method: PATCH
-
-      - name: Execute NSO NED to OC script
-        script: ../../../package_nso_to_oc/xe/xe_system.py
-        args:
-          executable: python3
-        register: nso_to_oc_result
-      - debug:
-          msg: "{{nso_to_oc_result}}"
-      - name: NSO API call
-        uri:
-          url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-          url_username: "{{ nso_username }}"
-          url_password: "{{ nso_password }}"
-          force_basic_auth: yes
-          validate_certs: no
-          status_code: [200,201,204]
-          method: GET
-          headers: "{
-            'Content-Type': 'application/yang-data+json',
-            'Accept': 'application/yang-data+json'}"
-          body_format: json
-        delegate_to: localhost
-        register: oc_result
-      - debug:
-          msg: "{{ oc_result }}"
-      - assert:
-          that:
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['hostname'] == 'test123'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['login-banner'] == 'login-banner'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['motd-banner'] == 'motd-banner'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['domain-name'] == 'test.com'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:enable-secret'] == 'VALUE_SPECIFIED_IN_NO_LOG_PARAMETER'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:console-exec-timeout-seconds'] == 800"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:ip-options'] == 'openconfig-system-ext:DROP'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:ssh-timeout'] == 55"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['protocol-version'] == 'V2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:ssh-source-interface'] == 'GigabitEthernet6'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['timeout'] == 800"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:absolute-timeout-minutes'] == 1200"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['session-limit'] == 16"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-domain-lookup'] == false"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-success'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-failure'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['seconds'] == 900"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['attempts'] == 3"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['within'] == 120"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['archive-logging'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-bootp-server'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-dns-server'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-identd'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['http']['config']['http-enabled'] == false"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rcp-enable'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rsh-enable'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['finger'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-config'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-tcp-small-servers'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-udp-small-servers'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-pad'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-password-encryption'] == true"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['name'] == 'RADIUS-GROUP-1'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['type'] == 'openconfig-aaa:RADIUS'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['name'] == 'RADIUS-GROUP-1'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['name'] == 'RADIUS-GROUP-2'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['type'] == 'openconfig-aaa:RADIUS'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['name'] == 'RADIUS-GROUP-2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['name'] == 'TACACS-GROUP-1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['type'] == 'openconfig-aaa:TACACS'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['name'] == 'TACACS-GROUP-1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['name'] == 'TACACS-GROUP-2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['type'] == 'openconfig-aaa:TACACS'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['name'] == 'TACACS-GROUP-2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['address'] == '10.1.1.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['address'] == '10.1.1.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['name'] == 'TACACSSVR1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['timeout'] == 10"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['tacacs']['config']['port'] == 111"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['tacacs']['config']['secret-key'] == 'password1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['tacacs']['config']['source-address'] == '10.6.0.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['address'] == '10.1.1.3'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['address'] == '10.1.1.3'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['name'] == 'TACACSSVR3'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['timeout'] == 30"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['tacacs']['config']['port'] == 333"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['tacacs']['config']['secret-key'] == 'password3'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['tacacs']['config']['source-address'] == '10.6.0.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['address'] == '10.1.1.2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['address'] == '10.1.1.2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['name'] == 'TACACSSVR2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['timeout'] == 20"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['tacacs']['config']['port'] == 222"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['tacacs']['config']['secret-key'] == 'password2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['tacacs']['config']['source-address'] == '10.6.0.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['address'] == '10.1.1.4'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['address'] == '10.1.1.4'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['name'] == 'TACACSSVR4'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['timeout'] == 40"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['tacacs']['config']['port'] == 444"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['tacacs']['config']['secret-key'] == 'password4'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['tacacs']['config']['source-address'] == '10.6.0.1'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['address'] == '10.2.2.1'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['address'] == '10.2.2.1'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['name'] == 'RADIUSSVR1'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['timeout'] == 10"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['acct-port'] == 1853"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['auth-port'] == 1852"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['secret-key'] == 'password1'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['source-address'] == '10.6.0.1'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['address'] == '10.2.2.3'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['address'] == '10.2.2.3'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['name'] == 'RADIUSSVR3'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['timeout'] == 30"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['acct-port'] == 1853"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['auth-port'] == 1852"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['secret-key'] == 'password3'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['source-address'] == '10.6.0.1'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['address'] == '10.2.2.2'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['address'] == '10.2.2.2'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['name'] == 'RADIUSSVR2'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['timeout'] == 20"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['acct-port'] == 1853"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['auth-port'] == 1852"          
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['secret-key'] == 'password2'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['source-address'] == '10.6.0.1'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['address'] == '10.2.2.4'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['address'] == '10.2.2.4'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['name'] == 'RADIUSSVR4'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['timeout'] == 40"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['acct-port'] == 1853"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['auth-port'] == 1852"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['secret-key'] == 'password4'"
-            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['source-address'] == '10.6.0.1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['config']['accounting-method'][0] == 'TACACS-GROUP-1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['config']['accounting-method'][1] == 'TACACS-GROUP-2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['config']['accounting-method'][2] == 'openconfig-aaa-types:TACACS_ALL'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][0]['config']['event-type'] == 'openconfig-aaa-types:AAA_ACCOUNTING_EVENT_COMMAND'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][0]['config']['record'] == 'STOP'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][0]['event-type'] == 'openconfig-aaa-types:AAA_ACCOUNTING_EVENT_COMMAND'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][1]['config']['event-type'] == 'openconfig-aaa-types:AAA_ACCOUNTING_EVENT_LOGIN'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][1]['config']['record'] == 'START_STOP'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][1]['event-type'] == 'openconfig-aaa-types:AAA_ACCOUNTING_EVENT_LOGIN'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['events']['event'][0]['event-type'] == 'openconfig-aaa-types:AAA_AUTHORIZATION_EVENT_COMMAND'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['events']['event'][0]['config']['event-type'] == 'openconfig-aaa-types:AAA_AUTHORIZATION_EVENT_COMMAND'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['events']['event'][1]['event-type'] == 'openconfig-aaa-types:AAA_AUTHORIZATION_EVENT_CONFIG'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['events']['event'][1]['config']['event-type'] == 'openconfig-aaa-types:AAA_AUTHORIZATION_EVENT_CONFIG'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['config']['authorization-method'][0] == 'openconfig-aaa-types:TACACS_ALL'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['config']['authorization-method'][1] == 'openconfig-aaa-types:LOCAL'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['config']['authorization-method'][2] == 'TACACS-GROUP-1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['username'] == 'user1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['config']['username'] == 'user1'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['config']['password'] == 'Password123'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['config']['role'] == 'SYSTEM_ROLE_ADMIN'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][1]['username'] == 'user2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][1]['config']['username'] == 'user2'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][1]['config']['password'] == 'Password456'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][1]['config']['role'] == 'SYSTEM_ROLE_ADMIN'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][0] == 'openconfig-aaa-types:LOCAL'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][1] == 'openconfig-aaa-types:TACACS_ALL'"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][2] == 'TACACS-GROUP-1'"
-            - "'openconfig-system-ext:aes128-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
-            - "'openconfig-system-ext:aes192-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
-            - "'openconfig-system-ext:aes256-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
-            - "'openconfig-system-ext:hmac-sha2-256' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['mac']"
-            - "'openconfig-system-ext:hmac-sha2-512' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['mac']"
+#      - name: NSO configure aaa servers
+#        tags:
+#          - aaa_server
+#        import_role:
+#          name: nso-ned-device-configure
+#        vars:
+#          api_path: config/tailf-ned-cisco-ios:aaa
+#          content: |
+#            tailf-ned-cisco-ios:aaa:
+#              new-model: {}
+#              group:
+#                server:
+#                  tacacs-plus:
+#                    - name: 'TACACS-GROUP-1'
+#                      ip:
+#                        tacacs:
+#                          source-interface:
+#                            GigabitEthernet: 6
+#                      server:
+#                        name:
+#                          - name: 'TACACSSVR1'
+#                          - name: 'TACACSSVR3'
+#                    - name: 'TACACS-GROUP-2'
+#                      ip:
+#                        tacacs:
+#                          source-interface:
+#                            GigabitEthernet: 6
+#                      server:
+#                        name:
+#                          - name: 'TACACSSVR2'
+#                          - name: 'TACACSSVR4'
+#                  # radius:
+#                  #   - name: 'RADIUS-GROUP-1'
+#                  #     ip:
+#                  #       radius:
+#                  #         source-interface:
+#                  #           GigabitEthernet: 6
+#                  #     server:
+#                  #       name:
+#                  #         - name: 'RADIUSSVR1'
+#                  #         - name: 'RADIUSSVR3'
+#                  #   - name: 'RADIUS-GROUP-2'
+#                  #     ip:
+#                  #       radius:
+#                  #         source-interface:
+#                  #           GigabitEthernet: 6
+#                  #     server:
+#                  #       name:
+#                  #         - name: 'RADIUSSVR2'
+#                  #         - name: 'RADIUSSVR4'
+#          api_method: PATCH
+#
+#      - name: NSO configure tacacs servers
+#        tags:
+#          - tacacs_server
+#        import_role:
+#          name: nso-ned-device-configure
+#        vars:
+#          api_path: config/tailf-ned-cisco-ios:tacacs
+#          content: |
+#            tailf-ned-cisco-ios:tacacs:
+#              server:
+#                - name: 'TACACSSVR1'
+#                  address:
+#                    ipv4: '10.1.1.1'
+#                  port: 111
+#                  timeout: 10
+#                  key:
+#                    type: 0
+#                    secret: password1
+#                - name: 'TACACSSVR2'
+#                  address:
+#                    ipv4: '10.1.1.2'
+#                  port: 222
+#                  timeout: 20
+#                  key:
+#                    type: 0
+#                    secret: password2
+#                - name: 'TACACSSVR3'
+#                  address:
+#                    ipv4: '10.1.1.3'
+#                  port: 333
+#                  timeout: 30
+#                  key:
+#                    type: 5
+#                    secret: password3
+#                - name: 'TACACSSVR4'
+#                  address:
+#                    ipv4: '10.1.1.4'
+#                  port: 444
+#                  timeout: 40
+#                  key:
+#                    type: 5
+#                    secret: password4
+#          api_method: PATCH
+#
+#      # TODO - fix radius rollback error
+#      # - name: NSO configure radius servers
+#      #   tags:
+#      #     - radius_server
+#      #   import_role:
+#      #     name: nso-ned-device-configure
+#      #   vars:
+#      #     api_path: config/tailf-ned-cisco-ios:radius
+#      #     content: |
+#      #       tailf-ned-cisco-ios:radius:
+#      #         server:
+#      #           - id: 'RADIUSSVR1'
+#      #             address:
+#      #               ipv4:
+#      #                 host: '10.2.2.1'
+#      #                 acct-port: 1853
+#      #                 auth-port: 1852
+#      #             timeout: 10
+#      #             key:
+#      #               type: 0
+#      #               secret: password1
+#      #           - id: 'RADIUSSVR2'
+#      #             address:
+#      #               ipv4:
+#      #                 host: '10.2.2.2'
+#      #                 acct-port: 1853
+#      #                 auth-port: 1852
+#      #             timeout: 20
+#      #             key:
+#      #               type: 0
+#      #               secret: password2
+#      #           - id: 'RADIUSSVR3'
+#      #             address:
+#      #               ipv4:
+#      #                 host: '10.2.2.3'
+#      #                 acct-port: 1853
+#      #                 auth-port: 1852
+#      #             timeout: 30
+#      #             key:
+#      #               type: 5
+#      #               secret: password3
+#      #           - id: 'RADIUSSVR4'
+#      #             address:
+#      #               ipv4:
+#      #                 host: '10.2.2.4'
+#      #                 acct-port: 1853
+#      #                 auth-port: 1852
+#      #             timeout: 40
+#      #             key:
+#      #               type: 5
+#      #               secret: password4
+#      #     api_method: PATCH
+#
+#      - name: NSO configure aaa accounting
+#        tags:
+#          - aaa_accounting
+#        import_role:
+#          name: nso-ned-device-configure
+#        vars:
+#          api_path: config/tailf-ned-cisco-ios:aaa/accounting
+#          content: |
+#            accounting:
+#              commands:
+#                - level: '15'
+#                  name: 'default'
+#                  action-type: 'stop-only'
+#                  group: 'TACACS-GROUP-1'
+#                  group2:
+#                    group: 'TACACS-GROUP-2'
+#                  group3:
+#                    group: 'tacacs+'
+#              exec:
+#                - name: 'default'
+#                  action-type: 'start-stop'
+#                  group: 'TACACS-GROUP-1'
+#                  group2:
+#                    group: 'TACACS-GROUP-2'
+#                  group3:
+#                    group: 'tacacs+'
+#          api_method: PATCH
+#
+#      - name: NSO configure aaa authorization
+#        tags:
+#          - aaa_authorization
+#        import_role:
+#          name: nso-ned-device-configure
+#        vars:
+#          api_path: config/tailf-ned-cisco-ios:aaa/authorization
+#          content: |
+#            authorization:
+#              exec:
+#                - name: 'default'
+#                  tacacsplus: {}
+#                  local: {}
+#                  group: 'TACACS-GROUP-1'
+#              commands:
+#                - level: 15
+#                  name: 'default'
+#                  tacacsplus: {}
+#                  local: {}
+#                  group: 'TACACS-GROUP-1'
+#          api_method: PATCH
+#
+#      - name: NSO configure aaa authentication
+#        tags:
+#          - aaa_authentication
+#        import_role:
+#          name: nso-ned-device-configure
+#        vars:
+#          api_path: config/tailf-ned-cisco-ios:aaa/authentication
+#          content: |
+#            authentication:
+#              login:
+#                - name: 'default'
+#                  local: {}
+#                  tacacsplus: {}
+#                  group: 'TACACS-GROUP-1'
+#          api_method: PATCH
+#
+#      - name: NSO configure username
+#        tags:
+#          - username
+#        import_role:
+#          name: nso-ned-device-configure
+#        vars:
+#          api_path: config/tailf-ned-cisco-ios:username
+#          content: |
+#            username:
+#              - name: 'admin-user'
+#                privilege: 15
+#                secret:
+#                  type: 0
+#                  secret: 'Password'
+#              - name: 'user1'
+#                secret:
+#                  type: 0
+#                  secret: 'Password123'
+#              - name: 'user2'
+#                secret:
+#                  type: 0
+#                  secret: 'Password456'
+#          api_method: PATCH
+#
+#      - name: Execute NSO NED to OC script
+#        script: ../../../package_nso_to_oc/xe/xe_system.py
+#        args:
+#          executable: python3
+#        register: nso_to_oc_result
+#      - debug:
+#          msg: "{{nso_to_oc_result}}"
+#      - name: NSO API call
+#        uri:
+#          url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
+#          url_username: "{{ nso_username }}"
+#          url_password: "{{ nso_password }}"
+#          force_basic_auth: yes
+#          validate_certs: no
+#          status_code: [200,201,204]
+#          method: GET
+#          headers: "{
+#            'Content-Type': 'application/yang-data+json',
+#            'Accept': 'application/yang-data+json'}"
+#          body_format: json
+#        delegate_to: localhost
+#        register: oc_result
+#      - debug:
+#          msg: "{{ oc_result }}"
+#      - assert:
+#          that:
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['hostname'] == 'test123'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['login-banner'] == 'login-banner'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['motd-banner'] == 'motd-banner'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['domain-name'] == 'test.com'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:enable-secret'] == 'VALUE_SPECIFIED_IN_NO_LOG_PARAMETER'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:console-exec-timeout-seconds'] == 800"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:ip-options'] == 'openconfig-system-ext:DROP'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:ssh-timeout'] == 55"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['protocol-version'] == 'V2'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:ssh-source-interface'] == 'GigabitEthernet6'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['timeout'] == 800"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:absolute-timeout-minutes'] == 1200"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['session-limit'] == 16"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-domain-lookup'] == false"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-success'] == true"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-failure'] == true"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['seconds'] == 900"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['attempts'] == 3"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['within'] == 120"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['archive-logging'] == true"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-bootp-server'] == true"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-dns-server'] == true"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-identd'] == true"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['http']['config']['http-enabled'] == false"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rcp-enable'] == true"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rsh-enable'] == true"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['finger'] == true"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-config'] == true"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-tcp-small-servers'] == true"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-udp-small-servers'] == true"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-pad'] == true"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-password-encryption'] == true"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['name'] == 'RADIUS-GROUP-1'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['type'] == 'openconfig-aaa:RADIUS'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['name'] == 'RADIUS-GROUP-1'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['name'] == 'RADIUS-GROUP-2'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['type'] == 'openconfig-aaa:RADIUS'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['name'] == 'RADIUS-GROUP-2'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['name'] == 'TACACS-GROUP-1'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['type'] == 'openconfig-aaa:TACACS'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['name'] == 'TACACS-GROUP-1'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['name'] == 'TACACS-GROUP-2'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['type'] == 'openconfig-aaa:TACACS'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['name'] == 'TACACS-GROUP-2'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['address'] == '10.1.1.1'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['address'] == '10.1.1.1'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['name'] == 'TACACSSVR1'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['timeout'] == 10"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['tacacs']['config']['port'] == 111"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['tacacs']['config']['secret-key'] == 'password1'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['tacacs']['config']['source-address'] == '10.6.0.1'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['address'] == '10.1.1.3'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['address'] == '10.1.1.3'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['name'] == 'TACACSSVR3'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['timeout'] == 30"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['tacacs']['config']['port'] == 333"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['tacacs']['config']['secret-key'] == 'password3'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['tacacs']['config']['source-address'] == '10.6.0.1'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['address'] == '10.1.1.2'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['address'] == '10.1.1.2'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['name'] == 'TACACSSVR2'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['timeout'] == 20"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['tacacs']['config']['port'] == 222"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['tacacs']['config']['secret-key'] == 'password2'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['tacacs']['config']['source-address'] == '10.6.0.1'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['address'] == '10.1.1.4'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['address'] == '10.1.1.4'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['name'] == 'TACACSSVR4'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['timeout'] == 40"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['tacacs']['config']['port'] == 444"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['tacacs']['config']['secret-key'] == 'password4'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['tacacs']['config']['source-address'] == '10.6.0.1'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['address'] == '10.2.2.1'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['address'] == '10.2.2.1'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['name'] == 'RADIUSSVR1'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['timeout'] == 10"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['acct-port'] == 1853"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['auth-port'] == 1852"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['secret-key'] == 'password1'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['source-address'] == '10.6.0.1'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['address'] == '10.2.2.3'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['address'] == '10.2.2.3'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['name'] == 'RADIUSSVR3'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['timeout'] == 30"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['acct-port'] == 1853"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['auth-port'] == 1852"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['secret-key'] == 'password3'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['source-address'] == '10.6.0.1'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['address'] == '10.2.2.2'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['address'] == '10.2.2.2'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['name'] == 'RADIUSSVR2'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['timeout'] == 20"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['acct-port'] == 1853"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['auth-port'] == 1852"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['secret-key'] == 'password2'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['source-address'] == '10.6.0.1'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['address'] == '10.2.2.4'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['address'] == '10.2.2.4'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['name'] == 'RADIUSSVR4'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['timeout'] == 40"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['acct-port'] == 1853"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['auth-port'] == 1852"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['secret-key'] == 'password4'"
+#            # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['source-address'] == '10.6.0.1'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['config']['accounting-method'][0] == 'TACACS-GROUP-1'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['config']['accounting-method'][1] == 'TACACS-GROUP-2'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['config']['accounting-method'][2] == 'openconfig-aaa-types:TACACS_ALL'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][0]['config']['event-type'] == 'openconfig-aaa-types:AAA_ACCOUNTING_EVENT_COMMAND'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][0]['config']['record'] == 'STOP'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][0]['event-type'] == 'openconfig-aaa-types:AAA_ACCOUNTING_EVENT_COMMAND'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][1]['config']['event-type'] == 'openconfig-aaa-types:AAA_ACCOUNTING_EVENT_LOGIN'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][1]['config']['record'] == 'START_STOP'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][1]['event-type'] == 'openconfig-aaa-types:AAA_ACCOUNTING_EVENT_LOGIN'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['events']['event'][0]['event-type'] == 'openconfig-aaa-types:AAA_AUTHORIZATION_EVENT_COMMAND'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['events']['event'][0]['config']['event-type'] == 'openconfig-aaa-types:AAA_AUTHORIZATION_EVENT_COMMAND'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['events']['event'][1]['event-type'] == 'openconfig-aaa-types:AAA_AUTHORIZATION_EVENT_CONFIG'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['events']['event'][1]['config']['event-type'] == 'openconfig-aaa-types:AAA_AUTHORIZATION_EVENT_CONFIG'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['config']['authorization-method'][0] == 'openconfig-aaa-types:TACACS_ALL'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['config']['authorization-method'][1] == 'openconfig-aaa-types:LOCAL'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['config']['authorization-method'][2] == 'TACACS-GROUP-1'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['username'] == 'user1'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['config']['username'] == 'user1'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['config']['password'] == 'Password123'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['config']['role'] == 'SYSTEM_ROLE_ADMIN'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][1]['username'] == 'user2'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][1]['config']['username'] == 'user2'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][1]['config']['password'] == 'Password456'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][1]['config']['role'] == 'SYSTEM_ROLE_ADMIN'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][0] == 'openconfig-aaa-types:LOCAL'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][1] == 'openconfig-aaa-types:TACACS_ALL'"
+#            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][2] == 'TACACS-GROUP-1'"
+#            - "'openconfig-system-ext:aes128-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
+#            - "'openconfig-system-ext:aes192-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
+#            - "'openconfig-system-ext:aes256-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
+#            - "'openconfig-system-ext:hmac-sha2-256' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['mac']"
+#            - "'openconfig-system-ext:hmac-sha2-512' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['mac']"
 
       - name: NSO configure ntp authenticate
         tags:
