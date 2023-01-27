@@ -152,7 +152,7 @@ def configure_network_interfaces(net_inst, interfaces_by_vrf):
             }
         }
 
-        if (interface["type"] != "Tunnel"):
+        if (interface["type"] != "Tunnel") and (interface["type"] != "Vlan"):
             subinterface = '0' if len(name_split) == 1 else name_split[1]
             new_interface["openconfig-network-instance:config"]["openconfig-network-instance:subinterface"] = subinterface
 
