@@ -19,6 +19,8 @@ import sys
 from pathlib import Path
 from importlib.util import find_spec
 
+TACACS = "tacacs"
+RADIUS = "radius"
 system_notes = []
 
 openconfig_system = {
@@ -456,6 +458,20 @@ def xe_system_aaa(config_before: dict, config_leftover: dict, if_ip: dict) -> No
             "openconfig-system:users": set_authentication_user(oc_system_aaa_authentication, config_leftover, authentication_user_list)
         }
         oc_system_aaa_authentication.update(temp_aaa_authentication)
+
+        updated_usernames = []
+
+        for username in config_leftover.get("tailf-ned-cisco-ios:username", []):
+            if username:
+                updated_usernames.append(username)
+
+        if len(updated_usernames) > 0:
+            config_leftover["tailf-ned-cisco-ios:username"] = updated_usernames
+        elif "tailf-ned-cisco-ios:username" in config_leftover:
+            del config_leftover["tailf-ned-cisco-ios:username"]
+    
+    cleanup_server_access(config_leftover, f"{TACACS}-plus", TACACS)
+    cleanup_server_access(config_leftover, RADIUS, RADIUS)
     
 def process_aaa_tacacs(oc_system_server_group, config_leftover, if_ip, tacacs_group_index, tacacs_group, tacacs_server_list):
     tacacs_group_leftover = config_leftover.get("tailf-ned-cisco-ios:aaa", {}).get("group", {}).get("server", {}).get("tacacs-plus")[tacacs_group_index]
@@ -818,6 +834,33 @@ def set_authentication_user(oc_system_aaa_authentication, config_leftover, authe
                 config_leftover["tailf-ned-cisco-ios:username"][i] = None
 
     return authe_user
+
+def cleanup_server_access(config_leftover, group_access_type, access_type):
+    if len(config_leftover.get("tailf-ned-cisco-ios:aaa", {}).get("group", {}).get("server", {}).get(group_access_type, [])) < 1:
+        return
+
+    updated_server_list = []
+
+    for group_access_type_server in config_leftover["tailf-ned-cisco-ios:aaa"]["group"]["server"][group_access_type]:
+        updated_server_names = []
+
+        for name in group_access_type_server.get("server", {}).get("name", []):
+            if name and name.get("name"):
+                updated_server_names.append(name)
+
+        if len(updated_server_names) > 0:
+            group_access_type_server["server"]["name"] = updated_server_names
+        elif "name" in group_access_type_server.get("server", {}):
+            del group_access_type_server["server"]["name"]
+
+    for server in config_leftover.get(f"tailf-ned-cisco-ios:{access_type}", {}).get("server", []):
+        if server and len(server) > 0:
+            updated_server_list.append(server)
+    
+    if len(updated_server_list) > 0:
+        config_leftover[f"tailf-ned-cisco-ios:{access_type}"]["server"] = updated_server_list
+    elif "server" in config_leftover.get(f"tailf-ned-cisco-ios:{access_type}", {}):
+        del config_leftover[f"tailf-ned-cisco-ios:{access_type}"]["server"]
 
 def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []) -> dict:
     """

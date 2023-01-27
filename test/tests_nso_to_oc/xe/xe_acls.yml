@@ -275,6 +275,20 @@
                         - rule: '20 permit tcp any any eq www'
                         - rule: '30 permit tcp any any range 1024 65535 established'
                         - rule: '40 deny ip any any log-input'
+          
+          - name: NSO configure Numbered ACLs
+            tags:
+              - acl_config
+            api_path: config/tailf-ned-cisco-ios:access-list/access-list
+            api_method: PATCH
+            content: |
+              access-list:
+                - id: 21
+                  rule:
+                  - rule: permit 192.0.0.1
+                  - rule: permit 10.0.1.1
+                  - rule: permit 10.0.1.2
+                  - rule: remark Standard-Remark
 
           - name: Init interface
             tags:
@@ -395,15 +409,15 @@
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['actions']['config']['forwarding-action'] == 'openconfig-acl:ACCEPT'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['actions']['config']['log-action'] == 'openconfig-acl:LOG_NONE'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][0]['acl-entries']['acl-entry'][0]['openconfig-acl-ext:ipv4']['config']['source-address'] == '192.0.0.0/8'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['name'] == 'deny-hosts'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['type'] == 'openconfig-acl:ACL_IPV4'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['sequence-id'] == 50"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['actions']['config']['forwarding-action'] == 'openconfig-acl:REJECT'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['actions']['config']['log-action'] == 'openconfig-acl:LOG_NONE'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['ipv4']['config']['source-address'] == '192.168.1.12/32'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['ipv4']['config']['destination-address'] == '0.0.0.0/0'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['transport']['config']['source-port'] == 'ANY'"
-          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][1]['acl-entries']['acl-entry'][4]['transport']['config']['destination-port'] == '1025..65535'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['name'] == 'deny-hosts'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['type'] == 'openconfig-acl:ACL_IPV4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['sequence-id'] == 50"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['actions']['config']['forwarding-action'] == 'openconfig-acl:REJECT'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['actions']['config']['log-action'] == 'openconfig-acl:LOG_NONE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['ipv4']['config']['source-address'] == '192.168.1.12/32'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['ipv4']['config']['destination-address'] == '0.0.0.0/0'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['transport']['config']['source-port'] == 'ANY'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['transport']['config']['destination-port'] == '1025..65535'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['id'] == 'vty 0 4'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['egress-acl-set'] == '11'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['ingress-acl-set-name'] == '11'"
