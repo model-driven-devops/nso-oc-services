@@ -34,7 +34,8 @@ openconfig_network_instances = {
                     "openconfig-network-instance:enabled": "true"
                 },
                 "openconfig-network-instance:protocols": {"openconfig-network-instance:protocol": []},
-                "openconfig-network-instance:interfaces": {"openconfig-network-instance:interface": []}
+                "openconfig-network-instance:interfaces": {"openconfig-network-instance:interface": []},
+                "openconfig-network-instance:vlans": {}
             }
         ]
     }
