@@ -882,7 +882,7 @@ def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []
     xe_system_services(before, leftover)
     xe_system_ssh_server(before, leftover)
     xe_system_ntp(before, leftover, if_ip)
-    xe_system_aaa(before, leftover, if_ip)
+    # xe_system_aaa(before, leftover, if_ip)
     translation_notes += system_notes
 
     return openconfig_system
