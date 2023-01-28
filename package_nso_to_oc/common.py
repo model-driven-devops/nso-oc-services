@@ -7,8 +7,12 @@ import re
 from pathlib import Path, os as path_os
 from typing import Tuple
 
-if not os.environ.get("NSO_URL", False):
-    print("environment variable NSO_URL must be set")
+
+if os.environ.get("NSO_URL", False) and os.environ.get("NSO_NED_FILE", False):
+    print("environment variable NSO_URL or NSO_NED_FILE must be set: not both")
+    exit()
+elif not os.environ.get("NSO_URL", False) and not os.environ.get("NSO_NED_FILE", False):
+    print("environment variable NSO_URL or NSO_NED_FILE must be set")
     exit()
 
 # Different device OS
