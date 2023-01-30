@@ -322,12 +322,13 @@ def check_areas(ospf_leftover, net_protocols, vrf_interfaces, config_leftover, p
     area_list = populate_area_list(ospf)
     is_area_0_present = check_for_area_0(area_list)
 
-    for area_key, area in enumerate(area_list):
-        set_ospfv2_areas(ospfv2_area, area, area_key, ospf, ospf_leftover)
+    for area in area_list:
+        leftover_area = list(filter(lambda temp_area: temp_area["id"] == area["id"], ospf_leftover.get("area", [])))
+        set_ospfv2_areas(ospfv2_area, area, leftover_area, ospf, ospf_leftover)
 
         if is_area_0_present and int(area["id"]) != 0:
             # We do this as long as area 0 is available and destination area is not 0.
-            set_inter_area_propagation_policy(ospf_leftover, net_protocols, prot_index, area_key, area)
+            set_inter_area_propagation_policy(net_protocols, prot_index, area, leftover_area)
 
         for current_intf in interfaces_by_area.get(area.get("id", 0), []):
             intf_type, intf_number = (current_intf["type"], current_intf["name"])
@@ -366,7 +367,7 @@ def check_for_area_0(area_list):
 
     return False
 
-def set_inter_area_propagation_policy(ospf_leftover, net_protocols, prot_index, area_key, area):
+def set_inter_area_propagation_policy(net_protocols, prot_index, area, leftover_area):
     if "id" in area and "filter-list" in area and len(area["filter-list"]) == 1:
         ospfv2_global = get_ospfv2_global(net_protocols, prot_index)
         import_policy_prefix = area["filter-list"][0]["prefix"]
@@ -388,8 +389,8 @@ def set_inter_area_propagation_policy(ospf_leftover, net_protocols, prot_index, 
 
         ospfv2_global["openconfig-network-instance:inter-area-propagation-policies"]["openconfig-network-instance:inter-area-propagation-policy"].append(service_policy)
 
-        if 0 <= area_key < len(ospf_leftover["area"]) and area["id"] == ospf_leftover["area"][area_key]["id"] and "filter-list" in ospf_leftover["area"][area_key]:
-            del ospf_leftover["area"][area_key]["filter-list"]
+        if len(leftover_area) > 0 and "filter-list" in leftover_area[0]:
+            del leftover_area[0]["filter-list"]
 
 
 def set_mpls_ldp_sync(ospf_leftover, net_protocols, prot_index, ospf):
@@ -595,6 +596,8 @@ def set_authentication(intf, intf_leftover):
             intf["ip"]["ospf"]["authentication-key"]["secret"] = None
         auth_list.append(config)
     else:
+        updated_ospf_auth_list = []
+
         for index, auth in enumerate(intf["ip"]["ospf"]["authentication"]):
             # NULL
             if "null" in intf["ip"]["ospf"]["authentication"]:
@@ -610,6 +613,13 @@ def set_authentication(intf, intf_leftover):
                 }
                 intf_leftover["ip"]["ospf"]["authentication"][index] = None
                 auth_list.append(config)
+            if intf_leftover["ip"]["ospf"]["authentication"][index]:
+                updated_ospf_auth_list.append(intf_leftover["ip"]["ospf"]["authentication"][index])
+        
+        if len(updated_ospf_auth_list) > 0:
+            intf_leftover["ip"]["ospf"]["authentication"] = updated_ospf_auth_list
+        else:
+            del intf_leftover["ip"]["ospf"]["authentication"]
 
     if is_mess_digest:
         authentication.update(set_message_digest(intf, intf_leftover))
@@ -623,6 +633,7 @@ def set_message_digest(intf, intf_leftover):
     }}
     mess_digest_list = mess_digest["openconfig-ospfv2-ext:md5-authentication-keys"][
         "openconfig-ospfv2-ext:md5-authentication-key"]
+    updated_md_key_list = []
 
     for index, message_digest in enumerate(intf["ip"]["ospf"]["message-digest-key"]):
         config = {
@@ -636,14 +647,23 @@ def set_message_digest(intf, intf_leftover):
 
         if "message-digest-key" in intf_leftover["ip"]["ospf"]:
             intf_leftover["ip"]["ospf"]["message-digest-key"][index] = None
+        
+    for md_key in intf_leftover.get("ip", {}).get("ospf", {}).get("message-digest-key", []):
+        if md_key:
+            updated_md_key_list.append(md_key)
+    
+    if len(updated_md_key_list) > 0:
+        intf_leftover["ip"]["ospf"]["message-digest-key"] = updated_md_key_list
+    elif "message-digest-key" in intf_leftover["ip"]["ospf"]:
+        del intf_leftover["ip"]["ospf"]["message-digest-key"]
 
     return mess_digest
 
-def set_ospfv2_areas(ospfv2_area, area, area_key, ospf, ospf_leftover):
+def set_ospfv2_areas(ospfv2_area, area, leftover_area, ospf, ospf_leftover):
     area_by_id = get_area_by_id(ospfv2_area, area["id"])
     set_traffic_eng(area_by_id, ospf, ospf_leftover)
-    set_virtual_links(area_by_id, area, area_key, ospf_leftover)
-    set_stub(area_by_id, area, area_key, ospf_leftover)
+    set_virtual_links(area_by_id, area, leftover_area)
+    set_stub(area_by_id, area, leftover_area)
 
 def set_traffic_eng(area_by_id, ospf, ospf_leftover):
     is_enabled = False
@@ -656,7 +676,7 @@ def set_traffic_eng(area_by_id, ospf, ospf_leftover):
 
     area_by_id["openconfig-network-instance:mpls"] = {"openconfig-network-instance:config": {"openconfig-network-instance:traffic-engineering-enabled": is_enabled}}
 
-def set_virtual_links(area_by_id, area, area_key, ospf_leftover):
+def set_virtual_links(area_by_id, area, leftover_area):
     if "virtual-link" in area:
         for v_link_index, v_link in enumerate(area["virtual-link"]):
             if not "openconfig-network-instance:virtual-links" in area_by_id:
@@ -669,10 +689,10 @@ def set_virtual_links(area_by_id, area, area_key, ospf_leftover):
                 "openconfig-network-instance:config": {"openconfig-network-instance:remote-router-id": v_link["id"]}
             })
 
-            if 0 <= area_key < len(ospf_leftover["area"]) and area["id"] == ospf_leftover["area"][area_key]["id"]:
-                ospf_leftover["area"][area_key]["virtual-link"][v_link_index] = None
+            if len(leftover_area) > 0 and "virtual-link" in leftover_area[0]:
+                leftover_area[0]["virtual-link"][v_link_index] = None
 
-def set_stub(area_by_id, area, area_key, ospf_leftover):
+def set_stub(area_by_id, area, leftover_area):
     # This might not be necessary, since configs are coming directly from NEDs.
     # stub_counter = 0
 
@@ -712,8 +732,8 @@ def set_stub(area_by_id, area, area_key, ospf_leftover):
                 "openconfig-ospfv2-ext:nssa": {"openconfig-ospfv2-ext:config": nssa_false}
             }
 
-        if 0 <= area_key < len(ospf_leftover["area"]) and area["id"] == ospf_leftover["area"][area_key]["id"]:
-            del ospf_leftover["area"][area_key]["stub"]
+        if len(leftover_area) > 0 and "stub" in leftover_area[0]:
+            del leftover_area[0]["stub"]
     elif "nssa" in area:
         nssa_true = copy.deepcopy(all_true)
         nssa_true["openconfig-ospfv2-ext:no-summary"] = "no-summary" in area["nssa"]
@@ -723,5 +743,5 @@ def set_stub(area_by_id, area, area_key, ospf_leftover):
             "openconfig-ospfv2-ext:nssa": {"openconfig-ospfv2-ext:config": nssa_true}
         }
 
-        if 0 <= area_key < len(ospf_leftover["area"]) and area["id"] == ospf_leftover["area"][area_key]["id"]:
-            del ospf_leftover["area"][area_key]["nssa"]
+        if len(leftover_area) > 0 and "nssa" in leftover_area[0]:
+            del leftover_area[0]["nssa"]

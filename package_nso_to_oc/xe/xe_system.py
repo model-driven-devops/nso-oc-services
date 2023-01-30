@@ -19,6 +19,8 @@ import sys
 from pathlib import Path
 from importlib.util import find_spec
 
+TACACS = "tacacs"
+RADIUS = "radius"
 system_notes = []
 
 openconfig_system = {
@@ -460,6 +462,20 @@ def xe_system_aaa(config_before: dict, config_leftover: dict, if_ip: dict) -> No
             "openconfig-system:users": set_authentication_user(oc_system_aaa_authentication, config_leftover, authentication_user_list)
         }
         oc_system_aaa_authentication.update(temp_aaa_authentication)
+
+        updated_usernames = []
+
+        for username in config_leftover.get("tailf-ned-cisco-ios:username", []):
+            if username:
+                updated_usernames.append(username)
+
+        if len(updated_usernames) > 0:
+            config_leftover["tailf-ned-cisco-ios:username"] = updated_usernames
+        elif "tailf-ned-cisco-ios:username" in config_leftover:
+            del config_leftover["tailf-ned-cisco-ios:username"]
+    
+    cleanup_server_access(config_leftover, f"{TACACS}-plus", TACACS)
+    cleanup_server_access(config_leftover, RADIUS, RADIUS)
     
 def process_aaa_tacacs(oc_system_server_group, config_leftover, if_ip, tacacs_group_index, tacacs_group, tacacs_server_list):
     tacacs_group_leftover = config_leftover.get("tailf-ned-cisco-ios:aaa", {}).get("group", {}).get("server", {}).get("tacacs-plus")[tacacs_group_index]
@@ -823,6 +839,33 @@ def set_authentication_user(oc_system_aaa_authentication, config_leftover, authe
 
     return authe_user
 
+def cleanup_server_access(config_leftover, group_access_type, access_type):
+    if len(config_leftover.get("tailf-ned-cisco-ios:aaa", {}).get("group", {}).get("server", {}).get(group_access_type, [])) < 1:
+        return
+
+    updated_server_list = []
+
+    for group_access_type_server in config_leftover["tailf-ned-cisco-ios:aaa"]["group"]["server"][group_access_type]:
+        updated_server_names = []
+
+        for name in group_access_type_server.get("server", {}).get("name", []):
+            if name and name.get("name"):
+                updated_server_names.append(name)
+
+        if len(updated_server_names) > 0:
+            group_access_type_server["server"]["name"] = updated_server_names
+        elif "name" in group_access_type_server.get("server", {}):
+            del group_access_type_server["server"]["name"]
+
+    for server in config_leftover.get(f"tailf-ned-cisco-ios:{access_type}", {}).get("server", []):
+        if server and len(server) > 0:
+            updated_server_list.append(server)
+    
+    if len(updated_server_list) > 0:
+        config_leftover[f"tailf-ned-cisco-ios:{access_type}"]["server"] = updated_server_list
+    elif "server" in config_leftover.get(f"tailf-ned-cisco-ios:{access_type}", {}):
+        del config_leftover[f"tailf-ned-cisco-ios:{access_type}"]["server"]
+
 def xe_system_logging(config_before: dict, config_leftover: dict, if_ip: dict) -> None:
     """
     Translates NSO XE NED to MDD OpenConfig System Logging
@@ -844,14 +887,16 @@ def xe_system_logging(config_before: dict, config_leftover: dict, if_ip: dict) -
         }
         oc_system_logging.update(temp_logging_buffered)
         del config_leftover["tailf-ned-cisco-ios:logging"]["buffered"]["severity-level"]
-        if logging.get("buffered").get("buffer-size"):
+        if logging.get("buffered", {}).get("buffer-size"):
             del config_leftover["tailf-ned-cisco-ios:logging"]["buffered"]["buffer-size"]
 
     # LOGGING CONSOLE
     if logging_console:
         temp_logging_console = {
             "openconfig-system:config": { },
-            "openconfig-system:selectors": set_logging_console(logging_console, config_leftover, oc_system_logging_console),
+            "openconfig-system:selectors": set_logging_console(logging_console, 
+                                                                config_leftover, 
+                                                                oc_system_logging_console),
         }
         oc_system_logging_console.update(temp_logging_console)
         del config_leftover["tailf-ned-cisco-ios:logging"]["console"]["severity-level"]
@@ -859,7 +904,9 @@ def xe_system_logging(config_before: dict, config_leftover: dict, if_ip: dict) -
     # LOGGING MONITOR
     if logging_monitor:
         temp_logging_monitor = {
-            "openconfig-system-ext:selectors": set_logging_monitor(logging_monitor, config_leftover, oc_system_logging_monitor),
+            "openconfig-system-ext:selectors": set_logging_monitor(logging_monitor, 
+                                                                    config_leftover, 
+                                                                    oc_system_logging_monitor),
         }
         oc_system_logging_monitor.update(temp_logging_monitor)
         del config_leftover["tailf-ned-cisco-ios:logging"]["monitor"]["severity-level"]
@@ -867,21 +914,21 @@ def xe_system_logging(config_before: dict, config_leftover: dict, if_ip: dict) -
     # LOGGING HOST
     if logging.get("host"):
         temp_logging_host = {
-            "openconfig-system:remote-servers": set_logging_host(logging, config_leftover, oc_system_logging, if_ip, intf_ip_name_dict),
+            "openconfig-system:remote-servers": set_logging_host(logging, config_leftover, 
+                                                                    oc_system_logging, if_ip, 
+                                                                    intf_ip_name_dict),
         }
         oc_system_logging.update(temp_logging_host)
     
-    print(f'0*** config_leftover {config_leftover}\n\n')
-
 def set_logging_buffered(logging, config_leftover, oc_system_logging):
     buffered = {"openconfig-system-ext:config": []}
     buffered_list = buffered["openconfig-system-ext:config"]
     # LOGGING BUFFERED SEVERITY AND BUFFER SIZE
     buffer_size = 4096 # Default Buffer Size
     severity = "DEBUG" # Default Severity
-    if logging.get("buffered").get("buffer-size"):
-        buffer_size = logging.get("buffered").get("buffer-size")
-    if logging.get("buffered").get("severity-level"):
+    if logging.get("buffered", {}).get("buffer-size"):
+        buffer_size = logging["buffered"]["buffer-size"]
+    if logging.get("buffered", {}).get("severity-level"):
         # Severity
         if logging["buffered"]["severity-level"] == "emergencies" or logging["buffered"]["severity-level"] == 0:
             severity = "EMERGENCY"
@@ -979,7 +1026,7 @@ def set_logging_host(logging, config_leftover, oc_system_logging, if_ip, intf_ip
     # LOGGING HOST IP, PORT, VRF, SOURCE ADDRESS
     host_ipv4 = logging.get("host", {}).get('ipv4')
     host_ipv4_vrf = logging.get("host", {}).get('ipv4-vrf')
-    source_intf = logging.get("source-interface", [])
+    source_intf = logging.get("source-interface")
     vrf_source_intf_list = vrf_source_ip_list = []
     severity = "INFORMATIONAL" # Default Severity
     
@@ -1003,17 +1050,21 @@ def set_logging_host(logging, config_leftover, oc_system_logging, if_ip, intf_ip
             severity = "DEBUG"
 
     # GET SOURCE INTERFACE AND VRF
-    for int_vrf in source_intf:
+    for i, int_vrf in enumerate(source_intf):
         if "vrf" in int_vrf.keys():
             temp_intf_vrf = {int_vrf["vrf"]: int_vrf["name"]}
             vrf_source_intf_list.append(temp_intf_vrf)
         else:
             temp_intf_vrf = {"default": int_vrf["name"]}
             vrf_source_intf_list.append(temp_intf_vrf)
+        if config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface", [])[i].get("name"):
+            config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"][i]["name"] = None
+        if config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface", [])[i].get("vrf"):
+            config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"][i]["vrf"] = None
 
     # ADD HOST IPV4
     if host_ipv4:
-        for h in host_ipv4:
+        for i, h in enumerate(host_ipv4):
             host = h.get("host")
             source_ip = "1.1.1.1" # Placeholder Source IPv4
             intf = "GigabitEthernet1" # Placeholder Source Interface
@@ -1043,13 +1094,11 @@ def set_logging_host(logging, config_leftover, oc_system_logging, if_ip, intf_ip
                         }  
                         }
             hosts_list.append(temp_host)
-        config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4"] = None
-        config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"] = None
-        config_leftover["tailf-ned-cisco-ios:logging"]["facility"] = None
-        config_leftover["tailf-ned-cisco-ios:logging"]["trap"] = None
+            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4"][i]["host"] = None
+    
     # ADD HOST IPV4 AND VRF
     if host_ipv4_vrf:
-        for h in host_ipv4_vrf:
+        for i, h in enumerate(host_ipv4_vrf):
             host = h.get("host")
             host_vrf = h.get("vrf")
             source_ip_vrf = "1.1.1.1" # Placeholder Source IPv4
@@ -1081,12 +1130,58 @@ def set_logging_host(logging, config_leftover, oc_system_logging, if_ip, intf_ip
                         }  
                         }
             hosts_list.append(temp_host)
-        config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"] = None
-        config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"] = None
-        config_leftover["tailf-ned-cisco-ios:logging"]["facility"] = None
-        config_leftover["tailf-ned-cisco-ios:logging"]["trap"] = None
-
+            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"][i]["host"] = None
+            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"][i]["vrf"] = None
+    
+    if logging.get("facility"):
+        del config_leftover["tailf-ned-cisco-ios:logging"]["facility"]
+    if logging.get("trap"):
+        del config_leftover["tailf-ned-cisco-ios:logging"]["trap"]
+    cleanup_logging(config_leftover)
     return hosts
+
+def cleanup_logging(config_leftover):
+    if len(config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface", [])) < 1:
+        pass
+    else:
+        updated_source_intf = []
+
+        for source in config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"]:
+            if source and source.get("name"):
+                updated_source_intf.append(source)
+
+        if len(updated_source_intf) > 0:
+            config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"] = updated_source_intf
+        elif "name" not in config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface"):
+            del config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"]
+
+    if len(config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("host", {}).get("ipv4", [])) < 1:
+        pass
+    else:
+        updated_ipv4 = []
+
+        for host_ipv4 in config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4"]:
+            if host_ipv4 and host_ipv4.get("host"):
+                updated_ipv4.append(host_ipv4)
+
+        if len(updated_ipv4) > 0:
+            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4"] = updated_ipv4
+        elif "host" not in config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("host", {}).get("ipv4"):
+            del config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4"]
+
+    if len(config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("host", {}).get("ipv4-vrf", [])) < 1:
+        pass
+    else:
+        updated_ipv4_vrf = []
+
+        for host_ipv4_vrf in config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"]:
+            if host_ipv4_vrf and host_ipv4_vrf.get("host"):
+                updated_ipv4_vrf.append(host_ipv4_vrf)
+
+        if len(updated_ipv4_vrf) > 0:
+            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"] = updated_ipv4_vrf
+        elif "host" not in config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("host", {}).get("ipv4-vrf"):
+            del config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"]
 
 def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []) -> dict:
     """
@@ -1108,7 +1203,7 @@ def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []
     xe_system_services(before, leftover)
     xe_system_ssh_server(before, leftover)
     xe_system_ntp(before, leftover, if_ip)
-    xe_system_aaa(before, leftover, if_ip)
+    # xe_system_aaa(before, leftover, if_ip)
     xe_system_logging(before, leftover, if_ip)
     translation_notes += system_notes
 

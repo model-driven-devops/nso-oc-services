@@ -34,7 +34,8 @@ openconfig_network_instances = {
                     "openconfig-network-instance:enabled": "true"
                 },
                 "openconfig-network-instance:protocols": {"openconfig-network-instance:protocol": []},
-                "openconfig-network-instance:interfaces": {"openconfig-network-instance:interface": []}
+                "openconfig-network-instance:interfaces": {"openconfig-network-instance:interface": []},
+                "openconfig-network-instance:vlans": {}
             }
         ]
     }
@@ -73,6 +74,9 @@ def xe_network_instances(config_before: dict, config_leftover: dict) -> None:
     interfaces_by_vrf = get_interfaces_by_vrf(config_before)
     route_forwarding_list_by_vrf = get_route_forwarding_list_by_vrf(config_before)
     configure_network_instances(config_before, config_leftover, interfaces_by_vrf, route_forwarding_list_by_vrf)
+
+    cleanup_null_ospf_leftovers(config_leftover)
+    cleanup_null_static_route_leftovers(config_leftover)
 
 def get_interfaces_by_vrf(config_before):
     interfaces_by_vrf = {}
@@ -148,7 +152,7 @@ def configure_network_interfaces(net_inst, interfaces_by_vrf):
             }
         }
 
-        if (interface["type"] != "Tunnel"):
+        if (interface["type"] != "Tunnel") and (interface["type"] != "Vlan"):
             subinterface = '0' if len(name_split) == 1 else name_split[1]
             new_interface["openconfig-network-instance:config"]["openconfig-network-instance:subinterface"] = subinterface
 
@@ -176,6 +180,116 @@ def process_rt(temp_vrf, vrf, rt_type):
         if "asn-ip" in rt:
             temp_vrf["openconfig-network-instance:config"][
                 f"openconfig-network-instance-ext:route-targets-{rt_type}"].append(rt["asn-ip"])
+
+def cleanup_null_ospf_leftovers(config_leftover):
+    ospf_leftover = config_leftover.get("tailf-ned-cisco-ios:router", {}).get("ospf", [])
+    updated_ospf_list = []
+
+    for ospf_index in range(len(ospf_leftover)):
+        cleanup_neighbors(ospf_leftover[ospf_index])
+        cleanup_traffic_area(ospf_leftover[ospf_index])
+        cleanup_virtual_link(ospf_leftover[ospf_index])
+
+        if len(ospf_leftover[ospf_index]) > 0:
+            updated_ospf_list.append(ospf_leftover[ospf_index])
+    
+    if len(updated_ospf_list) > 0:
+        config_leftover.get("tailf-ned-cisco-ios:router", {})["ospf"] = updated_ospf_list
+    elif "ospf" in config_leftover.get("tailf-ned-cisco-ios:router", {}):
+        del config_leftover["tailf-ned-cisco-ios:router"]["ospf"]
+
+def cleanup_neighbors(ospf_leftover):
+    if "neighbor" in ospf_leftover:
+        del ospf_leftover["neighbor"]
+
+def cleanup_virtual_link(ospf_leftover):
+    if len(ospf_leftover.get("area", [])) < 1:
+        return
+
+    for area in ospf_leftover["area"]:
+        updated_virtual_link_list = []
+
+        for virtual_link in area.get("virtual-link", []):
+            if virtual_link:
+                updated_virtual_link_list.append(virtual_link)
+
+        if len(updated_virtual_link_list) > 0:
+            area["virtual-link"] = updated_virtual_link_list
+        elif "virtual-link" in area:
+            del area["virtual-link"]
+
+def cleanup_traffic_area(ospf_leftover):
+    if not "mpls" in ospf_leftover:
+        return
+
+    updated_traffic_area_list = []
+
+    for area_item in ospf_leftover["mpls"].get("traffic-eng", {}).get("area", []):
+        if area_item:
+            updated_traffic_area_list.append(area_item)
+        
+    if len(updated_traffic_area_list) > 0:
+        ospf_leftover["mpls"]["traffic-eng"]["area"] = updated_traffic_area_list
+    elif "area" in ospf_leftover["mpls"].get("traffic-eng", {}):
+        del ospf_leftover["mpls"]["traffic-eng"]["area"]
+
+def cleanup_null_static_route_leftovers(config_leftover):
+    if "route" in config_leftover.get("tailf-ned-cisco-ios:ip", {}):
+        cleanup_static_routes(config_leftover["tailf-ned-cisco-ios:ip"]["route"])
+    
+    cleanup_vrf_null_leftover_static_routes(config_leftover)
+
+    if "route" in config_leftover.get("tailf-ned-cisco-ios:ip", {}) and len(config_leftover["tailf-ned-cisco-ios:ip"]["route"]) == 0:
+        del config_leftover["tailf-ned-cisco-ios:ip"]["route"]
+
+def cleanup_vrf_null_leftover_static_routes(config_leftover):
+    if len(config_leftover.get("tailf-ned-cisco-ios:ip", {"route": {}}).get("route", {}).get("vrf", [])) > 0:
+        updated_vrf_list = []
+
+        for vrf in config_leftover["tailf-ned-cisco-ios:ip"]["route"]["vrf"]:
+            cleanup_static_routes(vrf)
+
+            if len(vrf) > 0:
+                updated_vrf_list.append(vrf)
+        
+        if len(updated_vrf_list) > 0:
+            config_leftover["tailf-ned-cisco-ios:ip"]["route"]["vrf"] = updated_vrf_list
+        else:
+            del config_leftover["tailf-ned-cisco-ios:ip"]["route"]["vrf"]
+
+def cleanup_static_routes(leftover_route):
+    if common_xe.IP_FORWARDING_LIST in leftover_route:
+        updated_ip_forwarding_list_leftover = get_updated_configs(leftover_route[common_xe.IP_FORWARDING_LIST])
+
+        if len(updated_ip_forwarding_list_leftover) > 0:
+            leftover_route[common_xe.IP_FORWARDING_LIST] = updated_ip_forwarding_list_leftover
+        elif common_xe.IP_FORWARDING_LIST in leftover_route:
+            del leftover_route[common_xe.IP_FORWARDING_LIST]
+    if common_xe.INTF_LIST in leftover_route:
+        updated_intf_list_leftover = get_updated_configs(leftover_route[common_xe.INTF_LIST])
+
+        if len(updated_intf_list_leftover) > 0:
+            leftover_route[common_xe.INTF_LIST] = updated_intf_list_leftover
+        elif common_xe.INTF_LIST in leftover_route:
+            del leftover_route[common_xe.INTF_LIST]
+    if common_xe.IP_INTF_FORWARDING_LIST in leftover_route:
+        updated_ip_intf_forwarding_list_leftover = get_updated_configs(leftover_route[common_xe.IP_INTF_FORWARDING_LIST])
+
+        if len(updated_ip_intf_forwarding_list_leftover) > 0:
+            leftover_route[common_xe.IP_INTF_FORWARDING_LIST] = updated_ip_intf_forwarding_list_leftover
+        elif common_xe.IP_INTF_FORWARDING_LIST in leftover_route:
+            del leftover_route[common_xe.IP_INTF_FORWARDING_LIST]
+    if "name" in leftover_route and len(leftover_route) < 2:
+        del leftover_route["name"]
+
+def get_updated_configs(list_leftover):
+    updated_static_list = []
+
+    for item in list_leftover:
+        if item:
+            updated_static_list.append(item)
+
+    return updated_static_list
 
 def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
     """
