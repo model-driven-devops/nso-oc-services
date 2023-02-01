@@ -871,20 +871,20 @@ def xe_system_clock_timezone(config_before: dict, config_leftover: dict) -> None
     openconfig_system_clock_config = openconfig_system["openconfig-system:system"][
         "openconfig-system:clock"]["openconfig-system:config"]
     timezone_name = ["UTC", "0", "0"] # Placeholder Timezone, Hours and Minutes
+    zone = config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("zone")
+    hours = config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("hours")
+    minutes = config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("minutes")
     
-    if config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("zone") and len(
-        config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("zone")) == 3:
-        timezone_name[0] = config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("zone")
+    if zone and len(zone) == 3:
+        timezone_name[0] = zone
         del config_leftover["tailf-ned-cisco-ios:clock"]["timezone"]["zone"]
 
-    if config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("hours") or config_before.get(
-        "tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("hours") == 0:
-        timezone_name[1] = f'{config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("hours")}'
+    if hours != None:
+        timezone_name[1] = f'{hours}'
         del config_leftover["tailf-ned-cisco-ios:clock"]["timezone"]["hours"]
 
-    if config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("minutes") or config_before.get(
-        "tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("minutes") == 0:
-        timezone_name[2] = f'{config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("minutes")}'
+    if minutes != None:
+        timezone_name[2] = f'{minutes}'
         del config_leftover["tailf-ned-cisco-ios:clock"]["timezone"]["minutes"]
 
     openconfig_system_clock_config["openconfig-system:timezone-name"] = ' '.join(timezone_name)
