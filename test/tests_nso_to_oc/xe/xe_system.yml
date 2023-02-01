@@ -1,558 +1,693 @@
 ---
-- hosts: nso
-  connection: local
-  gather_facts: no
-  roles:
-    - nso-rollback-save
-  run_once: true
-  vars:
-    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
-
 - hosts: localhost
   gather_facts: no
   environment:
     NSO_DEVICE: xe1
   vars:
-    nso_api_url: "{{ lookup('env', 'NSO_URL') }}"
-    nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
-    nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
     device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
   tasks:
-    - block:
-      - name: Set up service config
-        tags:
-          - set_up
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: mdd:openconfig
-          content: |
-            mdd:openconfig:
-              openconfig-network-instance:network-instances:
-                network-instance:
-                  - name: 'default'
-                    config:
-                      name: 'default'
-                      type: 'DEFAULT_INSTANCE'
-                      enabled: true
-                  - name: 'abc'
-                    config:
-                      name: 'abc'
-                      type: 'L3VRF'
-                      enabled: true
-                      enabled-address-families:
-                        - 'IPV4'
-                    interfaces:
-                      interface:
-                        - id: 'GigabitEthernet7'
-                          config:
-                            id: 'GigabitEthernet7'
-                            interface: 'GigabitEthernet7'
-                            subinterface: 0
-              openconfig-system:system:
-                config:
-                  hostname: 'test'
-              openconfig-interfaces:interfaces:
-                interface:
-                  - config:
+    - set_fact:
+        ntp_auth_key_1:
+          key-id: 1
+          config:
+            key-id: 1
+            key-type: openconfig-system:NTP_AUTH_MD5
+            key-value: password1
+        ntp_1:
+          address: 10.0.0.1
+          config:
+            address: 10.0.0.1
+            association-type: PEER
+            iburst: true
+            openconfig-system-ext:ntp-auth-key-id: 1
+            port: 123
+            prefer: true
+            version: 4
+        ntp_2:
+          address: 10.0.0.2
+          config:
+            address: 10.0.0.2
+            association-type: PEER
+            iburst: false
+            openconfig-system-ext:ntp-auth-key-id: 2
+            openconfig-system-ext:ntp-use-vrf: abc
+            port: 123
+            prefer: false
+            version: 4
+        ntp_3:
+          address: 10.0.0.3
+          config:
+            address: 10.0.0.3
+            association-type: SERVER
+            iburst: false
+            port: 123
+            prefer: false
+            version: 4
+        ntp_4:
+          address: 10.0.0.4
+          config:
+            address: 10.0.0.4
+            association-type: SERVER
+            iburst: false
+            openconfig-system-ext:ntp-auth-key-id: 1
+            openconfig-system-ext:ntp-source-address: 10.6.0.1
+            port: 123
+            prefer: false
+            version: 3
+        ntp_5:
+          address: 10.0.0.5
+          config:
+            address: 10.0.0.5
+            association-type: SERVER
+            iburst: false
+            openconfig-system-ext:ntp-auth-key-id: 2
+            openconfig-system-ext:ntp-use-vrf: abc
+            port: 123
+            prefer: false
+            version: 4
+    - name: Run XE system tests 1/3
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_load_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_system.py
+        api_test_data:
+          - name: Set up OC service config
+            tags:
+              - oc_set_up
+            api_path: mdd:openconfig
+            api_method: PUT
+            content: |
+              mdd:openconfig:
+                openconfig-network-instance:network-instances:
+                  network-instance:
+                    - name: 'default'
+                      config:
+                        name: 'default'
+                        type: 'DEFAULT_INSTANCE'
+                        enabled: true
+                    - name: 'abc'
+                      config:
+                        name: 'abc'
+                        type: 'L3VRF'
+                        enabled: true
+                        enabled-address-families:
+                          - 'IPV4'
+                      interfaces:
+                        interface:
+                          - id: 'GigabitEthernet7'
+                            config:
+                              id: 'GigabitEthernet7'
+                              interface: 'GigabitEthernet7'
+                              subinterface: 0
+                openconfig-system:system:
+                  config:
+                    hostname: 'test'
+                openconfig-interfaces:interfaces:
+                  interface:
+                    - config:
+                        name: 'GigabitEthernet1'
+                        type: 'ethernetCsmacd'
+                        enabled: true
                       name: 'GigabitEthernet1'
-                      type: 'ethernetCsmacd'
-                      enabled: true
-                    name: 'GigabitEthernet1'
-                    subinterfaces:
-                      subinterface:
-                        - config:
+                      subinterfaces:
+                        subinterface:
+                          - config:
+                              index: 0
                             index: 0
-                          index: 0
-                          openconfig-if-ip:ipv4:
-                            config:
-                              dhcp-client: true
-                  - config:
+                            openconfig-if-ip:ipv4:
+                              config:
+                                dhcp-client: true
+                    - config:
+                        name: 'GigabitEthernet2'
+                        type: 'ethernetCsmacd'
                       name: 'GigabitEthernet2'
-                      type: 'ethernetCsmacd'
-                    name: 'GigabitEthernet2'
-                    subinterfaces:
-                      subinterface:
-                        - config:
+                      subinterfaces:
+                        subinterface:
+                          - config:
+                              index: 0
                             index: 0
-                          index: 0
-                          openconfig-if-ip:ipv4:
-                            config:
-                              dhcp-client: true
-                  - config:
+                            openconfig-if-ip:ipv4:
+                              config:
+                                dhcp-client: true
+                    - config:
+                        name: 'GigabitEthernet3'
+                        type: 'ethernetCsmacd'
                       name: 'GigabitEthernet3'
-                      type: 'ethernetCsmacd'
-                    name: 'GigabitEthernet3'
-                    subinterfaces:
-                      subinterface:
-                        - config:
+                      subinterfaces:
+                        subinterface:
+                          - config:
+                              index: 0
                             index: 0
-                          index: 0
-                          openconfig-if-ip:ipv4:
-                            config:
-                              dhcp-client: true
-                  - config:
+                            openconfig-if-ip:ipv4:
+                              config:
+                                dhcp-client: true
+                    - config:
+                        name: 'GigabitEthernet4'
+                        type: 'ethernetCsmacd'
                       name: 'GigabitEthernet4'
-                      type: 'ethernetCsmacd'
-                    name: 'GigabitEthernet4'
-                    subinterfaces:
-                      subinterface:
-                        - config:
+                      subinterfaces:
+                        subinterface:
+                          - config:
+                              index: 0
                             index: 0
-                          index: 0
-                          openconfig-if-ip:ipv4:
-                            config:
-                              dhcp-client: true
-                  - config:
+                            openconfig-if-ip:ipv4:
+                              config:
+                                dhcp-client: true
+                    - config:
+                        name: 'GigabitEthernet5'
+                        type: 'ethernetCsmacd'
                       name: 'GigabitEthernet5'
-                      type: 'ethernetCsmacd'
-                    name: 'GigabitEthernet5'
-                    subinterfaces:
-                      subinterface:
-                        - config:
+                      subinterfaces:
+                        subinterface:
+                          - config:
+                              index: 0
                             index: 0
-                          index: 0
-                          openconfig-if-ip:ipv4:
-                            config:
-                              dhcp-client: true
-                  - config:
+                            openconfig-if-ip:ipv4:
+                              config:
+                                dhcp-client: true
+                    - config:
+                        name: 'GigabitEthernet6'
+                        type: 'ethernetCsmacd'
                       name: 'GigabitEthernet6'
-                      type: 'ethernetCsmacd'
-                    name: 'GigabitEthernet6'
-                    subinterfaces:
-                      subinterface:
-                        - config:
+                      subinterfaces:
+                        subinterface:
+                          - config:
+                              index: 0
                             index: 0
-                          index: 0
-                          openconfig-if-ip:ipv4:
-                            addresses:
-                              address:
-                                - config:
+                            openconfig-if-ip:ipv4:
+                              addresses:
+                                address:
+                                  - config:
+                                      ip: '10.6.0.1'
+                                      prefix-length: 30
                                     ip: '10.6.0.1'
-                                    prefix-length: 30
-                                  ip: '10.6.0.1'
-                            config:
-                              dhcp-client: false
-                  - config:
+                              config:
+                                dhcp-client: false
+                    - config:
+                        name: 'GigabitEthernet7'
+                        type: 'ethernetCsmacd'
                       name: 'GigabitEthernet7'
-                      type: 'ethernetCsmacd'
-                    name: 'GigabitEthernet7'
-                    subinterfaces:
-                      subinterface:
-                        - config:
+                      subinterfaces:
+                        subinterface:
+                          - config:
+                              index: 0
                             index: 0
-                          index: 0
-                          openconfig-if-ip:ipv4:
-                            addresses:
-                              address:
-                                - config:
+                            openconfig-if-ip:ipv4:
+                              addresses:
+                                address:
+                                  - config:
+                                      ip: '10.7.0.1'
+                                      prefix-length: 30
                                     ip: '10.7.0.1'
-                                    prefix-length: 30
-                                  ip: '10.7.0.1'
-                            config:
-                              dhcp-client: false
-                  - config:
+                              config:
+                                dhcp-client: false
+                    - config:
+                        name: 'GigabitEthernet8'
+                        type: 'ethernetCsmacd'
                       name: 'GigabitEthernet8'
-                      type: 'ethernetCsmacd'
-                    name: 'GigabitEthernet8'
-                    subinterfaces:
-                      subinterface:
-                        - config:
+                      subinterfaces:
+                        subinterface:
+                          - config:
+                              index: 0
                             index: 0
-                          index: 0
-                          openconfig-if-ip:ipv4:
-                            config:
-                              dhcp-client: true
-          api_method: PUT
-      - name: NSO configure Interfaces
-        tags:
-          - set_up
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:interface
-          content: |
-            interface:
-              GigabitEthernet:
-                - name: 6
-                  ip:
-                    address:
-                      primary:
-                        address: 10.6.0.1
-                        mask: 255.255.255.0
-          api_method: PATCH
-      - name: NSO configure hostname
-        tags:
-          - hostname
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config
-          content: |
-            config:
-              tailf-ned-cisco-ios:hostname: test123
-          api_method: PATCH
-      - name: NSO configure banners
-        tags:
-          - banners
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:banner
-          content: |
-            tailf-ned-cisco-ios:banner:
-              login: login-banner
-              motd: motd-banner
-          api_method: PATCH
-      - name: NSO configure domain name
-        tags:
-          - domain_name
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              domain:
-                name: test.com
-          api_method: PATCH
-      - name: NSO configure ip options drop
-        tags:
-          - ip_options_drop
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              options:
-                drop: [null]
-          api_method: PATCH
-      - name: NSO configure enable secret
-        tags:
-          - enable_secret
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:enable
-          content: |
-            tailf-ned-cisco-ios:enable:
-              secret:
-                secret: admin
-                type: 0
-          api_method: PATCH
-      - name: NSO configure console exec timeout
-        tags:
-          - exec_timeout
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:line
-          content: |
-            tailf-ned-cisco-ios:line:
-              console:
-                - exec-timeout:
-                    minutes: 13
-                    seconds: 20
-                  first: 0
-                  stopbits: 1
-          api_method: PATCH
-      - name: NSO configure ssh timeout
-        tags:
-          - ssh_timeout
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              ssh:
-                time-out: 55
-          api_method: PATCH
-      - name: NSO configure ssh version
-        tags:
-          - ssh_version
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              ssh:
-                version: 2
-          api_method: PATCH
-      - name: NSO configure no ip domain lookup
-        tags:
-          - ip_domain_lookup
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              domain:
-                lookup-conf:
-                  lookup: false
-          api_method: PATCH
-      - name: NSO configure login on-success
-        tags:
-          - login_on-success
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:login
-          content: |
-            tailf-ned-cisco-ios:login:
-              on-success:
-                log:
-                  - null
-          api_method: PATCH
-      - name: NSO configure login on-failure
-        tags:
-          - login_on-failure
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:login
-          content: |
-            tailf-ned-cisco-ios:login:
-              on-failure:
-                log:
-                  - null
-          api_method: PATCH
-      - name: NSO configure login block-for
-        tags:
-          - login_block-for
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:login
-          content: |
-            tailf-ned-cisco-ios:login:
-              block-for:
-                seconds: 900
-                attempts: 3
-                within: 120
-          api_method: PATCH
-      - name: NSO configure archive_logging
-        tags:
-          - archive_logging
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:archive
-          content: |
-            tailf-ned-cisco-ios:archive:
-              log:
-                config:
-                  logging:
-                    enable:
-                      - null
-          api_method: PATCH
-#    - name: NSO configure no boot network (no test for negative assertion)
-
-      - name: NSO configure ip bootp server
-        tags:
-          - ip_bootp_server
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              bootp:
-                server: true
-          api_method: PATCH
-
-      - name: NSO configure ip dns server
-        tags:
-          - ip_dns_server
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              dns:
-                server: {}
-          api_method: PATCH
-
-      - name: NSO configure ip identd
-        tags:
-          - ip_identd
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              identd:
-                - null
-          api_method: PATCH
-
-      - name: NSO configure no ip http server
-        tags:
-          - no_ip_http_server
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              http:
-                server: false
-          api_method: PATCH
-
-      - name: NSO configure ip rcmd rcp-enable
-        tags:
-          - ip_rcmd_rcp_enable
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              rcmd:
-                rcp-enable:
-                  - null
-          api_method: PATCH
-
-      - name: NSO configure ip rcmd rsh-enable
-        tags:
-          - ip_rcmd_rsh_enable
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              rcmd:
-                rsh-enable:
-                  - null
-          api_method: PATCH
-
-      - name: NSO configure ip finger
-        tags:
-          - ip_finger
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              finger: {}
-          api_method: PATCH
-
-      - name: NSO configure service config
-        tags:
-          - service_config
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:service
-          content: |
-            tailf-ned-cisco-ios:service:
+                            openconfig-if-ip:ipv4:
+                              config:
+                                dhcp-client: true
+          - name: NED system init
+            tags:
+              - ned_init_1_of_1
+            api_path: config
+            api_method: PATCH
+            content: | 
               config:
-                - null
-          api_method: PATCH
+                tailf-ned-cisco-ios:hostname: test123
+                tailf-ned-cisco-ios:banner:
+                  login: login-banner
+                  motd: motd-banner
+                tailf-ned-cisco-ios:interface:
+                  GigabitEthernet:
+                    - name: 6
+                      ip:
+                        address:
+                          primary:
+                            address: 10.6.0.1
+                            mask: 255.255.255.0
+                tailf-ned-cisco-ios:ip:
+                  domain:
+                    name: test.com
+                    lookup-conf:
+                      lookup: false
+                  options:
+                    drop: [null]
+                  ssh:
+                    source-interface:
+                      GigabitEthernet: 6
+                    time-out: 55
+                    version: 2
+                    server:
+                      algorithm:
+                        mac:
+                          - hmac-sha2-256
+                          - hmac-sha2-512
+                        encryption:
+                          - aes128-ctr
+                          - aes192-ctr
+                          - aes256-ctr
+                  bootp:
+                    server: true
+                  dns:
+                    server: {}
+                  identd:
+                    - null
+                  http:
+                    server: false
+                  rcmd:
+                    rcp-enable:
+                      - null
+                    rsh-enable:
+                      - null
+                  finger: {}
+                tailf-ned-cisco-ios:enable:
+                  secret:
+                    secret: admin
+                    type: 0
+                tailf-ned-cisco-ios:line:
+                  console:
+                    - exec-timeout:
+                        minutes: 13
+                        seconds: 20
+                      first: 0
+                      stopbits: 1
+                  vty:
+                    - exec-timeout:
+                        minutes: 13
+                        seconds: 20
+                      first: 0
+                      last: 4
+                    - absolute-timeout: 1200
+                      first: 0
+                      last: 4
+                    - session-limit: 16
+                      first: 0
+                      last: 4
+                tailf-ned-cisco-ios:login:
+                  on-success:
+                    log:
+                      - null
+                  on-failure:
+                    log:
+                      - null
+                  block-for:
+                    seconds: 900
+                    attempts: 3
+                    within: 120
+                tailf-ned-cisco-ios:archive:
+                  log:
+                    config:
+                      logging:
+                        enable:
+                          - null
+                tailf-ned-cisco-ios:service:
+                  config:
+                    - null
+                  tcp-small-servers:
+                    - null
+                  udp-small-servers:
+                    - null
+                  conf:
+                    pad: true
+                  password-encryption: {}
+        #   - name: NED AAA servers init
+        #     tags:
+        #       - aaa_servers_init
+        #     api_path: config/tailf-ned-cisco-ios:aaa
+        #     api_method: PATCH
+        #     content: |
+        #       tailf-ned-cisco-ios:aaa:
+        #         new-model: {}
+        #         group:
+        #           server:
+        #             tacacs-plus:
+        #               - name: 'TACACS-GROUP-1'
+        #                 ip:
+        #                   tacacs:
+        #                     source-interface:
+        #                       GigabitEthernet: 6
+        #                 server:
+        #                   name:
+        #                     - name: 'TACACSSVR1'
+        #                     - name: 'TACACSSVR3'
+        #               - name: 'TACACS-GROUP-2'
+        #                 ip:
+        #                   tacacs:
+        #                     source-interface:
+        #                       GigabitEthernet: 6
+        #                 server:
+        #                   name:
+        #                     - name: 'TACACSSVR2'
+        #                     - name: 'TACACSSVR4'
+        #             # radius:
+        #             #   - name: 'RADIUS-GROUP-1'
+        #             #     ip:
+        #             #       radius:
+        #             #         source-interface:
+        #             #           GigabitEthernet: 6
+        #             #     server:
+        #             #       name:
+        #             #         - name: 'RADIUSSVR1'
+        #             #         - name: 'RADIUSSVR3'
+        #             #   - name: 'RADIUS-GROUP-2'
+        #             #     ip:
+        #             #       radius:
+        #             #         source-interface:
+        #             #           GigabitEthernet: 6
+        #             #     server:
+        #             #       name:
+        #             #         - name: 'RADIUSSVR2'
+        #             #         - name: 'RADIUSSVR4'
+        #   - name: NED TACACS servers init
+        #     tags:
+        #       - tacacs_servers_init
+        #     api_path: config/tailf-ned-cisco-ios:tacacs
+        #     api_method: PATCH
+        #     content: |
+        #       tailf-ned-cisco-ios:tacacs:
+        #         server:
+        #           - name: 'TACACSSVR1'
+        #             address:
+        #               ipv4: '10.1.1.1'
+        #             port: 111
+        #             timeout: 10
+        #             key:
+        #               type: 0
+        #               secret: password1
+        #           - name: 'TACACSSVR2'
+        #             address:
+        #               ipv4: '10.1.1.2'
+        #             port: 222
+        #             timeout: 20
+        #             key:
+        #               type: 0
+        #               secret: password2
+        #           - name: 'TACACSSVR3'
+        #             address:
+        #               ipv4: '10.1.1.3'
+        #             port: 333
+        #             timeout: 30
+        #             key:
+        #               type: 5
+        #               secret: password3
+        #           - name: 'TACACSSVR4'
+        #             address:
+        #               ipv4: '10.1.1.4'
+        #             port: 444
+        #             timeout: 40
+        #             key:
+        #               type: 5
+        #               secret: password4
+        #   # TODO - fix radius rollback error
+        #   # - name: NED RADIUS servers init
+        #   #   tags:
+        #   #     - radius_servers_init
+        #   #   api_path: config/tailf-ned-cisco-ios:radius
+        #   #   api_method: PATCH
+        #   #   content: |
+        #   #     tailf-ned-cisco-ios:radius:
+        #   #       server:
+        #   #         - id: 'RADIUSSVR1'
+        #   #           address:
+        #   #             ipv4:
+        #   #               host: '10.2.2.1'
+        #   #               acct-port: 1853
+        #   #               auth-port: 1852
+        #   #           timeout: 10
+        #   #           key:
+        #   #             type: 0
+        #   #             secret: password1
+        #   #         - id: 'RADIUSSVR2'
+        #   #           address:
+        #   #             ipv4:
+        #   #               host: '10.2.2.2'
+        #   #               acct-port: 1853
+        #   #               auth-port: 1852
+        #   #           timeout: 20
+        #   #           key:
+        #   #             type: 0
+        #   #             secret: password2
+        #   #         - id: 'RADIUSSVR3'
+        #   #           address:
+        #   #             ipv4:
+        #   #               host: '10.2.2.3'
+        #   #               acct-port: 1853
+        #   #               auth-port: 1852
+        #   #           timeout: 30
+        #   #           key:
+        #   #             type: 5
+        #   #             secret: password3
+        #   #         - id: 'RADIUSSVR4'
+        #   #           address:
+        #   #             ipv4:
+        #   #               host: '10.2.2.4'
+        #   #               acct-port: 1853
+        #   #               auth-port: 1852
+        #   #           timeout: 40
+        #   #           key:
+        #   #             type: 5
+        #   #             secret: password4
+        #   - name: NED AAA accounting init
+        #     tags:
+        #       - aaa_accounting_init
+        #     api_path: config/tailf-ned-cisco-ios:aaa/accounting
+        #     api_method: PATCH
+        #     content: |
+        #       accounting:
+        #         commands:
+        #           - level: '15'
+        #             name: 'default'
+        #             action-type: 'stop-only'
+        #             group: 'TACACS-GROUP-1'
+        #             group2:
+        #               group: 'TACACS-GROUP-2'
+        #             group3:
+        #               group: 'tacacs+'
+        #         exec:
+        #           - name: 'default'
+        #             action-type: 'start-stop'
+        #             group: 'TACACS-GROUP-1'
+        #             group2:
+        #               group: 'TACACS-GROUP-2'
+        #             group3:
+        #               group: 'tacacs+'
+        #   - name: NED AAA authorization init
+        #     tags:
+        #       - aaa_authorization_init
+        #     api_path: config/tailf-ned-cisco-ios:aaa/authorization
+        #     api_method: PATCH
+        #     content: |
+        #       authorization:
+        #         exec:
+        #           - name: 'default'
+        #             tacacsplus: {}
+        #             local: {}
+        #             group: 'TACACS-GROUP-1'
+        #         commands:
+        #           - level: 15
+        #             name: 'default'
+        #             tacacsplus: {}
+        #             local: {}
+        #             group: 'TACACS-GROUP-1'
+        #   - name: NED AAA authentication init
+        #     tags:
+        #       - aaa_authentication_init
+        #     api_path: config/tailf-ned-cisco-ios:aaa/authentication
+        #     api_method: PATCH
+        #     content: |
+        #       authentication:
+        #         login:
+        #           - name: 'default'
+        #             local: {}
+        #             tacacsplus: {}
+        #             group: 'TACACS-GROUP-1'
+        #   - name: NED username init
+        #     tags:
+        #       - username_init
+        #     api_path: config/tailf-ned-cisco-ios:username
+        #     api_method: PATCH
+        #     content: |
+        #       username:
+        #         - name: 'admin-user'
+        #           privilege: 15
+        #           secret:
+        #             type: 0
+        #             secret: 'Password'
+        #         - name: 'user1'
+        #           secret:
+        #             type: 0
+        #             secret: 'Password123'
+        #         - name: 'user2'
+        #           secret:
+        #             type: 0
+        #             secret: 'Password456'
+        # assertions:
+        #   # NSO configure no boot network (no test for negative assertion)
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['hostname'] == 'test123'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['login-banner'] == 'login-banner'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['motd-banner'] == 'motd-banner'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['domain-name'] == 'test.com'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:enable-secret'] == 'VALUE_SPECIFIED_IN_NO_LOG_PARAMETER'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:console-exec-timeout-seconds'] == 800"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:ip-options'] == 'openconfig-system-ext:DROP'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:ssh-timeout'] == 55"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['protocol-version'] == 'V2'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:ssh-source-interface'] == 'GigabitEthernet6'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['timeout'] == 800"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:absolute-timeout-minutes'] == 1200"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['session-limit'] == 16"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-domain-lookup'] == false"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-success'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-failure'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['seconds'] == 900"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['attempts'] == 3"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['within'] == 120"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['archive-logging'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-bootp-server'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-dns-server'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-identd'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['http']['config']['http-enabled'] == false"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rcp-enable'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rsh-enable'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['finger'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-config'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-tcp-small-servers'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-udp-small-servers'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-pad'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-password-encryption'] == true"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['name'] == 'RADIUS-GROUP-1'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['type'] == 'openconfig-aaa:RADIUS'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['name'] == 'RADIUS-GROUP-1'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['name'] == 'RADIUS-GROUP-2'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['type'] == 'openconfig-aaa:RADIUS'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['name'] == 'RADIUS-GROUP-2'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['name'] == 'TACACS-GROUP-1'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['type'] == 'openconfig-aaa:TACACS'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['name'] == 'TACACS-GROUP-1'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['name'] == 'TACACS-GROUP-2'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['config']['type'] == 'openconfig-aaa:TACACS'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['name'] == 'TACACS-GROUP-2'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['address'] == '10.1.1.1'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['address'] == '10.1.1.1'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['name'] == 'TACACSSVR1'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['timeout'] == 10"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['tacacs']['config']['port'] == 111"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['tacacs']['config']['secret-key'] == 'password1'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['tacacs']['config']['source-address'] == '10.6.0.1'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['address'] == '10.1.1.3'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['address'] == '10.1.1.3'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['name'] == 'TACACSSVR3'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['timeout'] == 30"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['tacacs']['config']['port'] == 333"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['tacacs']['config']['secret-key'] == 'password3'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['tacacs']['config']['source-address'] == '10.6.0.1'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['address'] == '10.1.1.2'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['address'] == '10.1.1.2'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['name'] == 'TACACSSVR2'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['timeout'] == 20"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['tacacs']['config']['port'] == 222"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['tacacs']['config']['secret-key'] == 'password2'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['tacacs']['config']['source-address'] == '10.6.0.1'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['address'] == '10.1.1.4'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['address'] == '10.1.1.4'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['name'] == 'TACACSSVR4'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['timeout'] == 40"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['tacacs']['config']['port'] == 444"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['tacacs']['config']['secret-key'] == 'password4'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['tacacs']['config']['source-address'] == '10.6.0.1'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['address'] == '10.2.2.1'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['address'] == '10.2.2.1'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['name'] == 'RADIUSSVR1'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['config']['timeout'] == 10"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['acct-port'] == 1853"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['auth-port'] == 1852"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['secret-key'] == 'password1'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][0]['radius']['config']['source-address'] == '10.6.0.1'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['address'] == '10.2.2.3'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['address'] == '10.2.2.3'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['name'] == 'RADIUSSVR3'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['config']['timeout'] == 30"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['acct-port'] == 1853"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['auth-port'] == 1852"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['secret-key'] == 'password3'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['servers']['server'][1]['radius']['config']['source-address'] == '10.6.0.1'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['address'] == '10.2.2.2'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['address'] == '10.2.2.2'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['name'] == 'RADIUSSVR2'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['config']['timeout'] == 20"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['acct-port'] == 1853"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['auth-port'] == 1852"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['secret-key'] == 'password2'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][0]['radius']['config']['source-address'] == '10.6.0.1'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['address'] == '10.2.2.4'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['address'] == '10.2.2.4'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['name'] == 'RADIUSSVR4'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['config']['timeout'] == 40"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['acct-port'] == 1853"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['auth-port'] == 1852"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['secret-key'] == 'password4'"
+        #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][1]['servers']['server'][1]['radius']['config']['source-address'] == '10.6.0.1'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['config']['accounting-method'][0] == 'TACACS-GROUP-1'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['config']['accounting-method'][1] == 'TACACS-GROUP-2'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['config']['accounting-method'][2] == 'openconfig-aaa-types:TACACS_ALL'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][0]['config']['event-type'] == 'openconfig-aaa-types:AAA_ACCOUNTING_EVENT_COMMAND'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][0]['config']['record'] == 'STOP'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][0]['event-type'] == 'openconfig-aaa-types:AAA_ACCOUNTING_EVENT_COMMAND'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][1]['config']['event-type'] == 'openconfig-aaa-types:AAA_ACCOUNTING_EVENT_LOGIN'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][1]['config']['record'] == 'START_STOP'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['accounting']['events']['event'][1]['event-type'] == 'openconfig-aaa-types:AAA_ACCOUNTING_EVENT_LOGIN'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['events']['event'][0]['event-type'] == 'openconfig-aaa-types:AAA_AUTHORIZATION_EVENT_COMMAND'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['events']['event'][0]['config']['event-type'] == 'openconfig-aaa-types:AAA_AUTHORIZATION_EVENT_COMMAND'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['events']['event'][1]['event-type'] == 'openconfig-aaa-types:AAA_AUTHORIZATION_EVENT_CONFIG'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['events']['event'][1]['config']['event-type'] == 'openconfig-aaa-types:AAA_AUTHORIZATION_EVENT_CONFIG'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['config']['authorization-method'][0] == 'openconfig-aaa-types:TACACS_ALL'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['config']['authorization-method'][1] == 'openconfig-aaa-types:LOCAL'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authorization']['config']['authorization-method'][2] == 'TACACS-GROUP-1'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['username'] == 'user1'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['config']['username'] == 'user1'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['config']['password'] == 'Password123'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][0]['config']['role'] == 'SYSTEM_ROLE_ADMIN'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][1]['username'] == 'user2'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][1]['config']['username'] == 'user2'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][1]['config']['password'] == 'Password456'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['users']['user'][1]['config']['role'] == 'SYSTEM_ROLE_ADMIN'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][0] == 'openconfig-aaa-types:LOCAL'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][1] == 'openconfig-aaa-types:TACACS_ALL'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][2] == 'TACACS-GROUP-1'"
+        #   - "'openconfig-system-ext:aes128-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
+        #   - "'openconfig-system-ext:aes192-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
+        #   - "'openconfig-system-ext:aes256-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
+        #   - "'openconfig-system-ext:hmac-sha2-256' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['mac']"
+        #   - "'openconfig-system-ext:hmac-sha2-512' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['mac']"
 
-      - name: NSO configure service tcp-small-servers
-        tags:
-          - service_tcp_small_servers
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:service
-          content: |
-            tailf-ned-cisco-ios:service:
-              tcp-small-servers:
-                - null
-          api_method: PATCH
-      - name: NSO configure service udp-small-servers
-        tags:
-          - service_udp_small_servers
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:service
-          content: |
-            tailf-ned-cisco-ios:service:
-              udp-small-servers:
-                - null
-          api_method: PATCH
-
-      - name: NSO configure service pad
-        tags:
-          - service_pad
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:service
-          content: |
-            tailf-ned-cisco-ios:service:
-              conf:
-                pad: true
-          api_method: PATCH
-
-      - name: NSO configure service password-encryption
-        tags:
-          - service_password_encryption
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:service
-          content: |
-            tailf-ned-cisco-ios:service:
-              password-encryption: {}
-          api_method: PATCH
-
-      - name: NSO configure ssh algorithm encryption
-        tags:
-          - ssh_algorithm_encryption
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              ssh:
-                server:
-                  algorithm:
-                    encryption:
-                      - aes128-ctr
-                      - aes192-ctr
-                      - aes256-ctr
-          api_method: PATCH
-
-      - name: NSO configure ssh algorithm mac
-        tags:
-          - ssh_algorithm_mac
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              ssh:
-                server:
-                  algorithm:
-                    mac:
-                      - hmac-sha2-256
-                      - hmac-sha2-512
-          api_method: PATCH
-
-      - name: NSO configure ssh source interface
-        tags:
-          - ssh_source_interface
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ip
-          content: |
-            tailf-ned-cisco-ios:ip:
-              ssh:
-                source-interface:
+    - name: Run XE system tests 2/3
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_load_rollback: False
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_system.py
+        api_test_data:
+          - name: NED NTP init
+            tags:
+              - ntp_init
+            api_path: config/tailf-ned-cisco-ios:ntp
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:ntp:
+                authenticate: [null]
+                logging: [null]
+                source:
                   GigabitEthernet: 6
+<<<<<<< HEAD
           api_method: PATCH
       - name: NSO configure vty exec timeout
         tags:
@@ -1018,244 +1153,80 @@
             - "'openconfig-system-ext:aes256-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
             - "'openconfig-system-ext:hmac-sha2-256' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['mac']"
             - "'openconfig-system-ext:hmac-sha2-512' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['mac']"
+=======
+                authentication-key:
+                  - md5:
+                      secret: password1
+                    number: 1
+                  - md5:
+                      secret: password2
+                    number: 2
+                trusted-key:
+                  - key-number: 1
+                  - key-number: 2
+        assertions:
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['enable-ntp-auth'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['openconfig-system-ext:ntp-enable-logging'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['ntp-source-address'] == '10.6.0.1'"
+          - "ntp_auth_key_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key']"
+>>>>>>> main
 
-      - name: NSO configure ntp authenticate
-        tags:
-          - ntp_authenticate
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ntp
-          content: |
-            tailf-ned-cisco-ios:ntp:
-              authenticate: [null]
-          api_method: PATCH
-      - name: NSO configure ntp logging
-        tags:
-          - ntp_logging
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ntp
-          content: |
-            tailf-ned-cisco-ios:ntp:
-              logging: [null]
-          api_method: PATCH
-      - name: NSO configure ntp source
-        tags:
-          - ntp_source
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ntp
-          content: |
-            tailf-ned-cisco-ios:ntp:
-              source:
-                GigabitEthernet: 6
-          api_method: PATCH
-      - name: NSO configure ntp authentication key
-        tags:
-          - ntp_authentication_key
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ntp
-          content: |
-            tailf-ned-cisco-ios:ntp:
-              authentication-key:
-                - md5:
-                    secret: password1
-                  number: 1
-                - md5:
-                    secret: password2
-                  number: 2
-              trusted-key:
-                - key-number: 1
-                - key-number: 2
-          api_method: PATCH
-      - set_fact:
-          ntp_auth_key_1:
-            key-id: 1
-            config:
-              key-id: 1
-              key-type: openconfig-system:NTP_AUTH_MD5
-              key-value: password1
-      - name: Execute NSO NED to OC script
-        script: ../../../package_nso_to_oc/xe/xe_system.py
-        args:
-          executable: python3
-        register: nso_to_oc_result
-      - debug:
-          msg: "{{nso_to_oc_result}}"
-      - name: NSO API call
-        uri:
-          url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-          url_username: "{{ nso_username }}"
-          url_password: "{{ nso_password }}"
-          force_basic_auth: yes
-          validate_certs: no
-          status_code: [200,201,204]
-          method: GET
-          headers: "{
-            'Content-Type': 'application/yang-data+json',
-            'Accept': 'application/yang-data+json'}"
-          body_format: json
-        delegate_to: localhost
-        register: oc_result
-      - debug:
-          msg: "{{ oc_result }}"
-      - assert:
-          that:
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['enable-ntp-auth'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['openconfig-system-ext:ntp-enable-logging'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['ntp-source-address'] == '10.6.0.1'"
-            - "ntp_auth_key_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key']"
-      - name: NSO configure ntp authenticate
-        tags:
-          - ntp_servers
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:vrf
-          content: |
-            tailf-ned-cisco-ios:vrf:
-              definition:
-                - name: abc
-                  address-family:
-                    ipv4: {}
-                    ipv6: {}
-          api_method: PATCH
-      - name: NSO configure ntp authenticate
-        tags:
-          - ntp_servers
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:ntp
-          content: |
-            tailf-ned-cisco-ios:ntp:
-              peer:
-                peer-list:
-                  - name: 10.0.0.1
-                    key: 1
-                    iburst:
-                      - null
-                    prefer:
-                      - null
-                vrf:
+    - name: Run XE system tests 3/3
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_system.py
+        api_test_data:
+          - name: NED VRF init
+            tags:
+              - vrf_init
+            api_path: config/tailf-ned-cisco-ios:vrf
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:vrf:
+                definition:
                   - name: abc
-                    peer-list:
-                      - name: 10.0.0.2
-                        key: 2
-                        version: 4
-              server:
-                peer-list:
-                  - name: 10.0.0.3
-                  - name: 10.0.0.4
-                    key: 1
-                    source:
-                      GigabitEthernet: 6
-                    version: 3
-                vrf:
-                  - name: abc
-                    peer-list:
-                      - name: 10.0.0.5
-                        key: 2
-          api_method: PATCH
-      - set_fact:
-          ntp_1:
-            address: 10.0.0.1
-            config:
-              address: 10.0.0.1
-              association-type: PEER
-              iburst: true
-              openconfig-system-ext:ntp-auth-key-id: 1
-              port: 123
-              prefer: true
-              version: 4
-      - set_fact:
-          ntp_2:
-            address: 10.0.0.2
-            config:
-              address: 10.0.0.2
-              association-type: PEER
-              iburst: false
-              openconfig-system-ext:ntp-auth-key-id: 2
-              openconfig-system-ext:ntp-use-vrf: abc
-              port: 123
-              prefer: false
-              version: 4
-      - set_fact:
-          ntp_3:
-            address: 10.0.0.3
-            config:
-              address: 10.0.0.3
-              association-type: SERVER
-              iburst: false
-              port: 123
-              prefer: false
-              version: 4
-      - set_fact:
-          ntp_4:
-            address: 10.0.0.4
-            config:
-              address: 10.0.0.4
-              association-type: SERVER
-              iburst: false
-              openconfig-system-ext:ntp-auth-key-id: 1
-              openconfig-system-ext:ntp-source-address: 10.6.0.1
-              port: 123
-              prefer: false
-              version: 3
-      - set_fact:
-          ntp_5:
-            address: 10.0.0.5
-            config:
-              address: 10.0.0.5
-              association-type: SERVER
-              iburst: false
-              openconfig-system-ext:ntp-auth-key-id: 2
-              openconfig-system-ext:ntp-use-vrf: abc
-              port: 123
-              prefer: false
-              version: 4
-      - name: Execute NSO NED to OC script
-        script: ../../../package_nso_to_oc/xe/xe_system.py
-        args:
-          executable: python3
-        register: nso_to_oc_result
-      - debug:
-          msg: "{{nso_to_oc_result}}"
-      - name: NSO API call
-        uri:
-          url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-          url_username: "{{ nso_username }}"
-          url_password: "{{ nso_password }}"
-          force_basic_auth: yes
-          validate_certs: no
-          status_code: [ 200,201,204 ]
-          method: GET
-          headers: "{
-        'Content-Type': 'application/yang-data+json',
-        'Accept': 'application/yang-data+json'}"
-          body_format: json
-        delegate_to: localhost
-        register: oc_result
-      - debug:
-          msg: "{{ oc_result }}"
-      - assert:
-          that:
-            - "ntp_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
-            - "ntp_2 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
-            - "ntp_3 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
-            - "ntp_4 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
-            - "ntp_5 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
-      always:
-        - name: Rollback NSO
-          delegate_to: nso
-          connection: local
-          import_role:
-            name: nso-rollback-load
-          run_once: true
-          vars:
-            rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+                    address-family:
+                      ipv4: {}
+                      ipv6: {}
+          - name: NED NTP authenticate init
+            tags:
+              - ntp_authenticate_init
+            api_path: config/tailf-ned-cisco-ios:ntp
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:ntp:
+                peer:
+                  peer-list:
+                    - name: 10.0.0.1
+                      key: 1
+                      iburst:
+                        - null
+                      prefer:
+                        - null
+                  vrf:
+                    - name: abc
+                      peer-list:
+                        - name: 10.0.0.2
+                          key: 2
+                          version: 4
+                server:
+                  peer-list:
+                    - name: 10.0.0.3
+                    - name: 10.0.0.4
+                      key: 1
+                      source:
+                        GigabitEthernet: 6
+                      version: 3
+                  vrf:
+                    - name: abc
+                      peer-list:
+                        - name: 10.0.0.5
+                          key: 2
+        assertions:
+          - "ntp_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+          - "ntp_2 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+          - "ntp_3 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+          - "ntp_4 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+          - "ntp_5 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"

@@ -71,6 +71,7 @@
       include_role:
         name: ned-to-oc-test
       vars:
+        reset_oc: True
         script_path: ../../../package_nso_to_oc/main.py
         api_test_data:
           - name: Init VRF definition

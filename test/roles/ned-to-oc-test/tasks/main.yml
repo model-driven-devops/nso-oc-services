@@ -5,7 +5,8 @@
     is_initial_task_success: True
 
 - block:
-  # In case the calling test doesn't init OC data, we must ensure existence of MDD OC to avoid "patch to a nonexistent resource" error. 
+  # In case the calling test doesn't init OC data, and we dont PUT an OC config, then set reset_oc 
+  # to true to ensure existence of OC path to avoid "patch to a nonexistent resource" error. 
   - name: Init OC
     include_role:
       name: nso-ned-device-configure
@@ -14,6 +15,7 @@
       content: |
         mdd:openconfig: {}
       api_method: PUT
+    when: reset_oc | default(False)
 
   # Perform only the first task, so NSO can create the initial rollback state we want.
   - name: Complete first task
