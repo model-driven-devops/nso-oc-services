@@ -32,7 +32,9 @@ openconfig_system = {
             "openconfig-system:authorization": {},
             "openconfig-system:authentication": {}
         },
-        "openconfig-system:clock": {},
+        "openconfig-system:clock": {
+            "openconfig-system:config": {},
+        },
         "openconfig-system:config": {},
         "openconfig-system:dns": {},
         "openconfig-system:logging": {},
@@ -862,6 +864,31 @@ def cleanup_server_access(config_leftover, group_access_type, access_type):
     elif "server" in config_leftover.get(f"tailf-ned-cisco-ios:{access_type}", {}):
         del config_leftover[f"tailf-ned-cisco-ios:{access_type}"]["server"]
 
+def xe_system_clock_timezone(config_before: dict, config_leftover: dict) -> None:
+    """
+    Translates NSO XE NED to MDD OpenConfig System Clock Timezone
+    """
+    openconfig_system_clock_config = openconfig_system["openconfig-system:system"][
+        "openconfig-system:clock"]["openconfig-system:config"]
+    timezone_name = ["UTC", "0", "0"] # Placeholder Timezone, Hours and Minutes
+    
+    if config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("zone") and len(
+        config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("zone")) == 3:
+        timezone_name[0] = config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("zone")
+        del config_leftover["tailf-ned-cisco-ios:clock"]["timezone"]["zone"]
+
+    if config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("hours") or config_before.get(
+        "tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("hours") == 0:
+        timezone_name[1] = f'{config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("hours")}'
+        del config_leftover["tailf-ned-cisco-ios:clock"]["timezone"]["hours"]
+
+    if config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("minutes") or config_before.get(
+        "tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("minutes") == 0:
+        timezone_name[2] = f'{config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("minutes")}'
+        del config_leftover["tailf-ned-cisco-ios:clock"]["timezone"]["minutes"]
+
+    openconfig_system_clock_config["openconfig-system:timezone-name"] = ' '.join(timezone_name)
+
 def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []) -> dict:
     """
     Translates NSO Device configurations to MDD OpenConfig configurations.
@@ -883,6 +910,7 @@ def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []
     xe_system_ssh_server(before, leftover)
     xe_system_ntp(before, leftover, if_ip)
     # xe_system_aaa(before, leftover, if_ip)
+    xe_system_clock_timezone(before, leftover)
     translation_notes += system_notes
 
     return openconfig_system
