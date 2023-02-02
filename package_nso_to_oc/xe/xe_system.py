@@ -32,7 +32,9 @@ openconfig_system = {
             "openconfig-system:authorization": {},
             "openconfig-system:authentication": {}
         },
-        "openconfig-system:clock": {},
+        "openconfig-system:clock": {
+            "openconfig-system:config": {},
+        },
         "openconfig-system:config": {},
         "openconfig-system:dns": {},
         "openconfig-system:logging": {
@@ -889,17 +891,28 @@ def xe_system_logging(config_before: dict, config_leftover: dict, if_ip: dict) -
         del config_leftover["tailf-ned-cisco-ios:logging"]["buffered"]["severity-level"]
         if logging.get("buffered", {}).get("buffer-size"):
             del config_leftover["tailf-ned-cisco-ios:logging"]["buffered"]["buffer-size"]
+    else:
+        temp_logging_buffered = {
+            "openconfig-system-ext:buffered": {"openconfig-system-ext:config": {
+                "openconfig-system-ext:enabled": False
+            }}}
+        oc_system_logging.update(temp_logging_buffered)
 
     # LOGGING CONSOLE
     if logging_console:
         temp_logging_console = {
-            "openconfig-system:config": { },
+            "openconfig-system:config": {"openconfig-system-ext:enabled": True},
             "openconfig-system:selectors": set_logging_console(logging_console, 
                                                                 config_leftover, 
                                                                 oc_system_logging_console),
         }
         oc_system_logging_console.update(temp_logging_console)
         del config_leftover["tailf-ned-cisco-ios:logging"]["console"]["severity-level"]
+    else:
+        temp_logging_console = {
+            "openconfig-system:config": {"openconfig-system-ext:enabled": False}
+        }
+        oc_system_logging_console.update(temp_logging_console)
 
     # LOGGING MONITOR
     if logging_monitor:
@@ -915,11 +928,11 @@ def xe_system_logging(config_before: dict, config_leftover: dict, if_ip: dict) -
     if logging.get("host"):
         temp_logging_host = {
             "openconfig-system:remote-servers": set_logging_host(logging, config_leftover, 
-                                                                    oc_system_logging, if_ip, 
-                                                                    intf_ip_name_dict),
+                                                                oc_system_logging, if_ip, 
+                                                                intf_ip_name_dict),
         }
         oc_system_logging.update(temp_logging_host)
-    
+
 def set_logging_buffered(logging, config_leftover, oc_system_logging):
     buffered = {"openconfig-system-ext:config": []}
     buffered_list = buffered["openconfig-system-ext:config"]
@@ -929,23 +942,8 @@ def set_logging_buffered(logging, config_leftover, oc_system_logging):
     if logging.get("buffered", {}).get("buffer-size"):
         buffer_size = logging["buffered"]["buffer-size"]
     if logging.get("buffered", {}).get("severity-level"):
-        # Severity
-        if logging["buffered"]["severity-level"] == "emergencies" or logging["buffered"]["severity-level"] == 0:
-            severity = "EMERGENCY"
-        elif logging["buffered"]["severity-level"] == "alerts" or logging["buffered"]["severity-level"] == 1:
-            severity = "ALERT"
-        elif logging["buffered"]["severity-level"] == "critical" or logging["buffered"]["severity-level"] == 2:
-            severity = "CRITICAL"
-        elif logging["buffered"]["severity-level"] == "errors" or logging["buffered"]["severity-level"] == 3:
-            severity = "ERROR"
-        elif logging["buffered"]["severity-level"] == "warnings" or logging["buffered"]["severity-level"] == 4:
-            severity = "WARNING"
-        elif logging["buffered"]["severity-level"] == "notifications" or logging["buffered"]["severity-level"] == 5:
-            severity = "NOTICE"
-        elif logging["buffered"]["severity-level"] == "informational" or logging["buffered"]["severity-level"] == 6:
-            severity = "INFORMATIONAL"
-        elif logging["buffered"]["severity-level"] == "debugging" or logging["buffered"]["severity-level"] == 7:
-            severity = "DEBUG"
+        # SEVERITY
+        severity = get_severity(logging["buffered"]["severity-level"])
         temp_buffered = {"openconfig-system-ext:enabled": True,
                     "openconfig-system-ext:severity": f'{severity}',
                     "openconfig-system-ext:buffer-size": f'{buffer_size}'
@@ -960,23 +958,8 @@ def set_logging_console(logging_console, config_leftover, oc_system_logging_cons
     # LOGGING CONSOLE FACILITY AND SEVERITY
     severity = "DEBUG" # Default Severity
     if logging_console.get("severity-level"):
-        # Severity
-        if logging_console["severity-level"] == "emergencies" or logging_console["severity-level"] == 0:
-            severity = "EMERGENCY"
-        elif logging_console["severity-level"] == "alerts" or logging_console["severity-level"] == 1:
-            severity = "ALERT"
-        elif logging_console["severity-level"] == "critical" or logging_console["severity-level"] == 2:
-            severity = "CRITICAL"
-        elif logging_console["severity-level"] == "errors" or logging_console["severity-level"] == 3:
-            severity = "ERROR"
-        elif logging_console["severity-level"] == "warnings" or logging_console["severity-level"] == 4:
-            severity = "WARNING"
-        elif logging_console["severity-level"] == "notifications" or logging_console["severity-level"] == 5:
-            severity = "NOTICE"
-        elif logging_console["severity-level"] == "informational" or logging_console["severity-level"] == 6:
-            severity = "INFORMATIONAL"
-        elif logging_console["severity-level"] == "debugging" or logging_console["severity-level"] == 7:
-            severity = "DEBUG"
+        # SEVERITY
+        severity = get_severity(logging_console["severity-level"])
         temp_console = {"openconfig-system:facility": "SYSLOG",
                     "openconfig-system:severity": f'{severity}',
                     "openconfig-system:config": {
@@ -993,23 +976,8 @@ def set_logging_monitor(logging_monitor, config_leftover, oc_system_logging_moni
     # LOGGING MONITOR FACILITY AND SEVERITY
     severity = "DEBUG" # Default Severity
     if logging_monitor.get("severity-level"):
-        # Severity
-        if logging_monitor["severity-level"] == "emergencies" or logging_monitor["severity-level"] == 0:
-            severity = "EMERGENCY"
-        elif logging_monitor["severity-level"] == "alerts" or logging_monitor["severity-level"] == 1:
-            severity = "ALERT"
-        elif logging_monitor["severity-level"] == "critical" or logging_monitor["severity-level"] == 2:
-            severity = "CRITICAL"
-        elif logging_monitor["severity-level"] == "errors" or logging_monitor["severity-level"] == 3:
-            severity = "ERROR"
-        elif logging_monitor["severity-level"] == "warnings" or logging_monitor["severity-level"] == 4:
-            severity = "WARNING"
-        elif logging_monitor["severity-level"] == "notifications" or logging_monitor["severity-level"] == 5:
-            severity = "NOTICE"
-        elif logging_monitor["severity-level"] == "informational" or logging_monitor["severity-level"] == 6:
-            severity = "INFORMATIONAL"
-        elif logging_monitor["severity-level"] == "debugging" or logging_monitor["severity-level"] == 7:
-            severity = "DEBUG"
+        # SEVERITY
+        severity = get_severity(logging_monitor["severity-level"])
         temp_monitor = {"openconfig-system-ext:facility": "SYSLOG",
                     "openconfig-system-ext:severity": f'{severity}',
                     "openconfig-system-ext:config": {
@@ -1030,108 +998,69 @@ def set_logging_host(logging, config_leftover, oc_system_logging, if_ip, intf_ip
     vrf_source_intf_list = vrf_source_ip_list = []
     severity = "INFORMATIONAL" # Default Severity
     
-    # Severity
+    # SEVERITY
     if logging.get("trap"):
-        if logging["trap"] == "emergencies" or logging["trap"] == 0:
-            severity = "EMERGENCY"
-        elif logging["trap"] == "alerts" or logging["trap"] == 1:
-            severity = "ALERT"
-        elif logging["trap"] == "critical" or logging["trap"] == 2:
-            severity = "CRITICAL"
-        elif logging["trap"] == "errors" or logging["trap"] == 3:
-            severity = "ERROR"
-        elif logging["trap"] == "warnings" or logging["trap"] == 4:
-            severity = "WARNING"
-        elif logging["trap"] == "notifications" or logging["trap"] == 5:
-            severity = "NOTICE"
-        elif logging["trap"] == "informational" or logging["trap"] == 6:
-            severity = "INFORMATIONAL"
-        elif logging["trap"] == "debugging" or logging["trap"] == 7:
-            severity = "DEBUG"
+        severity = get_severity(logging["trap"])
 
     # GET SOURCE INTERFACE AND VRF
-    for i, int_vrf in enumerate(source_intf):
+    for index, int_vrf in enumerate(source_intf):
         if "vrf" in int_vrf.keys():
             temp_intf_vrf = {int_vrf["vrf"]: int_vrf["name"]}
             vrf_source_intf_list.append(temp_intf_vrf)
         else:
             temp_intf_vrf = {"default": int_vrf["name"]}
             vrf_source_intf_list.append(temp_intf_vrf)
-        if config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface", [])[i].get("name"):
-            config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"][i]["name"] = None
-        if config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface", [])[i].get("vrf"):
-            config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"][i]["vrf"] = None
+        if config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface", [])[index].get("name"):
+            config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"][index]["name"] = None
+        if config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface", [])[index].get("vrf"):
+            config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"][index]["vrf"] = None
 
     # ADD HOST IPV4
     if host_ipv4:
-        for i, h in enumerate(host_ipv4):
-            host = h.get("host")
+        for index, host_info in enumerate(host_ipv4):
+            host = host_info.get("host")
+            host_vrf = "default"
             source_ip = "1.1.1.1" # Placeholder Source IPv4
             intf = "GigabitEthernet1" # Placeholder Source Interface
             if logging.get("source-interface"):
-                for k in vrf_source_intf_list:
-                    if k.get("default"):
-                        intf = k.get("default")
+                for vrf_info in vrf_source_intf_list:
+                    if vrf_info.get("default"):
+                        intf = vrf_info.get("default")
                         break
                 if intf_ip_name_dict.get(intf):
                     source_ip = intf_ip_name_dict.get(intf)
 
             temp_host = {"openconfig-system:host": f'{host}',
-                        "openconfig-system:config": {
-                            "openconfig-system:host": f'{host}',
-                            "openconfig-system:remote-port": 514,
-                            "openconfig-system:source-address": f'{source_ip}',
-                            "openconfig-system-ext:use-vrf": "default"},
+                        "openconfig-system:config": get_host(host, source_ip, host_vrf),
                         "openconfig-system:selectors": {
-                            "openconfig-system:selector": [{
-                                "openconfig-system:facility": "SYSLOG",
-                                "openconfig-system:severity": f'{severity}',
-                                "openconfig-system:config": {
-                                    "openconfig-system:facility": "SYSLOG",
-                                    "openconfig-system:severity": f'{severity}'
-                                }}
-                            ]
-                        }  
-                        }
+                            "openconfig-system:selector": get_facility_severity(severity)
+                        }}
             hosts_list.append(temp_host)
-            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4"][i]["host"] = None
+            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4"][index]["host"] = None
     
     # ADD HOST IPV4 AND VRF
     if host_ipv4_vrf:
-        for i, h in enumerate(host_ipv4_vrf):
-            host = h.get("host")
-            host_vrf = h.get("vrf")
+        for index, host_info in enumerate(host_ipv4_vrf):
+            host = host_info.get("host")
+            host_vrf = host_info.get("vrf")
             source_ip_vrf = "1.1.1.1" # Placeholder Source IPv4
             intf_vrf = "GigabitEthernet1" # Placeholder Source Interface
             if logging.get("source-interface"):
-                for k in vrf_source_intf_list:
-                    if k.get(host_vrf):
-                        intf_vrf = k.get(host_vrf)
+                for vrf_info in vrf_source_intf_list:
+                    if vrf_info.get(host_vrf):
+                        intf_vrf = vrf_info.get(host_vrf)
                         break
                 if intf_ip_name_dict.get(intf_vrf):
                     source_ip_vrf = intf_ip_name_dict.get(intf_vrf)
             
             temp_host = {"openconfig-system:host": f'{host}',
-                        "openconfig-system:config": {
-                            "openconfig-system:host": f'{host}',
-                            "openconfig-system:remote-port": 514,
-                            "openconfig-system:source-address": f'{source_ip_vrf}',
-                            "openconfig-system-ext:use-vrf": f'{host_vrf}'
-                            },
+                        "openconfig-system:config": get_host(host, source_ip_vrf, host_vrf),
                         "openconfig-system:selectors": {
-                            "openconfig-system:selector": [{
-                                "openconfig-system:facility": "SYSLOG",
-                                "openconfig-system:severity": f'{severity}',
-                                "openconfig-system:config": {
-                                    "openconfig-system:facility": "SYSLOG",
-                                    "openconfig-system:severity": f'{severity}'
-                                }}
-                            ]
-                        }  
-                        }
+                            "openconfig-system:selector": get_facility_severity(severity)
+                        }}
             hosts_list.append(temp_host)
-            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"][i]["host"] = None
-            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"][i]["vrf"] = None
+            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"][index]["host"] = None
+            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"][index]["vrf"] = None
     
     if logging.get("facility"):
         del config_leftover["tailf-ned-cisco-ios:logging"]["facility"]
@@ -1140,10 +1069,50 @@ def set_logging_host(logging, config_leftover, oc_system_logging, if_ip, intf_ip
     cleanup_logging(config_leftover)
     return hosts
 
+def get_severity(logging_severity):
+    # GET LOGGING SEVERITY
+    if logging_severity == "emergencies" or logging_severity == 0:
+        severity = "EMERGENCY"
+    elif logging_severity == "alerts" or logging_severity == 1:
+        severity = "ALERT"
+    elif logging_severity == "critical" or logging_severity == 2:
+        severity = "CRITICAL"
+    elif logging_severity == "errors" or logging_severity == 3:
+        severity = "ERROR"
+    elif logging_severity == "warnings" or logging_severity == 4:
+        severity = "WARNING"
+    elif logging_severity == "notifications" or logging_severity == 5:
+        severity = "NOTICE"
+    elif logging_severity == "informational" or logging_severity == 6:
+        severity = "INFORMATIONAL"
+    elif logging_severity == "debugging" or logging_severity == 7:
+        severity = "DEBUG"
+
+    return severity
+
+def get_host(host, source_ip, host_vrf):
+    # GET HOST, VRF AND SOURCE IP ADDRESS
+    temp_host = {"openconfig-system:host": f'{host}', 
+                    "openconfig-system:remote-port": 514,
+                    "openconfig-system:source-address": f'{source_ip}',
+                    "openconfig-system-ext:use-vrf": f'{host_vrf}'
+                }
+
+    return temp_host
+
+def get_facility_severity(severity):
+    # GET FACILITY AND SEVERITY
+    temp_fac_sev = [{"openconfig-system:facility": "SYSLOG", 
+                        "openconfig-system:severity": f'{severity}',
+                        "openconfig-system:config": {
+                        "openconfig-system:facility": "SYSLOG",
+                        "openconfig-system:severity": f'{severity}'
+                    }}]
+
+    return temp_fac_sev
+
 def cleanup_logging(config_leftover):
-    if len(config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface", [])) < 1:
-        pass
-    else:
+    if len(config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface", [])) >= 1:
         updated_source_intf = []
 
         for source in config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"]:
@@ -1155,9 +1124,7 @@ def cleanup_logging(config_leftover):
         elif "name" not in config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface"):
             del config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"]
 
-    if len(config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("host", {}).get("ipv4", [])) < 1:
-        pass
-    else:
+    if len(config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("host", {}).get("ipv4", [])) >= 1:
         updated_ipv4 = []
 
         for host_ipv4 in config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4"]:
@@ -1169,9 +1136,7 @@ def cleanup_logging(config_leftover):
         elif "host" not in config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("host", {}).get("ipv4"):
             del config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4"]
 
-    if len(config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("host", {}).get("ipv4-vrf", [])) < 1:
-        pass
-    else:
+    if len(config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("host", {}).get("ipv4-vrf", [])) >= 1:
         updated_ipv4_vrf = []
 
         for host_ipv4_vrf in config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"]:
@@ -1182,6 +1147,31 @@ def cleanup_logging(config_leftover):
             config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"] = updated_ipv4_vrf
         elif "host" not in config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("host", {}).get("ipv4-vrf"):
             del config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"]
+
+def xe_system_clock_timezone(config_before: dict, config_leftover: dict) -> None:
+    """
+    Translates NSO XE NED to MDD OpenConfig System Clock Timezone
+    """
+    openconfig_system_clock_config = openconfig_system["openconfig-system:system"][
+        "openconfig-system:clock"]["openconfig-system:config"]
+    timezone_name = ["UTC", "0", "0"] # Placeholder Timezone, Hours and Minutes
+    zone = config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("zone")
+    hours = config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("hours")
+    minutes = config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("minutes")
+    
+    if zone and len(zone) == 3:
+        timezone_name[0] = zone
+        del config_leftover["tailf-ned-cisco-ios:clock"]["timezone"]["zone"]
+
+    if hours != None:
+        timezone_name[1] = f'{hours}'
+        del config_leftover["tailf-ned-cisco-ios:clock"]["timezone"]["hours"]
+
+    if minutes != None:
+        timezone_name[2] = f'{minutes}'
+        del config_leftover["tailf-ned-cisco-ios:clock"]["timezone"]["minutes"]
+
+    openconfig_system_clock_config["openconfig-system:timezone-name"] = ' '.join(timezone_name)
 
 def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []) -> dict:
     """
@@ -1205,6 +1195,7 @@ def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []
     xe_system_ntp(before, leftover, if_ip)
     # xe_system_aaa(before, leftover, if_ip)
     xe_system_logging(before, leftover, if_ip)
+    xe_system_clock_timezone(before, leftover)
     translation_notes += system_notes
 
     return openconfig_system
