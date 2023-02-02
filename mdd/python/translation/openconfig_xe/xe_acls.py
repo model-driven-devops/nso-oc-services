@@ -23,6 +23,8 @@ def xe_acls_program_service(self) -> None:
                           'oc-pkt-match-types:IP_UDP': 'udp',
                           47: 'gre',
                           'oc-pkt-match-types:IP_GRE': 'gre',
+                          50: 'esp',
+                          'oc-pkt-match-types-ext:IP_ESP': 'esp',
                           51: 'ahp',
                           'oc-pkt-match-types:IP_AUTH': 'ahp',
                           103: 'pim',
