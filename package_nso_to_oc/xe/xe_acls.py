@@ -444,6 +444,11 @@ def get_interfaces_by_acl(config_before, config_after):
             interface_list = interface_list[interface_type]
             interface_list_after = interface_list_after[interface_type]
 
+        if interface_type == "LISP-subinterface":
+            interface_type = "LISP"
+            interface_list = interface_list[interface_type]
+            interface_list_after = interface_list_after[interface_type]
+
         for index, interface in enumerate(interface_list):
             if not "ip" in interface or not "access-group" in interface["ip"] or len(
                     interface["ip"]["access-group"]) < 1:
@@ -458,12 +463,19 @@ def get_interfaces_by_acl(config_before, config_after):
                 if interface_list_after[index].get("ip") and interface_list_after[index]["ip"].get("access-group"):
                     del interface_list_after[index]["ip"]["access-group"]
 
-                intf = {
-                    "id": intf_id,
-                    "interface": f"{interface_type}{intf_num}",
-                    "subinterface": subintf_num,
-                    "direction": access_group["direction"]
-                }
+                if (interface_type != "Tunnel") and (interface_type != "Vlan"):  # no sub-ifs for these
+                    intf = {
+                        "id": intf_id,
+                        "interface": f"{interface_type}{intf_num}",
+                        "subinterface": subintf_num,
+                        "direction": access_group["direction"]
+                    }
+                else:
+                    intf = {
+                        "id": intf_id,
+                        "interface": f"{interface_type}{intf_num}",
+                        "direction": access_group["direction"]
+                    }
 
                 if not access_group["access-list"] in interfaces_by_acl:
                     interfaces_by_acl[access_group["access-list"]] = []
@@ -479,7 +491,7 @@ def process_interfaces(acl_type, acl_name, interfaces_by_acl, acl_interfaces):
     for interface in interfaces:
         if interface["id"] in acl_interfaces:
             acl_interface = acl_interfaces[interface["id"]]
-        else:
+        elif interface.get("subinterface"):
             acl_interface = {
                 "openconfig-acl:id": interface["id"],
                 "openconfig-acl:config": {"openconfig-acl:id": interface["id"]},
@@ -487,6 +499,16 @@ def process_interfaces(acl_type, acl_name, interfaces_by_acl, acl_interfaces):
                     "openconfig-acl:config": {
                         "openconfig-acl:interface": interface["interface"],
                         "openconfig-acl:subinterface": interface["subinterface"]
+                    }
+                }
+            }
+        else:
+            acl_interface = {
+                "openconfig-acl:id": interface["id"],
+                "openconfig-acl:config": {"openconfig-acl:id": interface["id"]},
+                "openconfig-acl:interface-ref": {
+                    "openconfig-acl:config": {
+                        "openconfig-acl:interface": interface["interface"]
                     }
                 }
             }

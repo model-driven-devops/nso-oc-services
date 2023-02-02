@@ -18,15 +18,23 @@
       include_role:
         name: ned-to-oc-test
       vars:
-        # If True, guaranteed to run a save rollback before running api_test_data list of tasks. Defaults to True if undefined.
+        # If True, guaranteed to run a save rollback before running api_test_data list of tasks. 
+        # Defaults to True if undefined.
         will_save_rollback: False
-        # If True, guaranteed to run a load rollback after running api_test_data list of tasks. Defaults to True if undefined.
+        # If True, guaranteed to run a load rollback after running api_test_data list of tasks.
+        # Defaults to True if undefined.
         will_load_rollback: False
-        # If True, it will fetch the OC device config after running api_test_data list of tasks and prints to terminal. Defaults to True if undefined.
+        # If True, it will fetch the OC device config after running api_test_data list of tasks and prints to terminal.
+        # Defaults to True if undefined.
         will_fetch_oc_result: False
-        # The NED to OC python script to run after running all api_test_data list of tasks. The path is relative to this playbook path. No script is ran if undefined.
+        # If True, it will PUT an empty mdd:openconfig resource. This is used to either reset OC or set an initial one
+        # if the calling test will never set OC. Defaults to False if undefined
+        reset_oc: False
+        # The NED to OC python script to run after running all api_test_data list of tasks. The path is relative to 
+        # this playbook path. No script is ran if undefined.
         script_path: ../../../package_nso_to_oc/main.py
-        # A list of dictionaries with attributes that are required for the most part. No data config is sent if empty or undefined.
+        # A list of dictionaries with attributes that are required for the most part. No data config is sent if empty
+        # or undefined.
         api_test_data:
           # A couple of examples of list element. Each item in this list will perform an HTTP request to send content.
           - name: NSO configure Interfaces
@@ -56,7 +64,8 @@
                       std-access-list-rule:
                         - rule: '10 permit 192.0.0.0 0.255.255.255'
                         - rule: '20 permit 10.0.0.0 0.255.255.255'
-        # Place your assertions here. This will run immediately after all api_test_data list of tasks have ran. No assertions will run if empty or undefined.
+        # Place your assertions here. This will run immediately after all api_test_data list of tasks have ran. No 
+        # assertions will run if empty or undefined.
         assertions:
           # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['hostname'] == 'test123'"
           
