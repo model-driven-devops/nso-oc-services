@@ -11,7 +11,7 @@ severity_levels_oc_to_xe = {'EMERGENCY': 'emergencies',
                             'INFORMATIONAL': 'informational',
                             'DEBUG': 'debugging'}
 
-facility_levels_oc_to_xe = {'KERNAL': 'kern',
+facility_levels_oc_to_xe = {'KERNEL': 'kern',
                             'USER': 'user',
                             'MAIL': 'mail',
                             'SYSTEM_DAEMON': 'daemon',
