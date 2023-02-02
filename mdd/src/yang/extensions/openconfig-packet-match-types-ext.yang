@@ -1,0 +1,38 @@
+module openconfig-packet-match-types-ext{
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/openconfig-packet-match-types-ext";
+
+  prefix "oc-pkt-match-types-ext";
+
+  import tailf-ncs { prefix ncs; }
+  import tailf-common { prefix tailf; }
+  import mdd { prefix mdd; }
+  import openconfig-acl { prefix oc-acl; }
+  import openconfig-packet-match-types { prefix oc-pkt-match-types; }
+  import openconfig-inet-types { prefix oc-inet; }
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Augmentation to openconfig packet match types model.";
+
+  revision "2023-02-02" {
+    description
+      "Added IP_ESP to IP protocols";
+  }
+  revision "2023-02-02" {
+    description
+      "Init";
+  }
+  identity IP_ESP {
+    base oc-pkt-match-types:IP_PROTOCOL;
+    description
+      "Encapsulating security payload, e.g., for IPSEC (50)";
+  }
+}

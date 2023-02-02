@@ -41,6 +41,7 @@ protocols_oc_to_xe = {
     "udp": "IP_UDP",
     "gre": "IP_GRE",
     "ahp": "IP_AUTH",
+    "esp": "IP_ESP",
     "pim": "IP_PIM"
 }
 # OC has an additional forwarding action, "DROP", which also translates to "deny" in XE.
