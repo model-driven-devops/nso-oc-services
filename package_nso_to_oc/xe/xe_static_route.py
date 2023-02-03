@@ -134,10 +134,12 @@ def configure_next_hop_index(route_forwarding):
         }
         new_index["openconfig-network-instance:interface-ref"] = {
             "openconfig-network-instance:config": {
-                "openconfig-network-instance:interface": f"{intf_type}{intf_num}",
-                "openconfig-network-instance:subinterface": sub_intf_num
+                "openconfig-network-instance:interface": f"{intf_type}{intf_num}"
             }
         }
+        if (intf_type != "Tunnel") and (intf_type != "Vlan"):
+            new_index["openconfig-network-instance:interface-ref"]["openconfig-network-instance:config"][
+                "openconfig-network-instance:subinterface"] = sub_intf_num
     elif "forwarding-address" in route_forwarding:
         new_index["openconfig-network-instance:index"] = route_forwarding["forwarding-address"]
         new_index["openconfig-network-instance:config"] = {
@@ -168,10 +170,12 @@ def configure_next_hop_index(route_forwarding):
             }
             new_index["openconfig-network-instance:interface-ref"] = {
                 "openconfig-network-instance:config": {
-                    "openconfig-network-instance:interface": f"{intf_type}{intf_num}",
-                    "openconfig-network-instance:subinterface": sub_intf_num
+                    "openconfig-network-instance:interface": f"{intf_type}{intf_num}"
                 }
             }
+            if (intf_type != "Tunnel") and (intf_type != "Vlan"):
+                new_index["openconfig-network-instance:interface-ref"]["openconfig-network-instance:config"][
+                    "openconfig-network-instance:subinterface"] = sub_intf_num
 
     if "metric" in route_forwarding:
         new_index["openconfig-network-instance:config"]["openconfig-network-instance:metric"] = route_forwarding["metric"]
