@@ -277,6 +277,19 @@ def create_area_network_statement(self, service_interface, device_ospf_cbd, serv
         interface_ip = str(self.root.devices.device[self.device_name].mdd__openconfig.oc_if__interfaces.interface[
                                int_name_and_subint[0]].subinterfaces.subinterface[
                                int_name_and_subint[1]].oc_ip__ipv4.addresses.address.keys()[0]).lstrip('{').rstrip('}')
+    # what about tunnel, vlan, port-channel
+    elif "Tunnel" in service_interface.id:
+        interface_ip = str(self.root.devices.device[self.device_name].mdd__openconfig.oc_if__interfaces.interface[
+                               service_interface.id].oc_tun__tunnel.ipv4.addresses.address.keys()[
+                               0]).lstrip('{').rstrip('}')
+    elif "Vlan" in service_interface.id:
+        interface_ip = str(self.root.devices.device[self.device_name].mdd__openconfig.oc_if__interfaces.interface[
+                               service_interface.id].oc_vlan__routed_vlan.oc_ip__ipv4.addresses.address.keys()[
+                               0]).lstrip('{').rstrip('}')
+    elif "Port-channel" in service_interface.id:
+        interface_ip = str(self.root.devices.device[self.device_name].mdd__openconfig.oc_if__interfaces.interface[
+                               service_interface.id].oc_lag__aggregation.oc_ip__ipv4.addresses.address.keys()[
+                               0]).lstrip('{').rstrip('}')
     else:
         interface_ip = str(self.root.devices.device[self.device_name].mdd__openconfig.oc_if__interfaces.interface[
                                service_interface.id].subinterfaces.subinterface[0].oc_ip__ipv4.addresses.address.keys()[
