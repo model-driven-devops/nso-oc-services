@@ -11,7 +11,7 @@ severity_levels_oc_to_xe = {'EMERGENCY': 'emergencies',
                             'INFORMATIONAL': 'informational',
                             'DEBUG': 'debugging'}
 
-facility_levels_oc_to_xe = {'KERNAL': 'kern',
+facility_levels_oc_to_xe = {'KERNEL': 'kern',
                             'USER': 'user',
                             'MAIL': 'mail',
                             'SYSTEM_DAEMON': 'daemon',
@@ -744,7 +744,7 @@ def xe_configure_ntp_server(service_ntp_server, peer_cdb) -> None:
     if service_ntp_server.config.iburst:
         peer_cdb.iburst.create()
     elif service_ntp_server.config.iburst is False:
-        if peer_cdb.iburst.exits():
+        if peer_cdb.iburst.exists():
             peer_cdb.iburst.delete()
     if service_ntp_server.config.port:
         if service_ntp_server.config.port != 123:
