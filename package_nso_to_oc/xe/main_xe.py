@@ -12,7 +12,7 @@ from xe import xe_network_instances, xe_vlans, xe_interfaces, xe_system, xe_stp,
 
 def build_xe_to_oc(config_before_dict: dict, configs_leftover: dict, oc: dict, translation_notes: list) -> None:
     interface_ip_name_dict = common.xe_system_get_interface_ip_address(config_before_dict)
-    openconfig_interfaces = xe_interfaces.main(config_before_dict, configs_leftover, translation_notes)
+    openconfig_interfaces = xe_interfaces.main(config_before_dict, configs_leftover, interface_ip_name_dict, translation_notes)
     openconfig_acls = xe_acls.main(config_before_dict, configs_leftover, translation_notes)
     openconfig_routing_policy = xe_routing_policy.main(config_before_dict, configs_leftover, translation_notes)
     openconfig_network_instances = xe_network_instances.main(config_before_dict, configs_leftover, translation_notes)

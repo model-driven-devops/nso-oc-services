@@ -534,7 +534,15 @@ def configure_port_channel(config_before: dict, config_leftover: dict, interface
             xe_configure_ipv4_interface(nso_before_interface, nso_leftover_interface, openconfig_interface_subif)
 
 
-def configure_software_tunnel(config_before: dict, config_leftover: dict, interface_data: dict) -> None:
+def check_for_ip_address(address):
+    try:
+        ipaddress.ip_address(address)
+        return True
+    except ValueError:
+        return False
+
+
+def configure_software_tunnel(config_before: dict, config_leftover: dict, interface_data: dict, if_ip: dict) -> None:
     """Configure GRE Tunnel"""
     for interface_directory in interface_data.values():
         # Configure tunnel interface
@@ -557,8 +565,13 @@ def configure_software_tunnel(config_before: dict, config_leftover: dict, interf
 
         # source IP
         if nso_before_interface.get("tunnel", {}).get("source"):
-            openconfig_interface_tunnel["openconfig-if-tunnel:config"][
-                "openconfig-if-tunnel:src"] = nso_before_interface.get("tunnel", {}).get("source")
+            tunnel_src = nso_before_interface.get("tunnel", {}).get("source")
+            if check_for_ip_address(tunnel_src):
+                openconfig_interface_tunnel["openconfig-if-tunnel:config"][
+                    "openconfig-if-tunnel:src"] = tunnel_src
+            else:
+                openconfig_interface_tunnel["openconfig-if-tunnel:config"][
+                "openconfig-if-tunnel:src"] = if_ip.get(tunnel_src)
             del nso_leftover_interface["tunnel"]["source"]
         # destination IP
         if nso_before_interface.get("tunnel", {}).get("destination"):
@@ -797,7 +810,7 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
             del nso_leftover_interface["channel-group"]
 
 
-def xe_interfaces(config_before: dict, config_leftover: dict, interfaces: dict) -> None:
+def xe_interfaces(config_before: dict, config_leftover: dict, interfaces: dict, if_ip: dict) -> None:
     """
     Translates NSO XE NED to MDD OpenConfig Interfaces Config
     """
@@ -837,12 +850,12 @@ def xe_interfaces(config_before: dict, config_leftover: dict, interfaces: dict) 
         if nso_to_oc_interface_types[interface_type] == "l3ipvlan":
             configure_software_l3ipvlan(config_before, config_leftover, interfaces[interface_type])
         if nso_to_oc_interface_types[interface_type] == "tunnel":
-            configure_software_tunnel(config_before, config_leftover, interfaces[interface_type])
+            configure_software_tunnel(config_before, config_leftover, interfaces[interface_type], if_ip)
         if nso_to_oc_interface_types[interface_type] == "vasi":
             configure_software_vasi(config_before, config_leftover, interfaces[interface_type])
 
 
-def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
+def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []) -> dict:
     """
     Translates NSO Device configurations to MDD OpenConfig configurations.
 
@@ -855,11 +868,12 @@ def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
 
     :param before: Original NSO Device configuration: dict
     :param leftover: NSO Device configuration minus configs replaced with MDD OC: dict
+    :param if_ip: Map of interface names to IP addresses: dict
     :return: MDD Openconfig Interfaces configuration: dict
     """
 
     interfaces = create_interface_dict(before)
-    xe_interfaces(before, leftover, interfaces)
+    xe_interfaces(before, leftover, interfaces, if_ip)
     translation_notes += interfaces_notes
 
     return openconfig_interfaces
@@ -877,7 +891,7 @@ if __name__ == "__main__":
         import common
 
     (config_before_dict, config_leftover_dict, interface_ip_dict) = common_xe.init_xe_configs()
-    main(config_before_dict, config_leftover_dict)
+    main(config_before_dict, config_leftover_dict, interface_ip_dict)
     config_name = "_interfaces"
     config_remaining_name = "_remaining_interfaces"
     oc_name = "_openconfig_interfaces"
