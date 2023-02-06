@@ -268,6 +268,8 @@
                     rsh-enable:
                       - null
                   finger: {}
+                  gratuitous-arps-conf:
+                    gratuitous-arps: true
                 tailf-ned-cisco-ios:enable:
                   secret:
                     secret: admin
@@ -540,6 +542,36 @@
                   zone: "CST"
                   hours: -6
                   minutes: 0
+          - name: NSO dns_server_init
+            tags:
+              - dns_server_init
+            api_path: config/tailf-ned-cisco-ios:vrf
+            api_method: PATCH
+            content: |
+              vrf:
+                definition:
+                  - name: abc
+                    address-family:
+                      ipv4: {}
+                      ipv6: {}
+                  - name: default
+                    address-family:
+                      ipv4: {}
+          - name: NSO dns_server_init
+            tags:
+              - dns_server_init
+            api_path: config/tailf-ned-cisco-ios:ip/name-server
+            api_method: PATCH
+            content: | 
+              name-server:
+                name-server-list:
+                  - address: "8.8.8.8"
+                  - address: "8.8.4.4"
+                vrf:
+                  - name: "abc"
+                    name-server-list:
+                      - address: "8.8.5.5"
+                      - address: "8.8.6.6"
         assertions:
         #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['name'] == 'RADIUS-GROUP-1'"
         #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['type'] == 'openconfig-aaa:RADIUS'"
@@ -641,6 +673,21 @@
         #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][1] == 'openconfig-aaa-types:TACACS_ALL'"
         #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][2] == 'TACACS-GROUP-1'"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['clock']['config']['timezone-name'] == 'CST -6 0'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][0]['address'] == '8.8.5.5'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][0]['config']['address'] == '8.8.5.5'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][0]['config']['port'] == 53"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][0]['config']['openconfig-system-ext:use-vrf'] == 'abc'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][1]['address'] == '8.8.6.6'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][1]['config']['address'] == '8.8.6.6'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][1]['config']['port'] == 53"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][1]['config']['openconfig-system-ext:use-vrf'] == 'abc'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][2]['address'] == '8.8.8.8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][2]['config']['address'] == '8.8.8.8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][2]['config']['port'] == 53"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][3]['address'] == '8.8.4.4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][3]['config']['address'] == '8.8.4.4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][3]['config']['port'] == 53"
+
         #   - "'openconfig-system-ext:aes128-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
         #   - "'openconfig-system-ext:aes192-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
         #   - "'openconfig-system-ext:aes256-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"

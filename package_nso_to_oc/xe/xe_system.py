@@ -36,7 +36,10 @@ openconfig_system = {
             "openconfig-system:config": {},
         },
         "openconfig-system:config": {},
-        "openconfig-system:dns": {},
+        "openconfig-system:dns": {
+            "openconfig-system:servers": {
+                "openconfig-system:server": []}
+        },
         "openconfig-system:logging": {},
         "openconfig-system:ntp": {
             "openconfig-system:config": {},
@@ -187,6 +190,13 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
         del config_leftover["tailf-ned-cisco-ios:service"]["password-encryption"]
     else:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:service-password-encryption"] = False
+    # gratuitous-arp
+    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("gratuitous-arps-conf", {}).get("gratuitous-arps", True) is False:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-gratuitous-arps"] = False
+        del config_leftover["tailf-ned-cisco-ios:ip"]["gratuitous-arps-conf"]["gratuitous-arps"]
+    else:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-gratuitous-arps"] = True
+        del config_leftover["tailf-ned-cisco-ios:ip"]["gratuitous-arps-conf"]["gratuitous-arps"]
     # aaa server-groups
 
     # gather group and server configurations
@@ -889,6 +899,82 @@ def xe_system_clock_timezone(config_before: dict, config_leftover: dict) -> None
 
     openconfig_system_clock_config["openconfig-system:timezone-name"] = ' '.join(timezone_name)
 
+def xe_system_name_server(config_before: dict, config_leftover: dict) -> None:
+    """
+    Translates NSO XE NED to MDD OpenConfig System DNS
+    """
+    oc_system_dns = openconfig_system["openconfig-system:system"]["openconfig-system:dns"]
+    name_server = config_before.get("tailf-ned-cisco-ios:ip", {}).get("name-server")
+    name_server_list = config_before.get("tailf-ned-cisco-ios:ip", {}).get("name-server", {}).get("name-server-list")
+    vrf_list = config_before.get("tailf-ned-cisco-ios:ip", {}).get("name-server", {}).get("vrf")
+    
+    if name_server:
+        temp_server_list = {"openconfig-system:servers": set_server_list(name_server_list, 
+            vrf_list, config_leftover)}
+        oc_system_dns.update(temp_server_list)
+
+def set_server_list(name_server_list, vrf_list, config_leftover):
+    svr = {"openconfig-system:server": []}
+    svr_list = svr["openconfig-system:server"]
+    # LIST OF VRF AND DNS SERVERS
+    if (vrf_list):
+        for index_vrf, vrf in enumerate(vrf_list):
+            server_list_vrf = vrf.get("name-server-list")
+            for index_server, server in enumerate(server_list_vrf):
+                temp_svr = {"openconfig-system:address": server["address"],
+                        "openconfig-system:config": {
+                            "openconfig-system:address": server["address"],
+                            "openconfig-system:port": 53, # Always 53 for IOS
+                            "openconfig-system-ext:use-vrf": vrf["name"]
+                        }}
+                svr_list.append(temp_svr)
+                config_leftover["tailf-ned-cisco-ios:ip"]["name-server"]["vrf"][index_vrf][
+                    "name"] = None
+    # LIST OF DNS SERVERS
+    if (name_server_list) and "vrf" not in name_server_list:
+        for index_server, server in enumerate(name_server_list):
+            temp_svr = {"openconfig-system:address": server["address"],
+                    "openconfig-system:config": {
+                        "openconfig-system:address": server["address"],
+                        "openconfig-system:port": 53 # Always 53 for IOS
+                    }}
+            svr_list.append(temp_svr)
+            config_leftover["tailf-ned-cisco-ios:ip"]["name-server"]["name-server-list"][
+                index_server]["address"] = None
+                
+    cleanup_name_server(config_leftover, name_server_list, vrf_list)
+    return svr
+
+def cleanup_name_server(config_leftover, name_server_list, vrf_list):
+    if name_server_list and len(config_leftover.get("tailf-ned-cisco-ios:ip", {}).get(
+        "name-server", {}).get("name-server-list")) >= 1:
+        updated_name_server = []
+
+        for server in config_leftover["tailf-ned-cisco-ios:ip"]["name-server"][
+            "name-server-list"]:
+            if server and server.get("address"):
+                updated_name_server.append(server)
+
+        if len(updated_name_server) > 0:
+            config_leftover["tailf-ned-cisco-ios:ip"]["name-server"]["name-server-list"] = updated_name_server
+        elif "address" not in config_leftover.get("tailf-ned-cisco-ios:ip", {}).get(
+            "name-server").get("name-server-list"):
+            del config_leftover["tailf-ned-cisco-ios:ip"]["name-server"]["name-server-list"]
+
+    if vrf_list and len(config_leftover.get("tailf-ned-cisco-ios:ip", {}).get("name-server", {}).get(
+        "vrf")) >= 1:
+        updated_vrf = []
+
+        for vrf in config_leftover["tailf-ned-cisco-ios:ip"]["name-server"]["vrf"]:
+            if vrf and vrf.get("name"):
+                updated_vrf.append(vrf)
+
+        if len(updated_vrf) > 0:
+            config_leftover["tailf-ned-cisco-ios:ip"]["name-server"]["vrf"] = updated_vrf
+        elif "name" not in config_leftover.get("tailf-ned-cisco-ios:ip", {}).get("name-server").get(
+            "vrf"):
+            del config_leftover["tailf-ned-cisco-ios:ip"]["name-server"]["vrf"]
+
 def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []) -> dict:
     """
     Translates NSO Device configurations to MDD OpenConfig configurations.
@@ -911,6 +997,7 @@ def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []
     xe_system_ntp(before, leftover, if_ip)
     # xe_system_aaa(before, leftover, if_ip)
     xe_system_clock_timezone(before, leftover)
+    xe_system_name_server(before, leftover)
     translation_notes += system_notes
 
     return openconfig_system
