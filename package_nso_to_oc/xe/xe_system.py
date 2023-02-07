@@ -37,7 +37,11 @@ openconfig_system = {
         },
         "openconfig-system:config": {},
         "openconfig-system:dns": {},
-        "openconfig-system:logging": {},
+        "openconfig-system:logging": {
+            "openconfig-system:console": {},
+            "openconfig-system-ext:terminal-monitor": {},
+            "openconfig-system:remote-servers": {}
+        },
         "openconfig-system:ntp": {
             "openconfig-system:config": {},
             "openconfig-system:ntp-keys": {
@@ -53,7 +57,9 @@ openconfig_system = {
         },
         "openconfig-system-ext:services": {
             "openconfig-system-ext:http": {
-                "openconfig-system-ext:config": {}
+                "openconfig-system-ext:config": {},
+                "openconfig-system-ext:ip-http-timeout-policy": {"openconfig-system-ext:idle": {
+                    "openconfig-system-ext:config": {}}}
             },
             "openconfig-system-ext:config": {},
             "openconfig-system-ext:login-security-policy": {
@@ -63,6 +69,10 @@ openconfig_system = {
             "openconfig-system-ext:boot-network": {
                 "openconfig-system-ext:config": {},
             }
+        },
+        "openconfig-system-ext:timestamps": {
+            "openconfig-system-ext:logging": {"openconfig-system-ext:config": {}},
+            "openconfig-system-ext:debugging": {"openconfig-system-ext:config": {}}
         }
     }
 }
@@ -139,6 +149,47 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
         del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["server"]
     else:
         openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:config"]["openconfig-system-ext:http-enabled"] = True
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["server"]
+    # IP http secure server
+    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("secure-server", True) is False:
+        openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:config"][
+            "openconfig-system-ext:https-enabled"] = False
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["secure-server"]
+    else:
+        openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:config"][
+            "openconfig-system-ext:https-enabled"] = True
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["secure-server"]
+    # IP http max-connections
+    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("max-connections"):
+        openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:config"][
+            "openconfig-system-ext:ip-http-max-connections"] = config_before.get("tailf-ned-cisco-ios:ip", {}).get(
+                "http", {}).get("max-connections")
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["max-connections"]
+    # IP http ciphersuite
+    if len(config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("secure-ciphersuite", [])) > 0:
+        openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:config"][
+            "openconfig-system-ext:ip-http-secure-ciphersuite"] = config_before.get("tailf-ned-cisco-ios:ip", {}).get(
+                "http", {}).get("secure-ciphersuite")
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["secure-ciphersuite"]
+    # IP http timeout-policy - idle
+    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("timeout-policy", {}).get(
+        "idle"):
+        openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:ip-http-timeout-policy"]["openconfig-system-ext:idle"]["openconfig-system-ext:config"]["openconfig-system-ext:connection"] = config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("timeout-policy", {}).get("idle")
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["timeout-policy"]["idle"]
+    # IP http timeout-policy - life
+    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("timeout-policy", {}).get(
+        "life"):
+        openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:ip-http-timeout-policy"][
+            "openconfig-system-ext:idle"]["openconfig-system-ext:config"]["openconfig-system-ext:life"] = config_before.get(
+                "tailf-ned-cisco-ios:ip", {}).get("http", {}).get("timeout-policy", {}).get("life")
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["timeout-policy"]["life"]
+    # IP http timeout-policy - requests
+    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("timeout-policy", {}).get(
+        "requests"):
+        openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:ip-http-timeout-policy"][
+            "openconfig-system-ext:idle"]["openconfig-system-ext:config"]["openconfig-system-ext:requests"] = config_before.get(
+                "tailf-ned-cisco-ios:ip", {}).get("http", {}).get("timeout-policy", {}).get("requests")
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["timeout-policy"]["requests"]
     # IP RCMD rcp-enable
     if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("rcmd", {}).get("rcp-enable", '')) is list:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-rcmd-rcp-enable"] = True
@@ -190,7 +241,6 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
     # aaa server-groups
 
     # gather group and server configurations
-
 
 def xe_system_config(config_before: dict, config_leftover: dict) -> None:
     """
@@ -864,6 +914,286 @@ def cleanup_server_access(config_leftover, group_access_type, access_type):
     elif "server" in config_leftover.get(f"tailf-ned-cisco-ios:{access_type}", {}):
         del config_leftover[f"tailf-ned-cisco-ios:{access_type}"]["server"]
 
+def xe_system_logging(config_before: dict, config_leftover: dict, if_ip: dict) -> None:
+    """
+    Translates NSO XE NED to MDD OpenConfig System Logging
+    """
+    oc_system_logging_console = openconfig_system["openconfig-system:system"]["openconfig-system:logging"]["openconfig-system:console"]
+    oc_system_logging_monitor = openconfig_system["openconfig-system:system"]["openconfig-system:logging"]["openconfig-system-ext:terminal-monitor"]
+    oc_system_logging = openconfig_system["openconfig-system:system"]["openconfig-system:logging"]
+    oc_system_archive = openconfig_system["openconfig-system:system"]["openconfig-system-ext:services"]
+    logging_console = config_before.get("tailf-ned-cisco-ios:logging", {}).get("console")
+    logging_monitor = config_before.get("tailf-ned-cisco-ios:logging", {}).get("monitor")
+    logging = config_before.get("tailf-ned-cisco-ios:logging")
+    archive = config_before.get("tailf-ned-cisco-ios:archive")
+    intf_ip_name_dict = common.xe_system_get_interface_ip_address(config_before)
+    
+    # LOGGING BUFFERED
+    if logging.get("buffered"):
+        temp_logging_buffered = {
+            "openconfig-system-ext:buffered": set_logging_buffered(logging, config_leftover, oc_system_logging)
+        }
+        oc_system_logging.update(temp_logging_buffered)
+        del config_leftover["tailf-ned-cisco-ios:logging"]["buffered"]["severity-level"]
+        if logging.get("buffered", {}).get("buffer-size"):
+            del config_leftover["tailf-ned-cisco-ios:logging"]["buffered"]["buffer-size"]
+    else:
+        temp_logging_buffered = {
+            "openconfig-system-ext:buffered": {"openconfig-system-ext:config": {
+                "openconfig-system-ext:enabled": False
+            }}}
+        oc_system_logging.update(temp_logging_buffered)
+
+    # LOGGING CONSOLE
+    if logging_console:
+        temp_logging_console = {
+            "openconfig-system:config": {"openconfig-system-ext:enabled": True},
+            "openconfig-system:selectors": set_logging_console(logging_console, 
+                                                                config_leftover, 
+                                                                oc_system_logging_console),
+        }
+        oc_system_logging_console.update(temp_logging_console)
+        del config_leftover["tailf-ned-cisco-ios:logging"]["console"]["severity-level"]
+    else:
+        temp_logging_console = {
+            "openconfig-system:config": {"openconfig-system-ext:enabled": False}
+        }
+        oc_system_logging_console.update(temp_logging_console)
+
+    # LOGGING MONITOR
+    if logging_monitor:
+        temp_logging_monitor = {
+            "openconfig-system-ext:selectors": set_logging_monitor(logging_monitor, 
+                                                                    config_leftover, 
+                                                                    oc_system_logging_monitor),
+        }
+        oc_system_logging_monitor.update(temp_logging_monitor)
+        del config_leftover["tailf-ned-cisco-ios:logging"]["monitor"]["severity-level"]
+    
+    # LOGGING HOST
+    if logging.get("host"):
+        temp_logging_host = {
+            "openconfig-system:remote-servers": set_logging_host(logging, config_leftover, 
+                                                                oc_system_logging, if_ip, 
+                                                                intf_ip_name_dict),
+        }
+        oc_system_logging.update(temp_logging_host)
+
+def set_logging_buffered(logging, config_leftover, oc_system_logging):
+    buffered = {"openconfig-system-ext:config": []}
+    buffered_list = buffered["openconfig-system-ext:config"]
+    # LOGGING BUFFERED SEVERITY AND BUFFER SIZE
+    buffer_size = 4096 # Default Buffer Size
+    severity = "DEBUG" # Default Severity
+    if logging.get("buffered", {}).get("buffer-size"):
+        buffer_size = logging["buffered"]["buffer-size"]
+    if logging.get("buffered", {}).get("severity-level"):
+        # SEVERITY
+        severity = get_severity(logging["buffered"]["severity-level"])
+        temp_buffered = {"openconfig-system-ext:enabled": True,
+                    "openconfig-system-ext:severity": f'{severity}',
+                    "openconfig-system-ext:buffer-size": f'{buffer_size}'
+                    }
+        buffered_list.append(temp_buffered)
+
+    return buffered
+
+def set_logging_console(logging_console, config_leftover, oc_system_logging_console):
+    console = {"openconfig-system:selector": []}
+    console_list = console["openconfig-system:selector"]
+    # LOGGING CONSOLE FACILITY AND SEVERITY
+    severity = "DEBUG" # Default Severity
+    if logging_console.get("severity-level"):
+        # SEVERITY
+        severity = get_severity(logging_console["severity-level"])
+        temp_console = {"openconfig-system:facility": "SYSLOG",
+                    "openconfig-system:severity": f'{severity}',
+                    "openconfig-system:config": {
+                        "openconfig-system:facility": "SYSLOG",
+                        "openconfig-system:severity": f'{severity}'
+                    }}
+        console_list.append(temp_console)
+
+    return console
+
+def set_logging_monitor(logging_monitor, config_leftover, oc_system_logging_monitor):
+    monitor = {"openconfig-system-ext:selector": []}
+    monitor_list = monitor["openconfig-system-ext:selector"]
+    # LOGGING MONITOR FACILITY AND SEVERITY
+    severity = "DEBUG" # Default Severity
+    if logging_monitor.get("severity-level"):
+        # SEVERITY
+        severity = get_severity(logging_monitor["severity-level"])
+        temp_monitor = {"openconfig-system-ext:facility": "SYSLOG",
+                    "openconfig-system-ext:severity": f'{severity}',
+                    "openconfig-system-ext:config": {
+                        "openconfig-system-ext:facility": "SYSLOG",
+                        "openconfig-system-ext:severity": f'{severity}'
+                    }}
+        monitor_list.append(temp_monitor)
+
+    return monitor
+
+def set_logging_host(logging, config_leftover, oc_system_logging, if_ip, intf_ip_name_dict):
+    hosts = {"openconfig-system:remote-server": []}
+    hosts_list = hosts["openconfig-system:remote-server"]
+    # LOGGING HOST IP, PORT, VRF, SOURCE ADDRESS
+    host_ipv4 = logging.get("host", {}).get('ipv4')
+    host_ipv4_vrf = logging.get("host", {}).get('ipv4-vrf')
+    source_intf = logging.get("source-interface")
+    vrf_source_intf_list = vrf_source_ip_list = []
+    severity = "INFORMATIONAL" # Default Severity
+    
+    # SEVERITY
+    if logging.get("trap"):
+        severity = get_severity(logging["trap"])
+
+    # GET SOURCE INTERFACE AND VRF
+    for index, int_vrf in enumerate(source_intf):
+        if "vrf" in int_vrf.keys():
+            temp_intf_vrf = {int_vrf["vrf"]: int_vrf["name"]}
+            vrf_source_intf_list.append(temp_intf_vrf)
+        else:
+            temp_intf_vrf = {"default": int_vrf["name"]}
+            vrf_source_intf_list.append(temp_intf_vrf)
+        if config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface", [])[index].get("name"):
+            config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"][index]["name"] = None
+        if config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface", [])[index].get("vrf"):
+            config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"][index]["vrf"] = None
+
+    # ADD HOST IPV4
+    if host_ipv4:
+        for index, host_info in enumerate(host_ipv4):
+            host = host_info.get("host")
+            host_vrf = "default"
+            source_ip = "1.1.1.1" # Placeholder Source IPv4
+            intf = "GigabitEthernet1" # Placeholder Source Interface
+            if logging.get("source-interface"):
+                for vrf_info in vrf_source_intf_list:
+                    if vrf_info.get("default"):
+                        intf = vrf_info.get("default")
+                        break
+                if intf_ip_name_dict.get(intf):
+                    source_ip = intf_ip_name_dict.get(intf)
+
+            temp_host = {"openconfig-system:host": f'{host}',
+                        "openconfig-system:config": get_host(host, source_ip, host_vrf),
+                        "openconfig-system:selectors": {
+                            "openconfig-system:selector": get_facility_severity(severity)
+                        }}
+            hosts_list.append(temp_host)
+            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4"][index]["host"] = None
+    
+    # ADD HOST IPV4 AND VRF
+    if host_ipv4_vrf:
+        for index, host_info in enumerate(host_ipv4_vrf):
+            host = host_info.get("host")
+            host_vrf = host_info.get("vrf")
+            source_ip_vrf = "1.1.1.1" # Placeholder Source IPv4
+            intf_vrf = "GigabitEthernet1" # Placeholder Source Interface
+            if logging.get("source-interface"):
+                for vrf_info in vrf_source_intf_list:
+                    if vrf_info.get(host_vrf):
+                        intf_vrf = vrf_info.get(host_vrf)
+                        break
+                if intf_ip_name_dict.get(intf_vrf):
+                    source_ip_vrf = intf_ip_name_dict.get(intf_vrf)
+            
+            temp_host = {"openconfig-system:host": f'{host}',
+                        "openconfig-system:config": get_host(host, source_ip_vrf, host_vrf),
+                        "openconfig-system:selectors": {
+                            "openconfig-system:selector": get_facility_severity(severity)
+                        }}
+            hosts_list.append(temp_host)
+            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"][index]["host"] = None
+            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"][index]["vrf"] = None
+    
+    if logging.get("facility"):
+        del config_leftover["tailf-ned-cisco-ios:logging"]["facility"]
+    if logging.get("trap"):
+        del config_leftover["tailf-ned-cisco-ios:logging"]["trap"]
+    cleanup_logging(config_leftover)
+    return hosts
+
+def get_severity(logging_severity):
+    # GET LOGGING SEVERITY
+    if logging_severity == "emergencies" or logging_severity == 0:
+        severity = "EMERGENCY"
+    elif logging_severity == "alerts" or logging_severity == 1:
+        severity = "ALERT"
+    elif logging_severity == "critical" or logging_severity == 2:
+        severity = "CRITICAL"
+    elif logging_severity == "errors" or logging_severity == 3:
+        severity = "ERROR"
+    elif logging_severity == "warnings" or logging_severity == 4:
+        severity = "WARNING"
+    elif logging_severity == "notifications" or logging_severity == 5:
+        severity = "NOTICE"
+    elif logging_severity == "informational" or logging_severity == 6:
+        severity = "INFORMATIONAL"
+    elif logging_severity == "debugging" or logging_severity == 7:
+        severity = "DEBUG"
+
+    return severity
+
+def get_host(host, source_ip, host_vrf):
+    # GET HOST, VRF AND SOURCE IP ADDRESS
+    temp_host = {"openconfig-system:host": f'{host}', 
+                    "openconfig-system:remote-port": 514,
+                    "openconfig-system:source-address": f'{source_ip}',
+                    "openconfig-system-ext:use-vrf": f'{host_vrf}'
+                }
+
+    return temp_host
+
+def get_facility_severity(severity):
+    # GET FACILITY AND SEVERITY
+    temp_fac_sev = [{"openconfig-system:facility": "SYSLOG", 
+                        "openconfig-system:severity": f'{severity}',
+                        "openconfig-system:config": {
+                        "openconfig-system:facility": "SYSLOG",
+                        "openconfig-system:severity": f'{severity}'
+                    }}]
+
+    return temp_fac_sev
+
+def cleanup_logging(config_leftover):
+    if len(config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface", [])) >= 1:
+        updated_source_intf = []
+
+        for source in config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"]:
+            if source and source.get("name"):
+                updated_source_intf.append(source)
+
+        if len(updated_source_intf) > 0:
+            config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"] = updated_source_intf
+        elif "name" not in config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("source-interface"):
+            del config_leftover["tailf-ned-cisco-ios:logging"]["source-interface"]
+
+    if len(config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("host", {}).get("ipv4", [])) >= 1:
+        updated_ipv4 = []
+
+        for host_ipv4 in config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4"]:
+            if host_ipv4 and host_ipv4.get("host"):
+                updated_ipv4.append(host_ipv4)
+
+        if len(updated_ipv4) > 0:
+            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4"] = updated_ipv4
+        elif "host" not in config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("host", {}).get("ipv4"):
+            del config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4"]
+
+    if len(config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("host", {}).get("ipv4-vrf", [])) >= 1:
+        updated_ipv4_vrf = []
+
+        for host_ipv4_vrf in config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"]:
+            if host_ipv4_vrf and host_ipv4_vrf.get("host"):
+                updated_ipv4_vrf.append(host_ipv4_vrf)
+
+        if len(updated_ipv4_vrf) > 0:
+            config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"] = updated_ipv4_vrf
+        elif "host" not in config_leftover.get("tailf-ned-cisco-ios:logging", {}).get("host", {}).get("ipv4-vrf"):
+            del config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"]
+
 def xe_system_clock_timezone(config_before: dict, config_leftover: dict) -> None:
     """
     Translates NSO XE NED to MDD OpenConfig System Clock Timezone
@@ -889,6 +1219,54 @@ def xe_system_clock_timezone(config_before: dict, config_leftover: dict) -> None
 
     openconfig_system_clock_config["openconfig-system:timezone-name"] = ' '.join(timezone_name)
 
+def xe_system_timestamps(config_before: dict, config_leftover: dict) -> None:
+    """
+    Translates NSO XE NED to MDD OpenConfig System Timestamps
+    """
+    oc_system_timestamps = openconfig_system["openconfig-system:system"]["openconfig-system-ext:timestamps"]
+    timestamps = config_before.get("tailf-ned-cisco-ios:service", {}).get("timestamps")
+    debug = config_before.get("tailf-ned-cisco-ios:service", {}).get("timestamps", {}).get("debug")
+    log = config_before.get("tailf-ned-cisco-ios:service", {}).get("timestamps", {}).get("log")
+    
+    # TIMESTAMPS DEBUG
+    if debug:
+        temp_timestamps_debug = {"openconfig-system-ext:debugging": set_timestamps(debug, config_leftover, timestamps)}
+        oc_system_timestamps.update(temp_timestamps_debug)
+        if "debug" in timestamps and "datetime" in timestamps["debug"]:
+            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]["msec"]
+            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]["localtime"]
+        elif "debug" in timestamps and "uptime" in timestamps["debug"]:
+            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["uptime"]
+    # TIMESTAMPS LOG
+    if log:
+        temp_timestamps_log = {"openconfig-system-ext:logging": set_timestamps(log, config_leftover, timestamps)}
+        oc_system_timestamps.update(temp_timestamps_log)
+        if "log" in timestamps and "datetime" in timestamps["log"]:
+            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]["msec"]
+            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]["localtime"]
+        elif "log" in timestamps and "uptime" in timestamps["log"]:
+            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["uptime"]
+
+    print(f'0*** config_leftover {config_leftover}\n\n')
+
+def set_timestamps(service, config_leftover, timestamps):
+    datetime = uptime = localtime = False # Initialize variables
+    if type(service.get("datetime", {}).get("msec", '')) is list:
+        datetime = True
+    if type(service.get("datetime", {}).get("localtime", '')) is list:
+        localtime = True
+    if type(service.get("uptime", '')) is list:
+        uptime = True
+
+    temp_timestamps = {"openconfig-system-ext:config": {
+                            "openconfig-system-ext:enabled": True,
+                            "openconfig-system-ext:datetime": datetime,
+                            "openconfig-system-ext:uptime": uptime,
+                            "openconfig-system-ext:localtime": localtime
+                        }}
+    
+    return temp_timestamps
+
 def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []) -> dict:
     """
     Translates NSO Device configurations to MDD OpenConfig configurations.
@@ -910,7 +1288,9 @@ def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []
     xe_system_ssh_server(before, leftover)
     xe_system_ntp(before, leftover, if_ip)
     # xe_system_aaa(before, leftover, if_ip)
+    xe_system_logging(before, leftover, if_ip)
     xe_system_clock_timezone(before, leftover)
+    xe_system_timestamps(before, leftover)
     translation_notes += system_notes
 
     return openconfig_system
