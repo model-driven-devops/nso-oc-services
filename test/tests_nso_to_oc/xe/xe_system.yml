@@ -531,6 +531,75 @@
         #           secret:
         #             type: 0
         #             secret: 'Password456'
+          - name: NSO logging init
+            tags:
+              - logging_init
+            api_path: config/tailf-ned-cisco-ios:vrf
+            api_method: PATCH
+            content: |
+              vrf:
+                definition:
+                  - name: abc
+                    address-family:
+                      ipv4: {}
+                      ipv6: {}
+                  - name: default
+                    address-family:
+                      ipv4: {}
+          - name: NSO logging_init
+            tags:
+              - logging_init
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                GigabitEthernet:
+                  - name: 6
+                    vrf:
+                      forwarding: default
+                    ip:
+                      address:
+                        primary:
+                          address: 10.6.0.1
+                          mask: 255.255.255.0
+                  - name: 7
+                    vrf:
+                      forwarding: abc
+                    ip:
+                      address:
+                        primary:
+                          address: 10.7.0.1
+                          mask: 255.255.255.0
+          - name: NSO logging_init
+            tags:
+              - logging_init
+            api_path: config/tailf-ned-cisco-ios:logging
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:logging:
+                buffered:
+                  buffer-size: 2000000
+                  severity-level: 'informational'
+                console:
+                  severity-level: 'informational'
+                monitor:
+                  severity-level: 'alerts'
+                host:
+                  ipv4:
+                    - host: '10.0.0.1'
+                    - host: '10.0.0.2'
+                  ipv4-vrf:
+                    - host: '10.0.0.3'
+                      vrf: abc
+                    - host: '10.0.0.4'
+                      vrf: abc
+                source-interface:
+                  - name: 'GigabitEthernet6'
+                    vrf: 'default'
+                  - name: 'GigabitEthernet7'
+                    vrf: 'abc'
+                trap: 'critical'
+                facility: 'syslog'
           - name: NSO clock_timezone init
             tags:
               - clock_timezone_init
@@ -573,6 +642,39 @@
                       - address: "8.8.5.5"
                       - address: "8.8.6.6"
         assertions:
+        #   # NSO configure no boot network (no test for negative assertion)
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['hostname'] == 'test123'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['login-banner'] == 'login-banner'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['motd-banner'] == 'motd-banner'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['domain-name'] == 'test.com'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:enable-secret'] == 'VALUE_SPECIFIED_IN_NO_LOG_PARAMETER'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:console-exec-timeout-seconds'] == 800"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['openconfig-system-ext:ip-options'] == 'openconfig-system-ext:DROP'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:ssh-timeout'] == 55"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['protocol-version'] == 'V2'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:ssh-source-interface'] == 'GigabitEthernet6'"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['timeout'] == 800"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['openconfig-system-ext:absolute-timeout-minutes'] == 1200"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['config']['session-limit'] == 16"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-domain-lookup'] == false"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-success'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['config']['on-failure'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['seconds'] == 900"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['attempts'] == 3"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['login-security-policy']['block-for']['config']['within'] == 120"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['archive-logging'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-bootp-server'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-dns-server'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-identd'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['http']['config']['http-enabled'] == false"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rcp-enable'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['ip-rcmd-rsh-enable'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['finger'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-config'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-tcp-small-servers'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-udp-small-servers'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-pad'] == true"
+        #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['config']['service-password-encryption'] == true"
         #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['name'] == 'RADIUS-GROUP-1'"
         #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['config']['type'] == 'openconfig-aaa:RADIUS'"
         #   # - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['server-groups']['server-group'][0]['name'] == 'RADIUS-GROUP-1'"
@@ -672,6 +774,53 @@
         #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][0] == 'openconfig-aaa-types:LOCAL'"
         #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][1] == 'openconfig-aaa-types:TACACS_ALL'"
         #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['aaa']['authentication']['config']['authentication-method'][2] == 'TACACS-GROUP-1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['openconfig-system-ext:buffered']['config']['buffer-size'] == 2000000"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['openconfig-system-ext:buffered']['config']['enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['openconfig-system-ext:buffered']['config']['severity'] == 'INFORMATIONAL'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['console']['selectors']['selector'][0]['config']['facility'] == 'openconfig-system-logging:SYSLOG'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['console']['selectors']['selector'][0]['config']['severity'] == 'INFORMATIONAL'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['console']['selectors']['selector'][0]['facility'] == 'openconfig-system-logging:SYSLOG'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['console']['selectors']['selector'][0]['severity'] == 'INFORMATIONAL'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['openconfig-system-ext:terminal-monitor']['selectors']['selector'][0]['config']['facility'] == 'openconfig-system-logging:SYSLOG'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['openconfig-system-ext:terminal-monitor']['selectors']['selector'][0]['config']['severity'] == 'ALERT'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['openconfig-system-ext:terminal-monitor']['selectors']['selector'][0]['facility'] == 'openconfig-system-logging:SYSLOG'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['openconfig-system-ext:terminal-monitor']['selectors']['selector'][0]['severity'] == 'ALERT'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][0]['host'] == '10.0.0.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][0]['config']['host'] == '10.0.0.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][0]['config']['remote-port'] == 514"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][0]['config']['source-address'] == '10.6.0.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][0]['config']['openconfig-system-ext:use-vrf'] == 'default'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][0]['selectors']['selector'][0]['facility'] == 'openconfig-system-logging:SYSLOG'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][0]['selectors']['selector'][0]['severity'] == 'CRITICAL'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][0]['selectors']['selector'][0]['config']['facility'] == 'openconfig-system-logging:SYSLOG'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][0]['selectors']['selector'][0]['config']['severity'] == 'CRITICAL'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][1]['host'] == '10.0.0.2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][1]['config']['host'] == '10.0.0.2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][1]['config']['remote-port'] == 514"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][1]['config']['source-address'] == '10.6.0.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][1]['config']['openconfig-system-ext:use-vrf'] == 'default'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][1]['selectors']['selector'][0]['facility'] == 'openconfig-system-logging:SYSLOG'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][1]['selectors']['selector'][0]['severity'] == 'CRITICAL'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][1]['selectors']['selector'][0]['config']['facility'] == 'openconfig-system-logging:SYSLOG'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][1]['selectors']['selector'][0]['config']['severity'] == 'CRITICAL'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][2]['host'] == '10.0.0.3'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][2]['config']['host'] == '10.0.0.3'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][2]['config']['remote-port'] == 514"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][2]['config']['source-address'] == '10.7.0.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][2]['config']['openconfig-system-ext:use-vrf'] == 'abc'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][2]['selectors']['selector'][0]['facility'] == 'openconfig-system-logging:SYSLOG'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][2]['selectors']['selector'][0]['severity'] == 'CRITICAL'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][2]['selectors']['selector'][0]['config']['facility'] == 'openconfig-system-logging:SYSLOG'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][2]['selectors']['selector'][0]['config']['severity'] == 'CRITICAL'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][3]['host'] == '10.0.0.4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][3]['config']['host'] == '10.0.0.4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][3]['config']['remote-port'] == 514"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][3]['config']['source-address'] == '10.7.0.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][3]['config']['openconfig-system-ext:use-vrf'] == 'abc'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][3]['selectors']['selector'][0]['facility'] == 'openconfig-system-logging:SYSLOG'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][3]['selectors']['selector'][0]['severity'] == 'CRITICAL'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][3]['selectors']['selector'][0]['config']['facility'] == 'openconfig-system-logging:SYSLOG'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['logging']['remote-servers']['remote-server'][3]['selectors']['selector'][0]['config']['severity'] == 'CRITICAL'"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['clock']['config']['timezone-name'] == 'CST -6 0'"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][0]['address'] == '8.8.5.5'"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][0]['config']['address'] == '8.8.5.5'"
@@ -687,7 +836,6 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][3]['address'] == '8.8.4.4'"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][3]['config']['address'] == '8.8.4.4'"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][3]['config']['port'] == 53"
-
         #   - "'openconfig-system-ext:aes128-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
         #   - "'openconfig-system-ext:aes192-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
         #   - "'openconfig-system-ext:aes256-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"

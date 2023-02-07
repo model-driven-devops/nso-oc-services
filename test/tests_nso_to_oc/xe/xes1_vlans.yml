@@ -1,114 +1,64 @@
 ---
-- hosts: nso
-  connection: local
-  gather_facts: no
-  roles:
-    - nso-rollback-save
-  run_once: true
-  vars:
-    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
-    
 - hosts: localhost
   gather_facts: no
   environment:
     NSO_DEVICE: xeswitch1
   vars:
-    nso_api_url: "{{ lookup('env', 'NSO_URL') }}"
-    nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
-    nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
     device: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
   tasks:
-    - block:
-      - name: Set up service config
-        tags:
-          - set_up
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: mdd:openconfig
-          content: |
-            mdd:openconfig:
-              openconfig-network-instance:network-instances:
-                network-instance:
-                  - name: 'default'
-                    config:
-                      name: 'default'
-                      type: 'DEFAULT_INSTANCE'
-                      enabled: true
-              openconfig-system:system:
-                config:
-                  hostname: 'xeswitch1'
-          api_method: PUT
-      - name: NSO configure VLANs
-        tags:
-          - vlans
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:vlan
-          script: ../../../package_nso_to_oc/xe/xe_vlans.py
-          content: |
-            vlan:
-              vlan-list:
-                - id: 1
-                  name: default
-                - id: 100
-                  name: VLAN100
-                - id: 101
-                  name: VLAN101
-                  shutdown:
-                    - null
-          api_method: PATCH
-      - name: Execute NSO NED to OC script
-        script: "{{ script }}"
-        args:
-          executable: python3
-        register: nso_to_oc_result
-      - debug:
-          msg: "{{nso_to_oc_result}}"
-      - set_fact:
-          vlan_100:
+    - set_fact:
+        vlan_100:
+          vlan-id: 100
+          config:
             vlan-id: 100
-            config:
-              vlan-id: 100
-              name: VLAN100
-              status: ACTIVE
-      - set_fact:
-          vlan_101:
+            name: VLAN100
+            status: ACTIVE
+        vlan_101:
+          vlan-id: 101
+          config:
             vlan-id: 101
-            config:
-              vlan-id: 101
-              name: VLAN101
-              status: SUSPENDED
-      - name: NSO API call
-        uri:
-          url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-          url_username: "{{ nso_username }}"
-          url_password: "{{ nso_password }}"
-          force_basic_auth: yes
-          validate_certs: no
-          status_code: [200,201,204]
-          method: GET
-          headers: "{
-            'Content-Type': 'application/yang-data+json',
-            'Accept': 'application/yang-data+json'}"
-          body_format: json
-        delegate_to: localhost
-        register: oc_result
-      - debug:
-          msg: "{{ oc_result }}"
-      - debug:
-          msg: "{{ oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] }}"
-      - assert:
-          that:
-            - "vlan_100 in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['vlans']['vlan']"
-            - "vlan_101 in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['vlans']['vlan']"
-      always:
-        - name: Rollback NSO
-          delegate_to: nso
-          connection: local
-          import_role:
-            name: nso-rollback-load
-          run_once: true
-          vars:
-            rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+            name: VLAN101
+            status: SUSPENDED
+    
+    - name: Run VLANs xes1 tests
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        script_path: ../../../package_nso_to_oc/xe/xe_vlans.py
+        api_test_data:
+          - name: Set up OC
+            tags:
+              - set_up_oc
+            api_path: mdd:openconfig
+            api_method: PUT
+            content: |
+              mdd:openconfig:
+                openconfig-network-instance:network-instances:
+                  network-instance:
+                    - name: 'default'
+                      config:
+                        name: 'default'
+                        type: 'DEFAULT_INSTANCE'
+                        enabled: true
+                openconfig-system:system:
+                  config:
+                    hostname: 'xeswitch1'
+          - name: Init VLANs
+            tags:
+              - init_vlans
+            api_path: config/tailf-ned-cisco-ios:vlan
+            api_method: PATCH
+            content: |
+              vlan:
+                vlan-list:
+                  - id: 1
+                    name: default
+                  - id: 100
+                    name: VLAN100
+                  - id: 101
+                    name: VLAN101
+                    shutdown:
+                      - null
+        assertions:
+          - "vlan_100 in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['vlans']['vlan']"
+          - "vlan_101 in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['vlans']['vlan']"

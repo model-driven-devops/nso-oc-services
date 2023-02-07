@@ -1,367 +1,267 @@
 ---
-- hosts: nso
-  connection: local
-  gather_facts: no
-  roles:
-    - nso-rollback-save
-  run_once: true
-  vars:
-    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
-
 - hosts: localhost
   gather_facts: no
   environment:
     NSO_DEVICE: xeswitch1
   vars:
-    nso_api_url: "{{ lookup('env', 'NSO_URL') }}"
-    nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
-    nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
     device: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
   tasks:
-    - block:
-      - name: Set up service config
-        tags:
-          - set_up
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: mdd:openconfig
-          content: |
-            mdd:openconfig:
-              openconfig-interfaces:interfaces:
-                openconfig-interfaces:interface:
-                  - openconfig-interfaces:name: 'GigabitEthernet1/0'
-                    openconfig-interfaces:config:
-                      openconfig-interfaces:description: 'Access Port Example'
-                      openconfig-interfaces:enabled: true
-                      openconfig-interfaces:loopback-mode: false
-                      openconfig-interfaces:name: 'GigabitEthernet1/0'
-                      openconfig-interfaces:type: 'l2vlan'
-                    openconfig-if-ethernet:ethernet:
-                      openconfig-if-ethernet:config:
-                        openconfig-if-ethernet:auto-negotiate: true
-                        openconfig-if-ethernet:enable-flow-control: false
-                      openconfig-vlan:switched-vlan:
-                        openconfig-vlan:config:
-                          openconfig-vlan:access-vlan: 100
-                          openconfig-vlan:interface-mode: 'ACCESS'
-                    openconfig-interfaces:hold-time:
-                      openconfig-interfaces:config:
-                        openconfig-interfaces:down: 0
-                        openconfig-interfaces:up: 0
-                  - openconfig-interfaces:name: 'GigabitEthernet1/1'
-                    openconfig-interfaces:config:
-                      openconfig-interfaces:description: 'Trunk Port Example'
-                      openconfig-interfaces:enabled: true
-                      openconfig-interfaces:loopback-mode: false
-                      openconfig-interfaces:name: 'GigabitEthernet1/1'
-                      openconfig-interfaces:type: 'l2vlan'
-                    openconfig-if-ethernet:ethernet:
-                      openconfig-if-ethernet:config:
-                        openconfig-if-ethernet:auto-negotiate: true
-                        openconfig-if-ethernet:enable-flow-control: false
-                      openconfig-vlan:switched-vlan:
-                        openconfig-vlan:config:
-                          openconfig-vlan:interface-mode: 'TRUNK'
-                          openconfig-vlan:native-vlan: 99
-                          openconfig-vlan:trunk-vlans:
-                            - 10
-                            - 100
-                    openconfig-interfaces:hold-time:
-                      openconfig-interfaces:config:
-                        openconfig-interfaces:down: 0
-                        openconfig-interfaces:up: 0
-                  - openconfig-interfaces:name: 'Port-channel1'
-                    openconfig-if-aggregate:aggregation:
-                      openconfig-if-aggregate:config:
-                        openconfig-if-aggregate:lag-type: 'LACP'
-                      openconfig-vlan:switched-vlan:
-                        openconfig-vlan:config:
-                          openconfig-vlan:interface-mode: 'TRUNK'
-                          openconfig-vlan:native-vlan: 99
-                          openconfig-vlan:trunk-vlans:
-                            - 10
-                            - 100
-                    openconfig-interfaces:config:
-                      openconfig-interfaces:description: 'LACP Example PO1'
-                      openconfig-interfaces:enabled: true
-                      openconfig-interfaces:mtu: 1500
-                      openconfig-interfaces:name: 'Port-channel1'
-                      openconfig-interfaces:type: 'ieee8023adLag'
-                  - openconfig-interfaces:name: 'GigabitEthernet1/2'
-                    openconfig-interfaces:config:
-                      openconfig-interfaces:description: 'LACP Link Trunk Port Example'
-                      openconfig-interfaces:enabled: true
-                      openconfig-interfaces:mtu: 1500
-                      openconfig-interfaces:name: 'GigabitEthernet1/2'
-                      openconfig-interfaces:type: 'ethernetCsmacd'
-                    openconfig-if-ethernet:ethernet:
-                      openconfig-if-ethernet:config:
-                        openconfig-if-aggregate:aggregate-id: 'Port-channel1'
-                      openconfig-vlan:switched-vlan:
-                        openconfig-vlan:config:
-                          openconfig-vlan:interface-mode: 'TRUNK'
-                          openconfig-vlan:native-vlan: 99
-                          openconfig-vlan:trunk-vlans:
-                            - 10
-                            - 100
-                  - openconfig-interfaces:name: 'GigabitEthernet1/3'
-                    openconfig-interfaces:config:
-                      openconfig-interfaces:description: 'Trunk Port To Server Example'
-                      openconfig-interfaces:enabled: true
-                      openconfig-interfaces:loopback-mode: false
-                      openconfig-interfaces:name: 'GigabitEthernet1/3'
-                      openconfig-interfaces:type: 'l2vlan'
-                    openconfig-if-ethernet:ethernet:
-                      openconfig-if-ethernet:config:
-                        openconfig-if-ethernet:auto-negotiate: true
-                        openconfig-if-ethernet:enable-flow-control: false
-                      openconfig-vlan:switched-vlan:
-                        openconfig-vlan:config:
-                          openconfig-vlan:interface-mode: 'TRUNK'
-                          openconfig-vlan:native-vlan: 99
-                          openconfig-vlan:trunk-vlans:
-                            - 10
-                            - 100
-                    openconfig-interfaces:hold-time:
-                      openconfig-interfaces:config:
-                        openconfig-interfaces:down: 0
-                        openconfig-interfaces:up: 0
-              openconfig-network-instance:network-instances:
-                network-instance:
-                  - name: 'default'
-                    config:
-                      name: 'default'
-                      type: 'DEFAULT_INSTANCE'
-                      enabled: true
-                  - name: 'abc'
-                    config:
-                      name: 'abc'
-                      type: 'L3VRF'
-                      enabled: true
-                      enabled-address-families:
-                        - 'IPV4'
-              openconfig-system:system:
-                config:
-                  hostname: 'test'
-          api_method: PUT
-      - name: NSO configure VLANs
-        tags:
-          - set_up
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:vlan
-          script: ../../../package_nso_to_oc/xe/xe_vlans.py
-          content: |
-            vlan:
-              vlan-list:
-                - id: 1
-                  name: default
-                - id: 10
-                  name: VLAN10
-                - id: 99
-                  name: VLAN99
-                - id: 100
-                  name: VLAN100
-          api_method: PATCH
-      - name: NSO configure Interfaces
-        tags:
-          - set_up
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:interface
-          content: |
-            interface:
-              GigabitEthernet:
-                - name: '1/0'
-                  description: 'access port'
-                  switchport:
-                    mode:
-                      access: {}
-                    access:
-                      vlan: 100
-                - name: '1/1'
-                  description: 'trunk port'
-                  switchport:
-                    mode:
-                      trunk: {}
-                    trunk:
-                      encapsulation: dot1q
-                      native:
-                        vlan: 99
-                      allowed:
-                        vlan:
-                          vlans:
-                            - 10
-                            - 100
-          api_method: PATCH
-      - name: NSO configure global
-        tags:
-          - stp_global
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:spanning-tree
-          content: |
-            spanning-tree:
-              mode: 'pvst'
-              loopguard:
-                default:
-                  - null
-              etherchannel:
-                guard:
-                  misconfig:
-                    - null
-              portfast:
-                edge:
-                  bpduguard:
-                    default:
-                      - null
-                  bpdufilter:
-                    default:
-                      - null
-          api_method: PATCH
-      - name: Execute NSO NED to OC script
-        tags:
-          - stp_global
-        script: ../../../package_nso_to_oc/xe/xe_stp.py
-        args:
-          executable: python3
-        register: nso_to_oc_result
-      - debug:
-          msg: "{{nso_to_oc_result}}"
-        tags:
-          - stp_global
-      - name: NSO API call
-        tags:
-          - stp_global
-        uri:
-          url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-          url_username: "{{ nso_username }}"
-          url_password: "{{ nso_password }}"
-          force_basic_auth: yes
-          validate_certs: no
-          status_code: [200,201,204]
-          method: GET
-          headers: "{
-            'Content-Type': 'application/yang-data+json',
-            'Accept': 'application/yang-data+json'}"
-          body_format: json
-        delegate_to: localhost
-        register: oc_result
-      - debug:
-          msg: "{{ oc_result }}"
-        tags:
-          - stp_global
-      - assert:
-          that:
-            - "'openconfig-spanning-tree-ext:PVST' in oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['enabled-protocol']"
-            - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['loop-guard'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['bpdu-guard'] == true"
-            - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['bpdu-filter'] == true"
-  #          - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['etherchannel-misconfig-guard'] == true"  # Unreliable in production. Sometimes True is not in NSO Device config which is the same on False
-        tags:
-          - stp_global
-
-      - name: NSO configure interfaces
-        tags:
-          - stp_interfaces
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:spanning-tree
-          content: |
-            spanning-tree:
-              mode: 'pvst'
-          api_method: PATCH
-      - name: NSO configure interfaces
-        tags:
-          - stp_interfaces
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:interface
-          content: |
-            interface:
-              GigabitEthernet:
-                - name: '1/0'
-                  description: 'access port'
-                  switchport:
-                    mode:
-                      access: {}
-                    access:
-                      vlan: 100
-                  spanning-tree:
-                    cost: 10
-                    port-priority: 64
-                    bpdufilter: disable
-                    bpduguard:
-                      enable:
-                        - null
-                    guard: root
-                    link-type: point-to-point
-                    portfast: {}
-      - name: Execute NSO NED to OC script
-        tags:
-          - stp_interfaces
-        script: ../../../package_nso_to_oc/xe/xe_stp.py
-        args:
-          executable: python3
-        register: nso_to_oc_result
-      - debug:
-          msg: "{{nso_to_oc_result}}"
-        tags:
-          - stp_interfaces
-      - set_fact:
-          G1:
-            config:
-              bpdu-filter: False
-              bpdu-guard: True
-              edge-port: openconfig-spanning-tree-types:EDGE_ENABLE
-              guard: ROOT
-              link-type: P2P
-              name: GigabitEthernet1/0
+    - set_fact:
+        G1:
+          config:
+            bpdu-filter: False
+            bpdu-guard: True
+            edge-port: openconfig-spanning-tree-types:EDGE_ENABLE
+            guard: ROOT
+            link-type: P2P
             name: GigabitEthernet1/0
-        tags:
-          - stp_interfaces
-      - name: NSO API call
-        tags:
-          - stp_interfaces
-        uri:
-          url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-          url_username: "{{ nso_username }}"
-          url_password: "{{ nso_password }}"
-          force_basic_auth: yes
-          validate_certs: no
-          status_code: [200,201,204]
-          method: GET
-          headers: "{
-            'Content-Type': 'application/yang-data+json',
-            'Accept': 'application/yang-data+json'}"
-          body_format: json
-        delegate_to: localhost
-        register: oc_result
-      - debug:
-          msg: "{{ oc_result }}"
-        tags:
-          - stp_interfaces
-      - debug:
-          msg: "{{ oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['interfaces']['interface'] }}"
-        tags:
-          - stp_interfaces
-      - assert:
-          that:
-            - "G1 in oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['interfaces']['interface']"
-        tags:
-          - stp_interfaces
-      always:
-        - name: Rollback NSO
-          delegate_to: nso
-          connection: local
-          import_role:
-            name: nso-rollback-load
-          run_once: true
-          vars:
-            rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+          name: GigabitEthernet1/0
+
+    - name: Run STP xes1 set up VLANs
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_load_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_vlans.py
+        api_test_data:
+          - name: Set up OC
+            tags:
+              - set_up_oc
+            api_path: mdd:openconfig
+            api_method: PUT
+            content: |
+              mdd:openconfig:
+                openconfig-interfaces:interfaces:
+                  openconfig-interfaces:interface:
+                    - openconfig-interfaces:name: 'GigabitEthernet1/0'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:description: 'Access Port Example'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:loopback-mode: false
+                        openconfig-interfaces:name: 'GigabitEthernet1/0'
+                        openconfig-interfaces:type: 'l2vlan'
+                      openconfig-if-ethernet:ethernet:
+                        openconfig-if-ethernet:config:
+                          openconfig-if-ethernet:auto-negotiate: true
+                          openconfig-if-ethernet:enable-flow-control: false
+                        openconfig-vlan:switched-vlan:
+                          openconfig-vlan:config:
+                            openconfig-vlan:access-vlan: 100
+                            openconfig-vlan:interface-mode: 'ACCESS'
+                      openconfig-interfaces:hold-time:
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:down: 0
+                          openconfig-interfaces:up: 0
+                    - openconfig-interfaces:name: 'GigabitEthernet1/1'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:description: 'Trunk Port Example'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:loopback-mode: false
+                        openconfig-interfaces:name: 'GigabitEthernet1/1'
+                        openconfig-interfaces:type: 'l2vlan'
+                      openconfig-if-ethernet:ethernet:
+                        openconfig-if-ethernet:config:
+                          openconfig-if-ethernet:auto-negotiate: true
+                          openconfig-if-ethernet:enable-flow-control: false
+                        openconfig-vlan:switched-vlan:
+                          openconfig-vlan:config:
+                            openconfig-vlan:interface-mode: 'TRUNK'
+                            openconfig-vlan:native-vlan: 99
+                            openconfig-vlan:trunk-vlans:
+                              - 10
+                              - 100
+                      openconfig-interfaces:hold-time:
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:down: 0
+                          openconfig-interfaces:up: 0
+                    - openconfig-interfaces:name: 'Port-channel1'
+                      openconfig-if-aggregate:aggregation:
+                        openconfig-if-aggregate:config:
+                          openconfig-if-aggregate:lag-type: 'LACP'
+                        openconfig-vlan:switched-vlan:
+                          openconfig-vlan:config:
+                            openconfig-vlan:interface-mode: 'TRUNK'
+                            openconfig-vlan:native-vlan: 99
+                            openconfig-vlan:trunk-vlans:
+                              - 10
+                              - 100
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:description: 'LACP Example PO1'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:mtu: 1500
+                        openconfig-interfaces:name: 'Port-channel1'
+                        openconfig-interfaces:type: 'ieee8023adLag'
+                    - openconfig-interfaces:name: 'GigabitEthernet1/2'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:description: 'LACP Link Trunk Port Example'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:mtu: 1500
+                        openconfig-interfaces:name: 'GigabitEthernet1/2'
+                        openconfig-interfaces:type: 'ethernetCsmacd'
+                      openconfig-if-ethernet:ethernet:
+                        openconfig-if-ethernet:config:
+                          openconfig-if-aggregate:aggregate-id: 'Port-channel1'
+                        openconfig-vlan:switched-vlan:
+                          openconfig-vlan:config:
+                            openconfig-vlan:interface-mode: 'TRUNK'
+                            openconfig-vlan:native-vlan: 99
+                            openconfig-vlan:trunk-vlans:
+                              - 10
+                              - 100
+                    - openconfig-interfaces:name: 'GigabitEthernet1/3'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:description: 'Trunk Port To Server Example'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:loopback-mode: false
+                        openconfig-interfaces:name: 'GigabitEthernet1/3'
+                        openconfig-interfaces:type: 'l2vlan'
+                      openconfig-if-ethernet:ethernet:
+                        openconfig-if-ethernet:config:
+                          openconfig-if-ethernet:auto-negotiate: true
+                          openconfig-if-ethernet:enable-flow-control: false
+                        openconfig-vlan:switched-vlan:
+                          openconfig-vlan:config:
+                            openconfig-vlan:interface-mode: 'TRUNK'
+                            openconfig-vlan:native-vlan: 99
+                            openconfig-vlan:trunk-vlans:
+                              - 10
+                              - 100
+                      openconfig-interfaces:hold-time:
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:down: 0
+                          openconfig-interfaces:up: 0
+                openconfig-network-instance:network-instances:
+                  network-instance:
+                    - name: 'default'
+                      config:
+                        name: 'default'
+                        type: 'DEFAULT_INSTANCE'
+                        enabled: true
+                    - name: 'abc'
+                      config:
+                        name: 'abc'
+                        type: 'L3VRF'
+                        enabled: true
+                        enabled-address-families:
+                          - 'IPV4'
+                openconfig-system:system:
+                  config:
+                    hostname: 'test'
+          - name: Init VLANs
+            tags:
+              - init_vlans
+            api_path: config/tailf-ned-cisco-ios:vlan
+            api_method: PATCH
+            content: |
+              vlan:
+                vlan-list:
+                  - id: 1
+                    name: default
+                  - id: 10
+                    name: VLAN10
+                  - id: 99
+                    name: VLAN99
+                  - id: 100
+                    name: VLAN100
+
+    - name: Run STP xes1 test 1
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_save_rollback: False
+        will_load_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_stp.py
+        api_test_data:
+          - name: NED set up interface
+            tags:
+              - set_up_interface
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                GigabitEthernet:
+                  - name: '1/0'
+                    description: 'access port'
+                    switchport:
+                      mode:
+                        access: {}
+                      access:
+                        vlan: 100
+                  - name: '1/1'
+                    description: 'trunk port'
+                    switchport:
+                      mode:
+                        trunk: {}
+                      trunk:
+                        encapsulation: dot1q
+                        native:
+                          vlan: 99
+                        allowed:
+                          vlan:
+                            vlans:
+                              - 10
+                              - 100
+          - name: NED set up spanning-tree
+            tags:
+              - set_up_spanning_tree
+            api_path: config/tailf-ned-cisco-ios:spanning-tree
+            api_method: PATCH
+            content: |
+              spanning-tree:
+                mode: 'pvst'
+                loopguard:
+                  default:
+                    - null
+                etherchannel:
+                  guard:
+                    misconfig:
+                      - null
+                portfast:
+                  edge:
+                    bpduguard:
+                      default:
+                        - null
+                    bpdufilter:
+                      default:
+                        - null
+        assertions:
+          - "'openconfig-spanning-tree-ext:PVST' in oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['enabled-protocol']"
+          - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['loop-guard'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['bpdu-guard'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['bpdu-filter'] == true"
+#          - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['etherchannel-misconfig-guard'] == true"  # Unreliable in production. Sometimes True is not in NSO Device config which is the same on False
+
+    - name: Run STP xes1 test 2
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_stp.py
+        api_test_data:
+          - name: NED set up interface
+            tags:
+              - set_up_interface
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                GigabitEthernet:
+                  - name: '1/0'
+                    description: 'access port'
+                    switchport:
+                      mode:
+                        access: {}
+                      access:
+                        vlan: 100
+                    spanning-tree:
+                      cost: 10
+                      port-priority: 64
+                      bpdufilter: disable
+                      bpduguard:
+                        enable:
+                          - null
+                      guard: root
+                      link-type: point-to-point
+                      portfast: {}
+        assertions:
+          - "G1 in oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['interfaces']['interface']"
