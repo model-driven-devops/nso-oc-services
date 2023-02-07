@@ -1,244 +1,170 @@
 ---
-- hosts: nso
-  connection: local
-  gather_facts: no
-  roles:
-    - nso-rollback-save
-  run_once: true
-  vars:
-    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
-
 - hosts: localhost
   gather_facts: no
   environment:
     NSO_DEVICE: xeswitch1
   vars:
-    nso_api_url: "{{ lookup('env', 'NSO_URL') }}"
-    nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
-    nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
     device: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
   tasks:
-    - block:
-      - name: Set up service config
-        tags:
-          - set_up
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: mdd:openconfig
-          content: |
-            mdd:openconfig:
-              openconfig-interfaces:interfaces:
-                openconfig-interfaces:interface:
-                  - openconfig-interfaces:name: 'GigabitEthernet1/0'
-                    openconfig-interfaces:config:
-                      openconfig-interfaces:description: 'Access Port Example'
-                      openconfig-interfaces:enabled: true
-                      openconfig-interfaces:name: 'GigabitEthernet1/0'
-                      openconfig-interfaces:type: 'l2vlan'
-                    openconfig-if-ethernet:ethernet:
-                      openconfig-vlan:switched-vlan:
-                        openconfig-vlan:config:
-                          openconfig-vlan:access-vlan: 100
-                          openconfig-vlan:interface-mode: 'ACCESS'
-                  - openconfig-interfaces:name: 'GigabitEthernet1/1'
-                    openconfig-interfaces:config:
-                      openconfig-interfaces:description: 'Trunk Port Example'
-                      openconfig-interfaces:enabled: true
-                      openconfig-interfaces:name: 'GigabitEthernet1/1'
-                      openconfig-interfaces:type: 'l2vlan'
-                    openconfig-if-ethernet:ethernet:
-                      openconfig-vlan:switched-vlan:
-                        openconfig-vlan:config:
-                          openconfig-vlan:interface-mode: 'TRUNK'
-                          openconfig-vlan:native-vlan: 99
-                          openconfig-vlan:trunk-vlans:
-                            - 10
-                            - 100
-              openconfig-network-instance:network-instances:
-                network-instance:
-                  - name: 'default'
-                    config:
-                      name: 'default'
-                      type: 'DEFAULT_INSTANCE'
-                      enabled: true
-                  - name: 'abc'
-                    config:
-                      name: 'abc'
-                      type: 'L3VRF'
-                      enabled: true
-                      enabled-address-families:
-                        - 'IPV4'
-              openconfig-system:system:
-                config:
-                  hostname: 'test'
-          api_method: PUT
-      - name: NSO configure VLANs
-        tags:
-          - set_up
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:vlan
-          script: ../../../package_nso_to_oc/xe/xe_vlans.py
-          content: |
-            vlan:
-              vlan-list:
-                - id: 1
-                  name: default
-                - id: 99
-                  name: VLAN99
-                - id: 100
-                  name: VLAN100
-                - id: 101
-                  name: VLAN101
-                  shutdown:
-                    - null
-                - id: 105
-                  name: VLAN105
-                - id: 106
-                  name: VLAN106
-          api_method: PATCH
-      - name: NSO configure Interfaces
-        tags:
-          - set_up
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:interface
-          content: |
+    - set_fact:
+        vlan_100:
+          vlan-id: 100
+          config:
+            vlan-id: 100
+            forwarding-delay: 10
+            hello-time: 4
+            max-age: 20
+            bridge-priority: 61440
+          interfaces:
             interface:
-              GigabitEthernet:
-                - name: '1/0'
-                  description: 'access port'
-                  switchport:
-                    mode:
-                      access: {}
-                    access:
-                      vlan: 100
-                - name: '1/1'
-                  description: 'trunk port'
-                  switchport:
-                    mode:
-                      trunk: {}
-                    trunk:
-                      encapsulation: dot1q
-                      native:
-                        vlan: 99
-                      allowed:
-                        vlan:
-                          vlans:
-                            - 10
-                            - 100
-          api_method: PATCH
+              - name: GigabitEthernet1/0
+                config:
+                  name: GigabitEthernet1/0
+                  cost: 10
+                  port-priority: 64
 
-      - name: NSO configure PVST
-        tags:
-          - stp_pvst
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:spanning-tree
-          content: |
-            spanning-tree:
-              mode: 'pvst'
+    - name: Run STP PVST xes1 set up VLANs
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_load_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_vlans.py
+        api_test_data:
+          - name: Set up OC
+            tags:
+              - set_up_oc
+            api_path: mdd:openconfig
+            api_method: PUT
+            content: |
+              mdd:openconfig:
+                openconfig-interfaces:interfaces:
+                  openconfig-interfaces:interface:
+                    - openconfig-interfaces:name: 'GigabitEthernet1/0'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:description: 'Access Port Example'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:name: 'GigabitEthernet1/0'
+                        openconfig-interfaces:type: 'l2vlan'
+                      openconfig-if-ethernet:ethernet:
+                        openconfig-vlan:switched-vlan:
+                          openconfig-vlan:config:
+                            openconfig-vlan:access-vlan: 100
+                            openconfig-vlan:interface-mode: 'ACCESS'
+                    - openconfig-interfaces:name: 'GigabitEthernet1/1'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:description: 'Trunk Port Example'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:name: 'GigabitEthernet1/1'
+                        openconfig-interfaces:type: 'l2vlan'
+                      openconfig-if-ethernet:ethernet:
+                        openconfig-vlan:switched-vlan:
+                          openconfig-vlan:config:
+                            openconfig-vlan:interface-mode: 'TRUNK'
+                            openconfig-vlan:native-vlan: 99
+                            openconfig-vlan:trunk-vlans:
+                              - 10
+                              - 100
+                openconfig-network-instance:network-instances:
+                  network-instance:
+                    - name: 'default'
+                      config:
+                        name: 'default'
+                        type: 'DEFAULT_INSTANCE'
+                        enabled: true
+                    - name: 'abc'
+                      config:
+                        name: 'abc'
+                        type: 'L3VRF'
+                        enabled: true
+                        enabled-address-families:
+                          - 'IPV4'
+                openconfig-system:system:
+                  config:
+                    hostname: 'test'
+          - name: Init VLANs
+            tags:
+              - init_vlans
+            api_path: config/tailf-ned-cisco-ios:vlan
+            api_method: PATCH
+            content: |
               vlan:
                 vlan-list:
+                  - id: 1
+                    name: default
+                  - id: 99
+                    name: VLAN99
                   - id: 100
-                    hello-time: 4
-                    priority: 61440
-                    forward-time: 10
-                    max-age: 20
-              uplinkfast:
-                - null
-              backbonefast:
-                - null
-          api_method: PATCH
-      - name: NSO configure PVST interface
-        tags:
-          - stp_pvst
-        import_role:
-          name: nso-ned-device-configure
-        vars:
-          api_path: config/tailf-ned-cisco-ios:interface
-          content: |
-            interface:
-              GigabitEthernet:
-                - name: '1/0'
-                  description: 'access port'
-                  switchport:
-                    mode:
-                      access: {}
-                    access:
-                      vlan: 100
-                  spanning-tree:
-                    cost: 10
-                    port-priority: 64
-      - set_fact:
-          vlan_100:
-            vlan-id: 100
-            config:
-              vlan-id: 100
-              forwarding-delay: 10
-              hello-time: 4
-              max-age: 20
-              bridge-priority: 61440
-            interfaces:
+                    name: VLAN100
+                  - id: 101
+                    name: VLAN101
+                    shutdown:
+                      - null
+                  - id: 105
+                    name: VLAN105
+                  - id: 106
+                    name: VLAN106
+
+    - name: Run STP PVST xes1 tests
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_stp.py
+        api_test_data:
+          - name: NED set up interface
+            tags:
+              - set_up_interface
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
               interface:
-                - name: GigabitEthernet1/0
-                  config:
-                    name: GigabitEthernet1/0
-                    cost: 10
-                    port-priority: 64
-        tags:
-          - stp_pvst
-      - name: Execute NSO NED to OC script
-        tags:
-          - stp_pvst
-        script: ../../../package_nso_to_oc/xe/xe_stp.py
-        args:
-          executable: python3
-        register: nso_to_oc_result
-      - debug:
-          msg: "{{nso_to_oc_result}}"
-        tags:
-          - stp_pvst
-      - name: NSO API call
-        tags:
-          - stp_pvst
-        uri:
-          url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-          url_username: "{{ nso_username }}"
-          url_password: "{{ nso_password }}"
-          force_basic_auth: yes
-          validate_certs: no
-          status_code: [200,201,204]
-          method: GET
-          headers: "{
-            'Content-Type': 'application/yang-data+json',
-            'Accept': 'application/yang-data+json'}"
-          body_format: json
-        delegate_to: localhost
-        register: oc_result
-      - debug:
-          msg: "{{ oc_result }}"
-        tags:
-          - stp_pvst
-      - assert:
-          that:
+                GigabitEthernet:
+                  - name: '1/0'
+                    description: 'access port'
+                    switchport:
+                      mode:
+                        access: {}
+                      access:
+                        vlan: 100
+                    spanning-tree:
+                      cost: 10
+                      port-priority: 64
+                  - name: '1/1'
+                    description: 'trunk port'
+                    switchport:
+                      mode:
+                        trunk: {}
+                      trunk:
+                        encapsulation: dot1q
+                        native:
+                          vlan: 99
+                        allowed:
+                          vlan:
+                            vlans:
+                              - 10
+                              - 100
+          - name: NED set up spanning-tree
+            tags:
+              - set_up_spanning_tree
+            api_path: config/tailf-ned-cisco-ios:spanning-tree
+            api_method: PATCH
+            content: |
+              spanning-tree:
+                mode: 'pvst'
+                vlan:
+                  vlan-list:
+                    - id: 100
+                      hello-time: 4
+                      priority: 61440
+                      forward-time: 10
+                      max-age: 20
+                uplinkfast:
+                  - null
+                backbonefast:
+                  - null
+        assertions:
             - "'openconfig-spanning-tree-ext:PVST' in oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['enabled-protocol']"
             - "vlan_100 in oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['openconfig-spanning-tree-ext:pvst']['vlan']"
             - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['openconfig-spanning-tree-ext:uplinkfast'] == true"
             - "oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['openconfig-spanning-tree-ext:backbonefast'] == true"
-        tags:
-          - stp_pvst
-      always:
-        - name: Rollback NSO
-          delegate_to: nso
-          connection: local
-          import_role:
-            name: nso-rollback-load
-          run_once: true
-          vars:
-            rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
             

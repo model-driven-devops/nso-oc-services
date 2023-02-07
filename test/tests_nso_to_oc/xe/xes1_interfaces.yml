@@ -4,168 +4,100 @@
   environment:
     NSO_DEVICE: xeswitch1
   vars:
-    nso_api_url: "{{ lookup('env', 'NSO_URL') }}"
-    nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
-    nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
     device: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
   tasks:
-    - name: Set up service config
-      tags:
-        - set_up
-      import_role:
-        name: nso-ned-device-configure
+    - name: Run xes1 set up VLANs
+      include_role:
+        name: ned-to-oc-test
       vars:
-        api_path: mdd:openconfig
-        content: |
-          mdd:openconfig:
-            openconfig-network-instance:network-instances:
-              network-instance:
-                - name: 'default'
+        will_load_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_vlans.py
+        api_test_data:
+          - name: Set up OC
+            tags:
+              - set_up_oc
+            api_path: mdd:openconfig
+            api_method: PUT
+            content: |
+              mdd:openconfig:
+                openconfig-network-instance:network-instances:
+                  network-instance:
+                    - name: 'default'
+                      config:
+                        name: 'default'
+                        type: 'DEFAULT_INSTANCE'
+                        enabled: true
+                    - name: 'abc'
+                      config:
+                        name: 'abc'
+                        type: 'L3VRF'
+                        enabled: true
+                        enabled-address-families:
+                          - 'IPV4'
+                openconfig-system:system:
                   config:
-                    name: 'default'
-                    type: 'DEFAULT_INSTANCE'
-                    enabled: true
-                - name: 'abc'
-                  config:
-                    name: 'abc'
-                    type: 'L3VRF'
-                    enabled: true
-                    enabled-address-families:
-                      - 'IPV4'
-            openconfig-system:system:
-              config:
-                hostname: 'test'
-        api_method: PUT
-    - name: NSO configure VLANs
-      tags:
-        - set_up
-      import_role:
-        name: nso-ned-device-configure
+                    hostname: 'test'
+          - name: NED init VLANs
+            tags:
+              - init_vlans
+            api_path: config/tailf-ned-cisco-ios:vlan
+            api_method: PATCH
+            content: |
+              vlan:
+                vlan-list:
+                  - id: 1
+                    name: default
+                  - id: 99
+                    name: VLAN99
+                  - id: 100
+                    name: VLAN100
+                  - id: 101
+                    name: VLAN101
+                    shutdown:
+                      - null
+                  - id: 105
+                    name: VLAN105
+                  - id: 106
+                    name: VLAN106
+
+    - name: Run xes1 interfaces tests 1
+      include_role:
+        name: ned-to-oc-test
       vars:
-        api_path: config/tailf-ned-cisco-ios:vlan
-        script: ../../../package_nso_to_oc/xe/xe_vlans.py
-        content: |
-          vlan:
-            vlan-list:
-              - id: 1
-                name: default
-              - id: 99
-                name: VLAN99
-              - id: 100
-                name: VLAN100
-              - id: 101
-                name: VLAN101
-                shutdown:
-                  - null
-              - id: 105
-                name: VLAN105
-              - id: 106
-                name: VLAN106
-        api_method: PATCH
-    - name: DELETE NED G1/1 trunk config
-      tags:
-        - set_up
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:interface/GigabitEthernet=1%2F1/switchport/trunk
-        content: ''
-        api_method: DELETE
-        api_ignore_errors: true
-    - name: DELETE NED port-channel sub-interfaces
-      tags:
-        - set_up
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:interface/Port-channel-subinterface
-        content: ''
-        api_method: DELETE
-        api_ignore_errors: true
-    - name: DELETE NED port-channel 1
-      tags:
-        - set_up
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:interface/Port-channel=1
-        content: ''
-        api_method: DELETE
-        api_ignore_errors: true
-    - name: DELETE NED port-channel 10
-      tags:
-        - set_up
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:interface/Port-channel=10
-        content: ''
-        api_method: DELETE
-        api_ignore_errors: true
-    - name: NSO configure Interfaces
-      tags:
-        - interfaces_access_and_trunk
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:interface
-        content: |
-          interface:
-            GigabitEthernet:
-              - name: '1/0'
-                description: 'access port'
-                switchport:
-                  mode:
-                    access: {}
-                  access:
-                    vlan: 100
-              - name: '1/1'
-                description: 'trunk port'
-                switchport:
-                  mode:
-                    trunk: {}
-                  trunk:
-                    encapsulation: dot1q
-                    native:
-                      vlan: 99
-                    allowed:
-                      vlan:
-                        vlans:
-                          - 10
-                          - 100
-        api_method: PATCH
-    - name: Execute NSO NED to OC script
-      tags:
-        - interfaces_access_and_trunk
-      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
-      args:
-        executable: python3
-      register: nso_to_oc_result
-    - debug:
-        msg: "{{nso_to_oc_result}}"
-      tags:
-        - interfaces_access_and_trunk
-    - name: NSO API call
-      tags:
-        - interfaces_access_and_trunk
-      uri:
-        url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-        url_username: "{{ nso_username }}"
-        url_password: "{{ nso_password }}"
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: GET
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-      delegate_to: localhost
-      register: oc_result
-    - debug:
-        msg: "{{ oc_result }}"
-    - assert:
-        that:
+        will_load_rollback: False
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
+        api_test_data:
+          - name: NED init interfaces
+            tags:
+              - init_interfaces
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                GigabitEthernet:
+                  - name: '1/0'
+                    description: 'access port'
+                    switchport:
+                      mode:
+                        access: {}
+                      access:
+                        vlan: 100
+                  - name: '1/1'
+                    description: 'trunk port'
+                    switchport:
+                      mode:
+                        trunk: {}
+                      trunk:
+                        encapsulation: dot1q
+                        native:
+                          vlan: 99
+                        allowed:
+                          vlan:
+                            vlans:
+                              - 10
+                              - 100
+        assertions:
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['name'] == 'GigabitEthernet1/0'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['interface-mode'] == 'ACCESS'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['access-vlan'] == 100"
@@ -175,83 +107,55 @@
           - "10 in oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['trunk-vlans']"
           - "100 in oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['trunk-vlans']"
 
-    - name: NSO configure Interfaces
-      tags:
-        - interfaces_LACP_trunk
-      import_role:
-        name: nso-ned-device-configure
+    - name: Run xes1 interfaces tests 2
+      include_role:
+        name: ned-to-oc-test
       vars:
-        api_path: config/tailf-ned-cisco-ios:interface
-        content: |
-          interface:
-            Port-channel:
-              - name: '1'
-                description: 'LACP trunk port'
-                switchport:
-                  mode:
-                    trunk: {}
-                  trunk:
-                    encapsulation: dot1q
-                    native:
-                      vlan: 99
-                    allowed:
-                      vlan:
-                        vlans:
-                          - 10
-                          - 100
-            GigabitEthernet:
-              - name: '1/1'
-                description: 'LACP member trunk port'
-                switchport:
-                  trunk:
-                    encapsulation: dot1q
-                    native:
-                      vlan: 99
-                    allowed:
-                      vlan:
-                        vlans:
-                          - 10
-                          - 100
-                  mode:
-                    trunk: {}
-                channel-group:
-                  number: 1
-                  mode: active
-        api_method: PATCH
-    - name: Execute NSO NED to OC script
-      tags:
-        - interfaces_LACP_trunk
-      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
-      args:
-        executable: python3
-      register: nso_to_oc_result
-    - debug:
-        msg: "{{nso_to_oc_result}}"
-      tags:
-        - interfaces_LACP_trunk
-    - name: NSO API call
-      tags:
-        - interfaces_LACP_trunk
-      uri:
-        url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-        url_username: "{{ nso_username }}"
-        url_password: "{{ nso_password }}"
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: GET
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-      delegate_to: localhost
-      register: oc_result
-    - debug:
-        msg: "{{ oc_result }}"
-      tags:
-        - interfaces_LACP_trunk
-    - assert:
-        that:
+        will_load_rollback: False
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
+        api_test_data:
+          - name: NED init interfaces LACP trunk
+            tags:
+              - init_interfaces_lacp_trunk
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                Port-channel:
+                  - name: '1'
+                    description: 'LACP trunk port'
+                    switchport:
+                      mode:
+                        trunk: {}
+                      trunk:
+                        encapsulation: dot1q
+                        native:
+                          vlan: 99
+                        allowed:
+                          vlan:
+                            vlans:
+                              - 10
+                              - 100
+                GigabitEthernet:
+                  - name: '1/1'
+                    description: 'LACP member trunk port'
+                    switchport:
+                      trunk:
+                        encapsulation: dot1q
+                        native:
+                          vlan: 99
+                        allowed:
+                          vlan:
+                            vlans:
+                              - 10
+                              - 100
+                      mode:
+                        trunk: {}
+                    channel-group:
+                      number: 1
+                      mode: active
+        assertions:
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['name'] == 'Port-channel1'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['interface-mode'] == 'TRUNK'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['native-vlan'] == 99"
@@ -259,302 +163,180 @@
           - "100 in oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['trunk-vlans']"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['name'] == 'GigabitEthernet1/1'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['openconfig-if-ethernet:ethernet']['config']['openconfig-if-aggregate:aggregate-id'] == 'Port-channel1'"
-    - name: DELETE NED G1/1 channel group
-      tags:
-        - interfaces_LACP_trunk
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:interface/GigabitEthernet=1%2F1/channel-group
-        content: ''
-        api_method: DELETE
-    - name: DELETE NED port-channel 1
-      tags:
-        - interfaces_LACP_trunk
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:interface/Port-channel=1
-        content: ''
-        api_method: DELETE
-    - name: DELETE MDD interface G1/1 aggregate-id
-      tags:
-        - interfaces_LACP_trunk
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=GigabitEthernet1%2F1/openconfig-if-ethernet:ethernet/openconfig-if-ethernet:config/openconfig-if-aggregate:aggregate-id
-        content: ""
-        api_method: DELETE
-    - name: DELETE MDD port-channel
-      tags:
-        - interfaces_LACP_trunk
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=Port-channel1
-        content: ''
-        api_method: DELETE
 
-    - name: NSO configure Interfaces
-      tags:
-        - interfaces_LACP_access
-      import_role:
-        name: nso-ned-device-configure
+    - name: Run xes1 interfaces tests 3
+      include_role:
+        name: ned-to-oc-test
       vars:
-        api_path: config/tailf-ned-cisco-ios:interface
-        content: |
-          interface:
-            Port-channel:
-              - name: '1'
-                description: 'LACP access port'
-                switchport:
-                  mode:
-                    access: {}
-                  access:
-                    vlan: 100
-            GigabitEthernet:
-              - name: '1/1'
-                description: 'LACP member'
-                switchport:
-                  mode:
-                    access: {}
-                  access:
-                    vlan: 100
-                channel-group:
-                  number: 1
-                  mode: active
-        api_method: PATCH
-    - name: Execute NSO NED to OC script
-      tags:
-        - interfaces_LACP_access
-      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
-      args:
-        executable: python3
-      register: nso_to_oc_result
-    - debug:
-        msg: "{{nso_to_oc_result}}"
-      tags:
-        - interfaces_LACP_access
-    - name: NSO API call
-      tags:
-        - interfaces_LACP_access
-      uri:
-        url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-        url_username: "{{ nso_username }}"
-        url_password: "{{ nso_password }}"
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: GET
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-      delegate_to: localhost
-      register: oc_result
-    - debug:
-        msg: "{{ oc_result }}"
-      tags:
-        - interfaces_LACP_access
-    - assert:
-        that:
+        will_load_rollback: False
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
+        api_test_data:
+          - name: DELETE NED G1/1 channel group
+            tags:
+              - delete_g1_1_channel_group
+            api_path: config/tailf-ned-cisco-ios:interface/GigabitEthernet=1%2F1/channel-group
+            api_method: DELETE
+          - name: DELETE NED port-channel 1
+            tags:
+              - delete_port_channel_1
+            api_path: config/tailf-ned-cisco-ios:interface/Port-channel=1
+            api_method: DELETE
+          - name: DELETE MDD interface G1/1 aggregate-id
+            tags:
+              - delete_mdd_g1_1_aggergate_id
+            api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=GigabitEthernet1%2F1/openconfig-if-ethernet:ethernet/openconfig-if-ethernet:config/openconfig-if-aggregate:aggregate-id
+            api_method: DELETE
+          - name: DELETE MDD port-channel 1
+            tags:
+              - delete_mdd_port_channel_1
+            api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=Port-channel1
+            api_method: DELETE
+          - name: NED interface LACP access
+            tags:
+              - interface_lacp_access
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                Port-channel:
+                  - name: '1'
+                    description: 'LACP access port'
+                    switchport:
+                      mode:
+                        access: {}
+                      access:
+                        vlan: 100
+                GigabitEthernet:
+                  - name: '1/1'
+                    description: 'LACP member'
+                    switchport:
+                      mode:
+                        access: {}
+                      access:
+                        vlan: 100
+                    channel-group:
+                      number: 1
+                      mode: active
+        assertions:
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['name'] == 'Port-channel1'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['interface-mode'] == 'ACCESS'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['access-vlan'] == 100"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['name'] == 'GigabitEthernet1/1'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['openconfig-if-ethernet:ethernet']['config']['openconfig-if-aggregate:aggregate-id'] == 'Port-channel1'"
-    - name: DELETE NED G1/1 channel group
-      tags:
-        - interfaces_LACP_access
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:interface/GigabitEthernet=1%2F1/channel-group
-        content: ''
-        api_method: DELETE
-    - name: DELETE NED port-channel 1
-      tags:
-        - interfaces_LACP_access
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:interface/Port-channel=1
-        content: ''
-        api_method: DELETE
-    - name: DELETE MDD interface G1/1 aggregate-id
-      tags:
-        - interfaces_LACP_access
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=GigabitEthernet1%2F1/openconfig-if-ethernet:ethernet/openconfig-if-ethernet:config/openconfig-if-aggregate:aggregate-id
-        content: ""
-        api_method: DELETE
-    - name: DELETE MDD port-channel
-      tags:
-        - interfaces_LACP_access
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=Port-channel1
-        content: ''
-        api_method: DELETE
 
-    - name: NSO configure Interfaces
-      tags:
-        - interfaces_LACP_L3
-      import_role:
-        name: nso-ned-device-configure
+    - name: Run xes1 interfaces tests 4
+      include_role:
+        name: ned-to-oc-test
       vars:
-        api_path: config/tailf-ned-cisco-ios:interface
-        content: |
-          interface:
-            Port-channel:
-              - name: '1'
-                description: 'LACP L3'
-                ip:
-                  address:
-                    primary:
-                      address: 192.168.3.1
-                      mask: 255.255.255.0
-        api_method: PATCH
-    - name: Execute NSO NED to OC script
-      tags:
-        - interfaces_LACP_L3
-      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
-      args:
-        executable: python3
-      register: nso_to_oc_result
-    - debug:
-        msg: "{{nso_to_oc_result}}"
-      tags:
-        - interfaces_LACP_L3
-    - name: NSO API call
-      tags:
-        - interfaces_LACP_L3
-      uri:
-        url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-        url_username: "{{ nso_username }}"
-        url_password: "{{ nso_password }}"
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: GET
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-      delegate_to: localhost
-      register: oc_result
-    - debug:
-        msg: "{{ oc_result }}"
-    - assert:
-        that:
+        will_load_rollback: False
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
+        api_test_data:
+          - name: DELETE NED G1/1 channel group
+            tags:
+              - delete_g1_1_channel_group
+            api_path: config/tailf-ned-cisco-ios:interface/GigabitEthernet=1%2F1/channel-group
+            api_method: DELETE
+          - name: DELETE NED port-channel 1
+            tags:
+              - delete_port_channel_1
+            api_path: config/tailf-ned-cisco-ios:interface/Port-channel=1
+            api_method: DELETE
+          - name: DELETE MDD interface G1/1 aggregate-id
+            tags:
+              - delete_mdd_interface_g1_1_aggregate_id
+            api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=GigabitEthernet1%2F1/openconfig-if-ethernet:ethernet/openconfig-if-ethernet:config/openconfig-if-aggregate:aggregate-id
+            api_method: DELETE
+          - name: DELETE MDD port-channel 1
+            tags:
+              - delete_mdd_port_channel_1
+            api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=Port-channel1
+            api_method: DELETE
+          - name: NED configure interface LACP L3
+            tags:
+              - interface_lacp_l3
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                Port-channel:
+                  - name: '1'
+                    description: 'LACP L3'
+                    ip:
+                      address:
+                        primary:
+                          address: 192.168.3.1
+                          mask: 255.255.255.0
+        assertions:
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['name'] == 'Port-channel1'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.3.1'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
-    - name: DELETE NED port-channel 1
-      tags:
-        - interfaces_LACP_L3
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:interface/Port-channel=1
-        content: ''
-        api_method: DELETE
-    - name: DELETE MDD port-channel
-      tags:
-        - interfaces_LACP_L3
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=Port-channel1
-        content: ''
-        api_method: DELETE
-    - name: NSO configure Interfaces
-      tags:
-        - interfaces_ipv4
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:interface
-        content: |
-          interface:
-            Vlan:
-              - name: 100
-                description: descriptionVLAN100
-                ip:
-                  address:
-                    primary:
-                      address: 192.168.100.2
-                      mask: 255.255.255.0
-                  mtu: 1476
-                  unreachables: false
-                  redirects: false
-                  tcp:
-                    adjust-mss: 1400
-                  proxy-arp: true
-                  mask-reply:
-                    - null
-                  nat:
-                    inside:
-                      - null
-                vrrp:
-                  - id: 6
-                    preempt:
-                      delay:
-                        minimum: 10
-                    timers:
-                      advertise:
-                        seconds: 3
-                    ip:
-                      address: 192.168.100.1
-              - name: 6
-                ip:
-                  address:
-                    primary:
-                      address: 192.168.6.1
-                      mask: 255.255.255.0
-                  nat:
-                    inside:
-                      - null
-        api_method: PATCH
 
-    - name: Execute NSO NED to OC script
-      tags:
-        - interfaces_ipv4
-      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
-      args:
-        executable: python3
-      register: nso_to_oc_result
-    - debug:
-        msg: "{{nso_to_oc_result}}"
-      tags:
-        - interfaces_ipv4
-    - name: NSO API call
-      tags:
-        - interfaces_ipv4
-      uri:
-        url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-        url_username: "{{ nso_username }}"
-        url_password: "{{ nso_password }}"
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: GET
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-      delegate_to: localhost
-      register: oc_result
-    - debug:
-        msg: "{{ oc_result }}"
-      tags:
-        - interfaces_ipv4
-    - assert:
-        that:
+    - name: Run xes1 interfaces tests 5
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_load_rollback: False
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
+        api_test_data:
+          - name: DELETE NED port-channel 1
+            tags:
+              - delete_port_channel_1
+            api_path: config/tailf-ned-cisco-ios:interface/Port-channel=1
+            api_method: DELETE
+          - name: DELETE MDD port-channel
+            tags:
+              - delete_mdd_port_channel
+            api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=Port-channel1
+            api_method: DELETE
+          - name: NED configure interfaces IPV4
+            tags:
+              - configure_interfaces_ipv4
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                Vlan:
+                  - name: 100
+                    description: descriptionVLAN100
+                    ip:
+                      address:
+                        primary:
+                          address: 192.168.100.2
+                          mask: 255.255.255.0
+                      mtu: 1476
+                      unreachables: false
+                      redirects: false
+                      tcp:
+                        adjust-mss: 1400
+                      proxy-arp: true
+                      mask-reply:
+                        - null
+                      nat:
+                        inside:
+                          - null
+                    vrrp:
+                      - id: 6
+                        preempt:
+                          delay:
+                            minimum: 10
+                        timers:
+                          advertise:
+                            seconds: 3
+                        ip:
+                          address: 192.168.100.1
+                  - name: 6
+                    ip:
+                      address:
+                        primary:
+                          address: 192.168.6.1
+                          mask: 255.255.255.0
+                      nat:
+                        inside:
+                          - null
+        assertions:
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['name'] == 'Vlan100'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['config']['vlan'] == 100"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.100.2'"
@@ -568,111 +350,58 @@
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['proxy-arp']['config']['mode'] == 'REMOTE_ONLY'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:mask-reply'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:nat']['nat-choice'] == 'inside'"
-    - name: NSO configure Interfaces
-      tags:
-        - interfaces_VLAN100
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=Vlan100
-        content: ''
-        api_method: DELETE
-    - name: DELETE NED VLAN100
-      tags:
-        - interfaces_VLAN100
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:interface/Vlan=100
-        content: ''
-        api_method: DELETE
 
-    - name: NSO configure Interfaces
-      tags:
-        - interfaces_LACP_L3_SUBIFs
-      import_role:
-        name: nso-ned-device-configure
+    - name: Run xes1 interfaces tests 4
+      include_role:
+        name: ned-to-oc-test
       vars:
-        api_path: config/tailf-ned-cisco-ios:interface
-        content: |
-          interface:
-            Port-channel:
-              name: 10
-              description: PO10
-            Port-channel-subinterface:
-              Port-channel:
-                - name: '10.105'
-                  description: 'Sub interface 105'
-                  encapsulation:
-                    dot1Q:
-                      vlan-id: 105
-                  ip:
-                    address:
-                      primary:
-                        address: 172.10.105.1
-                        mask: 255.255.255.0
-                - name: '10.106'
-                  description: 'Sub interface 106'
-                  encapsulation:
-                    dot1Q:
-                      vlan-id: 106
-                  ip:
-                    address:
-                      primary:
-                        address: 172.10.106.1
-                        mask: 255.255.255.0
-        api_method: PATCH
-    - name: Execute NSO NED to OC script
-      tags:
-        - interfaces_LACP_L3_SUBIFs
-      script: ../../../package_nso_to_oc/xe/xe_interfaces.py
-      args:
-        executable: python3
-      register: nso_to_oc_result
-    - debug:
-        msg: "{{nso_to_oc_result}}"
-      tags:
-        - interfaces_LACP_L3_SUBIFs
-    - name: NSO API call
-      tags:
-        - interfaces_LACP_L3_SUBIFs
-      uri:
-        url: "{{ nso_api_url }}/restconf/data/tailf-ncs:devices/device={{ device }}/mdd:openconfig"
-        url_username: "{{ nso_username }}"
-        url_password: "{{ nso_password }}"
-        force_basic_auth: yes
-        validate_certs: no
-        status_code: [200,201,204]
-        method: GET
-        headers: "{
-          'Content-Type': 'application/yang-data+json',
-          'Accept': 'application/yang-data+json'}"
-        body_format: json
-      delegate_to: localhost
-      register: oc_result
-    - debug:
-        msg: "{{ oc_result }}"
-    - assert:
-        that:
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
+        api_test_data:
+          - name: Delete MDD VLAN 100
+            tags:
+              - delete_mdd_vlan_100
+            api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=Vlan100
+            api_method: DELETE
+          - name: Delete VLAN 100
+            tags:
+              - delete_vlan_100
+            api_path: config/tailf-ned-cisco-ios:interface/Vlan=100
+            api_method: DELETE
+          - name: NED interfaces LACP subinterface
+            tags:
+              - configure_lacp_subinterface
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                Port-channel:
+                  name: 10
+                  description: PO10
+                Port-channel-subinterface:
+                  Port-channel:
+                    - name: '10.105'
+                      description: 'Sub interface 105'
+                      encapsulation:
+                        dot1Q:
+                          vlan-id: 105
+                      ip:
+                        address:
+                          primary:
+                            address: 172.10.105.1
+                            mask: 255.255.255.0
+                    - name: '10.106'
+                      description: 'Sub interface 106'
+                      encapsulation:
+                        dot1Q:
+                          vlan-id: 106
+                      ip:
+                        address:
+                          primary:
+                            address: 172.10.106.1
+                            mask: 255.255.255.0
+        assertions:
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['name'] == 'Port-channel10'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['subinterfaces']['subinterface'][0]['config']['index'] == 105"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '172.10.105.1'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
-    - name: DELETE NED port-channel 10
-      tags:
-        - interfaces_LACP_L3_SUBIFs
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: config/tailf-ned-cisco-ios:interface/Port-channel=10
-        content: ''
-        api_method: DELETE
-    - name: DELETE MDD port-channel
-      tags:
-        - interfaces_LACP_L3_SUBIFs
-      import_role:
-        name: nso-ned-device-configure
-      vars:
-        api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=Port-channel10
-        content: ''
-        api_method: DELETE

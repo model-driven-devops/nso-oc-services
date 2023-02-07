@@ -5,5 +5,5 @@
     name: nso-ned-device-configure
   vars:
     api_path: "{{ item.api_path }}"
-    content: "{{ item.content }}"
+    content: "{{ item.content | default({}) }}"
     api_method: "{{ item.api_method }}"
