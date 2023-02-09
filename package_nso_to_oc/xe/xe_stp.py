@@ -176,10 +176,10 @@ def xe_configure_pvst_vlans(config_before: dict, config_leftover: dict, stp_inte
                     "openconfig-spanning-tree-ext:forwarding-delay"] = 15
             if cdb_vlan.get("max-age"):
                 temp_service_vlan_dict["openconfig-spanning-tree-ext:config"][
-                    "openconfig-spanning-tree-ext:max-age"] = 20
+                    "openconfig-spanning-tree-ext:max-age"] = cdb_vlan.get("max-age")
             else:
                 temp_service_vlan_dict["openconfig-spanning-tree-ext:config"][
-                    "openconfig-spanning-tree-ext:max-age"] = cdb_vlan.get("max-age")
+                    "openconfig-spanning-tree-ext:max-age"] = 20
             if cdb_vlan.get("priority"):
                 temp_service_vlan_dict["openconfig-spanning-tree-ext:config"][
                     "openconfig-spanning-tree-ext:bridge-priority"] = cdb_vlan.get("priority")
