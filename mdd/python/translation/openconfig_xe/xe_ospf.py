@@ -117,8 +117,14 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
 
                     interface_type, interface_number = get_interface_type_number_and_subinterface(
                         service_interface.id)
-                    class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
-                                              interface_type)
+                    interface_type = interface_type.replace("-", "_")
+                    if interface_type == "Port_channel" and "." in interface_number:
+                        init_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+                                                  f"{interface_type}_subinterface")
+                        class_attribute = getattr(init_attribute, interface_type)
+                    else:
+                        class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+                                                  interface_type)
                     interface_cdb = class_attribute[interface_number]
                     # router ospf network statement
                     create_area_network_statement(self, service_interface, device_ospf_cbd, service_area)
