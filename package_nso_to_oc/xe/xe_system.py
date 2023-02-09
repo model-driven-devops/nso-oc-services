@@ -370,8 +370,20 @@ def xe_system_ntp(config_before: dict, config_leftover: dict, if_ip: dict) -> No
 
     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key") and config_before.get(
             "tailf-ned-cisco-ios:ntp", {}).get("authentication-key"):
-        trusted_key_numbers = [x["key-number"] for x in
-                               config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key")]
+        trusted_key_numbers = []
+        for index, key_info in enumerate(config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key")):
+            if key_info.get("end-key-number"):
+                # Get trusted keys from range (key-number, end-key-number)
+                temp_key_list = list(range(config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key", [])[index].get(
+                    "key-number"), config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key", [])[index].get(
+                        "end-key-number") + 1))
+                trusted_key_numbers.extend(temp_key_list)
+            else:
+                temp_key_numbers = config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key", [])[index].get(
+                    "key-number")
+                trusted_key_numbers.append(temp_key_numbers)
+
+        auth_key_list = []
         for auth_key in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("authentication-key"):
             if auth_key["number"] in trusted_key_numbers and auth_key.get("md5"):
                 key_dict = {"openconfig-system:key-id": auth_key["number"],
@@ -381,13 +393,26 @@ def xe_system_ntp(config_before: dict, config_leftover: dict, if_ip: dict) -> No
                                                              "secret")}
                             }
                 openconfig_system_ntp["openconfig-system:ntp-keys"]["openconfig-system:ntp-key"].append(key_dict)
-
+                auth_key_list.append(auth_key["number"])
                 config_leftover["tailf-ned-cisco-ios:ntp"]["authentication-key"].remove(auth_key)
                 try:  # trusted-keys can use a starting number, hyphen, and ending number in NED. Skip remove if this is the case.
                     config_leftover["tailf-ned-cisco-ios:ntp"]["trusted-key"].remove({"key-number": auth_key["number"]})
                 except:
                     pass
 
+        # Remove trusted keys from range (key-number, end-key-number)
+        leftover_trusted_key = []
+        for trusted_key in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key"):
+            if "end-key-number" in trusted_key:
+                config_leftover["tailf-ned-cisco-ios:ntp"]["trusted-key"].remove({"key-number": trusted_key["key-number"],
+                    "hyphen": [None], "end-key-number": trusted_key["end-key-number"]})
+                leftover_trusted_key.extend(list(set(list(range(trusted_key["key-number"], trusted_key[
+                    "end-key-number"] + 1))) - set(auth_key_list)))
+        # Re-add to config_leftover all trusted keys not configured
+        if leftover_trusted_key:
+            for reconf_trusted_key in leftover_trusted_key:
+                config_leftover["tailf-ned-cisco-ios:ntp"]["trusted-key"].append({"key-number": reconf_trusted_key})
+    
     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer") or config_before.get("tailf-ned-cisco-ios:ntp",
                                                                                          {}).get("server"):
         openconfig_system_ntp.update({"openconfig-system:servers": {"openconfig-system:server": []}})

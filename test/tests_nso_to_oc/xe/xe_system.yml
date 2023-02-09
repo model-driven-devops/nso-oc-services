@@ -262,6 +262,15 @@
                     - null
                   http:
                     server: false
+                    secure-server: true
+                    max-connections: 4
+                    secure-ciphersuite:
+                      - "aes-128-cbc-sha"
+                      - "aes-256-cbc-sha"
+                    timeout-policy:
+                      idle: 240
+                      life: 240
+                      requests: 3
                   rcmd:
                     rcp-enable:
                       - null
@@ -320,6 +329,15 @@
                   conf:
                     pad: true
                   password-encryption: {}
+                  timestamps:
+                    debug:
+                      datetime:
+                        msec: ''
+                        localtime: ''
+                    log:
+                      datetime:
+                        msec: ''
+                        localtime: ''
         #   - name: NED AAA servers init
         #     tags:
         #       - aaa_servers_init
@@ -868,9 +886,18 @@
                   - md5:
                       secret: password2
                     number: 2
+                  - md5:
+                      secret: "11073E56193F"
+                    number: 3
+                  - md5:
+                      secret: "0231336F1C"
+                    number: 4
                 trusted-key:
                   - key-number: 1
                   - key-number: 2
+                  - key-number: 3
+                    hyphen: '' 
+                    end-key-number: 4
         assertions:
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['enable-ntp-auth'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['openconfig-system-ext:ntp-enable-logging'] == true"
