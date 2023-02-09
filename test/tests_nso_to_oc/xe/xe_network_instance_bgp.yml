@@ -1,0 +1,308 @@
+---
+- hosts: localhost
+  gather_facts: no
+  environment:
+    NSO_DEVICE: xe1
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+  tasks:
+    - name: Run XE network instance OSPF global and static routes tests
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        script_path: ../../../package_nso_to_oc/xe/xe_network_instances.py
+        api_test_data:
+          - name: Set up OC service config
+            tags:
+              - oc_set_up
+            api_path: mdd:openconfig
+            api_method: PUT
+            content: |
+              mdd:openconfig:
+                openconfig-routing-policy:routing-policy:
+                  openconfig-routing-policy:defined-sets:
+                    openconfig-routing-policy:prefix-sets:
+                      openconfig-routing-policy:prefix-set:
+                        - openconfig-routing-policy:name: 'prefix_test'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: 'prefix_test'
+                            openconfig-routing-policy:mode: 'IPV4'
+                          openconfig-routing-policy:prefixes:
+                            openconfig-routing-policy:prefix:
+                              - openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                                openconfig-routing-policy:masklength-range: 'exact'
+                                openconfig-routing-policy:config:
+                                  openconfig-routing-policy:ip-prefix: '192.133.184.0/22'
+                                  openconfig-routing-policy:masklength-range: 'exact'
+                                  openconfig-routing-policy-ext:seq: 10
+                  openconfig-routing-policy:policy-definitions:
+                    openconfig-routing-policy:policy-definition:
+                      - openconfig-routing-policy:name: 'test'
+                        openconfig-routing-policy:config:
+                          openconfig-routing-policy:name: 'test'
+                        openconfig-routing-policy:statements:
+                          openconfig-routing-policy:statement:
+                            - openconfig-routing-policy:name: '10'
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:name: '10'
+                              openconfig-routing-policy:conditions:
+                                openconfig-routing-policy:match-prefix-set:
+                                  openconfig-routing-policy:config:
+                                    openconfig-routing-policy:prefix-set: 'prefix_test'
+                                    openconfig-routing-policy:match-set-options: 'ANY'
+                              openconfig-routing-policy:actions:
+                                openconfig-routing-policy:config:
+                                  openconfig-routing-policy:policy-result: 'REJECT_ROUTE'  # or REJECT_ROUTE
+                            - openconfig-routing-policy:name: '20'
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:name: '20'
+                              openconfig-routing-policy:actions:
+                                openconfig-routing-policy:config:
+                                  openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+          - name: NED init VRF
+            tags:
+              - init_vrf
+            api_path: config/tailf-ned-cisco-ios:vrf/definition
+            api_method: PATCH
+            content: |
+              definition:
+                - name: abc
+                  rd: '1:1'
+                  route-target:
+                    export:
+                      - asn-ip: 200:200
+                      - asn-ip: 202:202
+                    import:
+                      - asn-ip: 100:100
+                      - asn-ip: 101:101
+                  address-family:
+                    ipv4: {}
+          - name: NED init IP
+            tags:
+              - init_ip
+            api_path: config/tailf-ned-cisco-ios:ip
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:ip:
+                http:
+                  server: true
+                  secure-server: true
+                bgp-community:
+                  new-format:
+                    -
+                prefix-list:
+                  prefixes:
+                    - name: prefix_test
+                      seq:
+                        - 'no': 10
+                          permit:
+                            ip: 192.133.184.0/22
+          - name: NED init route map
+            tags:
+              - init_route_map
+            api_path: config/tailf-ned-cisco-ios:route-map
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:route-map:
+                - name: test
+                  sequence: 10
+                  operation: deny
+                  match:
+                    ip:
+                      address:
+                        prefix-list:
+                          - prefix_test
+                - name: test
+                  sequence: 20
+                  operation: permit
+          - name: NED configure global config
+            tags:
+              - ospf_global_config
+            api_path: config/tailf-ned-cisco-ios:router/bgp
+            api_method: PATCH
+            content: |
+              bgp:
+                - as-no: 1
+                  bgp:
+                    router-id: 1.1.1.1
+                    always-compare-med:
+                      -
+                    log-neighbor-changes: false
+                    listen:
+                      range:
+                        - network-length: 10.255.254.0/24
+                          peer-group: PEERS
+                        - network-length: 10.255.255.0/24
+                          peer-group: PEERS
+                    graceful-restart-conf:
+                      graceful-restart:
+                        restart-time: 121
+                        stalepath-time: 250
+                    graceful-restart:
+                      -
+                    bestpath:
+                      compare-routerid:
+                        -
+                    default:
+                      ipv4-unicast: false
+                  neighbor-tag:
+                    neighbor:
+                      - id: PEERS
+                        peer-group:
+                          -
+                      - id: afi-l3vpn-peers
+                        peer-group:
+                          -
+                      - id: global-ipv4-peers
+                        peer-group:
+                          -
+                  neighbor:
+                    - id: 10.11.11.1
+                      remote-as: '2'
+                    - id: 10.11.11.2
+                      remote-as: '2'
+                    - id: 10.11.11.5
+                      remote-as: '2'
+                    - id: 10.11.11.7
+                      remote-as: '2'
+                  distance:
+                    bgp:
+                      extern-as: 21
+                      internal-as: 201
+                      local: 200
+                  address-family:
+                    ipv4:
+                      - af: unicast
+                        redistribute:
+                          connected:
+                            route-map: test
+                          static:
+                            route-map: test
+                          ospf:
+                            - id: 2
+                              route-map: test
+                    with-vrf:
+                      ipv4:
+                        - af: unicast
+                          vrf:
+                            - name: abc
+                              redistribute:
+                                static: {}
+                              neighbor-tag:
+                                neighbor:
+                                  - id: bar
+                                    peer-group:
+                                      -
+                                    remote-as: '1'
+                                    cluster-id: 1.1.1.1
+                                    send-community:
+                                      send-community-where: extended
+                                  - id: foo
+                                    peer-group:
+                                      -
+                                    local-as:
+                                      as-no: 100
+                                    password:
+                                      text: super_secret
+                                    send-community:
+                                      send-community-where: standard
+                                    as-override: {}
+                                    description: my_description
+                              neighbor:
+                                - id: 10.11.11.3
+                                  remote-as: '2'
+                                  activate:
+                                    -
+                                - id: 10.11.11.4
+                                  remote-as: '2'
+                                  activate:
+                                    -
+                                  send-community:
+                                    send-community-where: both
+                              default-information:
+                                originate:
+                                  -
+                    vpnv4:
+                      - af: unicast
+                        neighbor-tag:
+                          neighbor:
+                            - id: afi-l3vpn-peers
+                              route-map:
+                                - direction: in
+                                  route-map-name: test
+                        neighbor:
+                          - id: 10.11.11.5
+                            activate:
+                              -
+        assertions:
+          # Default
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['config']['name'] == 'default'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['config']['type'] == 'openconfig-network-instance-types:DEFAULT_INSTANCE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['config']['identifier'] == 'openconfig-policy-types:BGP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['config']['name'] == 'BGP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['afi-safis']['afi-safi'][0]['afi-safi-name'] == 'openconfig-bgp-types:IPV4_UNICAST'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['afi-safis']['afi-safi'][0]['config']['enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['afi-safis']['afi-safi'][1]['afi-safi-name'] == 'openconfig-bgp-types:L3VPN_IPV4_UNICAST'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['config']['as'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['config']['openconfig-bgp-ext:log-neighbor-changes'] == false"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['config']['router-id'] == '1.1.1.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['default-route-distance']['config']['external-route-distance'] == 21"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['default-route-distance']['config']['internal-route-distance'] == 201"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['dynamic-neighbor-prefixes']['dynamic-neighbor-prefix'][0]['config']['peer-group'] == 'PEERS'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['dynamic-neighbor-prefixes']['dynamic-neighbor-prefix'][0]['config']['prefix'] == '10.255.254.0/24'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['graceful-restart']['config']['enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['graceful-restart']['config']['restart-time'] == 121"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['graceful-restart']['config']['stale-routes-time'] == 250"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['route-selection-options']['config']['always-compare-med'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['route-selection-options']['config']['external-compare-router-id'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['global']['use-multiple-paths']['config']['enabled'] == false"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][2]['config']['enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][2]['config']['neighbor-address'] == '10.11.11.5'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][2]['config']['peer-as'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][2]['afi-safis']['afi-safi'][0]['config']['afi-safi-name'] == 'openconfig-bgp-types:L3VPN_IPV4_UNICAST'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][2]['afi-safis']['afi-safi'][0]['config']['enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['peer-group-name'] == 'afi-l3vpn-peers'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['afi-safis']['afi-safi'][0]['config']['afi-safi-name'] == 'openconfig-bgp-types:L3VPN_IPV4_UNICAST'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['afi-safis']['afi-safi'][0]['config']['enabled'] == false"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['afi-safis']['afi-safi'][0]['apply-policy']['config']['import-policy'][0] == 'test'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['table-connections']['table-connection'][0]['config']['address-family'] == 'openconfig-types:IPV4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['table-connections']['table-connection'][0]['config']['dst-protocol'] == 'openconfig-policy-types:BGP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['table-connections']['table-connection'][0]['config']['src-protocol'] == 'openconfig-policy-types:DIRECTLY_CONNECTED'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['table-connections']['table-connection'][0]['config']['import-policy'][0] == 'test'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['table-connections']['table-connection'][1]['config']['openconfig-network-instance-ext:src-protocol-process-number'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['table-connections']['table-connection'][1]['config']['src-protocol'] == 'openconfig-policy-types:OSPF'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['table-connections']['table-connection'][1]['config']['import-policy'][0] == 'test'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['table-connections']['table-connection'][2]['config']['src-protocol'] == 'openconfig-policy-types:STATIC'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['table-connections']['table-connection'][2]['config']['import-policy'][0] == 'test'"
+          # VRF
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['name'] == 'abc'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['type'] == 'openconfig-network-instance-types:L3VRF'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['config']['identifier'] == 'openconfig-policy-types:BGP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['config']['name'] == 'BGP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['global']['afi-safis']['afi-safi'][0]['afi-safi-name'] == 'openconfig-bgp-types:IPV4_UNICAST'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['global']['afi-safis']['afi-safi'][0]['config']['enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['global']['config']['as'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][1]['config']['enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][1]['config']['neighbor-address'] == '10.11.11.4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][1]['config']['peer-as'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][1]['config']['send-community'] == 'BOTH'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][1]['afi-safis']['afi-safi'][0]['config']['afi-safi-name'] == 'openconfig-bgp-types:IPV4_UNICAST'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][1]['afi-safis']['afi-safi'][0]['config']['enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][0]['config']['peer-group-name'] == 'bar'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][0]['config']['send-community'] == 'EXTENDED'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][0]['config']['peer-as'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][0]['route-reflector']['config']['route-reflector-cluster-id'] == '1.1.1.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][0]['afi-safis']['afi-safi'][0]['config']['afi-safi-name'] == 'openconfig-bgp-types:IPV4_UNICAST'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][0]['afi-safis']['afi-safi'][0]['config']['enabled'] == false"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['peer-group-name'] == 'foo'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['auth-password'] == 'super_secret'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['description'] == 'my_description'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['local-as'] == 100"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['send-community'] == 'STANDARD'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['as-path-options']['config']['replace-peer-as'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['afi-safis']['afi-safi'][0]['config']['afi-safi-name'] == 'openconfig-bgp-types:IPV4_UNICAST'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['afi-safis']['afi-safi'][0]['config']['enabled'] == false"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['table-connections']['table-connection'][0]['config']['address-family'] == 'openconfig-types:IPV4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['table-connections']['table-connection'][0]['config']['dst-protocol'] == 'openconfig-policy-types:BGP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['table-connections']['table-connection'][0]['config']['src-protocol'] == 'openconfig-policy-types:STATIC'"
+          

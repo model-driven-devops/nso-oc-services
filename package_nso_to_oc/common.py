@@ -4,6 +4,7 @@ import os
 import json
 import urllib3
 import re
+import ipaddress
 from pathlib import Path, os as path_os
 from typing import Tuple
 
@@ -168,3 +169,11 @@ def get_interface_number_split(interface_number: str) -> Tuple[int, int]:
     number_split = interface_number.split('.')
 
     return tuple(number_split) if len(number_split) > 1 else (number_split[0], 0)
+
+def is_valid_ip(ip_str):
+    try:
+        ipaddress.ip_address(ip_str)
+        
+        return True
+    except ValueError:
+        return False

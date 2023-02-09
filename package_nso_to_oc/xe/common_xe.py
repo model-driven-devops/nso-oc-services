@@ -6,6 +6,7 @@ when invoking the individual features.
 import sys
 import os
 import copy
+import json
 from pathlib import Path
 
 # To be able to import top-level common
@@ -19,9 +20,16 @@ INTF_LIST = "ip-route-interface-list"
 IP_INTF_FORWARDING_LIST = "ip-route-interface-forwarding-list"
 
 def init_xe_configs(device_name = "xe1"):
-    (nso_api_url, nso_username, nso_password) = common.get_nso_creds()
-    nso_device = os.environ.get("NSO_DEVICE", device_name)
-    config_before_dict = common.nso_get_device_config(nso_api_url, nso_username, nso_password, nso_device)
+    nso_ned_file = os.environ.get("NSO_NED_FILE", False)
+
+    if nso_ned_file:
+        with open(nso_ned_file, "r") as ned_file:
+            config_before_dict = json.load(ned_file)
+    else:
+        (nso_api_url, nso_username, nso_password) = common.get_nso_creds()
+        nso_device = os.environ.get("NSO_DEVICE", device_name)
+        config_before_dict = common.nso_get_device_config(nso_api_url, nso_username, nso_password, nso_device)
+
     config_leftover_dict = copy.deepcopy(config_before_dict)
     interface_ip_dict = common.xe_system_get_interface_ip_address(config_before_dict)
 
