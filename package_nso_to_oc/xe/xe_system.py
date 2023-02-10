@@ -404,12 +404,21 @@ def xe_system_ntp(config_before: dict, config_leftover: dict, if_ip: dict) -> No
         del config_leftover["tailf-ned-cisco-ios:ntp"]["logging"]
 
     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source"):
-        for i, n in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source").items():
-            source_interface = f"{i}{n}"
-            source_interface_ip = if_ip.get(source_interface)
-            openconfig_system_ntp["openconfig-system:config"][
-                "openconfig-system:ntp-source-address"] = source_interface_ip
-        del config_leftover["tailf-ned-cisco-ios:ntp"]["source"]
+        if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source", {}).get("Port-channel-subinterface"):
+            for i, n in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source").get(
+                    "Port-channel-subinterface").items():
+                source_interface = f"{i}{n}"
+                source_interface_ip = if_ip.get(source_interface)
+                openconfig_system_ntp["openconfig-system:config"][
+                    "openconfig-system:ntp-source-address"] = source_interface_ip
+                del config_leftover["tailf-ned-cisco-ios:ntp"]["source"]
+        else:
+            for i, n in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source").items():
+                source_interface = f"{i}{n}"
+                source_interface_ip = if_ip.get(source_interface)
+                openconfig_system_ntp["openconfig-system:config"][
+                    "openconfig-system:ntp-source-address"] = source_interface_ip
+            del config_leftover["tailf-ned-cisco-ios:ntp"]["source"]
 
     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key") and config_before.get(
             "tailf-ned-cisco-ios:ntp", {}).get("authentication-key"):
