@@ -242,7 +242,8 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-gratuitous-arps"] = False
     else:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-gratuitous-arps"] = True
-        del config_leftover["tailf-ned-cisco-ios:ip"]["gratuitous-arps-conf"]["gratuitous-arps"]
+        if config_leftover.get("tailf-ned-cisco-ios:ip", {}).get("gratuitous-arps-conf", {}).get("gratuitous-arps"):
+            del config_leftover["tailf-ned-cisco-ios:ip"]["gratuitous-arps-conf"]["gratuitous-arps"]
     # aaa server-groups
 
     # gather group and server configurations
