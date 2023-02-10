@@ -262,6 +262,15 @@
                     - null
                   http:
                     server: false
+                    secure-server: true
+                    max-connections: 4
+                    secure-ciphersuite:
+                      - "aes-128-cbc-sha"
+                      - "aes-256-cbc-sha"
+                    timeout-policy:
+                      idle: 240
+                      life: 240
+                      requests: 3
                   rcmd:
                     rcp-enable:
                       - null
@@ -320,6 +329,15 @@
                   conf:
                     pad: true
                   password-encryption: {}
+                  timestamps:
+                    debug:
+                      datetime:
+                        msec: ''
+                        localtime: ''
+                    log:
+                      datetime:
+                        msec: ''
+                        localtime: ''
         #   - name: NED AAA servers init
         #     tags:
         #       - aaa_servers_init

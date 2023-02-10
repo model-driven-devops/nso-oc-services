@@ -60,7 +60,9 @@ openconfig_system = {
         },
         "openconfig-system-ext:services": {
             "openconfig-system-ext:http": {
-                "openconfig-system-ext:config": {}
+                "openconfig-system-ext:config": {},
+                "openconfig-system-ext:ip-http-timeout-policy": {"openconfig-system-ext:idle": {
+                    "openconfig-system-ext:config": {}}}
             },
             "openconfig-system-ext:config": {},
             "openconfig-system-ext:login-security-policy": {
@@ -70,6 +72,10 @@ openconfig_system = {
             "openconfig-system-ext:boot-network": {
                 "openconfig-system-ext:config": {},
             }
+        },
+        "openconfig-system-ext:timestamps": {
+            "openconfig-system-ext:logging": {"openconfig-system-ext:config": {}},
+            "openconfig-system-ext:debugging": {"openconfig-system-ext:config": {}}
         }
     }
 }
@@ -146,6 +152,43 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
         del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["server"]
     else:
         openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:config"]["openconfig-system-ext:http-enabled"] = True
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["server"]
+    # IP http secure server
+    openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:config"][
+          "openconfig-system-ext:https-enabled"] = config_before.get("tailf-ned-cisco-ios:ip", {}).get(
+            "http", {}).get("secure-server", False)
+    del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["secure-server"]
+    # IP http max-connections
+    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("max-connections"):
+        openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:config"][
+            "openconfig-system-ext:ip-http-max-connections"] = config_before.get("tailf-ned-cisco-ios:ip", {}).get(
+                "http", {}).get("max-connections")
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["max-connections"]
+    # IP http ciphersuite
+    if len(config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("secure-ciphersuite", [])) > 0:
+        openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:config"][
+            "openconfig-system-ext:ip-http-secure-ciphersuite"] = config_before.get("tailf-ned-cisco-ios:ip", {}).get(
+                "http", {}).get("secure-ciphersuite")
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["secure-ciphersuite"]
+    # IP http timeout-policy - idle
+    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("timeout-policy", {}).get(
+        "idle"):
+        openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:ip-http-timeout-policy"]["openconfig-system-ext:idle"]["openconfig-system-ext:config"]["openconfig-system-ext:connection"] = config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("timeout-policy", {}).get("idle")
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["timeout-policy"]["idle"]
+    # IP http timeout-policy - life
+    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("timeout-policy", {}).get(
+        "life"):
+        openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:ip-http-timeout-policy"][
+            "openconfig-system-ext:idle"]["openconfig-system-ext:config"]["openconfig-system-ext:life"] = config_before.get(
+                "tailf-ned-cisco-ios:ip", {}).get("http", {}).get("timeout-policy", {}).get("life")
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["timeout-policy"]["life"]
+    # IP http timeout-policy - requests
+    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("timeout-policy", {}).get(
+        "requests"):
+        openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:ip-http-timeout-policy"][
+            "openconfig-system-ext:idle"]["openconfig-system-ext:config"]["openconfig-system-ext:requests"] = config_before.get(
+                "tailf-ned-cisco-ios:ip", {}).get("http", {}).get("timeout-policy", {}).get("requests")
+        del config_leftover["tailf-ned-cisco-ios:ip"]["http"]["timeout-policy"]["requests"]
     # IP RCMD rcp-enable
     if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("rcmd", {}).get("rcp-enable", '')) is list:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-rcmd-rcp-enable"] = True
@@ -203,7 +246,6 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
     # aaa server-groups
 
     # gather group and server configurations
-
 
 def xe_system_config(config_before: dict, config_leftover: dict) -> None:
     """
@@ -1182,6 +1224,52 @@ def xe_system_clock_timezone(config_before: dict, config_leftover: dict) -> None
 
     openconfig_system_clock_config["openconfig-system:timezone-name"] = ' '.join(timezone_name)
 
+def xe_system_timestamps(config_before: dict, config_leftover: dict) -> None:
+    """
+    Translates NSO XE NED to MDD OpenConfig System Timestamps
+    """
+    oc_system_timestamps = openconfig_system["openconfig-system:system"]["openconfig-system-ext:timestamps"]
+    timestamps = config_before.get("tailf-ned-cisco-ios:service", {}).get("timestamps")
+    debug = config_before.get("tailf-ned-cisco-ios:service", {}).get("timestamps", {}).get("debug")
+    log = config_before.get("tailf-ned-cisco-ios:service", {}).get("timestamps", {}).get("log")
+    
+    # TIMESTAMPS DEBUG
+    if debug:
+        temp_timestamps_debug = {"openconfig-system-ext:debugging": set_timestamps(debug, config_leftover, timestamps)}
+        oc_system_timestamps.update(temp_timestamps_debug)
+        if "debug" in timestamps and "datetime" in timestamps["debug"]:
+            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]["msec"]
+            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]["localtime"]
+        elif "debug" in timestamps and "uptime" in timestamps["debug"]:
+            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["uptime"]
+    # TIMESTAMPS LOG
+    if log:
+        temp_timestamps_log = {"openconfig-system-ext:logging": set_timestamps(log, config_leftover, timestamps)}
+        oc_system_timestamps.update(temp_timestamps_log)
+        if "log" in timestamps and "datetime" in timestamps["log"]:
+            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]["msec"]
+            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]["localtime"]
+        elif "log" in timestamps and "uptime" in timestamps["log"]:
+            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["uptime"]
+
+def set_timestamps(service, config_leftover, timestamps):
+    datetime = uptime = localtime = False # Initialize variables
+    if type(service.get("datetime", {}).get("msec", '')) is list:
+        datetime = True
+    if type(service.get("datetime", {}).get("localtime", '')) is list:
+        localtime = True
+    if type(service.get("uptime", '')) is list:
+        uptime = True
+
+    temp_timestamps = {"openconfig-system-ext:config": {
+                            "openconfig-system-ext:enabled": True,
+                            "openconfig-system-ext:datetime": datetime,
+                            "openconfig-system-ext:uptime": uptime,
+                            "openconfig-system-ext:localtime": localtime
+                        }}
+    
+    return temp_timestamps
+
 def xe_system_name_server(config_before: dict, config_leftover: dict) -> None:
     """
     Translates NSO XE NED to MDD OpenConfig System DNS
@@ -1281,6 +1369,7 @@ def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []
     # xe_system_aaa(before, leftover, if_ip)
     xe_system_logging(before, leftover, if_ip)
     xe_system_clock_timezone(before, leftover)
+    xe_system_timestamps(before, leftover)
     xe_system_name_server(before, leftover)
     translation_notes += system_notes
 
