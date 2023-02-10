@@ -1258,7 +1258,7 @@ def xe_system_timestamps(config_before: dict, config_leftover: dict) -> None:
 
 def set_timestamps(service, config_leftover, timestamps):
     datetime = uptime = localtime = False # Initialize variables
-    if type(service.get("datetime", {}).get("msec", '')) is list:
+    if type(service.get("datetime", "")) is dict:
         datetime = True
     if type(service.get("datetime", {}).get("localtime", '')) is list:
         localtime = True
