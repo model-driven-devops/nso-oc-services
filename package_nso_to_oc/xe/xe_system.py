@@ -1238,8 +1238,10 @@ def xe_system_timestamps(config_before: dict, config_leftover: dict) -> None:
         temp_timestamps_debug = {"openconfig-system-ext:debugging": set_timestamps(debug, config_leftover, timestamps)}
         oc_system_timestamps.update(temp_timestamps_debug)
         if "debug" in timestamps and "datetime" in timestamps["debug"]:
-            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]["msec"]
-            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]["localtime"]
+            if "msec" in timestamps["debug"]["datetime"]:
+                del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]["msec"]
+            if "localtime" in timestamps["debug"]["datetime"]:
+                del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]["localtime"]
         elif "debug" in timestamps and "uptime" in timestamps["debug"]:
             del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["uptime"]
     # TIMESTAMPS LOG
@@ -1247,8 +1249,10 @@ def xe_system_timestamps(config_before: dict, config_leftover: dict) -> None:
         temp_timestamps_log = {"openconfig-system-ext:logging": set_timestamps(log, config_leftover, timestamps)}
         oc_system_timestamps.update(temp_timestamps_log)
         if "log" in timestamps and "datetime" in timestamps["log"]:
-            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]["msec"]
-            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]["localtime"]
+            if "msec" in timestamps["log"]["datetime"]:
+                del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]["msec"]
+            if "localtime" in timestamps["log"]["datetime"]:
+                del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]["localtime"]
         elif "log" in timestamps and "uptime" in timestamps["log"]:
             del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["uptime"]
 
