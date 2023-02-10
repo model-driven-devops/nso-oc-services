@@ -242,7 +242,8 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-gratuitous-arps"] = False
     else:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-gratuitous-arps"] = True
-        del config_leftover["tailf-ned-cisco-ios:ip"]["gratuitous-arps-conf"]["gratuitous-arps"]
+        if config_leftover.get("tailf-ned-cisco-ios:ip", {}).get("gratuitous-arps-conf", {}).get("gratuitous-arps"):
+            del config_leftover["tailf-ned-cisco-ios:ip"]["gratuitous-arps-conf"]["gratuitous-arps"]
     # aaa server-groups
 
     # gather group and server configurations
@@ -403,12 +404,21 @@ def xe_system_ntp(config_before: dict, config_leftover: dict, if_ip: dict) -> No
         del config_leftover["tailf-ned-cisco-ios:ntp"]["logging"]
 
     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source"):
-        for i, n in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source").items():
-            source_interface = f"{i}{n}"
-            source_interface_ip = if_ip.get(source_interface)
-            openconfig_system_ntp["openconfig-system:config"][
-                "openconfig-system:ntp-source-address"] = source_interface_ip
-        del config_leftover["tailf-ned-cisco-ios:ntp"]["source"]
+        if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source", {}).get("Port-channel-subinterface"):
+            for i, n in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source").get(
+                    "Port-channel-subinterface").items():
+                source_interface = f"{i}{n}"
+                source_interface_ip = if_ip.get(source_interface)
+                openconfig_system_ntp["openconfig-system:config"][
+                    "openconfig-system:ntp-source-address"] = source_interface_ip
+                del config_leftover["tailf-ned-cisco-ios:ntp"]["source"]
+        else:
+            for i, n in config_before.get("tailf-ned-cisco-ios:ntp", {}).get("source").items():
+                source_interface = f"{i}{n}"
+                source_interface_ip = if_ip.get(source_interface)
+                openconfig_system_ntp["openconfig-system:config"][
+                    "openconfig-system:ntp-source-address"] = source_interface_ip
+            del config_leftover["tailf-ned-cisco-ios:ntp"]["source"]
 
     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("trusted-key") and config_before.get(
             "tailf-ned-cisco-ios:ntp", {}).get("authentication-key"):
@@ -1238,8 +1248,10 @@ def xe_system_timestamps(config_before: dict, config_leftover: dict) -> None:
         temp_timestamps_debug = {"openconfig-system-ext:debugging": set_timestamps(debug, config_leftover, timestamps)}
         oc_system_timestamps.update(temp_timestamps_debug)
         if "debug" in timestamps and "datetime" in timestamps["debug"]:
-            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]["msec"]
-            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]["localtime"]
+            if "msec" in timestamps["debug"]["datetime"]:
+                del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]["msec"]
+            if "localtime" in timestamps["debug"]["datetime"]:
+                del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]["localtime"]
         elif "debug" in timestamps and "uptime" in timestamps["debug"]:
             del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["uptime"]
     # TIMESTAMPS LOG
@@ -1247,14 +1259,16 @@ def xe_system_timestamps(config_before: dict, config_leftover: dict) -> None:
         temp_timestamps_log = {"openconfig-system-ext:logging": set_timestamps(log, config_leftover, timestamps)}
         oc_system_timestamps.update(temp_timestamps_log)
         if "log" in timestamps and "datetime" in timestamps["log"]:
-            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]["msec"]
-            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]["localtime"]
+            if "msec" in timestamps["log"]["datetime"]:
+                del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]["msec"]
+            if "localtime" in timestamps["log"]["datetime"]:
+                del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]["localtime"]
         elif "log" in timestamps and "uptime" in timestamps["log"]:
             del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["uptime"]
 
 def set_timestamps(service, config_leftover, timestamps):
     datetime = uptime = localtime = False # Initialize variables
-    if type(service.get("datetime", {}).get("msec", '')) is list:
+    if type(service.get("datetime", "")) is dict:
         datetime = True
     if type(service.get("datetime", {}).get("localtime", '')) is list:
         localtime = True
