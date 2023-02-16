@@ -175,6 +175,20 @@ jobs:
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+      - name: NSO Re-sync configuration from the devices
+        run: ansible-playbook ciscops.mdd.nso_sync_from
+        env:
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          CML_HOST: ${{ secrets.CML_HOST }}
+          CML_LAB: ${{ github.ref_name }}_XE
+          CML_USERNAME: ${{ secrets.CML_USERNAME }}
+          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
+          CML_VERIFY_CERT: "false"
+          NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
+          NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
+          NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
+          NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
+          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
   test-oc-xe:
     runs-on: self-hosted
     if: github.event.review.state == 'approved'
