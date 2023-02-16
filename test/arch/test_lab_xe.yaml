@@ -27,7 +27,7 @@ links:
     n2: n1
     i1: i1
     i2: i3
-    label: iosvl2-0-GigabitEthernet0/0<->unmanaged-switch-0-port3
+    label: Cat9Kv-0-GigabitEthernet0/0<->unmanaged-switch-0-port3
 nodes:
   - boot_disk_size: 0
     configuration: bridge0
@@ -214,71 +214,127 @@ nodes:
     configuration: |-
       hostname xeswitch1
       !
-      event manager applet CLIlog
-      event cli pattern .* sync no skip no
-      action 1.0 syslog priority informational msg $_cli_msg
-      action 2.0 set _exit_status 1
-      !
       vrf definition management
-       !
-       address-family ipv4
-       exit-address-family
+      !
+      address-family ipv4
+      exit-address-family
       !
       ip domain name rtp.cisco.com
       !
       crypto key generate rsa modulus 2048
       !
+      enable secret 0 Xcisco1234
       username admin privilege 15 secret 0 admin
       !
       interface GigabitEthernet0/0
-       no switchport
-       vrf forwarding management
-       ip address dhcp
-       no shutdown
+      no switchport
+      vrf forwarding management
+      ip address dhcp
+      no shutdown
       !
-      interface GigabitEthernet0/1
-       no switchport
+      interface GigabitEthernet1/0/1
+      no switchport
       !
-      interface GigabitEthernet0/2
-       no switchport
+      interface GigabitEthernet1/0/2
+      no switchport
       !
-      interface GigabitEthernet0/3
-       no switchport
+      interface GigabitEthernet1/0/3
+      no switchport
       !
-      interface GigabitEthernet1/0
-       no switchport
+      interface GigabitEthernet1/0/4
+      no switchport
       !
-      interface GigabitEthernet1/1
-       no switchport
+      interface GigabitEthernet1/0/5
+      no switchport
       !
-      interface GigabitEthernet1/2
-       no switchport
+      interface GigabitEthernet1/0/6
+      no switchport
       !
-      interface GigabitEthernet1/3
-       no switchport
+      interface GigabitEthernet1/0/7
+      no switchport
+      !
+      interface GigabitEthernet1/0/8
+      no switchport
+      !
+      interface GigabitEthernet1/0/9
+      no switchport
+      !
+      interface GigabitEthernet1/0/10
+      no switchport
+      !
+      interface GigabitEthernet1/0/11
+      no switchport
+      !
+      interface GigabitEthernet1/0/12
+      no switchport
+      !
+      interface GigabitEthernet1/0/13
+      no switchport
+      !
+      interface GigabitEthernet1/0/14
+      no switchport
+      !
+      interface GigabitEthernet1/0/15
+      no switchport
+      !
+      interface GigabitEthernet1/0/16
+      no switchport
+      !
+      interface GigabitEthernet1/0/17
+      no switchport
+      !
+      interface GigabitEthernet1/0/18
+      no switchport
+      !
+      interface GigabitEthernet1/0/18
+      no switchport
+      !
+      interface GigabitEthernet1/0/20
+      no switchport
+      !
+      interface GigabitEthernet1/0/21
+      no switchport
+      !
+      interface GigabitEthernet1/0/22
+      no switchport
+      !
+      interface GigabitEthernet1/0/23
+      no switchport
+      !
+      interface GigabitEthernet1/0/24
+      no switchport
       !
       no ip http server
       no ip http secure-server
       ip ssh time-out 60
       ip ssh authentication-retries 2
+      ip ssh version 2
+      ip ssh server algorithm mac hmac-sha1 hmac-sha2-256 hmac-sha2-512
+      ip ssh server algorithm kex diffie-hellman-group14-sha1
       !
       line con 0
       line aux 0
       line vty 0 4
-       login local
-       transport input ssh
-       exec-timeout 0 0
-       exit
+      login local
+      transport input ssh
+      exec-timeout 0 0
+      exit
       netconf ssh
+      !
+      ip routing
+      license boot level network-advantage addon dna-advantage
+      license boot level network-advantage
+      !
       end
     cpu_limit: 100
-    cpus: 1
+    cpus: 4
     data_volume: 0
     hide_links: false
     id: n4
     label: xeswitch1
-    node_definition: iosvl2
-    ram: 768
+    image_definition: Cat9k
+    node_definition: Cat9000v
+    ram: 18432
     tags:
       - switch
     x: 700
@@ -292,30 +348,98 @@ nodes:
         slot: 0
         type: physical
       - id: i2
-        label: GigabitEthernet0/1
+        label: GigabitEthernet1/0/1
         slot: 1
         type: physical
       - id: i3
-        label: GigabitEthernet0/2
+        label: GigabitEthernet1/0/2
         slot: 2
         type: physical
       - id: i4
-        label: GigabitEthernet0/3
+        label: GigabitEthernet1/0/3
         slot: 3
         type: physical
       - id: i5
-        label: GigabitEthernet1/0
+        label: GigabitEthernet1/0/4
         slot: 4
         type: physical
       - id: i6
-        label: GigabitEthernet1/1
+        label: GigabitEthernet1/0/5
         slot: 5
         type: physical
       - id: i7
-        label: GigabitEthernet1/2
+        label: GigabitEthernet1/0/6
         slot: 6
         type: physical
       - id: i8
-        label: GigabitEthernet1/3
+        label: GigabitEthernet1/0/7
         slot: 7
+        type: physical
+      - id: i9
+        label: GigabitEthernet1/0/8
+        slot: 8
+        type: physical
+      - id: i10
+        label: GigabitEthernet1/0/9
+        slot: 9
+        type: physical
+      - id: i11
+        label: GigabitEthernet1/0/10
+        slot: 10
+        type: physical
+      - id: i12
+        label: GigabitEthernet1/0/11
+        slot: 11
+        type: physical
+      - id: i13
+        label: GigabitEthernet1/0/12
+        slot: 12
+        type: physical
+      - id: i14
+        label: GigabitEthernet1/0/13
+        slot: 13
+        type: physical
+      - id: i15
+        label: GigabitEthernet1/0/14
+        slot: 14
+        type: physical
+      - id: i16
+        label: GigabitEthernet1/0/15
+        slot: 15
+        type: physical
+      - id: i17
+        label: GigabitEthernet1/0/16
+        slot: 16
+        type: physical
+      - id: i18
+        label: GigabitEthernet1/0/17
+        slot: 17
+        type: physical
+      - id: i19
+        label: GigabitEthernet1/0/18
+        slot: 18
+        type: physical
+      - id: i20
+        label: GigabitEthernet1/0/19
+        slot: 19
+        type: physical
+      - id: i21
+        label: GigabitEthernet1/0/20
+        slot: 20
+        type: physical
+      - id: i22
+        label: GigabitEthernet1/0/21
+        slot: 21
+        type: physical
+      - id: i23
+        label: GigabitEthernet1/0/22
+        slot: 22
+        type: physical
+      - id: i24
+        label: GigabitEthernet1/0/23
+        slot: 23
+        type: physical
+      - id: i25
+        label: GigabitEthernet1/0/24
+        slot: 24
         type: physical

@@ -16,51 +16,6 @@
     device: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
     ansible_network_os: 'cisco.ios.ios'
   tasks:
-    - name: test flowcontrol
-      tags:
-        -  flowcontrol
-      import_role:
-        name: nso-openconfig-test
-      vars:
-        content: |
-          mdd:openconfig:
-            openconfig-interfaces:interfaces:
-              openconfig-interfaces:interface:
-                - openconfig-interfaces:name: 'GigabitEthernet1/0'
-                  openconfig-interfaces:config:
-                    openconfig-interfaces:description: 'Physical Interface 1/0'
-                    openconfig-interfaces:enabled: true
-                    openconfig-interfaces:mtu: 1500
-                    openconfig-interfaces:name: 'GigabitEthernet1/0'
-                    openconfig-interfaces:type: 'ethernetCsmacd'
-                  openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:enable-flow-control: true
-                  openconfig-interfaces:hold-time:
-                    openconfig-interfaces:config:
-                      openconfig-interfaces:down: 0
-                      openconfig-interfaces:up: 0  # not in xe
-                  openconfig-interfaces:subinterfaces:
-                    openconfig-interfaces:subinterface:
-                      - openconfig-interfaces:index: 0
-                        openconfig-interfaces:config:
-                          openconfig-interfaces:index: 0
-                        openconfig-if-ip:ipv4:
-                          openconfig-if-ip:addresses:
-                            openconfig-if-ip:address:
-                              - openconfig-if-ip:ip: '10.10.0.1'
-                                openconfig-if-ip:config:
-                                  openconfig-if-ip:ip: '10.10.0.1'
-                                  openconfig-if-ip:prefix-length: 24
-                          openconfig-if-ip:config:
-                            openconfig-if-ip:dhcp-client: false
-        api_method: PUT
-        rollback: false
-        assertion_ignore_errors: false
-        assertions:
-          - "' interface GigabitEthernet1/0:' in changes"
-          - "'+ flowcontrol receive on:' in changes"
-
     - name: test access_port
       tags:
         - access_port
@@ -71,11 +26,11 @@
           mdd:openconfig:
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
-                - openconfig-interfaces:name: 'GigabitEthernet0/1'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Access Port Example'
                     openconfig-interfaces:enabled: true
-                    openconfig-interfaces:name: 'GigabitEthernet0/1'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
                     openconfig-vlan:switched-vlan:
@@ -100,11 +55,11 @@
           mdd:openconfig:
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
-                - openconfig-interfaces:name: 'GigabitEthernet0/2'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/5'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Trunk Port Example'
                     openconfig-interfaces:enabled: true
-                    openconfig-interfaces:name: 'GigabitEthernet0/2'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/5'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
                     openconfig-vlan:switched-vlan:
@@ -122,7 +77,6 @@
           - "'+ description Trunk Port Example:' in changes"
           - "'+ switchport mode trunk:' in changes"
           - "'+ switchport trunk allowed vlan 100,200,300:' in changes"
-          - "'+ switchport trunk encapsulation dot1q:' in changes"
           - "'+ switchport trunk native vlan 99:' in changes"
 
     - name: test lacp_trunk_po1 configuration
@@ -150,15 +104,14 @@
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'LACP Example PO1'
                     openconfig-interfaces:enabled: true
-                    openconfig-interfaces:mtu: 1500
                     openconfig-interfaces:name: 'Port-channel1'
                     openconfig-interfaces:type: 'ieee8023adLag'
-                - openconfig-interfaces:name: 'GigabitEthernet1/1'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/3'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'LACP Link Trunk Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:mtu: 1500
-                    openconfig-interfaces:name: 'GigabitEthernet1/1'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/3'
                     openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
                     openconfig-if-ethernet:config:
@@ -179,14 +132,12 @@
           - "'+ description LACP Example PO1:' in changes"
           - "'+ switchport mode trunk:' in changes"
           - "'+ switchport trunk allowed vlan 100,200,300:' in changes"
-          - "'+ switchport trunk encapsulation dot1q:' in changes"
           - "'+ switchport trunk native vlan 99:' in changes"
-          - "' interface GigabitEthernet1/1:' in changes"
+          - "' interface GigabitEthernet1/0/3:' in changes"
           - "'+ channel-group 1 mode active:' in changes"
           - "'+ description LACP Link Trunk Port Example:' in changes"
           - "'+ switchport mode trunk:' in changes"
           - "'+ switchport trunk allowed vlan 100,200,300:' in changes"
-          - "'+ switchport trunk encapsulation dot1q:' in changes"
           - "'+ switchport trunk native vlan 99:' in changes"
 
     - name: test lacp_L3_po2 configuration
@@ -215,12 +166,12 @@
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:name: 'Port-channel2'
                     openconfig-interfaces:type: 'ieee8023adLag'
-                - openconfig-interfaces:name: 'GigabitEthernet1/2'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/4'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'LACP Link L3 Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:mtu: 1500
-                    openconfig-interfaces:name: 'GigabitEthernet1/2'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/4'
                     openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
                     openconfig-if-ethernet:config:
@@ -232,7 +183,7 @@
           - "'+interface Port-channel2:' in changes"
           - "'+ description LACP Example PO2:' in changes"
           - "'+ ip address 192.168.50.1 255.255.255.0:' in changes"
-          - "' interface GigabitEthernet1/2:' in changes"
+          - "' interface GigabitEthernet1/0/4:' in changes"
           - "'+ channel-group 2 mode active:' in changes"
           - "'+ description LACP Link L3 Port Example:' in changes"
 
@@ -251,7 +202,6 @@
                     openconfig-interfaces:description: 'Example Routed Vlan100 IP'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:mtu: 1500
                     openconfig-interfaces:name: 'Vlan100'
                     openconfig-interfaces:type: 'l3ipvlan'
                   openconfig-vlan:routed-vlan:

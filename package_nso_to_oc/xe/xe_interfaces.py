@@ -199,12 +199,10 @@ def configure_switched_vlan(nso_before_interface: dict, nso_leftover_interface: 
             nso_before_interface["switchport"].get("access", {}).get("vlan")
         del nso_leftover_interface["switchport"]["access"]
     # Mode TRUNK
-    elif (type(nso_before_interface["switchport"].get("mode", {}).get("trunk")) is dict) and (
-            nso_before_interface["switchport"].get("trunk", {}).get("encapsulation") == "dot1q"):
+    elif (type(nso_before_interface["switchport"].get("mode", {}).get("trunk")) is dict):
         openconfig_interface["openconfig-vlan:switched-vlan"][
             "openconfig-vlan:config"]["openconfig-vlan:interface-mode"] = "TRUNK"
         del nso_leftover_interface["switchport"]["mode"]
-        del nso_leftover_interface["switchport"]["trunk"]["encapsulation"]
         if nso_before_interface["switchport"].get("trunk").get("native", {}).get("vlan"):
             openconfig_interface["openconfig-vlan:switched-vlan"][
                 "openconfig-vlan:config"]["openconfig-vlan:native-vlan"] = \

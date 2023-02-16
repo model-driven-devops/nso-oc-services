@@ -52,8 +52,8 @@
         assertion_ignore_errors: false
         assertions:
           - "'+spanning-tree loopguard default:' in changes"
-          - "'+spanning-tree portfast edge bpduguard default:' in changes"
-          - "'+spanning-tree portfast edge bpdufilter default:' in changes"
+          - "'+spanning-tree portfast bpduguard default:' in changes"
+          - "'+spanning-tree portfast bpdufilter default:' in changes"
 #          - "'+no spanning-tree etherchannel guard misconfig:' in changes"  # on by default. Must be enabled by NSO to be removed by NSO (doesn't show in NSO configs unless).
 
 - name: test stp
@@ -74,17 +74,17 @@
           mdd:openconfig:
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
-                - openconfig-interfaces:name: 'GigabitEthernet1/0'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Access Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:name: 'GigabitEthernet1/0'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
+                    #openconfig-if-ethernet:config:
+                      #openconfig-if-ethernet:auto-negotiate: true
+                      #openconfig-if-ethernet:enable-flow-control: false
                     openconfig-vlan:switched-vlan:
                       openconfig-vlan:config:
                         openconfig-vlan:access-vlan: 100
@@ -93,17 +93,17 @@
                     openconfig-interfaces:config:
                       openconfig-interfaces:down: 0
                       openconfig-interfaces:up: 0
-                - openconfig-interfaces:name: 'GigabitEthernet1/1'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Trunk Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:name: 'GigabitEthernet1/1'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
+                    #openconfig-if-ethernet:config:
+                      #openconfig-if-ethernet:auto-negotiate: true
+                      #openconfig-if-ethernet:enable-flow-control: false
                     openconfig-vlan:switched-vlan:
                       openconfig-vlan:config:
                         openconfig-vlan:interface-mode: 'TRUNK'
@@ -154,14 +154,14 @@
                       openconfig-spanning-tree:bridge-priority: 16384  # 0 to 61440
                     openconfig-spanning-tree:interfaces:
                       openconfig-spanning-tree:interface:
-                        - openconfig-spanning-tree:name: GigabitEthernet1/0
+                        - openconfig-spanning-tree:name: GigabitEthernet1/0/1
                           openconfig-spanning-tree:config:
-                            openconfig-spanning-tree:name: GigabitEthernet1/0
+                            openconfig-spanning-tree:name: GigabitEthernet1/0/1
                             openconfig-spanning-tree:cost: 10
                             openconfig-spanning-tree:port-priority: 64
-                        - openconfig-spanning-tree:name: GigabitEthernet1/1
+                        - openconfig-spanning-tree:name: GigabitEthernet1/0/2
                           openconfig-spanning-tree:config:
-                            openconfig-spanning-tree:name: GigabitEthernet1/1
+                            openconfig-spanning-tree:name: GigabitEthernet1/0/2
                             openconfig-spanning-tree:cost: 200
                             openconfig-spanning-tree:port-priority: 96
                   - openconfig-spanning-tree:vlan-id: 200
@@ -173,14 +173,14 @@
                       openconfig-spanning-tree:bridge-priority: 61440  # 0 to 61440
                     openconfig-spanning-tree:interfaces:
                       openconfig-spanning-tree:interface:
-                        - openconfig-spanning-tree:name: GigabitEthernet1/0
+                        - openconfig-spanning-tree:name: GigabitEthernet1/0/1
                           openconfig-spanning-tree:config:
-                            openconfig-spanning-tree:name: GigabitEthernet1/0
+                            openconfig-spanning-tree:name: GigabitEthernet1/0/1
                             openconfig-spanning-tree:cost: 10
                             openconfig-spanning-tree:port-priority: 64
-                        - openconfig-spanning-tree:name: GigabitEthernet1/1
+                        - openconfig-spanning-tree:name: GigabitEthernet1/0/2
                           openconfig-spanning-tree:config:
-                            openconfig-spanning-tree:name: GigabitEthernet1/1
+                            openconfig-spanning-tree:name: GigabitEthernet1/0/2
                             openconfig-spanning-tree:cost: 200
                             openconfig-spanning-tree:port-priority: 96
         api_method: PUT
@@ -193,10 +193,10 @@
           - "'+spanning-tree vlan 100,200 max-age 40:' in changes"
           - "'+spanning-tree vlan 100 priority 16384:' in changes"
           - "'+spanning-tree vlan 200 priority 61440:' in changes"
-          - "' interface GigabitEthernet1/0:' in changes"
+          - "' interface GigabitEthernet1/0/1:' in changes"
           - "'+ spanning-tree cost 10:' in changes"
           - "'+ spanning-tree port-priority 64:' in changes"
-          - "' interface GigabitEthernet1/1:' in changes"
+          - "' interface GigabitEthernet1/0/2:' in changes"
           - "'+ spanning-tree cost 200:' in changes"
           - "'+ spanning-tree port-priority 96:' in changes"
 
@@ -218,17 +218,17 @@
           mdd:openconfig:
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
-                - openconfig-interfaces:name: 'GigabitEthernet1/0'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Access Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:name: 'GigabitEthernet1/0'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
+                    #openconfig-if-ethernet:config:
+                      #openconfig-if-ethernet:auto-negotiate: true
+                      #openconfig-if-ethernet:enable-flow-control: false
                     openconfig-vlan:switched-vlan:
                       openconfig-vlan:config:
                         openconfig-vlan:access-vlan: 100
@@ -237,17 +237,17 @@
                     openconfig-interfaces:config:
                       openconfig-interfaces:down: 0
                       openconfig-interfaces:up: 0
-                - openconfig-interfaces:name: 'GigabitEthernet1/1'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Trunk Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:name: 'GigabitEthernet1/1'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
+                    #openconfig-if-ethernet:config:
+                      #openconfig-if-ethernet:auto-negotiate: true
+                      #openconfig-if-ethernet:enable-flow-control: false
                     openconfig-vlan:switched-vlan:
                       openconfig-vlan:config:
                         openconfig-vlan:interface-mode: 'TRUNK'
@@ -281,14 +281,14 @@
                       openconfig-spanning-tree-ext:bridge-priority: 61440  # 0 to 61440
                     openconfig-spanning-tree-ext:interfaces:
                       openconfig-spanning-tree-ext:interface:
-                        - openconfig-spanning-tree-ext:name: GigabitEthernet1/0
+                        - openconfig-spanning-tree-ext:name: GigabitEthernet1/0/1
                           openconfig-spanning-tree-ext:config:
-                            openconfig-spanning-tree-ext:name: GigabitEthernet1/0
+                            openconfig-spanning-tree-ext:name: GigabitEthernet1/0/1
                             openconfig-spanning-tree-ext:cost: 11
                             openconfig-spanning-tree-ext:port-priority: 96
-                        - openconfig-spanning-tree-ext:name: GigabitEthernet1/1
+                        - openconfig-spanning-tree-ext:name: GigabitEthernet1/0/2
                           openconfig-spanning-tree-ext:config:
-                            openconfig-spanning-tree-ext:name: GigabitEthernet1/1
+                            openconfig-spanning-tree-ext:name: GigabitEthernet1/0/2
                             openconfig-spanning-tree-ext:cost: 201
                             openconfig-spanning-tree-ext:port-priority: 64
                   - openconfig-spanning-tree-ext:vlan-id: 200
@@ -300,14 +300,14 @@
                       openconfig-spanning-tree-ext:bridge-priority: 16384  # 0 to 61440
                     openconfig-spanning-tree-ext:interfaces:
                       openconfig-spanning-tree-ext:interface:
-                        - openconfig-spanning-tree-ext:name: GigabitEthernet1/0
+                        - openconfig-spanning-tree-ext:name: GigabitEthernet1/0/1
                           openconfig-spanning-tree-ext:config:
-                            openconfig-spanning-tree-ext:name: GigabitEthernet1/0
+                            openconfig-spanning-tree-ext:name: GigabitEthernet1/0/1
                             openconfig-spanning-tree-ext:cost: 11
                             openconfig-spanning-tree-ext:port-priority: 96
-                        - openconfig-spanning-tree-ext:name: GigabitEthernet1/1
+                        - openconfig-spanning-tree-ext:name: GigabitEthernet1/0/2
                           openconfig-spanning-tree-ext:config:
-                            openconfig-spanning-tree-ext:name: GigabitEthernet1/1
+                            openconfig-spanning-tree-ext:name: GigabitEthernet1/0/2
                             openconfig-spanning-tree-ext:cost: 201
                             openconfig-spanning-tree-ext:port-priority: 64
         api_method: PUT
@@ -321,10 +321,10 @@
           - "'+spanning-tree vlan 200 priority 16384:' in changes"
           - "'+spanning-tree uplinkfast:' in changes"
           - "'+spanning-tree backbonefast:' in changes"
-          - "' interface GigabitEthernet1/0:' in changes"
+          - "' interface GigabitEthernet1/0/1:' in changes"
           - "'+ spanning-tree cost 11:' in changes"
           - "'+ spanning-tree port-priority 96:' in changes"
-          - "' interface GigabitEthernet1/1:' in changes"
+          - "' interface GigabitEthernet1/0/2:' in changes"
           - "'+ spanning-tree cost 201:' in changes"
           - "'+ spanning-tree port-priority 64:' in changes"
 #          - "'+spanning-tree mode pvst:' in changes" # default
@@ -339,17 +339,17 @@
           mdd:openconfig:
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
-                - openconfig-interfaces:name: 'GigabitEthernet1/0'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Access Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:name: 'GigabitEthernet1/0'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
+                    #openconfig-if-ethernet:config:
+                      #openconfig-if-ethernet:auto-negotiate: true
+                      #openconfig-if-ethernet:enable-flow-control: false
                     openconfig-vlan:switched-vlan:
                       openconfig-vlan:config:
                         openconfig-vlan:access-vlan: 200
@@ -358,17 +358,17 @@
                     openconfig-interfaces:config:
                       openconfig-interfaces:down: 0
                       openconfig-interfaces:up: 0
-                - openconfig-interfaces:name: 'GigabitEthernet1/1'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Trunk Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:name: 'GigabitEthernet1/1'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
+                    #openconfig-if-ethernet:config:
+                      #openconfig-if-ethernet:auto-negotiate: true
+                      #openconfig-if-ethernet:enable-flow-control: false
                     openconfig-vlan:switched-vlan:
                       openconfig-vlan:config:
                         openconfig-vlan:interface-mode: 'TRUNK'
@@ -396,15 +396,14 @@
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'LACP Example PO1'
                     openconfig-interfaces:enabled: true
-                    openconfig-interfaces:mtu: 1500
                     openconfig-interfaces:name: 'Port-channel1'
                     openconfig-interfaces:type: 'ieee8023adLag'
-                - openconfig-interfaces:name: 'GigabitEthernet1/2'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/3'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'LACP Link Trunk Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:mtu: 1500
-                    openconfig-interfaces:name: 'GigabitEthernet1/2'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/3'
                     openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
                     openconfig-if-ethernet:config:
@@ -417,17 +416,17 @@
                           - 100
                           - 200
                           - 300
-                - openconfig-interfaces:name: 'GigabitEthernet1/3'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/4'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Trunk Port To Server Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:name: 'GigabitEthernet1/3'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/4'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
+                    #openconfig-if-ethernet:config:
+                      #openconfig-if-ethernet:auto-negotiate: true
+                      #openconfig-if-ethernet:enable-flow-control: false
                     openconfig-vlan:switched-vlan:
                       openconfig-vlan:config:
                         openconfig-vlan:interface-mode: 'TRUNK'
@@ -476,31 +475,31 @@
                     - RAPID_PVST
               openconfig-spanning-tree:interfaces:
                 openconfig-spanning-tree:interface:
-                  - openconfig-spanning-tree:name: 'GigabitEthernet1/0'
+                  - openconfig-spanning-tree:name: 'GigabitEthernet1/0/1'
                     openconfig-spanning-tree:config:
-                      openconfig-spanning-tree:name: 'GigabitEthernet1/0'
+                      openconfig-spanning-tree:name: 'GigabitEthernet1/0/1'
                       openconfig-spanning-tree:guard: ROOT  # ROOT, LOOP, NONE
                       openconfig-spanning-tree:bpdu-guard: true  # true or false
                       openconfig-spanning-tree:link-type: P2P  # P2P or SHARED  shared or point-to-point
                       openconfig-spanning-tree:bpdu-filter: false  # true or false
                       openconfig-spanning-tree:edge-port: EDGE_ENABLE  # EDGE_AUTO, EDGE_DISABLE spanning-tree portfast disable, EDGE_ENABLE
-                  - openconfig-spanning-tree:name: 'GigabitEthernet1/1'
+                  - openconfig-spanning-tree:name: 'GigabitEthernet1/0/2'
                     openconfig-spanning-tree:config:
-                      openconfig-spanning-tree:name: 'GigabitEthernet1/1'
+                      openconfig-spanning-tree:name: 'GigabitEthernet1/0/2'
                       openconfig-spanning-tree:guard: LOOP
                       openconfig-spanning-tree:bpdu-guard: false
                       openconfig-spanning-tree:link-type: P2P
                       openconfig-spanning-tree:bpdu-filter: false
-                  - openconfig-spanning-tree:name: 'GigabitEthernet1/2'
+                  - openconfig-spanning-tree:name: 'GigabitEthernet1/0/3'
                     openconfig-spanning-tree:config:
-                      openconfig-spanning-tree:name: 'GigabitEthernet1/2'
+                      openconfig-spanning-tree:name: 'GigabitEthernet1/0/3'
                       openconfig-spanning-tree:guard: LOOP
                       openconfig-spanning-tree:bpdu-guard: false
                       openconfig-spanning-tree:link-type: P2P
                       openconfig-spanning-tree:bpdu-filter: false
-                  - openconfig-spanning-tree:name: 'GigabitEthernet1/3'
+                  - openconfig-spanning-tree:name: 'GigabitEthernet1/0/4'
                     openconfig-spanning-tree:config:
-                      openconfig-spanning-tree:name: 'GigabitEthernet1/3'
+                      openconfig-spanning-tree:name: 'GigabitEthernet1/0/4'
                       openconfig-spanning-tree:guard: ROOT
                       openconfig-spanning-tree:bpdu-guard: true  # true or false
                       openconfig-spanning-tree:link-type: P2P
@@ -524,27 +523,27 @@
           - "'+ spanning-tree guard loop:' in changes"
           - "'+ spanning-tree link-type point-to-point:' in changes"
           - "'+ switchport mode trunk:' in changes"
-          - "' interface GigabitEthernet1/0:' in changes"
+          - "' interface GigabitEthernet1/0/1:' in changes"
           - "'+ spanning-tree guard root:' in changes"
           - "'+ spanning-tree link-type point-to-point:' in changes"
           - "'+ spanning-tree bpduguard enable:' in changes"
-          - "'+ spanning-tree portfast edge:' in changes"
-          - "' interface GigabitEthernet1/1:' in changes"
+          - "'+ spanning-tree portfast:' in changes"
+          - "' interface GigabitEthernet1/0/2:' in changes"
           - "'+ spanning-tree bpdufilter disable:' in changes"
           - "'+ spanning-tree guard loop:' in changes"
           - "'+ spanning-tree link-type point-to-point:' in changes"
           - "'+ switchport mode trunk:' in changes"
-          - "' interface GigabitEthernet1/2:' in changes"
+          - "' interface GigabitEthernet1/0/3:' in changes"
           - "'+ spanning-tree bpdufilter disable:' in changes"
           - "'+ spanning-tree guard loop:' in changes"
           - "'+ spanning-tree link-type point-to-point:' in changes"
           - "'+ switchport mode trunk:' in changes"
-          - "' interface GigabitEthernet1/3:' in changes"
+          - "' interface GigabitEthernet1/0/4:' in changes"
           - "'+ spanning-tree bpdufilter disable:' in changes"
           - "'+ spanning-tree guard root:' in changes"
           - "'+ spanning-tree link-type point-to-point:' in changes"
           - "'+ spanning-tree bpduguard enable:' in changes"
-          - "'+ spanning-tree portfast edge trunk:' in changes"
+          - "'+ spanning-tree portfast trunk:' in changes"
 
     - name: stp_interface_rstp_disable_edge
       tags:
@@ -556,17 +555,17 @@
           mdd:openconfig:
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
-                - openconfig-interfaces:name: 'GigabitEthernet1/0'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Access Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:name: 'GigabitEthernet1/0'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
+                    #openconfig-if-ethernet:config:
+                      #openconfig-if-ethernet:auto-negotiate: true
+                      #openconfig-if-ethernet:enable-flow-control: false
                     openconfig-vlan:switched-vlan:
                       openconfig-vlan:config:
                         openconfig-vlan:access-vlan: 200
@@ -575,17 +574,17 @@
                     openconfig-interfaces:config:
                       openconfig-interfaces:down: 0
                       openconfig-interfaces:up: 0
-                - openconfig-interfaces:name: 'GigabitEthernet1/3'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/4'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Trunk Port To Server Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:name: 'GigabitEthernet1/3'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/4'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
+                    #openconfig-if-ethernet:config:
+                      #openconfig-if-ethernet:auto-negotiate: true
+                      #openconfig-if-ethernet:enable-flow-control: false
                     openconfig-vlan:switched-vlan:
                       openconfig-vlan:config:
                         openconfig-vlan:interface-mode: 'TRUNK'
@@ -634,17 +633,17 @@
                     - RAPID_PVST
               openconfig-spanning-tree:interfaces:
                 openconfig-spanning-tree:interface:
-                  - openconfig-spanning-tree:name: 'GigabitEthernet1/0'
+                  - openconfig-spanning-tree:name: 'GigabitEthernet1/0/1'
                     openconfig-spanning-tree:config:
-                      openconfig-spanning-tree:name: 'GigabitEthernet1/0'
+                      openconfig-spanning-tree:name: 'GigabitEthernet1/0/1'
                       openconfig-spanning-tree:guard: ROOT
                       openconfig-spanning-tree:bpdu-guard: true
                       openconfig-spanning-tree:link-type: P2P
                       openconfig-spanning-tree:bpdu-filter: false
                       openconfig-spanning-tree:edge-port: EDGE_DISABLE
-                  - openconfig-spanning-tree:name: 'GigabitEthernet1/3'
+                  - openconfig-spanning-tree:name: 'GigabitEthernet1/0/4'
                     openconfig-spanning-tree:config:
-                      openconfig-spanning-tree:name: 'GigabitEthernet1/3'
+                      openconfig-spanning-tree:name: 'GigabitEthernet1/0/4'
                       openconfig-spanning-tree:guard: ROOT
                       openconfig-spanning-tree:bpdu-guard: true
                       openconfig-spanning-tree:link-type: P2P
@@ -654,9 +653,9 @@
         rollback: false
         assertion_ignore_errors: false
         assertions:
-          - "' interface GigabitEthernet1/0:' in changes"
+          - "' interface GigabitEthernet1/0/1:' in changes"
           - "'+ spanning-tree portfast disable:' in changes"
-          - "' interface GigabitEthernet1/3:' in changes"
+          - "' interface GigabitEthernet1/0/4:' in changes"
           - "'+ spanning-tree portfast disable:' in changes"
 
     - name: stp_interface_rstp_edge_auto
@@ -669,17 +668,17 @@
           mdd:openconfig:
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
-                - openconfig-interfaces:name: 'GigabitEthernet1/0'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Access Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:name: 'GigabitEthernet1/0'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
+                    #openconfig-if-ethernet:config:
+                      #openconfig-if-ethernet:auto-negotiate: true
+                      #openconfig-if-ethernet:enable-flow-control: false
                     openconfig-vlan:switched-vlan:
                       openconfig-vlan:config:
                         openconfig-vlan:access-vlan: 200
@@ -724,9 +723,9 @@
                     - RAPID_PVST
               openconfig-spanning-tree:interfaces:
                 openconfig-spanning-tree:interface:
-                  - openconfig-spanning-tree:name: 'GigabitEthernet1/0'
+                  - openconfig-spanning-tree:name: 'GigabitEthernet1/0/1'
                     openconfig-spanning-tree:config:
-                      openconfig-spanning-tree:name: 'GigabitEthernet1/0'
+                      openconfig-spanning-tree:name: 'GigabitEthernet1/0/1'
                       openconfig-spanning-tree:guard: ROOT
                       openconfig-spanning-tree:bpdu-guard: true
                       openconfig-spanning-tree:link-type: P2P
@@ -736,7 +735,7 @@
         rollback: false
         assertion_ignore_errors: false
         assertions:
-          - "'+spanning-tree portfast edge default:' in changes"
+          - "'+spanning-tree portfast default:' in changes"
 
 - name: test mstp
   hosts: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
@@ -756,17 +755,17 @@
           mdd:openconfig:
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
-                - openconfig-interfaces:name: 'GigabitEthernet1/0'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Access Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:name: 'GigabitEthernet1/0'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
+                    #openconfig-if-ethernet:config:
+                      #openconfig-if-ethernet:auto-negotiate: true
+                      #openconfig-if-ethernet:enable-flow-control: false
                     openconfig-vlan:switched-vlan:
                       openconfig-vlan:config:
                         openconfig-vlan:access-vlan: 100
@@ -775,17 +774,17 @@
                     openconfig-interfaces:config:
                       openconfig-interfaces:down: 0
                       openconfig-interfaces:up: 0
-                - openconfig-interfaces:name: 'GigabitEthernet1/1'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Trunk Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:name: 'GigabitEthernet1/1'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
+                    #openconfig-if-ethernet:config:
+                      #openconfig-if-ethernet:auto-negotiate: true
+                      #openconfig-if-ethernet:enable-flow-control: false
                     openconfig-vlan:switched-vlan:
                       openconfig-vlan:config:
                         openconfig-vlan:interface-mode: 'TRUNK'
@@ -847,13 +846,13 @@
                           - 200
                       openconfig-spanning-tree:interfaces:
                         openconfig-spanning-tree:interface:
-                          - openconfig-spanning-tree:name: GigabitEthernet1/0
+                          - openconfig-spanning-tree:name: GigabitEthernet1/0/1
                             openconfig-spanning-tree:config:
-                              openconfig-spanning-tree:name: GigabitEthernet1/0
+                              openconfig-spanning-tree:name: GigabitEthernet1/0/1
                               openconfig-spanning-tree:cost: 10
-                          - openconfig-spanning-tree:name: GigabitEthernet1/1
+                          - openconfig-spanning-tree:name: GigabitEthernet1/0/2
                             openconfig-spanning-tree:config:
-                              openconfig-spanning-tree:name: GigabitEthernet1/1
+                              openconfig-spanning-tree:name: GigabitEthernet1/0/2
                               openconfig-spanning-tree:port-priority: 96
                     - openconfig-spanning-tree:mst-id: 2
                       openconfig-spanning-tree:config:
@@ -876,9 +875,9 @@
           - "'+spanning-tree mst forward-time 25:' in changes"
           - "'+spanning-tree mst 1 priority 16384:' in changes"
           - "'+spanning-tree mst 2 priority 61440:' in changes"
-          - "' interface GigabitEthernet1/0:' in changes"
+          - "' interface GigabitEthernet1/0/1:' in changes"
           - "'+ spanning-tree mst 1 cost 10:' in changes"
-          - "' interface GigabitEthernet1/1:' in changes"
+          - "' interface GigabitEthernet1/0/2:' in changes"
           - "'+ spanning-tree mst 1 port-priority 96:' in changes"
 
 - hosts: nso

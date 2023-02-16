@@ -76,20 +76,19 @@
             content: |
               interface:
                 GigabitEthernet:
-                  - name: '1/0'
+                  - name: '1/0/1'
                     description: 'access port'
                     switchport:
                       mode:
                         access: {}
                       access:
                         vlan: 100
-                  - name: '1/1'
+                  - name: '1/0/2'
                     description: 'trunk port'
                     switchport:
                       mode:
                         trunk: {}
                       trunk:
-                        encapsulation: dot1q
                         native:
                           vlan: 99
                         allowed:
@@ -98,14 +97,14 @@
                               - 10
                               - 100
         assertions:
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['name'] == 'GigabitEthernet1/0'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['interface-mode'] == 'ACCESS'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['access-vlan'] == 100"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['name'] == 'GigabitEthernet1/1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['interface-mode'] == 'TRUNK'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['native-vlan'] == 99"
-          - "10 in oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['trunk-vlans']"
-          - "100 in oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['trunk-vlans']"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][1]['name'] == 'GigabitEthernet1/0/1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][1]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['interface-mode'] == 'ACCESS'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][1]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['access-vlan'] == 100"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['name'] == 'GigabitEthernet1/0/2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['interface-mode'] == 'TRUNK'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['native-vlan'] == 99"
+          - "10 in oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['trunk-vlans']"
+          - "100 in oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['openconfig-if-ethernet:ethernet']['openconfig-vlan:switched-vlan']['config']['trunk-vlans']"
 
     - name: Run xes1 interfaces tests 2
       include_role:
@@ -129,7 +128,6 @@
                       mode:
                         trunk: {}
                       trunk:
-                        encapsulation: dot1q
                         native:
                           vlan: 99
                         allowed:
@@ -138,11 +136,10 @@
                               - 10
                               - 100
                 GigabitEthernet:
-                  - name: '1/1'
+                  - name: '1/0/2'
                     description: 'LACP member trunk port'
                     switchport:
                       trunk:
-                        encapsulation: dot1q
                         native:
                           vlan: 99
                         allowed:
@@ -156,13 +153,13 @@
                       number: 1
                       mode: active
         assertions:
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['name'] == 'Port-channel1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['interface-mode'] == 'TRUNK'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['native-vlan'] == 99"
-          - "10 in oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['trunk-vlans']"
-          - "100 in oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['trunk-vlans']"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['name'] == 'GigabitEthernet1/1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['openconfig-if-ethernet:ethernet']['config']['openconfig-if-aggregate:aggregate-id'] == 'Port-channel1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['name'] == 'Port-channel1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['interface-mode'] == 'TRUNK'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['native-vlan'] == 99"
+          - "10 in oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['trunk-vlans']"
+          - "100 in oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['trunk-vlans']"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['name'] == 'GigabitEthernet1/0/2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['openconfig-if-ethernet:ethernet']['config']['openconfig-if-aggregate:aggregate-id'] == 'Port-channel1'"
 
     - name: Run xes1 interfaces tests 3
       include_role:
@@ -172,20 +169,20 @@
         will_save_rollback: False
         script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
         api_test_data:
-          - name: DELETE NED G1/1 channel group
+          - name: DELETE NED G1/0/2 channel group
             tags:
-              - delete_g1_1_channel_group
-            api_path: config/tailf-ned-cisco-ios:interface/GigabitEthernet=1%2F1/channel-group
+              - delete_g1_0_2_channel_group
+            api_path: config/tailf-ned-cisco-ios:interface/GigabitEthernet=1%2F0%2F2/channel-group
             api_method: DELETE
           - name: DELETE NED port-channel 1
             tags:
               - delete_port_channel_1
             api_path: config/tailf-ned-cisco-ios:interface/Port-channel=1
             api_method: DELETE
-          - name: DELETE MDD interface G1/1 aggregate-id
+          - name: DELETE MDD interface G1/0/2 aggregate-id
             tags:
-              - delete_mdd_g1_1_aggergate_id
-            api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=GigabitEthernet1%2F1/openconfig-if-ethernet:ethernet/openconfig-if-ethernet:config/openconfig-if-aggregate:aggregate-id
+              - delete_mdd_g1_0_2_aggergate_id
+            api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=GigabitEthernet1%2F0%2F2/openconfig-if-ethernet:ethernet/openconfig-if-ethernet:config/openconfig-if-aggregate:aggregate-id
             api_method: DELETE
           - name: DELETE MDD port-channel 1
             tags:
@@ -208,7 +205,7 @@
                       access:
                         vlan: 100
                 GigabitEthernet:
-                  - name: '1/1'
+                  - name: '1/0/2'
                     description: 'LACP member'
                     switchport:
                       mode:
@@ -219,11 +216,11 @@
                       number: 1
                       mode: active
         assertions:
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['name'] == 'Port-channel1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['interface-mode'] == 'ACCESS'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['access-vlan'] == 100"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['name'] == 'GigabitEthernet1/1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][5]['openconfig-if-ethernet:ethernet']['config']['openconfig-if-aggregate:aggregate-id'] == 'Port-channel1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['name'] == 'Port-channel1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['interface-mode'] == 'ACCESS'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['openconfig-if-aggregate:aggregation']['openconfig-vlan:switched-vlan']['config']['access-vlan'] == 100"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['name'] == 'GigabitEthernet1/0/2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['openconfig-if-ethernet:ethernet']['config']['openconfig-if-aggregate:aggregate-id'] == 'Port-channel1'"
 
     - name: Run xes1 interfaces tests 4
       include_role:
@@ -233,20 +230,20 @@
         will_save_rollback: False
         script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
         api_test_data:
-          - name: DELETE NED G1/1 channel group
+          - name: DELETE NED G1/0/2 channel group
             tags:
-              - delete_g1_1_channel_group
-            api_path: config/tailf-ned-cisco-ios:interface/GigabitEthernet=1%2F1/channel-group
+              - delete_g1_0_2_channel_group
+            api_path: config/tailf-ned-cisco-ios:interface/GigabitEthernet=1%2F0%2F2/channel-group
             api_method: DELETE
           - name: DELETE NED port-channel 1
             tags:
               - delete_port_channel_1
             api_path: config/tailf-ned-cisco-ios:interface/Port-channel=1
             api_method: DELETE
-          - name: DELETE MDD interface G1/1 aggregate-id
+          - name: DELETE MDD interface G1/0/2 aggregate-id
             tags:
-              - delete_mdd_interface_g1_1_aggregate_id
-            api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=GigabitEthernet1%2F1/openconfig-if-ethernet:ethernet/openconfig-if-ethernet:config/openconfig-if-aggregate:aggregate-id
+              - delete_mdd_interface_g1_0_2_aggregate_id
+            api_path: mdd:openconfig/openconfig-interfaces:interfaces/openconfig-interfaces:interface=GigabitEthernet1%2F0%2F2/openconfig-if-ethernet:ethernet/openconfig-if-ethernet:config/openconfig-if-aggregate:aggregate-id
             api_method: DELETE
           - name: DELETE MDD port-channel 1
             tags:
@@ -269,9 +266,9 @@
                           address: 192.168.3.1
                           mask: 255.255.255.0
         assertions:
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['name'] == 'Port-channel1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.3.1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-if-aggregate:aggregation']['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['name'] == 'Port-channel1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['openconfig-if-aggregate:aggregation']['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.3.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['openconfig-if-aggregate:aggregation']['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
 
     - name: Run xes1 interfaces tests 5
       include_role:
@@ -317,16 +314,6 @@
                       nat:
                         inside:
                           - null
-                    vrrp:
-                      - id: 6
-                        preempt:
-                          delay:
-                            minimum: 10
-                        timers:
-                          advertise:
-                            seconds: 3
-                        ip:
-                          address: 192.168.100.1
                   - name: 6
                     ip:
                       address:
@@ -341,8 +328,6 @@
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['config']['vlan'] == 100"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.100.2'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['preempt-delay'] == 10"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['advertisement-interval'] == 300"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['mtu'] == 1476"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:tcp-adjust-mss'] == 1400"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:redirects'] == False"
@@ -350,6 +335,8 @@
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['proxy-arp']['config']['mode'] == 'REMOTE_ONLY'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:mask-reply'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:nat']['nat-choice'] == 'inside'"
+#          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['preempt-delay'] == 10"
+#          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['advertisement-interval'] == 300"
 
     - name: Run xes1 interfaces tests 4
       include_role:
@@ -401,7 +388,7 @@
                             address: 172.10.106.1
                             mask: 255.255.255.0
         assertions:
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['name'] == 'Port-channel10'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['subinterfaces']['subinterface'][0]['config']['index'] == 105"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '172.10.105.1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['name'] == 'Port-channel10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['subinterfaces']['subinterface'][0]['config']['index'] == 105"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '172.10.105.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][25]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"

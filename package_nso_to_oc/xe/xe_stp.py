@@ -100,6 +100,11 @@ def xe_spanning_tree_global(config_before: dict, config_leftover: dict) -> None:
         openconfig_spanning_tree["openconfig-spanning-tree:stp"]["openconfig-spanning-tree:global"][
             "openconfig-spanning-tree:config"]["openconfig-spanning-tree:bpdu-guard"] = True
         del config_leftover["tailf-ned-cisco-ios:spanning-tree"]["portfast"]["edge"]["bpduguard"]
+    elif type(config_before.get("tailf-ned-cisco-ios:spanning-tree", {}).get("portfast", {}).get(
+            "bpduguard", {}).get("default", "")) is list:
+        openconfig_spanning_tree["openconfig-spanning-tree:stp"]["openconfig-spanning-tree:global"][
+            "openconfig-spanning-tree:config"]["openconfig-spanning-tree:bpdu-guard"] = True
+        del config_leftover["tailf-ned-cisco-ios:spanning-tree"]["portfast"]["bpduguard"]
     else:
         openconfig_spanning_tree["openconfig-spanning-tree:stp"]["openconfig-spanning-tree:global"][
             "openconfig-spanning-tree:config"]["openconfig-spanning-tree:bpdu-guard"] = False
@@ -109,6 +114,11 @@ def xe_spanning_tree_global(config_before: dict, config_leftover: dict) -> None:
         openconfig_spanning_tree["openconfig-spanning-tree:stp"]["openconfig-spanning-tree:global"][
             "openconfig-spanning-tree:config"]["openconfig-spanning-tree:bpdu-filter"] = True
         del config_leftover["tailf-ned-cisco-ios:spanning-tree"]["portfast"]["edge"]["bpdufilter"]
+    elif type(config_before.get("tailf-ned-cisco-ios:spanning-tree", {}).get("portfast", {}).get(
+            "bpdufilter", {}).get("default", "")) is list:
+        openconfig_spanning_tree["openconfig-spanning-tree:stp"]["openconfig-spanning-tree:global"][
+            "openconfig-spanning-tree:config"]["openconfig-spanning-tree:bpdu-filter"] = True
+        del config_leftover["tailf-ned-cisco-ios:spanning-tree"]["portfast"]["bpdufilter"]
     else:
         openconfig_spanning_tree["openconfig-spanning-tree:stp"]["openconfig-spanning-tree:global"][
             "openconfig-spanning-tree:config"]["openconfig-spanning-tree:bpdu-filter"] = False
