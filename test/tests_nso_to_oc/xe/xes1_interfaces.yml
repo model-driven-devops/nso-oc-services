@@ -324,19 +324,19 @@
                         inside:
                           - null
         assertions:
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['name'] == 'Vlan100'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['config']['vlan'] == 100"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.100.2'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['mtu'] == 1476"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:tcp-adjust-mss'] == 1400"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:redirects'] == False"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:unreachables'] == False"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['proxy-arp']['config']['mode'] == 'REMOTE_ONLY'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:mask-reply'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:nat']['nat-choice'] == 'inside'"
-#          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['preempt-delay'] == 10"
-#          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][8]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['advertisement-interval'] == 300"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][26]['name'] == 'Vlan100'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][26]['openconfig-vlan:routed-vlan']['config']['vlan'] == 100"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][26]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '192.168.100.2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][26]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][26]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['mtu'] == 1476"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][26]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:tcp-adjust-mss'] == 1400"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][26]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:redirects'] == False"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][26]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:unreachables'] == False"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][26]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['proxy-arp']['config']['mode'] == 'REMOTE_ONLY'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][26]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:mask-reply'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][26]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:nat']['nat-choice'] == 'inside'"
+#          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][26]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['preempt-delay'] == 10"
+#          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][26]['openconfig-vlan:routed-vlan']['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['advertisement-interval'] == 300"
 
     - name: Run xes1 interfaces tests 4
       include_role:
