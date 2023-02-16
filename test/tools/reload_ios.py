@@ -17,7 +17,7 @@ def reload(ip, username, password):
             time.sleep(1)
             ssh.recv(65535)
             time.sleep(1)
-            ssh.send('\n')
+            ssh.send('yes\n')
             time.sleep(1)
             ssh.recv(65535)
             time.sleep(1)
