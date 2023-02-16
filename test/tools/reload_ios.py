@@ -14,10 +14,7 @@ def check_device_response(ip, username, password, max_retries=120, delay=5):
         except paramiko.AuthenticationException as e:
             print(f"Authentication failed: {e}")
             break
-        except paramiko.SSHException as e:
-            print(f"Unable to establish SSH connection: {e}")
-            time.sleep(delay)
-        except TimeoutError as e:
+        except Exception as e:
             print(f"Unable to establish SSH connection: {e}")
             time.sleep(delay)
     return False
