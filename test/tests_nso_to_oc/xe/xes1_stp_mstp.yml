@@ -18,12 +18,12 @@
             interface:
               - config:
                   cost: 10
-                  name: GigabitEthernet1/0
-                name: GigabitEthernet1/0
+                  name: GigabitEthernet1/0/1
+                name: GigabitEthernet1/0/1
               - config:
-                  name: GigabitEthernet1/1
+                  name: GigabitEthernet1/0/2
                   port-priority: 16
-                name: GigabitEthernet1/1
+                name: GigabitEthernet1/0/2
           mst-id: 1
         instance_2:
           mst-id: 2
@@ -35,9 +35,9 @@
               - 400
           interfaces:
             interface:
-              - name: GigabitEthernet1/1
+              - name: GigabitEthernet1/0/2
                 config:
-                  name: GigabitEthernet1/1
+                  name: GigabitEthernet1/0/2
                   port-priority: 96
     - name: Run STP MSTP xes1 set up VLANs
       include_role:
@@ -55,17 +55,14 @@
               mdd:openconfig:
                 openconfig-interfaces:interfaces:
                   openconfig-interfaces:interface:
-                    - openconfig-interfaces:name: 'GigabitEthernet1/0'
+                    - openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                       openconfig-interfaces:config:
                         openconfig-interfaces:description: 'Access Port Example'
                         openconfig-interfaces:enabled: true
                         openconfig-interfaces:loopback-mode: false
-                        openconfig-interfaces:name: 'GigabitEthernet1/0'
+                        openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                         openconfig-interfaces:type: 'l2vlan'
                       openconfig-if-ethernet:ethernet:
-                        openconfig-if-ethernet:config:
-                          openconfig-if-ethernet:auto-negotiate: true
-                          openconfig-if-ethernet:enable-flow-control: false
                         openconfig-vlan:switched-vlan:
                           openconfig-vlan:config:
                             openconfig-vlan:access-vlan: 100
@@ -74,17 +71,14 @@
                         openconfig-interfaces:config:
                           openconfig-interfaces:down: 0
                           openconfig-interfaces:up: 0
-                    - openconfig-interfaces:name: 'GigabitEthernet1/1'
+                    - openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                       openconfig-interfaces:config:
                         openconfig-interfaces:description: 'Trunk Port Example'
                         openconfig-interfaces:enabled: true
                         openconfig-interfaces:loopback-mode: false
-                        openconfig-interfaces:name: 'GigabitEthernet1/1'
+                        openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                         openconfig-interfaces:type: 'l2vlan'
                       openconfig-if-ethernet:ethernet:
-                        openconfig-if-ethernet:config:
-                          openconfig-if-ethernet:auto-negotiate: true
-                          openconfig-if-ethernet:enable-flow-control: false
                         openconfig-vlan:switched-vlan:
                           openconfig-vlan:config:
                             openconfig-vlan:interface-mode: 'TRUNK'
@@ -193,7 +187,7 @@
             content: |
               interface:
                 GigabitEthernet:
-                  - name: '1/0'
+                  - name: '1/0/1'
                     description: 'access port'
                     switchport:
                       mode:
@@ -205,13 +199,12 @@
                         instance-range:
                           - id: 1
                             cost: 10
-                  - name: '1/1'
+                  - name: '1/0/2'
                     description: 'trunk port'
                     switchport:
                       mode:
                         trunk: {}
                       trunk:
-                        encapsulation: dot1q
                         native:
                           vlan: 99
                         allowed:

@@ -17,17 +17,14 @@
           mdd:openconfig:
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
-                - openconfig-interfaces:name: 'GigabitEthernet0/2'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Access Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:name: 'GigabitEthernet0/2'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
                     openconfig-vlan:switched-vlan:
                       openconfig-vlan:config:
                         openconfig-vlan:access-vlan: 100
@@ -36,17 +33,14 @@
                     openconfig-interfaces:config:
                       openconfig-interfaces:down: 0
                       openconfig-interfaces:up: 0
-                - openconfig-interfaces:name: 'GigabitEthernet0/3'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/3'
                   openconfig-interfaces:config:
                     openconfig-interfaces:description: 'Access Port Example'
                     openconfig-interfaces:enabled: true
                     openconfig-interfaces:loopback-mode: false
-                    openconfig-interfaces:name: 'GigabitEthernet0/3'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/3'
                     openconfig-interfaces:type: 'l2vlan'
                   openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet:config:
-                      openconfig-if-ethernet:auto-negotiate: true
-                      openconfig-if-ethernet:enable-flow-control: false
                     openconfig-vlan:switched-vlan:
                       openconfig-vlan:config:
                         openconfig-vlan:access-vlan: 200

@@ -1,16 +1,36 @@
 # -*- mode: python; python-indent: 4 -*-
-
 import ncs
 from translation.common import get_interface_type_and_number
+
+
+def find_portfast_version(self):
+    """
+    return old if not using portfast edge configs
+    return new if using portfast edge. Assume new
+    """
+    ios_switch = getattr(self.root.devices.device[self.device_name].config, "ios__switch", None)
+    if ios_switch:
+        provision_list = ios_switch.list
+        if provision_list and provision_list["1"]["provision"] == "c9kv-uadp-8p":
+            return "old"
+    for interface_type in self.root.devices.device[self.device_name].config.ios__interface:
+        if "Ethernet" in interface_type:
+            for interface in self.root.devices.device[self.device_name].config.ios__interface[interface_type]:
+                if interface.spanning_tree.portfast.edge.exists():
+                    return "new"
+                elif interface.spanning_tree.portfast.exists():
+                    return "old"
+    return "new"
 
 
 def xe_stp_program_service(self) -> None:
     """
     Program service for xe NED features.
     """
-    xe_stp_global(self)
+    portfast_version = find_portfast_version(self)
+    xe_stp_global(self, portfast_version)
     if len(self.service.oc_stp__stp.interfaces.interface) > 0:
-        xe_stp_interfaces(self)
+        xe_stp_interfaces(self, portfast_version)
     stp_version_handler[self.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.as_list()[0]]["handler"](self)
 
 
@@ -185,7 +205,7 @@ stp_version_handler = {
     }
 
 
-def xe_stp_global(self) -> None:
+def xe_stp_global(self, portfast_ver) -> None:
     """
     STP global configuration
     """
@@ -216,16 +236,23 @@ def xe_stp_global(self) -> None:
     elif self.service.oc_stp__stp.oc_stp__global.config.etherchannel_misconfig_guard is False and device_cdb.etherchannel.guard.misconfig.exists():
         device_cdb.etherchannel.guard.misconfig.delete()
     # BPDU guard
-    if self.service.oc_stp__stp.oc_stp__global.config.bpdu_guard:
+    if self.service.oc_stp__stp.oc_stp__global.config.bpdu_guard and portfast_ver == "new":
         device_cdb.portfast.edge.bpduguard.default.create()
-    elif self.service.oc_stp__stp.oc_stp__global.config.bpdu_guard is False and device_cdb.portfast.edge.bpduguard.default.exists():
+    elif self.service.oc_stp__stp.oc_stp__global.config.bpdu_guard is False and device_cdb.portfast.edge.bpduguard.default.exists() and portfast_ver == "new":
         device_cdb.portfast.edge.bpduguard.default.delete()
+    elif self.service.oc_stp__stp.oc_stp__global.config.bpdu_guard and portfast_ver == "old":
+        device_cdb.portfast.bpduguard.default.create()
+    elif self.service.oc_stp__stp.oc_stp__global.config.bpdu_guard is False and device_cdb.portfast.bpduguard.default.exists() and portfast_ver == "old":
+        device_cdb.portfast.bpduguard.default.delete()
     # BPDU filter
-    if self.service.oc_stp__stp.oc_stp__global.config.bpdu_filter:
+    if self.service.oc_stp__stp.oc_stp__global.config.bpdu_filter and portfast_ver == "new":
         device_cdb.portfast.edge.bpdufilter.default.create()
-    elif self.service.oc_stp__stp.oc_stp__global.config.bpdu_filter is False and device_cdb.portfast.edge.bpdufilter.default.exists():
+    elif self.service.oc_stp__stp.oc_stp__global.config.bpdu_filter is False and device_cdb.portfast.edge.bpdufilter.default.exists() and portfast_ver == "new":
         device_cdb.portfast.edge.bpdufilter.default.delete()
-
+    elif self.service.oc_stp__stp.oc_stp__global.config.bpdu_filter and portfast_ver == "old":
+        device_cdb.portfast.bpdufilter.default.create()
+    elif self.service.oc_stp__stp.oc_stp__global.config.bpdu_filter is False and device_cdb.portfast.bpdufilter.default.exists() and portfast_ver == "old":
+        device_cdb.portfast.bpdufilter.default.delete()
 
 def get_l2vlan_interfaces(self) -> dict:
     """
@@ -245,7 +272,7 @@ def get_l2vlan_interfaces(self) -> dict:
     return service_l2vlan_interfaces
 
 
-def xe_stp_interfaces(self) -> None:
+def xe_stp_interfaces(self, portfast_ver) -> None:
     """
     STP interface configuration
     """
@@ -309,5 +336,7 @@ def xe_stp_interfaces(self) -> None:
                 physical_interface_cdb.spanning_tree.portfast.delete()
 
     # ENABLE STP Portfast default is using STP EDGE_AUTO interface configurations
-    if stp_edge_auto_flag:
+    if stp_edge_auto_flag and portfast_ver == "new":
         self.root.devices.device[self.device_name].config.ios__spanning_tree.portfast.edge.default.create()
+    if stp_edge_auto_flag and portfast_ver == "old":
+        self.root.devices.device[self.device_name].config.ios__spanning_tree.portfast.default.create()

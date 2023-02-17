@@ -17,9 +17,9 @@
             bridge-priority: 61440
           interfaces:
             interface:
-              - name: GigabitEthernet1/0
+              - name: GigabitEthernet1/0/1
                 config:
-                  name: GigabitEthernet1/0
+                  name: GigabitEthernet1/0/1
                   cost: 10
                   port-priority: 64
 
@@ -39,22 +39,22 @@
               mdd:openconfig:
                 openconfig-interfaces:interfaces:
                   openconfig-interfaces:interface:
-                    - openconfig-interfaces:name: 'GigabitEthernet1/0'
+                    - openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                       openconfig-interfaces:config:
                         openconfig-interfaces:description: 'Access Port Example'
                         openconfig-interfaces:enabled: true
-                        openconfig-interfaces:name: 'GigabitEthernet1/0'
+                        openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                         openconfig-interfaces:type: 'l2vlan'
                       openconfig-if-ethernet:ethernet:
                         openconfig-vlan:switched-vlan:
                           openconfig-vlan:config:
                             openconfig-vlan:access-vlan: 100
                             openconfig-vlan:interface-mode: 'ACCESS'
-                    - openconfig-interfaces:name: 'GigabitEthernet1/1'
+                    - openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                       openconfig-interfaces:config:
                         openconfig-interfaces:description: 'Trunk Port Example'
                         openconfig-interfaces:enabled: true
-                        openconfig-interfaces:name: 'GigabitEthernet1/1'
+                        openconfig-interfaces:name: 'GigabitEthernet1/0/2'
                         openconfig-interfaces:type: 'l2vlan'
                       openconfig-if-ethernet:ethernet:
                         openconfig-vlan:switched-vlan:
@@ -119,7 +119,7 @@
             content: |
               interface:
                 GigabitEthernet:
-                  - name: '1/0'
+                  - name: '1/0/1'
                     description: 'access port'
                     switchport:
                       mode:
@@ -129,13 +129,12 @@
                     spanning-tree:
                       cost: 10
                       port-priority: 64
-                  - name: '1/1'
+                  - name: '1/0/2'
                     description: 'trunk port'
                     switchport:
                       mode:
                         trunk: {}
                       trunk:
-                        encapsulation: dot1q
                         native:
                           vlan: 99
                         allowed:
@@ -166,13 +165,12 @@
                     misconfig:
                       - null
                 portfast:
-                  edge:
-                    bpduguard:
-                      default:
-                        - null
-                    bpdufilter:
-                      default:
-                        - null
+                  bpduguard:
+                    default:
+                      - null
+                  bpdufilter:
+                    default:
+                      - null
         assertions:
           - "'openconfig-spanning-tree-types:RAPID_PVST' in oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['global']['config']['enabled-protocol']"
           - "vlan_100 in oc_result.json['mdd:openconfig']['openconfig-spanning-tree:stp']['rapid-pvst']['vlan']"
