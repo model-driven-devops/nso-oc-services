@@ -199,34 +199,34 @@ def configure_switched_vlan(nso_before_interface: dict, nso_leftover_interface: 
             nso_before_interface["switchport"].get("access", {}).get("vlan")
         del nso_leftover_interface["switchport"]["access"]
     # Mode TRUNK
-    elif (type(nso_before_interface["switchport"].get("mode", {}).get("trunk")) is dict):
+    elif (type(nso_before_interface["switchport"].get("mode", {}).get("trunk", "")) is dict):
         openconfig_interface["openconfig-vlan:switched-vlan"][
             "openconfig-vlan:config"]["openconfig-vlan:interface-mode"] = "TRUNK"
         del nso_leftover_interface["switchport"]["mode"]
-        if nso_before_interface["switchport"].get("trunk").get("native", {}).get("vlan"):
+        if nso_before_interface["switchport"].get("trunk", {}).get("native", {}).get("vlan"):
             openconfig_interface["openconfig-vlan:switched-vlan"][
                 "openconfig-vlan:config"]["openconfig-vlan:native-vlan"] = \
                 nso_before_interface["switchport"]["trunk"].get("native", {}).get("vlan")
             del nso_leftover_interface["switchport"]["trunk"]["native"]
-        if nso_before_interface["switchport"].get("trunk").get("allowed", {}).get("vlan", {}).get("vlans"):
+        if nso_before_interface["switchport"].get("trunk", {}).get("allowed", {}).get("vlan", {}).get("vlans"):
             openconfig_interface["openconfig-vlan:switched-vlan"][
                 "openconfig-vlan:config"]["openconfig-vlan:trunk-vlans"] = \
-                nso_before_interface["switchport"].get("trunk").get("allowed", {}).get("vlan", {}).get("vlans")
+                nso_before_interface["switchport"].get("trunk", {}).get("allowed", {}).get("vlan", {}).get("vlans")
             del nso_leftover_interface["switchport"]["trunk"]["allowed"]
     # Mode dynamic: desirable or dynamic: auto will be a converted to TRUNK in OC
     elif nso_before_interface["switchport"].get("mode", {}).get("dynamic"):
         openconfig_interface["openconfig-vlan:switched-vlan"][
             "openconfig-vlan:config"]["openconfig-vlan:interface-mode"] = "TRUNK"
         del nso_leftover_interface["switchport"]["mode"]
-        if nso_before_interface["switchport"].get("trunk").get("native", {}).get("vlan"):
+        if nso_before_interface["switchport"].get("trunk", {}).get("native", {}).get("vlan"):
             openconfig_interface["openconfig-vlan:switched-vlan"][
                 "openconfig-vlan:config"]["openconfig-vlan:native-vlan"] = \
                 nso_before_interface["switchport"]["trunk"].get("native", {}).get("vlan")
             del nso_leftover_interface["switchport"]["trunk"]["native"]
-        if nso_before_interface["switchport"].get("trunk").get("allowed", {}).get("vlan", {}).get("vlans"):
+        if nso_before_interface["switchport"].get("trunk", {}).get("allowed", {}).get("vlan", {}).get("vlans"):
             openconfig_interface["openconfig-vlan:switched-vlan"][
                 "openconfig-vlan:config"]["openconfig-vlan:trunk-vlans"] = \
-                nso_before_interface["switchport"].get("trunk").get("allowed", {}).get("vlan", {}).get("vlans")
+                nso_before_interface["switchport"].get("trunk", {}).get("allowed", {}).get("vlan", {}).get("vlans")
             del nso_leftover_interface["switchport"]["trunk"]["allowed"]
         interfaces_notes_add(f"""
             Interface {interface_name} was set to trunking dynamic {nso_before_interface["switchport"].get("mode", {}).get("dynamic")}.
