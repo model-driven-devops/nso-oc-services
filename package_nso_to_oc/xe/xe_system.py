@@ -71,6 +71,11 @@ openconfig_system = {
             },
             "openconfig-system-ext:boot-network": {
                 "openconfig-system-ext:config": {},
+            },
+            "openconfig-system-ext:nat": {
+                "openconfig-system-ext:pools": {"openconfig-system-ext:pool": []},
+                "openconfig-system-ext:inside": {"openconfig-system-ext:source": {}
+                }
             }
         },
         "openconfig-system-ext:timestamps": {
@@ -1385,6 +1390,86 @@ def cleanup_name_server(config_leftover, name_server_list, vrf_list):
             "vrf"):
             del config_leftover["tailf-ned-cisco-ios:ip"]["name-server"]["vrf"]
 
+def xe_system_nat(config_before: dict, config_leftover: dict) -> None:
+    """
+    Translates NSO XE NED to MDD OpenConfig System NAT
+    """
+    oc_system_nat = openconfig_system["openconfig-system:system"]["openconfig-system-ext:services"][
+        "openconfig-system-ext:nat"]
+    oc_system_inside_source = openconfig_system["openconfig-system:system"]["openconfig-system-ext:services"][
+        "openconfig-system-ext:nat"]["openconfig-system-ext:inside"]["openconfig-system-ext:source"]
+    nat_pool = config_before.get("tailf-ned-cisco-ios:ip", {}).get("nat", {}).get("pool")
+    nat_inside_source = config_before.get("tailf-ned-cisco-ios:ip", {}).get("nat", {}).get("inside", {}).get("source")
+    
+    if nat_pool:
+        temp_nat_pool_list = {"openconfig-system-ext:pools": set_nat_pool(nat_pool, config_leftover)}
+        oc_system_nat.update(temp_nat_pool_list)
+
+    if nat_inside_source:
+        temp_nat_inside_source_list = {"openconfig-system-ext:local-addresses-access-lists": set_nat_inside(nat_inside_source, config_leftover)}
+        oc_system_inside_source.update(temp_nat_inside_source_list)
+
+def set_nat_pool(nat_pool, config_leftover):
+    pool_config = {"openconfig-system-ext:pool": []}
+    pool_config_list = pool_config["openconfig-system-ext:pool"]
+    # LIST OF NAT POOLS
+    for index, pool in enumerate(nat_pool):
+        start_address = end_address = "0.0.0.0" # Initialize variables
+        if pool.get("start-address"):
+            start_address = pool["start-address"]
+        if pool.get("end-address"):
+            end_address = pool["end-address"]
+        if pool.get("prefix-length"):
+            temp_pool = {"openconfig-system-ext:name": f'{pool.get("id")}',
+                        "openconfig-system-ext:config": {
+                            "openconfig-system-ext:name": f'{pool.get("id")}',
+                            "openconfig-system-ext:start-address": start_address,
+                            "openconfig-system-ext:end-address": end_address,
+                            "openconfig-system-ext:prefix-length": f'{pool.get("prefix-length")}'
+                        }}
+            pool_config_list.append(temp_pool)
+        elif pool.get("netmask"):
+            temp_pool = {"openconfig-system-ext:name": f'{pool.get("id")}',
+                        "openconfig-system-ext:config": {
+                            "openconfig-system-ext:name": f'{pool.get("id")}',
+                            "openconfig-system-ext:start-address": start_address,
+                            "openconfig-system-ext:end-address": end_address,
+                            "openconfig-system-ext:netmask": f'{pool.get("netmask")}'
+                        }}
+            pool_config_list.append(temp_pool)
+
+    del config_leftover["tailf-ned-cisco-ios:ip"]["nat"]["pool"]
+    return pool_config
+
+def set_nat_inside(nat_inside_source, config_leftover):
+    nat_inside = {"openconfig-system-ext:local-addresses-access-list": []}
+    nat_inside_list = nat_inside["openconfig-system-ext:local-addresses-access-list"]
+    # LIST OF NAT ACLs
+    if nat_inside_source.get("list"):
+        for inside_source in nat_inside_source.get("list"):
+            overload = False # Initialize variable
+            if "overload" in inside_source:
+                overload = True
+            temp_nat_inside = {"openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}', 
+                              "openconfig-system-ext:config": {
+                                "openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}',
+                                "openconfig-system-ext:global-interface-name": f'{inside_source.get("interface")}',
+                                "openconfig-system-ext:overload": overload
+                                }}
+            nat_inside_list.append(temp_nat_inside)
+    # LIST OF NAT ACLs WITH VRF
+    if nat_inside_source.get("list-vrf"):
+        for inside_source in nat_inside_source["list-vrf"]["list"]:
+            temp_nat_inside = {"openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}', 
+                              "openconfig-system-ext:config": {
+                                "openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}',
+                                "openconfig-system-ext:global-pool-name": f'{inside_source.get("pool")}',
+                                "openconfig-system-ext:vrf": f'{inside_source.get("vrf")}'
+                            }}
+            nat_inside_list.append(temp_nat_inside)
+    del config_leftover["tailf-ned-cisco-ios:ip"]["nat"]["inside"]
+    return nat_inside
+
 def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []) -> dict:
     """
     Translates NSO Device configurations to MDD OpenConfig configurations.
@@ -1410,6 +1495,7 @@ def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []
     xe_system_clock_timezone(before, leftover)
     xe_system_timestamps(before, leftover)
     xe_system_name_server(before, leftover)
+    xe_system_nat(before, leftover)
     translation_notes += system_notes
 
     return openconfig_system
