@@ -26,7 +26,8 @@ port_name_number_mapping = {"netbios-ss": 139,
 
 # Determine the project root dir, where we will create our output_data dir (if it doesn't exist).
 # output_data_dir is meant to contain data/config files that we don't want in version control.
-project_path = str(Path(__file__).resolve().parents[1])
+# project_path = str(Path(__file__).resolve().parents[1])
+project_path = os.getcwd()
 output_data_dir = f"{project_path}{path_os.sep}output_data{path_os.sep}"
 Path(output_data_dir).mkdir(parents=True, exist_ok=True)
 

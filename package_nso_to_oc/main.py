@@ -26,45 +26,49 @@ import json
 import os
 from importlib.util import find_spec
 
-sys.path.append(".")
-sys.path.append("../")
-sys.path.append("../../")
-sys.path.append("../../../")
+def main():
+    sys.path.append(".")
+    sys.path.append("../")
+    sys.path.append("../../")
+    sys.path.append("../../../")
 
-if (find_spec("package_nso_to_oc") is not None):
-    from package_nso_to_oc.xe import main_xe
-    from package_nso_to_oc.xr import main_xr
-    from package_nso_to_oc import common
-else:
-    import common
-    from xe import main_xe
-    from xr import main_xr
+    if (find_spec("package_nso_to_oc") is not None):
+        from package_nso_to_oc.xe import main_xe
+        from package_nso_to_oc.xr import main_xr
+        from package_nso_to_oc import common
+    else:
+        import common
+        from xe import main_xe
+        from xr import main_xr
 
-nso_api_url = os.environ.get("NSO_URL", False)
-nso_ned_file = os.environ.get("NSO_NED_FILE", False)
-nso_username = os.environ.get("NSO_USERNAME", "ubuntu")
-nso_password = os.environ.get("NSO_PASSWORD", "admin")
-nso_device = os.environ.get("NSO_DEVICE", "xe1")
-device_os = os.environ.get("DEVICE_OS", common.XE)
-test = os.environ.get("TEST", "False")
+    nso_api_url = os.environ.get("NSO_URL", False)
+    nso_ned_file = os.environ.get("NSO_NED_FILE", False)
+    nso_username = os.environ.get("NSO_USERNAME", "ubuntu")
+    nso_password = os.environ.get("NSO_PASSWORD", "admin")
+    nso_device = os.environ.get("NSO_DEVICE", "xe1")
+    device_os = os.environ.get("DEVICE_OS", common.XE)
+    test = os.environ.get("TEST", "False")
 
-# Append any pertinent notes here. This will be printed out in output_data directory
-translation_notes = []
-if nso_api_url:
-    config_before_dict = common.nso_get_device_config(nso_api_url, nso_username, nso_password, nso_device)
-elif nso_ned_file:
-    with open(nso_ned_file, "r") as f:
-        config_before_dict = json.load(f)
-configs_leftover = copy.deepcopy(config_before_dict)
-oc = {"mdd:openconfig": {}}
+    # Append any pertinent notes here. This will be printed out in output_data directory
+    translation_notes = []
+    if nso_api_url:
+        config_before_dict = common.nso_get_device_config(nso_api_url, nso_username, nso_password, nso_device)
+    elif nso_ned_file:
+        with open(nso_ned_file, "r") as f:
+            config_before_dict = json.load(f)
+    configs_leftover = copy.deepcopy(config_before_dict)
+    oc = {"mdd:openconfig": {}}
 
-if device_os == common.XE:
-    main_xe.build_xe_to_oc(config_before_dict, configs_leftover, oc, translation_notes)
-elif device_os == common.XR:
-    main_xr.build_xr_to_oc(config_before_dict, configs_leftover, oc, translation_notes)
+    if device_os == common.XE:
+        main_xe.build_xe_to_oc(config_before_dict, configs_leftover, oc, translation_notes)
+    elif device_os == common.XR:
+        main_xr.build_xr_to_oc(config_before_dict, configs_leftover, oc, translation_notes)
 
-config_name = ""
-config_remaining_name = "_remaining"
-oc_name = "_openconfig"
-common.print_and_test_configs(nso_device, config_before_dict, configs_leftover, oc, config_name, 
-    config_remaining_name, oc_name, translation_notes)
+    config_name = ""
+    config_remaining_name = "_remaining"
+    oc_name = "_openconfig"
+    common.print_and_test_configs(nso_device, config_before_dict, configs_leftover, oc, config_name, 
+        config_remaining_name, oc_name, translation_notes)
+
+if __name__ == '__main__':
+    main()
