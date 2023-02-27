@@ -5,10 +5,14 @@ This module should only ever be called by main.py
 """
 
 import sys
+from importlib.util import find_spec
 
-import common
-from xe import xe_network_instances, xe_vlans, xe_interfaces, xe_system, xe_stp, xe_acls, xe_routing_policy
-
+if (find_spec("package_nso_to_oc") is not None):
+    from package_nso_to_oc import common
+    from package_nso_to_oc.xe import xe_network_instances, xe_vlans, xe_interfaces, xe_system, xe_stp, xe_acls, xe_routing_policy
+else:
+    import common
+    from xe import xe_network_instances, xe_vlans, xe_interfaces, xe_system, xe_stp, xe_acls, xe_routing_policy
 
 def build_xe_to_oc(config_before_dict: dict, configs_leftover: dict, oc: dict, translation_notes: list) -> None:
     interface_ip_name_dict = common.xe_system_get_interface_ip_address(config_before_dict)

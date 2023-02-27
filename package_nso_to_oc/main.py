@@ -25,6 +25,15 @@ import copy
 import json
 import os
 from importlib.util import find_spec
+if (find_spec("package_nso_to_oc") is not None):
+    from package_nso_to_oc.xe import main_xe
+    from package_nso_to_oc.xr import main_xr
+    from package_nso_to_oc import common
+else:
+    import common
+    from xe import main_xe
+    from xr import main_xr
+from pathlib import Path, os as path_os
 
 def main():
     sys.path.append(".")
@@ -32,14 +41,12 @@ def main():
     sys.path.append("../../")
     sys.path.append("../../../")
 
-    if (find_spec("package_nso_to_oc") is not None):
-        from package_nso_to_oc.xe import main_xe
-        from package_nso_to_oc.xr import main_xr
-        from package_nso_to_oc import common
-    else:
-        import common
-        from xe import main_xe
-        from xr import main_xr
+    if os.environ.get("NSO_URL", False) and os.environ.get("NSO_NED_FILE", False):
+        print("environment variable NSO_URL or NSO_NED_FILE must be set: not both")
+        exit()
+    elif not os.environ.get("NSO_URL", False) and not os.environ.get("NSO_NED_FILE", False):
+        print("environment variable NSO_URL or NSO_NED_FILE must be set")
+        exit()
 
     nso_api_url = os.environ.get("NSO_URL", False)
     nso_ned_file = os.environ.get("NSO_NED_FILE", False)

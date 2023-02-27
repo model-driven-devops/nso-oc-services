@@ -24,13 +24,6 @@ port_name_number_mapping = {"netbios-ss": 139,
                             "non500-isakmp": 4500,
                             "lpd": 515}
 
-# Determine the project root dir, where we will create our output_data dir (if it doesn't exist).
-# output_data_dir is meant to contain data/config files that we don't want in version control.
-# project_path = str(Path(__file__).resolve().parents[1])
-project_path = os.getcwd()
-output_data_dir = f"{project_path}{path_os.sep}output_data{path_os.sep}"
-Path(output_data_dir).mkdir(parents=True, exist_ok=True)
-
 def nso_get_device_config(nso_api_url: str, username: str, password: str, device: str) -> dict:
     """
     Get device configuration from NSO. Return configuration as python dict.
@@ -109,6 +102,13 @@ def print_and_test_configs(device_name, config_before_dict, config_leftover_dict
     (nso_api_url, nso_username, nso_password) = get_nso_creds()
     nso_device = os.environ.get("NSO_DEVICE", device_name)
     test = os.environ.get("TEST", "False")
+
+    # Determine the project root dir, where we will create our output_data dir (if it doesn't exist).
+    # output_data_dir is meant to contain data/config files that we don't want in version control.
+    # project_path = str(Path(__file__).resolve().parents[1])
+    project_path = os.getcwd()
+    output_data_dir = f"{project_path}{path_os.sep}output_data{path_os.sep}"
+    Path(output_data_dir).mkdir(parents=True, exist_ok=True)
 
     print(json.dumps(oc, indent=4))
     with open(f"{output_data_dir}{nso_device}{config_name}.json", "w") as b:
