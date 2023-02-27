@@ -16,7 +16,6 @@ version = Version(version_string)
 
 setup(
     name='nso-oc',
-    version=str(version),
     package_dir={'package_nso_to_oc': 'package_nso_to_oc'},
     packages=find_namespace_packages(
         include=includes
@@ -32,4 +31,5 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     include_package_data=True,
+    url = 'https://github.com/model-driven-devops/nso-oc-services'
 )

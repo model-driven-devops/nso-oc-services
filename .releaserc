@@ -5,6 +5,13 @@
       "preset": "conventionalcommits"
     }],
     "@semantic-release/release-notes-generator",
+    [
+        "semantic-release-pypi",
+        {
+            "repoUrl": "https://upload.pypi.org/legacy/"
+        }
+    ],
+    "@semantic-release/release-notes-generator",
     "@semantic-release/github",
     ["@semantic-release/exec", {
         "publishCmd": "/bin/true"

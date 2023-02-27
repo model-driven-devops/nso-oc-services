@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-      - test-releasing
+      - jk-dev
 
 jobs:
   release:
@@ -23,8 +23,18 @@ jobs:
 
       # actual configuration of semantic-release is done in .releaserc
       - name: Install dependencies
-        run: npm install semantic-release && npm install @semantic-release/exec conventional-changelog-conventionalcommits
+        run: npm install semantic-release && npm install @semantic-release/exec conventional-changelog-conventionalcommits @semantic-release/release-notes-generator semantic-release-pypi
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install setuptools
+        run: python -m pip install --upgrade setuptools wheel twine
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYPI_TOKEN: ${{ secrets.CISCOPS_PYPI_TOKEN }}
         run: npx semantic-release
