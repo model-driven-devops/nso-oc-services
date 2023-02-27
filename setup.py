@@ -1,7 +1,5 @@
 from setuptools import setup, find_namespace_packages
-from os import environ
 from pathlib import Path
-from packaging.version import Version
 
 includes = [
     "package_nso_to_oc",
@@ -10,9 +8,6 @@ includes = [
 
 this_directory = Path(__file__).parent
 long_description = (this_directory / "package_nso_to_oc" / "README.md").read_text()
-
-version_string = environ.get("RELEASE_VERSION", "0.0.0.dev0")
-version = Version(version_string)
 
 setup(
     name='nso-oc',
