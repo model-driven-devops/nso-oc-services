@@ -1,5 +1,5 @@
 {
-  "branches": ["main", "test-releasing"],
+  "branches": ["main", "jk-dev"],
   "plugins": [
     ["@semantic-release/commit-analyzer", {
       "preset": "conventionalcommits"
