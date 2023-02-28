@@ -23,8 +23,9 @@ This python package will read in a json configuration for a device and translate
    python3 main.py
    ```
 3. The below files will be placed in a new directory names "output_data"
-   - $device_name.json = the full configuration is pulled from NSO
-   - $device_name_notes.txt = notes resulting from converting NSO config to OpenConfig
-   - $device_name_openconfig.json = New OpenConfig config
-   - $device_name_remaining.json = Remaining configuration from NSO
-       - The idea is $device_name_openconfig.json + $device_name_remaining.json = $device_name.json
+   - device_name.json = the full configuration is pulled from NSO
+   - device_name_notes.txt = notes resulting from converting NSO config to OpenConfig
+   - device_name_openconfig.json = New OpenConfig config
+   - device_name_remaining.json = Remaining configuration from NSO
+
+Ideally device_name_openconfig.json + device_name_remaining.json = device_name.json

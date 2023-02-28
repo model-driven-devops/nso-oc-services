@@ -1,10 +1,16 @@
 {
-  "branches": ["main", "test-releasing"],
+  "branches": ["main"],
   "plugins": [
     ["@semantic-release/commit-analyzer", {
       "preset": "conventionalcommits"
     }],
     "@semantic-release/release-notes-generator",
+    [
+        "semantic-release-pypi",
+        {
+            "repoUrl": "https://upload.pypi.org/legacy/"
+        }
+    ],
     "@semantic-release/github",
     ["@semantic-release/exec", {
         "publishCmd": "/bin/true"
