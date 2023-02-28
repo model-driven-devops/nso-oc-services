@@ -106,7 +106,7 @@ def xe_acls(config_before, config_after):
 
     cleanup_empty_access_list(access_list_after.get("standard", {}), "std-named-acl")
     cleanup_empty_access_list(access_list_after.get("extended", {}), "ext-named-acl")
-    cleanup_empty_access_list(numbered_access_list, "access-list")
+    cleanup_empty_access_list(numbered_access_list_after, "access-list")
 
 def cleanup_empty_access_list(access_list_after, key):
     if len(access_list_after.get(key, [])) == 0:

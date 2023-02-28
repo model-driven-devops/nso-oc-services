@@ -464,7 +464,7 @@ def xe_system_ntp(config_before: dict, config_leftover: dict, if_ip: dict) -> No
         if leftover_trusted_key:
             for reconf_trusted_key in leftover_trusted_key:
                 config_leftover["tailf-ned-cisco-ios:ntp"]["trusted-key"].append({"key-number": reconf_trusted_key})
-    
+
     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer") or config_before.get("tailf-ned-cisco-ios:ntp",
                                                                                          {}).get("server"):
         openconfig_system_ntp.update({"openconfig-system:servers": {"openconfig-system:server": []}})
@@ -507,7 +507,7 @@ def xe_system_aaa(config_before: dict, config_leftover: dict, if_ip: dict) -> No
     oc_system_aaa_authentication = openconfig_system["openconfig-system:system"]["openconfig-system:aaa"]["openconfig-system:authentication"]
     tacacs_group_list = config_before.get("tailf-ned-cisco-ios:aaa", {}).get("group", {}).get("server", {}).get("tacacs-plus")
     radius_group_list = config_before.get("tailf-ned-cisco-ios:aaa", {}).get("group", {}).get("server", {}).get("radius")
-    tacacs_server_list = config_before.get("tailf-ned-cisco-ios:tacacs", {}).get("server") 
+    tacacs_server_list = config_before.get("tailf-ned-cisco-ios:tacacs", {}).get("server")
     radius_server_list = config_before.get("tailf-ned-cisco-ios:radius", {}).get("server")
     accounting_dict = config_before.get("tailf-ned-cisco-ios:aaa", {}).get("accounting")
     authorization_dict = config_before.get("tailf-ned-cisco-ios:aaa", {}).get("authorization")
@@ -518,12 +518,12 @@ def xe_system_aaa(config_before: dict, config_leftover: dict, if_ip: dict) -> No
     if tacacs_group_list:
         for tacacs_group_index, tacacs_group in enumerate(tacacs_group_list):
             process_aaa_tacacs(oc_system_server_group, config_leftover, if_ip, tacacs_group_index, tacacs_group, tacacs_server_list)
-    
+
     # RADIUS GROUP
     if radius_group_list:
         for radius_group_index, radius_group in enumerate(radius_group_list):
             process_aaa_radius(oc_system_server_group, config_leftover, if_ip, radius_group_index, radius_group, radius_server_list)
-    
+
     # AAA ACCOUNTING
     if accounting_dict:
         if accounting_dict.get("commands") or accounting_dict.get("exec"):
@@ -561,10 +561,10 @@ def xe_system_aaa(config_before: dict, config_leftover: dict, if_ip: dict) -> No
             config_leftover["tailf-ned-cisco-ios:username"] = updated_usernames
         elif "tailf-ned-cisco-ios:username" in config_leftover:
             del config_leftover["tailf-ned-cisco-ios:username"]
-    
+
     cleanup_server_access(config_leftover, f"{TACACS}-plus", TACACS)
     cleanup_server_access(config_leftover, RADIUS, RADIUS)
-    
+
 def process_aaa_tacacs(oc_system_server_group, config_leftover, if_ip, tacacs_group_index, tacacs_group, tacacs_server_list):
     tacacs_group_leftover = config_leftover.get("tailf-ned-cisco-ios:aaa", {}).get("group", {}).get("server", {}).get("tacacs-plus")[tacacs_group_index]
     # If we got here, we init an empty dict and append to oc_system_server_group list for future use.
@@ -584,7 +584,7 @@ def set_tacacs_group_config(tacacs_group_leftover, config_leftover, oc_system_se
     oc_system_server_group[tac_group_index]["openconfig-system:name"] = f'{tacacs_group.get("name")}'
     temp_tacacs_group = {"openconfig-system:config": {
         "openconfig-system:type": "TACACS",
-        "openconfig-system:name": f'{tacacs_group.get("name")}'}, 
+        "openconfig-system:name": f'{tacacs_group.get("name")}'},
         "openconfig-system:servers": set_server_tacacs_config(tacacs_group_leftover, config_leftover, oc_system_server_group, if_ip, tac_group_index, tacacs_group, tacacs_server_list)
     }
     oc_system_server_group[tac_group_index].update(temp_tacacs_group)
@@ -725,7 +725,7 @@ def set_accounting_method(oc_system_aaa_accounting, config_leftover, accounting_
                     group3 = exe.get("group3", {}).get("group")
                 acc_method_list.append(group3)
         del config_leftover["tailf-ned-cisco-ios:aaa"]["accounting"]["exec"]
-    
+
     return acc_method
 
 def set_accounting_event(oc_system_aaa_accounting, config_leftover, accounting_dict):
@@ -948,7 +948,7 @@ def cleanup_server_access(config_leftover, group_access_type, access_type):
     for server in config_leftover.get(f"tailf-ned-cisco-ios:{access_type}", {}).get("server", []):
         if server and len(server) > 0:
             updated_server_list.append(server)
-    
+
     if len(updated_server_list) > 0:
         config_leftover[f"tailf-ned-cisco-ios:{access_type}"]["server"] = updated_server_list
     elif "server" in config_leftover.get(f"tailf-ned-cisco-ios:{access_type}", {}):
@@ -967,7 +967,7 @@ def xe_system_logging(config_before: dict, config_leftover: dict, if_ip: dict) -
     logging = config_before.get("tailf-ned-cisco-ios:logging")
     archive = config_before.get("tailf-ned-cisco-ios:archive")
     intf_ip_name_dict = common.xe_system_get_interface_ip_address(config_before)
-    
+
     # LOGGING BUFFERED
     if logging.get("buffered"):
         temp_logging_buffered = {
@@ -988,8 +988,8 @@ def xe_system_logging(config_before: dict, config_leftover: dict, if_ip: dict) -
     if logging_console:
         temp_logging_console = {
             "openconfig-system:config": {"openconfig-system-ext:enabled": True},
-            "openconfig-system:selectors": set_logging_console(logging_console, 
-                                                                config_leftover, 
+            "openconfig-system:selectors": set_logging_console(logging_console,
+                                                                config_leftover,
                                                                 oc_system_logging_console),
         }
         oc_system_logging_console.update(temp_logging_console)
@@ -1003,18 +1003,18 @@ def xe_system_logging(config_before: dict, config_leftover: dict, if_ip: dict) -
     # LOGGING MONITOR
     if logging_monitor:
         temp_logging_monitor = {
-            "openconfig-system-ext:selectors": set_logging_monitor(logging_monitor, 
-                                                                    config_leftover, 
+            "openconfig-system-ext:selectors": set_logging_monitor(logging_monitor,
+                                                                    config_leftover,
                                                                     oc_system_logging_monitor),
         }
         oc_system_logging_monitor.update(temp_logging_monitor)
         del config_leftover["tailf-ned-cisco-ios:logging"]["monitor"]["severity-level"]
-    
+
     # LOGGING HOST
     if logging.get("host"):
         temp_logging_host = {
-            "openconfig-system:remote-servers": set_logging_host(logging, config_leftover, 
-                                                                oc_system_logging, if_ip, 
+            "openconfig-system:remote-servers": set_logging_host(logging, config_leftover,
+                                                                oc_system_logging, if_ip,
                                                                 intf_ip_name_dict),
         }
         oc_system_logging.update(temp_logging_host)
@@ -1083,7 +1083,7 @@ def set_logging_host(logging, config_leftover, oc_system_logging, if_ip, intf_ip
     source_intf = logging.get("source-interface")
     vrf_source_intf_list = vrf_source_ip_list = []
     severity = "INFORMATIONAL" # Default Severity
-    
+
     # SEVERITY
     if logging.get("trap"):
         severity = get_severity(logging["trap"])
@@ -1123,7 +1123,7 @@ def set_logging_host(logging, config_leftover, oc_system_logging, if_ip, intf_ip
                         }}
             hosts_list.append(temp_host)
             config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4"][index]["host"] = None
-    
+
     # ADD HOST IPV4 AND VRF
     if host_ipv4_vrf:
         for index, host_info in enumerate(host_ipv4_vrf):
@@ -1138,7 +1138,7 @@ def set_logging_host(logging, config_leftover, oc_system_logging, if_ip, intf_ip
                         break
                 if intf_ip_name_dict.get(intf_vrf):
                     source_ip_vrf = intf_ip_name_dict.get(intf_vrf)
-            
+
             temp_host = {"openconfig-system:host": f'{host}',
                         "openconfig-system:config": get_host(host, source_ip_vrf, host_vrf),
                         "openconfig-system:selectors": {
@@ -1147,7 +1147,7 @@ def set_logging_host(logging, config_leftover, oc_system_logging, if_ip, intf_ip
             hosts_list.append(temp_host)
             config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"][index]["host"] = None
             config_leftover["tailf-ned-cisco-ios:logging"]["host"]["ipv4-vrf"][index]["vrf"] = None
-    
+
     if logging.get("facility"):
         del config_leftover["tailf-ned-cisco-ios:logging"]["facility"]
     if logging.get("trap"):
@@ -1178,7 +1178,7 @@ def get_severity(logging_severity):
 
 def get_host(host, source_ip, host_vrf):
     # GET HOST, VRF AND SOURCE IP ADDRESS
-    temp_host = {"openconfig-system:host": f'{host}', 
+    temp_host = {"openconfig-system:host": f'{host}',
                     "openconfig-system:remote-port": 514,
                     "openconfig-system:source-address": f'{source_ip}',
                     "openconfig-system-ext:use-vrf": f'{host_vrf}'
@@ -1188,7 +1188,7 @@ def get_host(host, source_ip, host_vrf):
 
 def get_facility_severity(severity):
     # GET FACILITY AND SEVERITY
-    temp_fac_sev = [{"openconfig-system:facility": "SYSLOG", 
+    temp_fac_sev = [{"openconfig-system:facility": "SYSLOG",
                         "openconfig-system:severity": f'{severity}',
                         "openconfig-system:config": {
                         "openconfig-system:facility": "SYSLOG",
@@ -1244,7 +1244,7 @@ def xe_system_clock_timezone(config_before: dict, config_leftover: dict) -> None
     zone = config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("zone")
     hours = config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("hours")
     minutes = config_before.get("tailf-ned-cisco-ios:clock", {}).get("timezone", {}).get("minutes")
-    
+
     if zone and len(zone) == 3:
         timezone_name[0] = zone
         del config_leftover["tailf-ned-cisco-ios:clock"]["timezone"]["zone"]
@@ -1259,6 +1259,14 @@ def xe_system_clock_timezone(config_before: dict, config_leftover: dict) -> None
 
     openconfig_system_clock_config["openconfig-system:timezone-name"] = ' '.join(timezone_name)
 
+    # Clean up clock remaining
+    if type(config_leftover.get("tailf-ned-cisco-ios:clock", {}).get("timezone", "")) is dict and len(config_leftover.get("tailf-ned-cisco-ios:clock", {}).get("timezone")) == 0:
+        del config_leftover["tailf-ned-cisco-ios:clock"]["timezone"]
+    if type(config_leftover.get("tailf-ned-cisco-ios:clock", "")) is dict and len(
+            config_leftover.get("tailf-ned-cisco-ios:clock")) == 0:
+        del config_leftover["tailf-ned-cisco-ios:clock"]
+
+
 def xe_system_timestamps(config_before: dict, config_leftover: dict) -> None:
     """
     Translates NSO XE NED to MDD OpenConfig System Timestamps
@@ -1267,7 +1275,7 @@ def xe_system_timestamps(config_before: dict, config_leftover: dict) -> None:
     timestamps = config_before.get("tailf-ned-cisco-ios:service", {}).get("timestamps")
     debug = config_before.get("tailf-ned-cisco-ios:service", {}).get("timestamps", {}).get("debug")
     log = config_before.get("tailf-ned-cisco-ios:service", {}).get("timestamps", {}).get("log")
-    
+
     # TIMESTAMPS DEBUG
     if debug:
         temp_timestamps_debug = {"openconfig-system-ext:debugging": set_timestamps(debug, config_leftover, timestamps)}
@@ -1277,8 +1285,12 @@ def xe_system_timestamps(config_before: dict, config_leftover: dict) -> None:
                 del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]["msec"]
             if "localtime" in timestamps["debug"]["datetime"]:
                 del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]["localtime"]
+            if len(config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]) == 0:
+                del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["datetime"]
         elif "debug" in timestamps and "uptime" in timestamps["debug"]:
             del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]["uptime"]
+        if len(config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]) == 0:
+            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["debug"]
     # TIMESTAMPS LOG
     if log:
         temp_timestamps_log = {"openconfig-system-ext:logging": set_timestamps(log, config_leftover, timestamps)}
@@ -1288,8 +1300,16 @@ def xe_system_timestamps(config_before: dict, config_leftover: dict) -> None:
                 del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]["msec"]
             if "localtime" in timestamps["log"]["datetime"]:
                 del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]["localtime"]
+            if len(config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]) == 0:
+                del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["datetime"]
         elif "log" in timestamps and "uptime" in timestamps["log"]:
             del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]["uptime"]
+        if len(config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]) == 0:
+            del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]
+    # Clean up timestamps
+    if len(config_leftover["tailf-ned-cisco-ios:service"].get("timestamps")) == 0:
+        del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]
+
 
 def set_timestamps(service, config_leftover, timestamps):
     datetime = uptime = localtime = False # Initialize variables
@@ -1306,7 +1326,7 @@ def set_timestamps(service, config_leftover, timestamps):
                             "openconfig-system-ext:uptime": uptime,
                             "openconfig-system-ext:localtime": localtime
                         }}
-    
+
     return temp_timestamps
 
 def xe_system_name_server(config_before: dict, config_leftover: dict) -> None:
@@ -1317,9 +1337,9 @@ def xe_system_name_server(config_before: dict, config_leftover: dict) -> None:
     name_server = config_before.get("tailf-ned-cisco-ios:ip", {}).get("name-server")
     name_server_list = config_before.get("tailf-ned-cisco-ios:ip", {}).get("name-server", {}).get("name-server-list")
     vrf_list = config_before.get("tailf-ned-cisco-ios:ip", {}).get("name-server", {}).get("vrf")
-    
+
     if name_server:
-        temp_server_list = {"openconfig-system:servers": set_server_list(name_server_list, 
+        temp_server_list = {"openconfig-system:servers": set_server_list(name_server_list,
             vrf_list, config_leftover)}
         oc_system_dns.update(temp_server_list)
 
@@ -1351,7 +1371,7 @@ def set_server_list(name_server_list, vrf_list, config_leftover):
             svr_list.append(temp_svr)
             config_leftover["tailf-ned-cisco-ios:ip"]["name-server"]["name-server-list"][
                 index_server]["address"] = None
-                
+
     cleanup_name_server(config_leftover, name_server_list, vrf_list)
     return svr
 
@@ -1430,7 +1450,7 @@ if __name__ == "__main__":
     config_name = "_system"
     config_remaining_name = "_remaining_system"
     oc_name = "_openconfig_system"
-    common.print_and_test_configs("xe1", config_before_dict, config_leftover_dict, openconfig_system, 
+    common.print_and_test_configs("xe1", config_before_dict, config_leftover_dict, openconfig_system,
         config_name, config_remaining_name, oc_name, system_notes)
 else:
     # This is needed for now due to top level __init__.py. We need to determine if contents in __init__.py is still necessary.
