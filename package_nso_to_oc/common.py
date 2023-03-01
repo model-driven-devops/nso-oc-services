@@ -24,6 +24,14 @@ port_name_number_mapping = {"netbios-ss": 139,
                             "non500-isakmp": 4500,
                             "lpd": 515}
 
+
+def remove_read_only_modules(config_before):
+    if config_before.get("ietf-yang-library:yang-library"):
+        del config_before["ietf-yang-library:yang-library"]
+    if config_before.get("ietf-yang-library:modules-state"):
+        del config_before["ietf-yang-library:modules-state"]
+
+
 def nso_get_device_config(nso_api_url: str, username: str, password: str, device: str) -> dict:
     """
     Get device configuration from NSO. Return configuration as python dict.
@@ -40,7 +48,9 @@ def nso_get_device_config(nso_api_url: str, username: str, password: str, device
                     "Accept": "application/yang-data+json"})
     configuration_result = req.request("GET", url, headers=headers)
     config_before_string = configuration_result.data.decode()
-    return json.loads(config_before_string)["tailf-ncs:config"]
+    config_before = json.loads(config_before_string)["tailf-ncs:config"]
+    remove_read_only_modules(config_before)
+    return config_before
 
 
 def xe_system_get_interface_ip_address(config_before: dict) -> dict:
