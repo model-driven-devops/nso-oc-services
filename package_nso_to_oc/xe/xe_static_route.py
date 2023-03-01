@@ -1,24 +1,10 @@
 #! /usr/bin/env python3
 """
-Translate NSO Device config to MDD OpenConfig
-
-This script will pull a device's configuration from an NSO server, convert the NED structured configuration to
-MDD OpenConfig, save the NSO configuration to a file named {device_name}_ned_configuration_network_instances.json,
-save the NSO device configuration minus parts replaced by OpenConfig to a file named
-{device_name}_ned_configuration_remaining_network_instances.json, and save the MDD OpenConfig configuration to a file
-named {nso_device}_openconfig_network_instances.json.
-
-The script requires the following environment variables:
-NSO_URL - URL for the NSO server
-NSO_USERNAME
-NSO_PASSWORD
-NSO_DEVICE - NSO device name for configuration translation
-TEST - True or False. True enables sending the OpenConfig to the NSO server after generation
+This script is used by xe_network_instances.py to translate static route configs from NED to OC.
 """
 
 import copy
 import ipaddress
-from functools import cmp_to_key
 from importlib.util import find_spec
 
 if (find_spec("package_nso_to_oc") is not None):
