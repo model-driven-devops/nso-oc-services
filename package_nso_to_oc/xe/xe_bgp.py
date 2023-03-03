@@ -49,8 +49,9 @@ def configure_xe_bgp(net_inst, config_before, config_leftover, network_instances
         }
         oc_bgp_global = bgp_protocol_bgp["openconfig-network-instance:global"]
 
-        if bgp_leftover[0].get("as-no") != None:
-            del bgp_leftover[0]["as-no"]
+        # remaining will need asn
+        # if bgp_leftover[0].get("as-no") != None:
+        #     del bgp_leftover[0]["as-no"]
 
         if instance_name == "default":
             process_bgp_global(oc_bgp_global, bgp_before[0], bgp_leftover[0])
