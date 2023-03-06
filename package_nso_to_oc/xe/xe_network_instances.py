@@ -378,9 +378,12 @@ def clean_up_default_neighbors_and_peers(bgp_before, bgp_leftover):
             delete_peers_and_neighbors(bgp_leftover["address-family"]["vpnv4"][vpnv4_index])
         if len(bgp_leftover["address-family"]["vpnv4"][vpnv4_index]) > 0:
             updated_vpnv4_list.append(bgp_leftover["address-family"]["vpnv4"][vpnv4_index])
-    
-    bgp_leftover["address-family"]["ipv4"] = updated_ipv4_list
-    bgp_leftover["address-family"]["vpnv4"] = updated_vpnv4_list
+
+    # Device may not be using MP-BGP
+    if bgp_before.get("address-family", {}).get("ipv4"):
+        bgp_leftover["address-family"]["ipv4"] = updated_ipv4_list
+    if bgp_before.get("address-family", {}).get("vpnv4"):
+        bgp_leftover["address-family"]["vpnv4"] = updated_vpnv4_list
 
 def clean_up_vrf_neighbors_and_peers(afi_vrf, afi_vrf_leftover):
     for index, afi_ipv4 in enumerate(afi_vrf.get("ipv4", [])):
@@ -493,8 +496,8 @@ else:
         from package_nso_to_oc.xe import xe_bgp
         from package_nso_to_oc import common
     else:
-        import common_xe
-        import xe_ospfv2
-        import xe_static_route
-        import xe_bgp
+        from xe import common_xe
+        from xe import xe_ospfv2
+        from xe import xe_static_route
+        from xe import xe_bgp
         import common
