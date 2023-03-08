@@ -1,19 +1,6 @@
 #! /usr/bin/env python3
 """
-Translate NSO Device config to MDD OpenConfig
-
-This script will pull a device's configuration from an NSO server, convert the NED structured configuration to
-MDD OpenConfig, save the NSO configuration to a file named {device_name}_ned_configuration_network_instances.json,
-save the NSO device configuration minus parts replaced by OpenConfig to a file named
-{device_name}_ned_configuration_remaining_network_instances.json, and save the MDD OpenConfig configuration to a file
-named {nso_device}_openconfig_network_instances.json.
-
-The script requires the following environment variables:
-NSO_URL - URL for the NSO server
-NSO_USERNAME
-NSO_PASSWORD
-NSO_DEVICE - NSO device name for configuration translation
-TEST - True or False. True enables sending the OpenConfig to the NSO server after generation
+This script is used by xe_network_instances.py to translate ospf configs from NED to OC.
 """
 
 import copy
@@ -24,6 +11,7 @@ ospf_network_types = {
     "point-to-point": "POINT_TO_POINT_NETWORK",
     "non-broadcast": "NON_BROADCAST_NETWORK"
 }
+
 
 def configure_xe_ospf(net_inst, vrf_interfaces, config_before, config_leftover):
     """
@@ -38,8 +26,9 @@ def configure_xe_ospf(net_inst, vrf_interfaces, config_before, config_leftover):
 
     for ospf_index, ospf in enumerate(ospf_list):
         if ((instance_type == "L3VRF" and "vrf" in ospf)
-            or (instance_type == "DEFAULT_INSTANCE" and not "vrf" in ospf)):
+                or (instance_type == "DEFAULT_INSTANCE" and not "vrf" in ospf)):
             process_ospf(net_protocols, vrf_interfaces, config_leftover, ospf_index, ospf)
+
 
 def get_interfaces_by_area(network_statements, vrf_interfaces):
     """
@@ -81,6 +70,7 @@ def get_interfaces_by_area(network_statements, vrf_interfaces):
 
     return interfaces_by_area
 
+
 def sort_by_mask(stmt1, stmt2):
     """
     A comparator to sort by mask, ordered from most specific (mask of 0.0.0.0) to least specific (mask of 255.255.255.255).
@@ -113,6 +103,7 @@ def sort_by_mask(stmt1, stmt2):
 
     return 0
 
+
 def binary_merge(ip, mask):
     """
     Transform the IPs into binary string format and merge the binary strings via OR operation
@@ -128,6 +119,7 @@ def binary_merge(ip, mask):
 
     return "".join(merged_result)
 
+
 def get_binary_str(ip_str):
     octets = ip_str.split(".")
     binary_octets = []
@@ -136,6 +128,7 @@ def get_binary_str(ip_str):
         binary_octets.append(format(int(octet), "08b"))
 
     return "".join(binary_octets)
+
 
 def get_ospfv2_global(net_protocols, prot_index):
     if (len(net_protocols) >= prot_index):
@@ -149,27 +142,33 @@ def get_ospfv2_global(net_protocols, prot_index):
         # Sanity check, should not occur...
         raise IndexError(f"The protocol index {prot_index} does not exist.")
 
+
 def get_ospfv2_area(net_protocols, prot_index):
     if (len(net_protocols) >= prot_index):
         if not "openconfig-network-instance:ospfv2" in net_protocols[prot_index]:
             net_protocols[prot_index]["openconfig-network-instance:ospfv2"] = {}
         if not "areas" in net_protocols[prot_index]["openconfig-network-instance:ospfv2"]:
-            net_protocols[prot_index]["openconfig-network-instance:ospfv2"]["openconfig-network-instance:areas"] = {"openconfig-network-instance:area": []}
+            net_protocols[prot_index]["openconfig-network-instance:ospfv2"]["openconfig-network-instance:areas"] = {
+                "openconfig-network-instance:area": []}
 
-        return net_protocols[prot_index]["openconfig-network-instance:ospfv2"]["openconfig-network-instance:areas"]["openconfig-network-instance:area"]
+        return net_protocols[prot_index]["openconfig-network-instance:ospfv2"]["openconfig-network-instance:areas"][
+            "openconfig-network-instance:area"]
     else:
         # Sanity check, should not occur...
         raise IndexError(f"The protocol index {prot_index} does not exist.")
+
 
 def get_area_by_id(ospfv2_area, area_id):
     for area in ospfv2_area:
         if area["openconfig-network-instance:identifier"] == area_id:
             return area
 
-    new_area = {"openconfig-network-instance:identifier": area_id, "openconfig-network-instance:config": {"openconfig-network-instance:identifier": area_id}}
+    new_area = {"openconfig-network-instance:identifier": area_id,
+                "openconfig-network-instance:config": {"openconfig-network-instance:identifier": area_id}}
     ospfv2_area.append(new_area)
 
     return new_area
+
 
 def is_area_present_by_id(ospfv2_area, id):
     for area in ospfv2_area:
@@ -178,10 +177,12 @@ def is_area_present_by_id(ospfv2_area, id):
 
     return False
 
+
 def get_intf_by_intf_number(intf_attr, intf_number):
     for intf in intf_attr:
         if str(intf["name"]) == intf_number:
             return intf
+
 
 def process_ospf(net_protocols, vrf_interfaces, config_leftover, ospf_index, ospf):
     ospf_leftover = config_leftover.get("tailf-ned-cisco-ios:router", {}).get("ospf")[ospf_index]
@@ -199,6 +200,7 @@ def process_ospf(net_protocols, vrf_interfaces, config_leftover, ospf_index, osp
     set_timers_spf(ospf_leftover, net_protocols, prot_index, ospf)
     set_auto_cost_ref_bandwidth(ospf_leftover, net_protocols, prot_index, ospf)
 
+
 def set_network_config(ospf_leftover, net_protocols, prot_index, ospf):
     net_protocols[prot_index]["openconfig-network-instance:identifier"] = "OSPF"
     net_protocols[prot_index]["openconfig-network-instance:name"] = f'{ospf.get("id")}'
@@ -209,14 +211,16 @@ def set_network_config(ospf_leftover, net_protocols, prot_index, ospf):
     }}
     net_protocols[prot_index].update(temp_ospf)
 
-    if ospf_leftover.get("id"):
-        del ospf_leftover["id"]
+    # Don't remove keys until everything is in OC
+    # if ospf_leftover.get("id"):
+    #     del ospf_leftover["id"]
+
 
 def set_ospf2_global_config(ospf_leftover, net_protocols, prot_index, ospf):
     ospfv2_global = get_ospfv2_global(net_protocols, prot_index)
 
     if (not ospf.get("router-id") and not ospf.get("log-adjacency-changes")
-        and not ospf.get("compatible") and not ospf.get("prefix-suppression")):
+            and not ospf.get("compatible") and not ospf.get("prefix-suppression")):
         ospfv2_global["config"] = {
             "openconfig-network-instance:log-adjacency-changes": False,
             "openconfig-network-instance:summary-route-cost-mode": "RFC1583_COMPATIBLE",
@@ -253,17 +257,22 @@ def set_ospf2_global_config(ospf_leftover, net_protocols, prot_index, ospf):
 
     ospfv2_global["openconfig-network-instance:config"] = ospfv2_global_config
 
+
 def set_graceful_restart_ietf(ospf_leftover, net_protocols, prot_index, ospf):
     ospfv2_global = get_ospfv2_global(net_protocols, prot_index)
-    graceful_restart_config = {"openconfig-network-instance:graceful-restart": {"openconfig-network-instance:config": {}}}
+    graceful_restart_config = {
+        "openconfig-network-instance:graceful-restart": {"openconfig-network-instance:config": {}}}
 
     if ospf.get("nsf-ietf") and ospf["nsf-ietf"].get("nsf") and "ietf" in ospf["nsf-ietf"]["nsf"]:
-        graceful_restart_config["openconfig-network-instance:graceful-restart"]["openconfig-network-instance:config"]["openconfig-network-instance:enabled"] = True
+        graceful_restart_config["openconfig-network-instance:graceful-restart"]["openconfig-network-instance:config"][
+            "openconfig-network-instance:enabled"] = True
         del ospf_leftover["nsf-ietf"]["nsf"]["ietf"]
     else:
-        graceful_restart_config["openconfig-network-instance:graceful-restart"]["openconfig-network-instance:config"]["openconfig-network-instance:enabled"] = False
+        graceful_restart_config["openconfig-network-instance:graceful-restart"]["openconfig-network-instance:config"][
+            "openconfig-network-instance:enabled"] = False
 
     ospfv2_global.update(graceful_restart_config)
+
 
 def set_vrf_lite(ospf_leftover, net_protocols, prot_index, ospf):
     ospfv2_global = get_ospfv2_global(net_protocols, prot_index)
@@ -277,18 +286,24 @@ def set_vrf_lite(ospf_leftover, net_protocols, prot_index, ospf):
     else:
         ospfv2_global["openconfig-network-instance:config"]["openconfig-ospfv2-ext:capability-vrf-lite"] = False
 
+
 def set_default_info_originate(ospf_leftover, net_protocols, prot_index, ospf):
     ospfv2_global = get_ospfv2_global(net_protocols, prot_index)
 
     if not "default-information" in ospf or not "originate" in ospf["default-information"]:
-        ospfv2_global["openconfig-network-instance:config"].update({"openconfig-ospfv2-ext:default-information-originate": {"openconfig-ospfv2-ext:config": {"openconfig-ospfv2-ext:enabled": False }}})
+        ospfv2_global["openconfig-network-instance:config"].update({
+                                                                       "openconfig-ospfv2-ext:default-information-originate": {
+                                                                           "openconfig-ospfv2-ext:config": {
+                                                                               "openconfig-ospfv2-ext:enabled": False}}})
         return
 
     if not "openconfig-network-instance:config" in ospfv2_global:
         ospfv2_global["openconfig-network-instance:config"] = {}
 
-    oc_default_info_originate = {"openconfig-ospfv2-ext:default-information-originate": {"openconfig-ospfv2-ext:config": {"openconfig-ospfv2-ext:enabled": True }}}
-    originate_config = oc_default_info_originate["openconfig-ospfv2-ext:default-information-originate"]["openconfig-ospfv2-ext:config"]
+    oc_default_info_originate = {"openconfig-ospfv2-ext:default-information-originate": {
+        "openconfig-ospfv2-ext:config": {"openconfig-ospfv2-ext:enabled": True}}}
+    originate_config = oc_default_info_originate["openconfig-ospfv2-ext:default-information-originate"][
+        "openconfig-ospfv2-ext:config"]
     default_info_originate = ospf["default-information"]["originate"]
 
     if "always" in default_info_originate:
@@ -315,6 +330,7 @@ def set_default_info_originate(ospf_leftover, net_protocols, prot_index, ospf):
 
     ospfv2_global["openconfig-network-instance:config"].update(oc_default_info_originate)
 
+
 def check_areas(ospf_leftover, net_protocols, vrf_interfaces, config_leftover, prot_index, ospf):
     intf_config_leftover = config_leftover.get("tailf-ned-cisco-ios:interface", {})
     ospfv2_area = get_ospfv2_area(net_protocols, prot_index)
@@ -340,6 +356,7 @@ def check_areas(ospf_leftover, net_protocols, vrf_interfaces, config_leftover, p
             intf_leftover = get_intf_by_intf_number(intf_attr_leftover, intf_number)
             set_ospfv2_intf_areas(ospfv2_area, intf_leftover, area, intf_name, current_intf, ospf, ospf_leftover)
 
+
 def populate_area_list(ospf):
     area_list = []
     area_id_set = set()
@@ -360,12 +377,14 @@ def populate_area_list(ospf):
         area_list.append({"id": area_id})
     return area_list
 
+
 def check_for_area_0(area_list):
     for area in area_list:
         if area["id"] == 0:
             return True
 
     return False
+
 
 def set_inter_area_propagation_policy(net_protocols, prot_index, area, leftover_area):
     if "id" in area and "filter-list" in area and len(area["filter-list"]) == 1:
@@ -375,8 +394,10 @@ def set_inter_area_propagation_policy(net_protocols, prot_index, area, leftover_
 
         if not "openconfig-network-instance:inter-area-propagation-policies" in ospfv2_global:
             ospfv2_global["openconfig-network-instance:inter-area-propagation-policies"] = {}
-        if not "openconfig-network-instance:inter-area-propagation-policy" in ospfv2_global["openconfig-network-instance:inter-area-propagation-policies"]:
-            ospfv2_global["openconfig-network-instance:inter-area-propagation-policies"]["openconfig-network-instance:inter-area-propagation-policy"] = []
+        if not "openconfig-network-instance:inter-area-propagation-policy" in ospfv2_global[
+            "openconfig-network-instance:inter-area-propagation-policies"]:
+            ospfv2_global["openconfig-network-instance:inter-area-propagation-policies"][
+                "openconfig-network-instance:inter-area-propagation-policy"] = []
 
         # Per Steven Mosher, 0 is the implied source area
         service_policy["openconfig-network-instance:src-area"] = 0
@@ -387,7 +408,8 @@ def set_inter_area_propagation_policy(net_protocols, prot_index, area, leftover_
             "openconfig-network-instance:import-policy": [import_policy_prefix]
         }
 
-        ospfv2_global["openconfig-network-instance:inter-area-propagation-policies"]["openconfig-network-instance:inter-area-propagation-policy"].append(service_policy)
+        ospfv2_global["openconfig-network-instance:inter-area-propagation-policies"][
+            "openconfig-network-instance:inter-area-propagation-policy"].append(service_policy)
 
         if len(leftover_area) > 0 and "filter-list" in leftover_area[0]:
             del leftover_area[0]["filter-list"]
@@ -396,10 +418,12 @@ def set_inter_area_propagation_policy(net_protocols, prot_index, area, leftover_
 def set_mpls_ldp_sync(ospf_leftover, net_protocols, prot_index, ospf):
     ospfv2_global = get_ospfv2_global(net_protocols, prot_index)
     is_igp_ldp_sync = "mpls" in ospf and "ldp" in ospf["mpls"] and "sync" in ospf["mpls"]["ldp"]
-    ospfv2_global["openconfig-network-instance:mpls"] = {"openconfig-network-instance:igp-ldp-sync": {"openconfig-network-instance:config": {"openconfig-network-instance:enabled": is_igp_ldp_sync}}}
+    ospfv2_global["openconfig-network-instance:mpls"] = {"openconfig-network-instance:igp-ldp-sync": {
+        "openconfig-network-instance:config": {"openconfig-network-instance:enabled": is_igp_ldp_sync}}}
 
     if is_igp_ldp_sync:
         del ospf_leftover["mpls"]["ldp"]["sync"]
+
 
 def set_timers_lsa(ospf_leftover, net_protocols, prot_index, ospf):
     if not "timers" in ospf or not "throttle" in ospf["timers"] or not "lsa" in ospf["timers"]["throttle"]:
@@ -420,11 +444,14 @@ def set_timers_lsa(ospf_leftover, net_protocols, prot_index, ospf):
             if not "openconfig-network-instance:lsa-generation" in ospfv2_global["openconfig-network-instance:timers"]:
                 ospfv2_global["openconfig-network-instance:timers"]["openconfig-network-instance:lsa-generation"] = {}
 
-            ospfv2_global["openconfig-network-instance:timers"]["openconfig-network-instance:lsa-generation"].update({"openconfig-network-instance:config": config})
+            ospfv2_global["openconfig-network-instance:timers"]["openconfig-network-instance:lsa-generation"].update(
+                {"openconfig-network-instance:config": config})
         else:
-            raise ValueError("XE OSPF throttle timers lsa needs values for start-interval, hold-interval, and max-interval")
+            raise ValueError(
+                "XE OSPF throttle timers lsa needs values for start-interval, hold-interval, and max-interval")
 
     del ospf_leftover["timers"]["throttle"]["lsa"]
+
 
 def set_timers_spf(ospf_leftover, net_protocols, prot_index, ospf):
     if not "timers" in ospf or not "throttle" in ospf["timers"] or not "spf" in ospf["timers"]["throttle"]:
@@ -445,11 +472,13 @@ def set_timers_spf(ospf_leftover, net_protocols, prot_index, ospf):
             if not "openconfig-network-instance:spf" in ospfv2_global["openconfig-network-instance:timers"]:
                 ospfv2_global["openconfig-network-instance:timers"]["openconfig-network-instance:spf"] = {}
 
-            ospfv2_global["openconfig-network-instance:timers"]["openconfig-network-instance:spf"].update({"openconfig-network-instance:config": config})
+            ospfv2_global["openconfig-network-instance:timers"]["openconfig-network-instance:spf"].update(
+                {"openconfig-network-instance:config": config})
         else:
             raise ValueError("XE OSPF throttle timers spf needs values for spf-start, spf-hold, and spf-max-wait")
 
     del ospf_leftover["timers"]["throttle"]["spf"]
+
 
 def set_auto_cost_ref_bandwidth(ospf_leftover, net_protocols, prot_index, ospf):
     # if not "auto-cost reference-bandwidth" in ospf:
@@ -459,9 +488,11 @@ def set_auto_cost_ref_bandwidth(ospf_leftover, net_protocols, prot_index, ospf):
     ospfv2_global = get_ospfv2_global(net_protocols, prot_index)
     auto_cost = ospf["auto-cost"]
 
-    ospfv2_global["openconfig-network-instance:config"].update({"openconfig-ospfv2-ext:auto-cost-ref-bandwidth": auto_cost["reference-bandwidth"]})
+    ospfv2_global["openconfig-network-instance:config"].update(
+        {"openconfig-ospfv2-ext:auto-cost-ref-bandwidth": auto_cost["reference-bandwidth"]})
 
     del ospf_leftover["auto-cost"]["reference-bandwidth"]
+
 
 def set_ospfv2_intf_areas(ospfv2_area, intf_leftover, area, intf_name, intf, ospf, ospf_leftover):
     intf_config = {"openconfig-network-instance:id": intf_name}
@@ -479,19 +510,23 @@ def set_ospfv2_intf_areas(ospfv2_area, intf_leftover, area, intf_name, intf, osp
     area_intf["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"].append({
         "openconfig-network-instance:id": intf_name,
         "openconfig-network-instance:config": intf_config,
-        "openconfig-network-instance:enable-bfd": {"openconfig-network-instance:config": {"openconfig-network-instance:enabled": is_bfd_enabled(intf, intf_leftover)}},
+        "openconfig-network-instance:enable-bfd": {"openconfig-network-instance:config": {
+            "openconfig-network-instance:enabled": is_bfd_enabled(intf, intf_leftover)}},
         "openconfig-network-instance:neighbors": set_neighbors(ospf, ospf_leftover),
         "openconfig-network-instance:timers": set_timers(intf, intf_leftover),
         "openconfig-ospfv2-ext:authentication": set_authentication(intf, intf_leftover),
     })
 
+
 def set_network_type(intf, intf_leftover, intf_config):
-    if ("ip" in intf and "ospf" in intf["ip"] and "network" in intf["ip"]["ospf"] and len(intf["ip"]["ospf"]["network"]) > 0
-        and intf["ip"]["ospf"]["network"][0] in ospf_network_types):
+    if ("ip" in intf and "ospf" in intf["ip"] and "network" in intf["ip"]["ospf"] and len(
+            intf["ip"]["ospf"]["network"]) > 0
+            and intf["ip"]["ospf"]["network"][0] in ospf_network_types):
         intf_config["openconfig-network-instance:network-type"] = ospf_network_types[intf["ip"]["ospf"]["network"][0]]
 
         if "network" in intf_leftover["ip"]["ospf"]:
             del intf_leftover["ip"]["ospf"]["network"]
+
 
 def set_metric(intf, intf_leftover, intf_config):
     if "ip" in intf and "ospf" in intf["ip"] and "cost" in intf["ip"]["ospf"]:
@@ -499,6 +534,7 @@ def set_metric(intf, intf_leftover, intf_config):
 
         if "cost" in intf_leftover["ip"]["ospf"]:
             del intf_leftover["ip"]["ospf"]["cost"]
+
 
 def set_passive(ospf, ospf_leftover, intf_config, intf_name):
     if "passive-interface" in ospf and "interface" in ospf["passive-interface"]:
@@ -513,12 +549,14 @@ def set_passive(ospf, ospf_leftover, intf_config, intf_name):
     if ("passive-interface" in ospf_leftover):
         del ospf_leftover["passive-interface"]
 
+
 def set_priority(intf, intf_leftover, intf_config):
     if "ip" in intf and "ospf" in intf["ip"] and "priority" in intf["ip"]["ospf"]:
         intf_config["openconfig-network-instance:priority"] = intf["ip"]["ospf"]["priority"]
 
         if "priority" in intf_leftover["ip"]["ospf"]:
             del intf_leftover["ip"]["ospf"]["priority"]
+
 
 def is_bfd_enabled(intf, intf_leftover):
     if "ip" in intf and "ospf" in intf["ip"] and "bfd" in intf["ip"]["ospf"]:
@@ -529,13 +567,15 @@ def is_bfd_enabled(intf, intf_leftover):
 
     return False
 
+
 def set_neighbors(ospf, ospf_leftover):
     neighbor = []
     if "neighbor" in ospf:
         for neighbor_index, ospf_neighbor in enumerate(ospf["neighbor"]):
             metric = ""
 
-            if "cost-database-filter-container" in ospf_neighbor and "cost" in ospf_neighbor["cost-database-filter-container"]:
+            if "cost-database-filter-container" in ospf_neighbor and "cost" in ospf_neighbor[
+                "cost-database-filter-container"]:
                 metric = ospf_neighbor["cost-database-filter-container"]["cost"]
 
             neighbor.append({
@@ -551,6 +591,7 @@ def set_neighbors(ospf, ospf_leftover):
 
     return {"neighbor": neighbor}
 
+
 def set_timers(intf, intf_leftover):
     config = {}
 
@@ -565,13 +606,14 @@ def set_timers(intf, intf_leftover):
         if "retransmit-interval" in intf_leftover["ip"]["ospf"]:
             del intf_leftover["ip"]["ospf"]["retransmit-interval"]
     if ("ip" in intf and "ospf" in intf["ip"] and "dead-interval" in intf["ip"]["ospf"]
-        and "seconds" in intf["ip"]["ospf"]["dead-interval"]):
+            and "seconds" in intf["ip"]["ospf"]["dead-interval"]):
         config["openconfig-network-instance:dead-interval"] = intf["ip"]["ospf"]["dead-interval"]["seconds"]
 
         if "dead-interval" in intf_leftover["ip"]["ospf"]:
             del intf_leftover["ip"]["ospf"]["dead-interval"]
 
     return {"openconfig-network-instance:config": config}
+
 
 def set_authentication(intf, intf_leftover):
     # Authentication type: unconfigured, null, simple and md5
@@ -592,7 +634,8 @@ def set_authentication(intf, intf_leftover):
         }
         del intf_leftover["ip"]["ospf"]["authentication"]
         if intf.get("ip", {}).get("ospf", {}).get("authentication-key", {}).get("secret", ""):
-            config["openconfig-ospfv2-ext:simple-password"] = intf.get("ip", {}).get("ospf", {}).get("authentication-key", {}).get("secret", "")
+            config["openconfig-ospfv2-ext:simple-password"] = intf.get("ip", {}).get("ospf", {}).get(
+                "authentication-key", {}).get("secret", "")
             intf["ip"]["ospf"]["authentication-key"]["secret"] = None
         auth_list.append(config)
     else:
@@ -615,7 +658,7 @@ def set_authentication(intf, intf_leftover):
                 auth_list.append(config)
             if intf_leftover["ip"]["ospf"]["authentication"][index]:
                 updated_ospf_auth_list.append(intf_leftover["ip"]["ospf"]["authentication"][index])
-        
+
         if len(updated_ospf_auth_list) > 0:
             intf_leftover["ip"]["ospf"]["authentication"] = updated_ospf_auth_list
         else:
@@ -625,6 +668,7 @@ def set_authentication(intf, intf_leftover):
         authentication.update(set_message_digest(intf, intf_leftover))
 
     return authentication
+
 
 def set_message_digest(intf, intf_leftover):
     # Configure md5 keys
@@ -647,11 +691,11 @@ def set_message_digest(intf, intf_leftover):
 
         if "message-digest-key" in intf_leftover["ip"]["ospf"]:
             intf_leftover["ip"]["ospf"]["message-digest-key"][index] = None
-        
+
     for md_key in intf_leftover.get("ip", {}).get("ospf", {}).get("message-digest-key", []):
         if md_key:
             updated_md_key_list.append(md_key)
-    
+
     if len(updated_md_key_list) > 0:
         intf_leftover["ip"]["ospf"]["message-digest-key"] = updated_md_key_list
     elif "message-digest-key" in intf_leftover["ip"]["ospf"]:
@@ -659,11 +703,13 @@ def set_message_digest(intf, intf_leftover):
 
     return mess_digest
 
+
 def set_ospfv2_areas(ospfv2_area, area, leftover_area, ospf, ospf_leftover):
     area_by_id = get_area_by_id(ospfv2_area, area["id"])
     set_traffic_eng(area_by_id, ospf, ospf_leftover)
     set_virtual_links(area_by_id, area, leftover_area)
     set_stub(area_by_id, area, leftover_area)
+
 
 def set_traffic_eng(area_by_id, ospf, ospf_leftover):
     is_enabled = False
@@ -674,14 +720,18 @@ def set_traffic_eng(area_by_id, ospf, ospf_leftover):
                 ospf_leftover["mpls"]["traffic-eng"]["area"][traffic_area_index] = None
                 break
 
-    area_by_id["openconfig-network-instance:mpls"] = {"openconfig-network-instance:config": {"openconfig-network-instance:traffic-engineering-enabled": is_enabled}}
+    area_by_id["openconfig-network-instance:mpls"] = {
+        "openconfig-network-instance:config": {"openconfig-network-instance:traffic-engineering-enabled": is_enabled}}
+
 
 def set_virtual_links(area_by_id, area, leftover_area):
     if "virtual-link" in area:
         for v_link_index, v_link in enumerate(area["virtual-link"]):
             if not "openconfig-network-instance:virtual-links" in area_by_id:
-                area_by_id["openconfig-network-instance:virtual-links"] = {"openconfig-network-instance:virtual-link": []}
-            if not "openconfig-network-instance:virtual-link" in area_by_id["openconfig-network-instance:virtual-links"]:
+                area_by_id["openconfig-network-instance:virtual-links"] = {
+                    "openconfig-network-instance:virtual-link": []}
+            if not "openconfig-network-instance:virtual-link" in area_by_id[
+                "openconfig-network-instance:virtual-links"]:
                 area_by_id["openconfig-network-instance:virtual-links"]["openconfig-network-instance:virtual-link"] = []
 
             area_by_id["openconfig-network-instance:virtual-links"]["openconfig-network-instance:virtual-link"].append({
@@ -691,6 +741,7 @@ def set_virtual_links(area_by_id, area, leftover_area):
 
             if len(leftover_area) > 0 and "virtual-link" in leftover_area[0]:
                 leftover_area[0]["virtual-link"][v_link_index] = None
+
 
 def set_stub(area_by_id, area, leftover_area):
     # This might not be necessary, since configs are coming directly from NEDs.

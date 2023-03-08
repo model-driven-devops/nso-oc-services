@@ -106,9 +106,9 @@ This sequence contains a deny operation, which is not supported in OpenConfig. T
             }
             prefixes.append(new_prefix)
 
-            # Ensure the value we're nullifying does exist
-            if common.get_index_or_default(seq_list_after, seq_index, None):
-                seq_list_after[seq_index] = None
+            # # Ensure the value we're nullifying does exist
+            # if common.get_index_or_default(seq_list_after, seq_index, None):
+            #     seq_list_after[seq_index] = None
 
         if all_processed:
             prefix_sets["openconfig-routing-policy:prefix-sets"]["openconfig-routing-policy:prefix-set"].append(new_prefix_set)
