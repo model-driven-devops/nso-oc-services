@@ -515,32 +515,7 @@ def xe_configure_vrrp_v3(s, interface_cdb: ncs.maagic.ListElement,
                     if not interface_cdb.vrrv3p_v3.vrrp.exists((v.virtual_router_id, address_family)):
                         interface_cdb.vrrv3p_v3.vrrp.create(v.virtual_router_id, address_family)
                     vrrp_group = interface_cdb.vrrv3p_v3.vrrp[v.virtual_router_id, address_family]
-                    # priority
-                    if v.config.priority:
-                        vrrp_group.priority = v.config.priority
-                    # preempt
-                    if v.config.preempt:
-                        if v.config.preempt_delay:
-                            vrrp_group.preempt.delay.minimum = v.config.preempt_delay
-                        else:
-                            vrrp_group.preempt.delay.minimum = 0
-                    # virtual address
-                    if v.config.virtual_address:
-                        for counter, address in enumerate(v.config.virtual_address):
-                            if counter == 0:
-                                address_1 = vrrp_group.address.primary_list.create(address)
-                                if address_family == 'ipv6':
-                                    address_1.primary.create()
-                            # else:  TODO add secondaries
-                            #     vrrp_group.address.secondary_address.create(address)
-                    if v.config.advertisement_interval:  # <100-40950>  Advertisement interval in milliseconds
-                        msec = v.config.advertisement_interval * 10
-                        if 100 < msec < 40950:
-                            vrrp_group.timers.advertise.seconds = msec
-                        else:
-                            raise ValueError('XE VRRPv3 advertisement interval must be between 10 and 4095 centiseconds')
-                    # VRRP interface tracking TODO
-
+                    configure_vrrp(vrrp_group, v, False, address_family)
 
 def xe_configure_vrrp_v2_legacy(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container) -> None:
     """
@@ -555,27 +530,56 @@ def xe_configure_vrrp_v2_legacy(s, interface_cdb: ncs.maagic.ListElement, servic
                     if not interface_cdb.vrrp.exists(v.virtual_router_id):
                         interface_cdb.vrrp.create(v.virtual_router_id)
                     vrrp_group = interface_cdb.vrrp[v.virtual_router_id]
-                    # accept_mode TODO
-                    # priority
-                    if v.config.priority:
-                        vrrp_group.priority = v.config.priority
-                    # preempt
-                    if v.config.preempt:
-                        if v.config.preempt_delay:
-                            vrrp_group.preempt.delay.minimum = v.config.preempt_delay
-                        else:
-                            vrrp_group.preempt.delay.minimum = 0
-                    # virtual address
-                    if v.config.virtual_address:
-                        for counter, address in enumerate(v.config.virtual_address):
-                            if counter == 0:
-                                vrrp_group.ip.address = address
-                            # else:  TODO add secondaries
-                            #     vrrp_group.ip.secondary_address.create(address)
-                    if v.config.advertisement_interval:
-                        vrrp_group.timers.advertise.seconds = v.config.advertisement_interval // 100  # oc-ip uses centiseconds
-                    # VRRP interface tracking TODO
+                    configure_vrrp(vrrp_group, v)
 
+def configure_vrrp(vrrp_group, oc_vrrp_group, is_v2 = True, address_family = None):
+    # accept_mode TODO
+    # priority
+    if oc_vrrp_group.config.priority:
+        vrrp_group.priority = oc_vrrp_group.config.priority
+    else:
+        if vrrp_group.priority != None:
+            vrrp_group.priority.delete()
+    # preempt
+    if oc_vrrp_group.config.preempt:
+        if oc_vrrp_group.config.preempt_delay:
+            vrrp_group.preempt.delay.minimum = oc_vrrp_group.config.preempt_delay
+        else:
+            vrrp_group.preempt.delay.minimum = 0
+    else:
+        if vrrp_group.preempt.delay.minimum != None:
+            vrrp_group.preempt.delay.minimum.delete()
+    # virtual address
+    if oc_vrrp_group.config.virtual_address:
+        for counter, address in enumerate(oc_vrrp_group.config.virtual_address):
+            if is_v2:
+                if counter == 0:
+                    vrrp_group.ip.address = address
+                # else:  TODO add secondaries
+                #     vrrp_group.ip.secondary_address.create(address)
+            else:
+                if counter == 0:
+                    address_1 = vrrp_group.address.primary_list.create(address)
+                    if address_family == 'ipv6':
+                        address_1.primary.create()
+                # else:  TODO add secondaries
+                #     vrrp_group.address.secondary_address.create(address)
+    else:
+        if vrrp_group.ip.address:
+            vrrp_group.ip.address.delete()
+    if oc_vrrp_group.config.advertisement_interval:  # <100-40950>  Advertisement interval in milliseconds
+        if is_v2:
+            vrrp_group.timers.advertise.seconds = oc_vrrp_group.config.advertisement_interval // 100  # oc-ip uses centiseconds
+        else:
+            msec = oc_vrrp_group.config.advertisement_interval * 10
+            if 100 < msec < 40950:
+                vrrp_group.timers.advertise.seconds = msec
+            else:
+                raise ValueError('XE VRRPv3 advertisement interval must be between 10 and 4095 centiseconds')
+    else:
+        if vrrp_group.timers.advertise.seconds != None:
+            vrrp_group.timers.advertise.seconds.delete()
+    # VRRP interface tracking TODO
 
 def xe_configure_hsrp_v1(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container) -> None:
     """

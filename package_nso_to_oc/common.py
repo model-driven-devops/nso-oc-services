@@ -117,7 +117,7 @@ def print_and_test_configs(device_name, config_before_dict, config_leftover_dict
     # Determine the project root dir, where we will create our output_data dir (if it doesn't exist).
     # output_data_dir is meant to contain data/config files that we don't want in version control.
     # project_path = str(Path(__file__).resolve().parents[1])
-    project_path = os.getcwd()
+    project_path = os.environ.get("NSO_OC_SERVICES_PATH", os.getcwd()) 
     output_data_dir = f"{project_path}{path_os.sep}output_data{path_os.sep}"
     Path(output_data_dir).mkdir(parents=True, exist_ok=True)
 
