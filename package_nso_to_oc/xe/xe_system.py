@@ -1466,7 +1466,6 @@ def set_nat_inside(nat_inside_source, config_leftover):
     nat_inside_list = nat_inside["openconfig-system-ext:local-addresses-access-list"]
     # LIST OF NAT ACLs
     for inside_source in nat_inside_source.get("list", []):
-        for inside_source in nat_inside_source.get("list"):
             overload = False # Initialize variable
             if "overload" in inside_source:
                 overload = True
