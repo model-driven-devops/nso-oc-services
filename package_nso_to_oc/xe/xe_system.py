@@ -1478,7 +1478,7 @@ def set_nat_inside(nat_inside_source, config_leftover):
                                 }}
             nat_inside_list.append(temp_nat_inside)
     # LIST OF NAT ACLs WITH VRF
-    if nat_inside_source.get("list-vrf"):
+    for inside_source in nat_inside_source.get("list-vrf", {}).get("list", []):
         for inside_source in nat_inside_source["list-vrf"]["list"]:
             temp_nat_inside = {"openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}', 
                               "openconfig-system-ext:config": {
