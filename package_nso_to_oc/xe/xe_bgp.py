@@ -33,75 +33,75 @@ peers = {}
 def configure_xe_bgp(net_inst, config_before, config_leftover, network_instances_notes):
     neighbors.clear()
     peers.clear()
+    bgp_before = config_before.get("tailf-ned-cisco-ios:router", {"bgp": []}).get("bgp")
+
+    if bgp_before == None or len(bgp_before) == 0:
+        return
+
     instance_name = net_inst["openconfig-network-instance:name"]
     net_protocols = net_inst["openconfig-network-instance:protocols"]["openconfig-network-instance:protocol"]
     bgp_protocol = get_bgp_protocol(net_protocols)
-    bgp_before = config_before.get("tailf-ned-cisco-ios:router", {"bgp": []}).get("bgp")
     bgp_leftover = config_leftover.get("tailf-ned-cisco-ios:router", {"bgp": []}).get("bgp")
     bgp_protocol_bgp = bgp_protocol["openconfig-network-instance:bgp"]
 
-    if bgp_before != None and len(bgp_before) > 0:
-        bgp_protocol["openconfig-network-instance:config"]["openconfig-network-instance:enabled"] = True
-        bgp_protocol_bgp["openconfig-network-instance:global"] = {
-            "openconfig-network-instance:config": {
-                "openconfig-network-instance:as": bgp_before[0].get("as-no")
-            }
+    bgp_protocol["openconfig-network-instance:config"]["openconfig-network-instance:enabled"] = True
+    bgp_protocol_bgp["openconfig-network-instance:global"] = {
+        "openconfig-network-instance:config": {
+            "openconfig-network-instance:as": bgp_before[0].get("as-no")
         }
-        oc_bgp_global = bgp_protocol_bgp["openconfig-network-instance:global"]
+    }
+    oc_bgp_global = bgp_protocol_bgp["openconfig-network-instance:global"]
 
-        # remaining will need asn
-        # if bgp_leftover[0].get("as-no") != None:
-        #     del bgp_leftover[0]["as-no"]
+    # remaining will need asn
+    # if bgp_leftover[0].get("as-no") != None:
+    #     del bgp_leftover[0]["as-no"]
 
-        if instance_name == "default":
-            process_bgp_global(oc_bgp_global, bgp_before[0], bgp_leftover[0])
-            process_neighbor_and_neighbor_tag(False, ATTR_PEER, bgp_before[0], bgp_leftover[0])
-            process_neighbor_and_neighbor_tag(False, ATTR_NEIGHBOR, bgp_before[0], bgp_leftover[0])
+    if instance_name == "default":
+        process_bgp_global(oc_bgp_global, bgp_before[0], bgp_leftover[0])
+        process_neighbor_and_neighbor_tag(False, ATTR_PEER, bgp_before[0], bgp_leftover[0])
+        process_neighbor_and_neighbor_tag(False, ATTR_NEIGHBOR, bgp_before[0], bgp_leftover[0])
 
-        # if bgp_before[0].get("bgp", {}).get("default", {}).get("ipv4-unicast", True) == False:
-        oc_bgp_global["openconfig-network-instance:afi-safis"] = {"openconfig-network-instance:afi-safi": []}
-        oc_bgp_afi = oc_bgp_global["openconfig-network-instance:afi-safis"]["openconfig-network-instance:afi-safi"]
-        
-        if instance_name == "default":
-            process_address_family_default(bgp_protocol_bgp, oc_bgp_afi, bgp_before[0], bgp_leftover[0])
-        else:
-            process_address_family_vrf(instance_name, bgp_protocol_bgp, oc_bgp_afi, bgp_before[0], bgp_leftover[0])
-
-        if bgp_leftover[0].get("bgp", {}).get("default", {}).get("ipv4-unicast") != None:
-            del bgp_leftover[0]["bgp"]["default"]["ipv4-unicast"]
-        if bgp_leftover[0].get("bgp", {}).get("default") != None and len(bgp_leftover[0]["bgp"]["default"]) == 0:
-            del bgp_leftover[0]["bgp"]["default"]
-
-        if len(oc_bgp_afi) == 0:
-            del oc_bgp_global["openconfig-network-instance:afi-safis"]
-        if len(peers.values()) == 0:
-            del bgp_protocol_bgp["openconfig-network-instance:peer-groups"]
-        else:
-            bgp_protocol_bgp["openconfig-network-instance:peer-groups"][
-                "openconfig-network-instance:peer-group"] = list(peers.values())
-        if len(neighbors.values()) == 0:
-            del bgp_protocol_bgp["openconfig-network-instance:neighbors"]
-        else:
-            bgp_protocol_bgp["openconfig-network-instance:neighbors"][
-                "openconfig-network-instance:neighbor"] = list(neighbors.values())
+    # if bgp_before[0].get("bgp", {}).get("default", {}).get("ipv4-unicast", True) == False:
+    oc_bgp_global["openconfig-network-instance:afi-safis"] = {"openconfig-network-instance:afi-safi": []}
+    oc_bgp_afi = oc_bgp_global["openconfig-network-instance:afi-safis"]["openconfig-network-instance:afi-safi"]
+    
+    if instance_name == "default":
+        process_address_family_default(bgp_protocol_bgp, oc_bgp_afi, bgp_before[0], bgp_leftover[0])
     else:
-        bgp_protocol["openconfig-network-instance:config"]["openconfig-network-instance:enabled"] = False
-        
-        return
+        process_address_family_vrf(instance_name, bgp_protocol_bgp, oc_bgp_afi, bgp_before[0], bgp_leftover[0])
+
+    if bgp_leftover[0].get("bgp", {}).get("default", {}).get("ipv4-unicast") != None:
+        del bgp_leftover[0]["bgp"]["default"]["ipv4-unicast"]
+    if bgp_leftover[0].get("bgp", {}).get("default") != None and len(bgp_leftover[0]["bgp"]["default"]) == 0:
+        del bgp_leftover[0]["bgp"]["default"]
+
+    if len(oc_bgp_afi) == 0:
+        del oc_bgp_global["openconfig-network-instance:afi-safis"]
+    if len(peers.values()) == 0:
+        del bgp_protocol_bgp["openconfig-network-instance:peer-groups"]
+    else:
+        bgp_protocol_bgp["openconfig-network-instance:peer-groups"][
+            "openconfig-network-instance:peer-group"] = list(peers.values())
+    if len(neighbors.values()) == 0:
+        del bgp_protocol_bgp["openconfig-network-instance:neighbors"]
+    else:
+        bgp_protocol_bgp["openconfig-network-instance:neighbors"][
+            "openconfig-network-instance:neighbor"] = list(neighbors.values())
     
     network_instances_notes += xe_bgp_notes
 
 def configure_xe_bgp_redistribution(net_inst, config_before, config_leftover, network_instances_notes):
+    bgp_before = config_before.get("tailf-ned-cisco-ios:router", {"bgp": []}).get("bgp")
+
+    if bgp_before == None or len(bgp_before) == 0:
+        return
+        
     instance_name = net_inst["openconfig-network-instance:name"]
     bgp_protocol = get_bgp_protocol(net_inst["openconfig-network-instance:protocols"][
         "openconfig-network-instance:protocol"])
     afi = (bgp_protocol.get("openconfig-network-instance:bgp", {}).get("openconfig-network-instance:global", {})
         .get("openconfig-network-instance:afi-safis", {}).get("openconfig-network-instance:afi-safi", []))
-    bgp_before = config_before.get("tailf-ned-cisco-ios:router", {"bgp": []}).get("bgp")
     bgp_leftover = config_leftover.get("tailf-ned-cisco-ios:router", {"bgp": []}).get("bgp")
-
-    if bgp_before == None or len(bgp_before) == 0:
-        return
 
     redistribute = None
     redistribute_leftover = {}
