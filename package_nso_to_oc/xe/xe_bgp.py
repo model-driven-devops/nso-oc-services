@@ -579,10 +579,10 @@ def process_neighbor_and_neighbor_tag(is_afi_safi, attr_name, bgp_before, bgp_le
                 process_peer_group(neighbor, peer_or_neighbor, index, neighbor_leftover)
                 process_ttl_security(neighbor, peer_or_neighbor, index, neighbor_leftover)
         if len(neighbor_leftover) > index and neighbor_leftover[index] != None:
-            if "id" in neighbor_leftover[index]:
-                del neighbor_leftover[index]["id"]
             if "peer-group" in neighbor_leftover[index]:
                 del neighbor_leftover[index]["peer-group"]
+            if "id" in neighbor_leftover[index] and len(neighbor_leftover[index]) == 1:
+                del neighbor_leftover[index]["id"]
         if (len(neighbor_leftover) > index and neighbor_leftover[index] != None
             and len(neighbor_leftover[index]) == 0):
             neighbor_leftover[index] = None
@@ -678,7 +678,7 @@ def process_peer_and_neighbor_config(neighbor, peer_group_or_neighbor, index, ne
         delete_leftover_neighbor_prop("description", index, neighbor_leftover)
     if neighbor.get("password", {}).get("text"):
         peer_or_neighbor_config["openconfig-network-instance:auth-password"] = neighbor["password"]["text"]
-        del neighbor_leftover[index]["password"]["text"]
+        del neighbor_leftover[index]["password"]
         # delete_leftover_neighbor_prop("password", index, neighbor_leftover)
     if is_afi_safi:
         if neighbor.get("local-as", {}).get("as-no"):
