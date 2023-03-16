@@ -458,7 +458,7 @@ def process_address_family_default(bgp_protocol_bgp, oc_bgp_afi, bgp_config_befo
             process_neighbor_and_neighbor_tag(True, ATTR_NEIGHBOR, afi_ipv4, 
                 afi_ipv4_leftover, "IPV4_UNICAST")
 
-            if afi_ipv4_leftover != None and afi_ipv4_leftover.get("af"):
+            if afi_ipv4_leftover != None and afi_ipv4_leftover.get("af") and len(afi_ipv4_leftover) == 1:
                 del afi_ipv4_leftover["af"]
             if afi_ipv4_leftover != None and len(afi_ipv4_leftover) == 0:
                 bgp_config_leftover["address-family"]["ipv4"][index] = None
@@ -472,7 +472,7 @@ def process_address_family_default(bgp_protocol_bgp, oc_bgp_afi, bgp_config_befo
             process_neighbor_and_neighbor_tag(True, ATTR_NEIGHBOR, afi_vpnv4, 
                 afi_vpnv4_leftover, "L3VPN_IPV4_UNICAST")
 
-            if afi_vpnv4_leftover != None and afi_vpnv4_leftover.get("af"):
+            if afi_vpnv4_leftover != None and afi_vpnv4_leftover.get("af") and len(afi_vpnv4_leftover) == 1:
                 del afi_vpnv4_leftover["af"]
             # bgp_config_leftover.get("address-family", {}).get("vpnv4", [])[index] = None
     
@@ -499,10 +499,12 @@ def process_address_family_vrf(vrf_name, bgp_protocol_bgp, oc_bgp_afi, bgp_confi
                     process_neighbor_and_neighbor_tag(True, ATTR_NEIGHBOR, afi_ipv4_vrf, 
                         afi_vrf_ipv4_leftover, "IPV4_UNICAST")
 
-                    if afi_vrf_ipv4_leftover != None and afi_vrf_ipv4_leftover.get("name"):
+                    if (afi_vrf_ipv4_leftover != None and afi_vrf_ipv4_leftover.get("name")
+                        and len(afi_vrf_ipv4_leftover) == 1):
                         del afi_vrf_ipv4_leftover["name"] 
 
-            if afi_vrf_leftover[index] != None and afi_vrf_leftover[index].get("af"):
+            if (afi_vrf_leftover[index] != None and afi_vrf_leftover[index].get("af") 
+                and len(afi_vrf_leftover[index]) == 1):
                 del afi_vrf_leftover[index]["af"]
     
     if len(bgp_config_before.get("address-family", {}).get("ipv6-with-vrf", {}).get("ipv6", [])) > 0:
@@ -531,10 +533,10 @@ def process_af_ipv4_unicast(afi_ipv4_before, afi_ipv4_after):
     }
 
     # This funciton is used by both VRF and default instance. Default does not have name field.
-    if "name" in afi_ipv4_after:
-        del afi_ipv4_after["name"]
     if "default-information" in afi_ipv4_after:
         del afi_ipv4_after["default-information"]
+    if "name" in afi_ipv4_after and len(afi_ipv4_after) == 1:
+        del afi_ipv4_after["name"]
 
     return afi_data
 
