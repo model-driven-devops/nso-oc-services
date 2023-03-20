@@ -105,22 +105,23 @@ def configure_xe_bgp_redistribution(net_inst, config_before, config_leftover, ne
 
     redistribute = None
     redistribute_leftover = {}
-    
-    if instance_name == "default":
-        if len(afi) > 0:
+
+    vrf_index = None
+    ipv4_index = None
+    if len(afi) > 0:
+        if "with-vrf" in bgp_leftover[0]["address-family"]:
+            (redistribute, ipv4_index, vrf_index) = get_vrf_redistribute(instance_name, bgp_before[0])
+        else:
             (redistribute, ipv4_index) = get_global_redistribute(bgp_before[0])
 
+    if vrf_index is None and ipv4_index:
+        if len(afi) > 0:
             if len(bgp_leftover[0].get("address-family", {}).get("ipv4", [])) > 0:
                 redistribute_leftover = bgp_leftover[0]["address-family"]["ipv4"][ipv4_index].get("redistribute")
             else:
                 redistribute_leftover = {}
-        else:
-            redistribute = bgp_before[0].get("redistribute")
-            redistribute_leftover = bgp_leftover[0].get("redistribute")
-    else:
+    elif vrf_index and ipv4_index:
         if len(afi) > 0:
-            (redistribute, ipv4_index, vrf_index) = get_vrf_redistribute(instance_name, bgp_before[0])
-
             if len(bgp_leftover[0].get("address-family", {}).get("with-vrf", {}).get("ipv4", [])) > ipv4_index:
                 ipv4_vrf = bgp_leftover[0]["address-family"]["with-vrf"]["ipv4"][ipv4_index]
 
@@ -134,12 +135,12 @@ def configure_xe_bgp_redistribution(net_inst, config_before, config_leftover, ne
 
     process_redistribute(net_inst, redistribute, redistribute_leftover)
 
-    if instance_name == "default":
+    if vrf_index is None and ipv4_index:
         if len(afi) > 0 and redistribute_leftover != None and len(redistribute_leftover) == 0:
             del bgp_leftover[0]["address-family"]["ipv4"][ipv4_index]["redistribute"]
         elif redistribute_leftover != None and len(redistribute_leftover) == 0:
             del bgp_leftover[0]["redistribute"]
-    else:
+    elif vrf_index and ipv4_index:
         if len(afi) > 0 and redistribute_leftover != None and len(redistribute_leftover) == 0:
             del bgp_leftover[0]["address-family"]["with-vrf"]["ipv4"][ipv4_index]["vrf"][vrf_index]["redistribute"]
 
@@ -199,7 +200,8 @@ def create_protocol_config(table_connections, redistribute, redistribute_leftove
         if len(updated_prot_list) > 0:
             redistribute_leftover[protocol] = updated_prot_list
         else:
-            del redistribute_leftover[protocol]
+            if redistribute_leftover != {}:
+                del redistribute_leftover[protocol]
     else:
         proto_config = append_new_to_table_connections(protocol, table_connections)
         temp_redistribute_leftover = redistribute_leftover.get(protocol) if redistribute_leftover else None
