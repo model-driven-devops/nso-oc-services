@@ -1307,7 +1307,8 @@ def xe_system_timestamps(config_before: dict, config_leftover: dict) -> None:
         if len(config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]) == 0:
             del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]["log"]
     # Clean up timestamps
-    if len(config_leftover["tailf-ned-cisco-ios:service"].get("timestamps")) == 0:
+    if (config_leftover["tailf-ned-cisco-ios:service"].get("timestamps")
+        and len(config_leftover["tailf-ned-cisco-ios:service"].get("timestamps")) == 0):
         del config_leftover["tailf-ned-cisco-ios:service"]["timestamps"]
 
 

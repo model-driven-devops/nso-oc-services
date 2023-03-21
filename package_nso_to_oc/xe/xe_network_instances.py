@@ -371,9 +371,9 @@ def clean_up_default_neighbors_and_peers(bgp_before, bgp_leftover):
     for ipv4_index, afi_ipv4 in enumerate(bgp_before.get("address-family", {}).get("ipv4", [])):
         if afi_ipv4.get("af") == "unicast":
             delete_peers_and_neighbors(bgp_leftover["address-family"]["ipv4"][ipv4_index])
-        if bgp_leftover["address-family"]["ipv4"] != [None]:
-            if len(bgp_leftover["address-family"]["ipv4"][ipv4_index]) > 0:
-                updated_ipv4_list.append(bgp_leftover["address-family"]["ipv4"][ipv4_index])
+        if (bgp_leftover["address-family"]["ipv4"][ipv4_index]
+            and len(bgp_leftover["address-family"]["ipv4"][ipv4_index]) > 0):
+            updated_ipv4_list.append(bgp_leftover["address-family"]["ipv4"][ipv4_index])
     for vpnv4_index, afi_vpnv4 in enumerate(bgp_before.get("address-family", {}).get("vpnv4", [])):
         if afi_vpnv4.get("af") == "unicast":
             delete_peers_and_neighbors(bgp_leftover["address-family"]["vpnv4"][vpnv4_index])
