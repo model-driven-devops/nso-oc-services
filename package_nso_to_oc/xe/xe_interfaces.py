@@ -667,6 +667,8 @@ def xe_interface_hold_time(config_before: dict, config_leftover: dict, v: dict) 
 
 def xe_configure_vrrp_interfaces(nso_before_interface: dict, nso_leftover_interface: dict) -> dict:
     """Configure VRRP"""
+    updated_vrrp = []
+
     service_vrrp = {"openconfig-if-ip:vrrp": {"openconfig-if-ip:vrrp-group": []}}
     for number, group in enumerate(nso_before_interface.get("vrrp")):
         if group.get("id"):
@@ -700,6 +702,11 @@ def xe_configure_vrrp_interfaces(nso_before_interface: dict, nso_leftover_interf
                     group.get("timers", {}).get("advertise").get("seconds")) * 100
                 del nso_leftover_interface["vrrp"][number]["timers"]["advertise"]
             service_vrrp["openconfig-if-ip:vrrp"]["openconfig-if-ip:vrrp-group"].append(service_vrrp_group)
+            # Clean up
+            if nso_leftover_interface["vrrp"][number] and len(nso_leftover_interface["vrrp"][number]) > 0:
+                updated_vrrp.append(nso_leftover_interface["vrrp"][number])
+    nso_leftover_interface["vrrp"] = updated_vrrp
+    
     return service_vrrp
 
 
