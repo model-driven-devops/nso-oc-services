@@ -629,6 +629,17 @@ def mtu_set(nso_before_interface: dict, nso_leftover_interface: dict, openconfig
         except:
             pass
 
+
+def xe_interface_encapsulation(nso_before_interface: dict, nso_leftover_interface: dict, openconfig_interface: dict) -> None:
+    # Encapsulation
+    if nso_before_interface.get("encapsulation", {}).get("dot1Q", {}).get("vlan-id"):
+        openconfig_interface.update(
+            {"openconfig-vlan:vlan": {"openconfig-vlan:config": {
+                "openconfig-vlan:vlan-id": nso_before_interface.get("encapsulation", {}).get("dot1Q", {}).get(
+                    "vlan-id")}}})
+        del nso_leftover_interface["encapsulation"]
+
+
 def xe_interface_config(nso_before_interface: dict, nso_leftover_interface: dict, openconfig_interface: dict) -> None:
     """
     Configure basic interface functions, i.e. description, shutdown, MTU
@@ -780,6 +791,7 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
 
         # Configure sub-interface
         xe_interface_config(nso_before_interface, nso_leftover_interface, openconfig_interface)
+        xe_interface_encapsulation(nso_before_interface, nso_leftover_interface, openconfig_interface)
 
         path_oc = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
                    interface_directory["oc_interface_index"]]
