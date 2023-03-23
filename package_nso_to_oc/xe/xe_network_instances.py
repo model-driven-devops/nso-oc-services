@@ -237,7 +237,6 @@ def process_rd_rt(temp_vrf, vrf, vrf_index, config_leftover):
         if "ipv4" in vrf.get("address-family", {}) and len(vrf.get("address-family", {}).get("ipv4", {"1": "1"})) == 0:
             del config_leftover["tailf-ned-cisco-ios:vrf"]["definition"][vrf_index]["address-family"]["ipv4"]
         temp_vrf.update(temp_policies)
-        print(temp_vrf)
         # TODO IPv6 RT import and export policies
 
 
