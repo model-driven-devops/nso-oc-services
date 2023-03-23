@@ -213,6 +213,32 @@ def process_rd_rt(temp_vrf, vrf, vrf_index, config_leftover):
 
         del config_leftover["tailf-ned-cisco-ios:vrf"]["definition"][vrf_index]["rd"]
 
+        # IPv4 RT import and export policies
+        temp_policies = {
+            "openconfig-network-instance:inter-instance-policies": {
+                "openconfig-network-instance:apply-policy": {
+                    "openconfig-network-instance:config": {
+                        "openconfig-network-instance:export-policy": [],
+                        "openconfig-network-instance:import-policy": []}}}}
+        if vrf.get("address-family", {}).get("ipv4", {}).get("import", {}).get("ipv4", {}).get("unicast", {}).get(
+                "map"):
+            temp_policies["openconfig-network-instance:inter-instance-policies"][
+                "openconfig-network-instance:apply-policy"]["openconfig-network-instance:config"][
+                "openconfig-network-instance:import-policy"].append(
+                vrf.get("address-family", {}).get("ipv4", {}).get("import", {}).get("ipv4", {}).get("unicast", {}).get(
+                    "map"))
+            del config_leftover["tailf-ned-cisco-ios:vrf"]["definition"][vrf_index]["address-family"]["ipv4"]["import"]
+        if vrf.get("address-family", {}).get("ipv4", {}).get("export", {}).get("map"):
+            temp_policies["openconfig-network-instance:inter-instance-policies"][
+                "openconfig-network-instance:apply-policy"]["openconfig-network-instance:config"][
+                "openconfig-network-instance:export-policy"].append(
+                vrf.get("address-family", {}).get("ipv4", {}).get("export", {}).get("map"))
+            del config_leftover["tailf-ned-cisco-ios:vrf"]["definition"][vrf_index]["address-family"]["ipv4"]["export"]
+        if "ipv4" in vrf.get("address-family", {}) and len(vrf.get("address-family", {}).get("ipv4", {"1": "1"})) == 0:
+            del config_leftover["tailf-ned-cisco-ios:vrf"]["definition"][vrf_index]["address-family"]["ipv4"]
+        temp_vrf.update(temp_policies)
+        # TODO IPv6 RT import and export policies
+
 
 def process_rt(temp_vrf, vrf, rt_type):
     for rt in vrf["route-target"].get(rt_type, []):
