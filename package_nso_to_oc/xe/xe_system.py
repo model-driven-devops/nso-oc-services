@@ -395,6 +395,13 @@ def xe_system_ntp(config_before: dict, config_leftover: dict, if_ip: dict) -> No
     """
     openconfig_system_ntp = openconfig_system["openconfig-system:system"]["openconfig-system:ntp"]
 
+    # Enable NTP
+    if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("server", {}).get("peer-list") or \
+        config_before.get("tailf-ned-cisco-ios:ntp", {}).get("server", {}).get("vrf") or \
+        config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer", {}).get("peer-list") or \
+        config_before.get("tailf-ned-cisco-ios:ntp", {}).get("peer", {}).get("vrf"):
+        openconfig_system_ntp["openconfig-system:config"]["openconfig-system:enabled"] = True
+
     if config_before.get("tailf-ned-cisco-ios:ntp", {}).get("authenticate"):
         openconfig_system_ntp["openconfig-system:config"]["openconfig-system:enable-ntp-auth"] = True
         del config_leftover["tailf-ned-cisco-ios:ntp"]["authenticate"]
