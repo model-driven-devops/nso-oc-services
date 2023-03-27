@@ -75,8 +75,107 @@ def xe_network_instances(config_before: dict, config_leftover: dict) -> None:
     route_forwarding_list_by_vrf = get_route_forwarding_list_by_vrf(config_before)
     configure_network_instances(config_before, config_leftover, interfaces_by_vrf, route_forwarding_list_by_vrf)
 
+    if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("multicast-routing", {}).get("distributed", '')) is list:
+        configure_pim_network_instance(config_before, config_leftover)
+
     cleanup_null_ospf_leftovers(config_leftover)
     cleanup_null_static_route_leftovers(config_leftover)
+
+
+def configure_pim_network_instance(config_before, config_leftover):
+    """
+    Translates NSO XE NED to MDD OpenConfig Network Instance for IP multicast and interface PIM configuration
+    """
+
+    pim_protocol_by_networkinstance = {}
+
+    pim_protocol_instance = {
+        "openconfig-network-instance:identifier": "PIM",
+        "openconfig-network-instance:name": "PIM",
+        "openconfig-network-instance:config": {
+            "openconfig-network-instance:identifier": "PIM",
+            "openconfig-network-instance:name": "PIM",
+            "openconfig-network-instance:enabled": True,
+            "openconfig-network-instance:default-metric": 1
+        },
+        "openconfig-network-instance:pim": {
+            "openconfig-network-instance:interfaces": {
+                "openconfig-network-instance:interface": [
+                ]
+            }
+        }
+    }
+    pim_interface = {
+        "openconfig-network-instance:interface-id": "",
+        "openconfig-network-instance:config": {
+            "openconfig-network-instance:enabled": "",
+            "openconfig-network-instance:interface-id": "",
+            "openconfig-network-instance:mode": "",
+            "openconfig-network-instance:dr-priority": 0,
+            "openconfig-network-instance:hello-interval": 0
+        },
+        "openconfig-network-instance:interface-ref": {
+            "openconfig-network-instance:config": {
+                "openconfig-network-instance:interface": "",
+                "openconfig-network-instance:subinterface": ""
+            }
+        }
+    }
+
+    for interface_type in config_before.get("tailf-ned-cisco-ios:interface", {}):
+        for nso_index, value in enumerate(config_before["tailf-ned-cisco-ios:interface"][interface_type]):
+            tmp_pim_interface = copy.deepcopy(pim_interface)
+            if value.get("ip", {}).get("pim", {}):
+                int_num = str(value['name']).split(".")[0]
+                subint_num = 0
+                if "." in str(value['name']):
+                    subint_num = value['name'].split(".")[1]
+
+                tmp_pim_interface["openconfig-network-instance:interface-id"] = int_num
+                tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:enabled"] = True
+                tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:interface-id"] = int_num
+                tmp_pim_interface["openconfig-network-instance:interface-ref"]["openconfig-network-instance:config"]["openconfig-network-instance:interface"] = interface_type + int_num
+                tmp_pim_interface["openconfig-network-instance:interface-ref"]["openconfig-network-instance:config"]["openconfig-network-instance:subinterface"] = subint_num
+
+                for pim_key, pim_value in value.get("ip", {}).get("pim", {}).items():
+                    if "dr-priority" in pim_key:
+                        tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:dr-priority"] = pim_value
+                    if "query-interval" in pim_key:
+                        tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:hello-interval"] = pim_value
+                    if "mode" in pim_key:
+                        if "sparse-dense-mode" in pim_value:
+                            tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:mode"] = "openconfig-pim-types:PIM_MODE_DENSE"
+                        elif "sparse-mode" in pim_value:
+                            tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:mode"] = "openconfig-pim-types:PIM_MODE_SPARSE"
+
+                if value.get("vrf", {}).get("forwarding", {}):
+                    vrf_name = value["vrf"]["forwarding"]
+                    if pim_protocol_by_networkinstance.get(vrf_name) is None:
+                        pim_protocol_by_networkinstance[vrf_name] = {}
+                        tmp_pim_protocol_instance = copy.deepcopy(pim_protocol_instance)
+                        pim_protocol_by_networkinstance.update({vrf_name : tmp_pim_protocol_instance})
+                else:
+                    vrf_name = "default"
+                    if pim_protocol_by_networkinstance.get(vrf_name) is None:
+                        pim_protocol_by_networkinstance[vrf_name] = {}
+                        tmp_pim_protocol_instance = copy.deepcopy(pim_protocol_instance)
+                        pim_protocol_by_networkinstance.update({vrf_name : tmp_pim_protocol_instance})
+
+                pim_protocol_by_networkinstance[vrf_name]["openconfig-network-instance:pim"]["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"].append(tmp_pim_interface)
+
+                del config_leftover["tailf-ned-cisco-ios:interface"][interface_type][nso_index]["ip"]["pim"]
+
+    if "multicast-routing" in config_leftover.get("tailf-ned-cisco-ios:ip", {}):
+        del config_leftover["tailf-ned-cisco-ios:ip"]["multicast-routing"]
+
+    for instance_name, network_instance in pim_protocol_by_networkinstance.items():
+        index = 0
+        for oc_name in openconfig_network_instances["openconfig-network-instance:network-instances"]["openconfig-network-instance:network-instance"]:
+            for oc_instance, oc_instance_name in oc_name.items():
+                if oc_instance_name == instance_name:
+                    openconfig_network_instances["openconfig-network-instance:network-instances"]["openconfig-network-instance:network-instance"][index]["openconfig-network-instance:protocols"]["openconfig-network-instance:protocol"].append(network_instance)
+            index += 1
+
 
 def get_interfaces_by_vrf(config_before):
     interfaces_by_vrf = {}

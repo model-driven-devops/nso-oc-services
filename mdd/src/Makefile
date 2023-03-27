@@ -21,6 +21,7 @@ OC_MODELS = $(filter-out %aaa-tacacs.yang %aaa-radius.yang %grpc.yang, $(wildcar
 			$(filter-out %if-8021X.yang %if-ethernet-ext.yang %if-ip-ext.yang %if-sdn-ext.yang, $(wildcard yang/openconfig/interfaces/*.yang)) \
 			$(wildcard yang/openconfig/vlan/*.yang) \
 			$(wildcard yang/openconfig/stp/*.yang) \
+            $(wildcard yang/openconfig/multicast/*.yang) \
       $(filter-out %system-ext-sub-nat.yang, $(wildcard yang/extensions/*.yang))
 
 # Not used
@@ -30,7 +31,7 @@ OC_MODELS = $(filter-out %aaa-tacacs.yang %aaa-radius.yang %grpc.yang, $(wildcar
 #       $(filter-out %openconfig-isis-lsp.yang %openconfig-isis-routing.yang, $(wildcard yang/openconfig/isis/*.yang)) \
 #       $(wildcard yang/openconfig/lldp/*.yang) \
 #       $(wildcard yang/openconfig/macsec/*.yang) \
-#       $(wildcard yang/openconfig/multicast/*.yang) \
+
 # 			$(filter-out %openconfig-qos-interfaces.yang %openconfig-qos-elements.yang, $(wildcard yang/openconfig/qos/*.yang)) \
 #       $(wildcard yang/openconfig/segment-routing/*.yang) \
 

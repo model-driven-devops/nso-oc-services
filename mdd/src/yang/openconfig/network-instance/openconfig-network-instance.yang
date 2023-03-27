@@ -28,8 +28,8 @@ module openconfig-network-instance {
 //  import openconfig-segment-routing { prefix "oc-sr"; }
 //  import openconfig-isis { prefix "oc-isis"; }
 //  import openconfig-aft { prefix "oc-aft"; }
-//  import openconfig-pim { prefix "oc-pim"; }
-//  import openconfig-igmp { prefix "oc-igmp"; }
+  import openconfig-pim { prefix "oc-pim"; }
+  import openconfig-igmp { prefix "oc-igmp"; }
   import openconfig-evpn { prefix "oc-evpn"; }
 
   // include submodules
@@ -794,27 +794,27 @@ module openconfig-network-instance {
 //                System to Intermediate System (IS-IS).";
 //            }
 
-//            uses oc-pim:pim-top {
-//              when "./config/identifier = 'oc-pol-types:PIM'" {
-//                description
-//                  "Include PIM configuration when the protocol is of type
-//                  PIM";
-//              }
-//              description
-//                "Configuration and state parameters relating to Protocol
-//                Indepdendent Multicast (PIM).";
-//            }
+            uses oc-pim:pim-top {
+              when "./config/identifier = 'oc-pol-types:PIM'" {
+                description
+                  "Include PIM configuration when the protocol is of type
+                  PIM";
+              }
+              description
+                "Configuration and state parameters relating to Protocol
+                Indepdendent Multicast (PIM).";
+            }
 
-//            uses oc-igmp:igmp-top {
-//              when "./config/identifier = 'oc-pol-types:IGMP'" {
-//                description
-//                  "Include IGMP configuration when the protocol is of type
-//                  IGMP";
-//              }
-//              description
-//                "Configuration and state parameters relating to the Internet
-//                Group Management Protocol (IGMP).";
-//            }
+            uses oc-igmp:igmp-top {
+              when "./config/identifier = 'oc-pol-types:IGMP'" {
+                description
+                  "Include IGMP configuration when the protocol is of type
+                  IGMP";
+              }
+              description
+                "Configuration and state parameters relating to the Internet
+                Group Management Protocol (IGMP).";
+            }
 
           }
         }
