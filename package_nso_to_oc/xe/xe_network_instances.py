@@ -94,9 +94,10 @@ def xe_network_instances(config_before: dict, config_leftover: dict) -> None:
     interfaces_by_vrf = get_interfaces_by_vrf(config_before)
     route_forwarding_list_by_vrf = get_route_forwarding_list_by_vrf(config_before)
     configure_network_instances(config_before, config_leftover, interfaces_by_vrf, route_forwarding_list_by_vrf)
-    
-    # TODO Possible refactor
-    # Might be better to move these logic to their respective feature modules
+
+    if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("multicast-routing", {}).get("distributed", '')) is list:
+        configure_pim_network_instance(config_before, config_leftover)
+
     cleanup_null_ospf_leftovers(config_leftover)
     cleanup_null_static_route_leftovers(config_leftover)
     cleanup_null_bgp_leftovers(config_before, config_leftover)
@@ -165,11 +166,12 @@ def configure_network_instances(config_before, config_leftover, interfaces_by_vr
             xe_ospfv2.configure_xe_ospf(net_inst, vrf_interfaces, config_before, config_leftover)
         if len(route_forwarding_list_by_vrf.get(net_inst["openconfig-network-instance:name"], [])) > 0:
             vrf_forwarding_list = route_forwarding_list_by_vrf.get(net_inst["openconfig-network-instance:name"])
-            xe_static_route.configure_xe_static_routes(net_inst, vrf_forwarding_list, config_leftover, 
+            xe_static_route.configure_xe_static_routes(net_inst, vrf_forwarding_list, config_leftover,
                                                        network_instances_notes)
-        
+
         xe_bgp.configure_xe_bgp(net_inst, config_before, config_leftover, network_instances_notes)
         xe_bgp.configure_xe_bgp_redistribution(net_inst, config_before, config_leftover, network_instances_notes)
+
 
 def configure_network_interfaces(net_inst, interfaces_by_vrf):
     for interface in interfaces_by_vrf.get(net_inst["openconfig-network-instance:name"], []):
@@ -194,6 +196,101 @@ def configure_network_interfaces(net_inst, interfaces_by_vrf):
 
         net_inst["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"].append(
             new_interface)
+
+
+def configure_pim_network_instance(config_before, config_leftover):
+    """
+    Translates NSO XE NED to MDD OpenConfig Network Instance for IP multicast and interface PIM configuration
+    """
+
+    pim_protocol_by_networkinstance = {}
+
+    pim_protocol_instance = {
+        "openconfig-network-instance:identifier": "PIM",
+        "openconfig-network-instance:name": "PIM",
+        "openconfig-network-instance:config": {
+            "openconfig-network-instance:identifier": "PIM",
+            "openconfig-network-instance:name": "PIM",
+            "openconfig-network-instance:enabled": True,
+            "openconfig-network-instance:default-metric": 1
+        },
+        "openconfig-network-instance:pim": {
+            "openconfig-network-instance:interfaces": {
+                "openconfig-network-instance:interface": [
+                ]
+            }
+        }
+    }
+    pim_interface = {
+        "openconfig-network-instance:interface-id": "",
+        "openconfig-network-instance:config": {
+            "openconfig-network-instance:enabled": "",
+            "openconfig-network-instance:interface-id": "",
+            "openconfig-network-instance:mode": "",
+            "openconfig-network-instance:dr-priority": 0,
+            "openconfig-network-instance:hello-interval": 0
+        },
+        "openconfig-network-instance:interface-ref": {
+            "openconfig-network-instance:config": {
+                "openconfig-network-instance:interface": "",
+                "openconfig-network-instance:subinterface": ""
+            }
+        }
+    }
+
+    for interface_type in config_before.get("tailf-ned-cisco-ios:interface", {}):
+        for nso_index, value in enumerate(config_before["tailf-ned-cisco-ios:interface"][interface_type]):
+            tmp_pim_interface = copy.deepcopy(pim_interface)
+            if value.get("ip", {}).get("pim", {}):
+                int_num = str(value['name']).split(".")[0]
+                subint_num = 0
+                if "." in str(value['name']):
+                    subint_num = value['name'].split(".")[1]
+
+                tmp_pim_interface["openconfig-network-instance:interface-id"] = int_num
+                tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:enabled"] = True
+                tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:interface-id"] = int_num
+                tmp_pim_interface["openconfig-network-instance:interface-ref"]["openconfig-network-instance:config"]["openconfig-network-instance:interface"] = interface_type + int_num
+                tmp_pim_interface["openconfig-network-instance:interface-ref"]["openconfig-network-instance:config"]["openconfig-network-instance:subinterface"] = subint_num
+
+                for pim_key, pim_value in value.get("ip", {}).get("pim", {}).items():
+                    if "dr-priority" in pim_key:
+                        tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:dr-priority"] = pim_value
+                    if "query-interval" in pim_key:
+                        tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:hello-interval"] = pim_value
+                    if "mode" in pim_key:
+                        if "sparse-dense-mode" in pim_value:
+                            tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:mode"] = "openconfig-pim-types:PIM_MODE_DENSE"
+                        elif "sparse-mode" in pim_value:
+                            tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:mode"] = "openconfig-pim-types:PIM_MODE_SPARSE"
+
+                if value.get("vrf", {}).get("forwarding", {}):
+                    vrf_name = value["vrf"]["forwarding"]
+                    if pim_protocol_by_networkinstance.get(vrf_name) is None:
+                        pim_protocol_by_networkinstance[vrf_name] = {}
+                        tmp_pim_protocol_instance = copy.deepcopy(pim_protocol_instance)
+                        pim_protocol_by_networkinstance.update({vrf_name : tmp_pim_protocol_instance})
+                else:
+                    vrf_name = "default"
+                    if pim_protocol_by_networkinstance.get(vrf_name) is None:
+                        pim_protocol_by_networkinstance[vrf_name] = {}
+                        tmp_pim_protocol_instance = copy.deepcopy(pim_protocol_instance)
+                        pim_protocol_by_networkinstance.update({vrf_name : tmp_pim_protocol_instance})
+
+                pim_protocol_by_networkinstance[vrf_name]["openconfig-network-instance:pim"]["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"].append(tmp_pim_interface)
+
+                del config_leftover["tailf-ned-cisco-ios:interface"][interface_type][nso_index]["ip"]["pim"]
+
+    if "multicast-routing" in config_leftover.get("tailf-ned-cisco-ios:ip", {}):
+        del config_leftover["tailf-ned-cisco-ios:ip"]["multicast-routing"]
+
+    for instance_name, network_instance in pim_protocol_by_networkinstance.items():
+        index = 0
+        for oc_name in openconfig_network_instances["openconfig-network-instance:network-instances"]["openconfig-network-instance:network-instance"]:
+            for oc_instance, oc_instance_name in oc_name.items():
+                if oc_instance_name == instance_name:
+                    openconfig_network_instances["openconfig-network-instance:network-instances"]["openconfig-network-instance:network-instance"][index]["openconfig-network-instance:protocols"]["openconfig-network-instance:protocol"].append(network_instance)
+            index += 1
 
 
 def process_rd_rt(temp_vrf, vrf, vrf_index, config_leftover):
@@ -366,6 +463,7 @@ def get_updated_configs(list_leftover):
 
     return updated_static_list
 
+
 def cleanup_null_bgp_leftovers(config_before, config_leftover):
     bgp_before_list = config_before.get("tailf-ned-cisco-ios:router", {"bgp": []}).get("bgp")
     bgp_leftover_list = config_leftover.get("tailf-ned-cisco-ios:router", {"bgp": []}).get("bgp")
@@ -377,8 +475,8 @@ def cleanup_null_bgp_leftovers(config_before, config_leftover):
     bgp_leftover = bgp_leftover_list[0]
 
     clean_up_default_neighbors_and_peers(bgp_before, bgp_leftover)
-    clean_up_vrf_neighbors_and_peers(bgp_before.get("address-family", {}).get("with-vrf", {}), 
-        bgp_leftover.get("address-family", {}).get("with-vrf", {}).get("ipv4",[]))
+    clean_up_vrf_neighbors_and_peers(bgp_before.get("address-family", {}).get("with-vrf", {}),
+                                     bgp_leftover.get("address-family", {}).get("with-vrf", {}).get("ipv4", []))
 
     if bgp_leftover != None and len(bgp_leftover["bgp"]) == 0:
         del bgp_leftover["bgp"]
@@ -389,6 +487,7 @@ def cleanup_null_bgp_leftovers(config_before, config_leftover):
     # if bgp_leftover.get("address-family") != None:
     #     pass
 
+
 def clean_up_default_neighbors_and_peers(bgp_before, bgp_leftover):
     delete_peers_and_neighbors(bgp_leftover)
     updated_ipv4_list = []
@@ -398,7 +497,7 @@ def clean_up_default_neighbors_and_peers(bgp_before, bgp_leftover):
         if afi_ipv4.get("af") == "unicast":
             delete_peers_and_neighbors(bgp_leftover["address-family"]["ipv4"][ipv4_index])
         if (bgp_leftover["address-family"]["ipv4"][ipv4_index]
-            and len(bgp_leftover["address-family"]["ipv4"][ipv4_index]) > 0):
+                and len(bgp_leftover["address-family"]["ipv4"][ipv4_index]) > 0):
             updated_ipv4_list.append(bgp_leftover["address-family"]["ipv4"][ipv4_index])
     for vpnv4_index, afi_vpnv4 in enumerate(bgp_before.get("address-family", {}).get("vpnv4", [])):
         if afi_vpnv4.get("af") == "unicast":
@@ -411,6 +510,7 @@ def clean_up_default_neighbors_and_peers(bgp_before, bgp_leftover):
         bgp_leftover["address-family"]["ipv4"] = updated_ipv4_list
     if bgp_before.get("address-family", {}).get("vpnv4"):
         bgp_leftover["address-family"]["vpnv4"] = updated_vpnv4_list
+
 
 def clean_up_vrf_neighbors_and_peers(afi_vrf, afi_vrf_leftover):
     for index, afi_ipv4 in enumerate(afi_vrf.get("ipv4", [])):
@@ -428,18 +528,20 @@ def clean_up_vrf_neighbors_and_peers(afi_vrf, afi_vrf_leftover):
 
             afi_vrf_leftover[index]["vrf"] = updated_vrf_list
 
+
 def delete_peers_and_neighbors(peer_neighbor_list_leftover):
-    is_peers_present = (peer_neighbor_list_leftover != None 
-        and peer_neighbor_list_leftover.get("neighbor-tag") != None
-        and peer_neighbor_list_leftover["neighbor-tag"].get("neighbor") != None)
-    is_neighbors_present = (peer_neighbor_list_leftover != None 
-        and peer_neighbor_list_leftover.get("neighbor") != None)
+    is_peers_present = (peer_neighbor_list_leftover != None
+                        and peer_neighbor_list_leftover.get("neighbor-tag") != None
+                        and peer_neighbor_list_leftover["neighbor-tag"].get("neighbor") != None)
+    is_neighbors_present = (peer_neighbor_list_leftover != None
+                            and peer_neighbor_list_leftover.get("neighbor") != None)
     remove_bgp_nulls(peer_neighbor_list_leftover, is_peers_present, is_neighbors_present)
 
     if is_peers_present and len(peer_neighbor_list_leftover["neighbor-tag"]["neighbor"]) == 0:
         del peer_neighbor_list_leftover["neighbor-tag"]
     if is_neighbors_present and len(peer_neighbor_list_leftover["neighbor"]) == 0:
         del peer_neighbor_list_leftover["neighbor"]
+
 
 def remove_bgp_nulls(peer_neighbor_list_leftover, is_peers_present, is_neighbors_present):
     updated_peers = []
@@ -449,14 +551,15 @@ def remove_bgp_nulls(peer_neighbor_list_leftover, is_peers_present, is_neighbors
         for peer in peer_neighbor_list_leftover["neighbor-tag"]["neighbor"]:
             if peer != None:
                 updated_peers.append(peer)
-        
+
         peer_neighbor_list_leftover["neighbor-tag"]["neighbor"] = updated_peers
     if is_neighbors_present:
         for neighbor in peer_neighbor_list_leftover["neighbor"]:
             if neighbor != None:
                 updated_neighbors.append(neighbor)
-        
+
         peer_neighbor_list_leftover["neighbor"] = updated_neighbors
+
 
 def check_delete_protocol_leftovers(bgp_leftover, protocol):
     is_ipv4_empty = True
@@ -464,9 +567,10 @@ def check_delete_protocol_leftovers(bgp_leftover, protocol):
     for ipv4_item in bgp_leftover.get("address-family", {}).get(protocol, []):
         if ipv4_item != None and len(ipv4_item) > 0:
             is_ipv4_empty = False
-    
+
     if is_ipv4_empty:
         del bgp_leftover["address-family"][protocol]
+
 
 def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
     """
@@ -488,6 +592,7 @@ def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
     translation_notes += network_instances_notes
 
     return openconfig_network_instances
+
 
 if __name__ == "__main__":
     sys.path.append("../../")

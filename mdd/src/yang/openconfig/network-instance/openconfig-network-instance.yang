@@ -28,8 +28,8 @@ module openconfig-network-instance {
 //  import openconfig-segment-routing { prefix "oc-sr"; }
 //  import openconfig-isis { prefix "oc-isis"; }
 //  import openconfig-aft { prefix "oc-aft"; }
-//  import openconfig-pim { prefix "oc-pim"; }
-//  import openconfig-igmp { prefix "oc-igmp"; }
+  import openconfig-pim { prefix "oc-pim"; }
+  import openconfig-igmp { prefix "oc-igmp"; }
   import openconfig-evpn { prefix "oc-evpn"; }
 
   // include submodules
@@ -794,27 +794,27 @@ module openconfig-network-instance {
 //                System to Intermediate System (IS-IS).";
 //            }
 
-//            uses oc-pim:pim-top {
-//              when "./config/identifier = 'oc-pol-types:PIM'" {
-//                description
-//                  "Include PIM configuration when the protocol is of type
-//                  PIM";
-//              }
-//              description
-//                "Configuration and state parameters relating to Protocol
-//                Indepdendent Multicast (PIM).";
-//            }
+            uses oc-pim:pim-top {
+              when "./config/identifier = 'oc-pol-types:PIM'" {
+                description
+                  "Include PIM configuration when the protocol is of type
+                  PIM";
+              }
+              description
+                "Configuration and state parameters relating to Protocol
+                Indepdendent Multicast (PIM).";
+            }
 
-//            uses oc-igmp:igmp-top {
-//              when "./config/identifier = 'oc-pol-types:IGMP'" {
-//                description
-//                  "Include IGMP configuration when the protocol is of type
-//                  IGMP";
-//              }
-//              description
-//                "Configuration and state parameters relating to the Internet
-//                Group Management Protocol (IGMP).";
-//            }
+            uses oc-igmp:igmp-top {
+              when "./config/identifier = 'oc-pol-types:IGMP'" {
+                description
+                  "Include IGMP configuration when the protocol is of type
+                  IGMP";
+              }
+              description
+                "Configuration and state parameters relating to the Internet
+                Group Management Protocol (IGMP).";
+            }
 
           }
         }
@@ -1018,10 +1018,10 @@ module openconfig-network-instance {
     leaf mac-pinning {
       type boolean;
       description
-        "Enable (TRUE) or disable (FALSE). There are scenarios in which 
-        it is desired to configure some MAC addresses as static so 
-        that they are not subjected to MAC moves. If you enable MAC pinning 
-        on a CE interface, that MAC address cannot be moved to any 
+        "Enable (TRUE) or disable (FALSE). There are scenarios in which
+        it is desired to configure some MAC addresses as static so
+        that they are not subjected to MAC moves. If you enable MAC pinning
+        on a CE interface, that MAC address cannot be moved to any
         other CE interface";
       reference
         "RFC 7432: BGP MPLS-Based Ethernet VPN";
@@ -1042,9 +1042,9 @@ module openconfig-network-instance {
           description "Centralized anycast gateway";
         }
       }
-      description 
+      description
         "Associate VLAN SVI with anycast Gateway.
-        The SVI is the layer3 interface for the mac-vrf 
+        The SVI is the layer3 interface for the mac-vrf
         when the SVI is being used as the first hop default gw.";
     }
   }
