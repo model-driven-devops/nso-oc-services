@@ -146,7 +146,7 @@
           - "'+ ip pim sparse-mode:' in changes"
           - "'+ ip pim dr-priority 3:' in changes"
           - "'+ ip pim query-interval 3:' in changes"
-          - "' interface GigabitEthernet4.1:' in changes"
+          - "'+interface GigabitEthernet4.1:' in changes"
           - "'+ ip pim sparse-mode:' in changes"
           - "'+ ip pim dr-priority 4:' in changes"
           - "'+ ip pim query-interval 4:' in changes"
