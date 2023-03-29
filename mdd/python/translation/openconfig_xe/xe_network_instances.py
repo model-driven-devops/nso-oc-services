@@ -26,6 +26,7 @@ def xe_network_instances_program_service(self) -> None:
         xe_configure_vlan_db(self, network_instance)
         xe_reconcile_vrf_interfaces(self, network_instance)
         xe_configure_mpls(self, network_instance)
+        xe_configure_pim(self, network_instance)
         xe_get_table_connections(network_instance, service_table_connection_dict)
         configure_bgp_list(self, network_instance, instance_bgp_list)
     
@@ -497,3 +498,34 @@ def configure_static_route_main(cdb_ip_route, static, nh) -> None:
         create_route_nh_interface(cdb_ip_route, static, nh, next_hop_interface)
     else:
         raise ValueError('Unsupported static route configuration.')
+
+
+def xe_configure_pim(self, network_instance) -> None:
+    """
+    Configures the pim section of openconfig-network-instance
+    """
+    if network_instance.protocols.protocol:
+        for p in network_instance.protocols.protocol:
+            if p.identifier == 'oc-pol-types:PIM':
+                if p.config.enabled == True:
+                    if self.root.devices.device[self.device_name].config.ios__ip.multicast_routing.distributed.exists() == False:
+                        self.root.devices.device[self.device_name].config.ios__ip.multicast_routing.distributed.create()
+                elif p.config.enabled == False:
+                    if self.root.devices.device[self.device_name].config.ios__ip.multicast_routing.distributed.exists() == True:
+                        self.root.devices.device[self.device_name].config.ios__ip.multicast_routing.distributed.delete()
+                for iid in p.pim.interfaces.interface:
+                    interface_type, interface_number = get_interface_type_and_number(iid.interface_ref.config.interface)
+                    class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface, interface_type)
+                    if iid.interface_ref.config.subinterface == 0:
+                        interface_cdb = class_attribute[interface_number]
+                    else:
+                        interface_cdb = class_attribute[f'{interface_number}.{iid.interface_ref.config.subinterface}']
+                    if iid.config.enabled == True:
+                        if iid.config.mode == 'oc-pim-types:PIM_MODE_SPARSE':
+                            interface_cdb.ip.pim.mode = 'sparse-mode'
+                        elif iid.config.mode == 'oc-pim-types:PIM_MODE_DENSE':
+                            interface_cdb.ip.pim.mode = 'sparse-dense-mode'
+                        interface_cdb.ip.pim.dr_priority = iid.config.dr_priority
+                        interface_cdb.ip.pim.query_interval = iid.config.hello_interval
+                    elif iid.config.enabled == False:
+                        interface_cdb.ip.pim.delete()
