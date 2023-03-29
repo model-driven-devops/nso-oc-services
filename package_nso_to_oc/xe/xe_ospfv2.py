@@ -5,6 +5,12 @@ This script is used by xe_network_instances.py to translate ospf configs from NE
 
 import copy
 from functools import cmp_to_key
+from importlib.util import find_spec
+
+if (find_spec("package_nso_to_oc") is not None):
+    from package_nso_to_oc.xe import common_xe
+else:
+    from xe import common_xe
 
 ospf_network_types = {
     "broadcast": "BROADCAST_NETWORK",
@@ -28,6 +34,35 @@ def configure_xe_ospf(net_inst, vrf_interfaces, config_before, config_leftover):
         if ((instance_type == "L3VRF" and "vrf" in ospf)
                 or (instance_type == "DEFAULT_INSTANCE" and not "vrf" in ospf)):
             process_ospf(net_protocols, vrf_interfaces, config_leftover, ospf_index, ospf)
+
+
+def configure_xe_ospf_redistribution(net_inst, config_before, config_leftover, router_ospf_by_vrf):
+    ospf_before = config_before.get("tailf-ned-cisco-ios:router", {"ospf": []}).get("ospf")
+
+    if ospf_before == None or len(ospf_before) == 0:
+        return
+        
+    instance_name = net_inst["openconfig-network-instance:name"]
+    ospf_leftover = config_leftover.get("tailf-ned-cisco-ios:router", {"ospf": []}).get("ospf")
+
+    for router_ospf_index in router_ospf_by_vrf.get(instance_name, []):
+        router_ospf_before = ospf_before[router_ospf_index]
+        router_ospf_leftover = ospf_leftover[router_ospf_index]
+        redistribute = router_ospf_before.get("redistribute", {})
+        redistribute_leftover = router_ospf_leftover.get("redistribute", {})
+
+        if len(redistribute) == 0:
+            continue
+
+        common_xe.process_redistribute(net_inst, redistribute, redistribute_leftover, "OSPF", 
+            router_ospf_before["id"])
+
+        if "redistribute" in router_ospf_leftover and len(redistribute_leftover) == 0:
+            del router_ospf_leftover["redistribute"]
+        if "vrf" in router_ospf_leftover:
+            del router_ospf_leftover["vrf"]
+        if len(router_ospf_leftover) == 1 and "id" in router_ospf_leftover:
+            del router_ospf_leftover["id"]
 
 
 def get_interfaces_by_area(network_statements, vrf_interfaces):

@@ -6,11 +6,10 @@
   vars:
     device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
   tasks:
-    - name: Run XE network instance OSPF global and static routes tests
+    - name: Run XE network instance OSPF area tests
       include_role:
         name: ned-to-oc-test
       vars:
-        will_load_rollback: False
         script_path: ../../../package_nso_to_oc/xe/xe_network_instances.py
         api_test_data:
           - name: Set up OC service config
@@ -345,15 +344,15 @@
                         openconfig-network-instance:name: 'default'
                         openconfig-network-instance:type: 'DEFAULT_INSTANCE'
                         openconfig-network-instance:enabled: true
-          - name: NED init OSPF
-            tags:
-              - init_ospf
-            api_path: config/tailf-ned-cisco-ios:router/ospf
-            api_method: PATCH
-            content: |
-              ospf:
-                - id: '2'
-                - id: '100'
+          # - name: NED init OSPF
+          #   tags:
+          #     - init_ospf
+          #   api_path: config/tailf-ned-cisco-ios:router/ospf
+          #   api_method: PATCH
+          #   content: |
+          #     ospf:
+          #       - id: '2'
+          #       - id: '100'
           - name: NED init VRF
             tags:
               - init_vrf
@@ -362,22 +361,6 @@
             content: |
               definition:
                 - name: 'internal_0'
-                  address-family:
-                    ipv4: {}
-                    ipv6: {}
-                - name: abc
-                  address-family:
-                    ipv4: {}
-                    ipv6: {}
-                  rd: '1:1'
-                  route-target:
-                    import:
-                      - asn-ip: '100:100'
-                      - asn-ip: '101:101'
-                    export:
-                      - asn-ip: '200:200'
-                      - asn-ip: '202:202'
-                - name: xyz
                   address-family:
                     ipv4: {}
                     ipv6: {}
@@ -508,36 +491,62 @@
               ospf:
                 - id: '2'
                   vrf: 'internal_0'
-                  router-id: '1.1.1.1'
-                  log-adjacency-changes:
-                    detail: ''
-                  compatible:
-                    rfc1583: True
-                  prefix-suppression: ''
-                  nsf-ietf:
-                    nsf:
-                      ietf: {}
-                  default-information:
-                    originate:
-                      always: {}
-                      metric: '5'
-                      metric-type: '1'
-                      route-map: 'TEST'
+                  area:
+                    - id: '1'
+                      stub:
+                        no-summary: {}
+                    - id: '4'
+                      filter-list:
+                        - direction: 'in'
+                          prefix: 'test'
+                      # Getting error: "Area is configured as NSSA already"
+                      nssa:
+                        default-information-originate: {}
+                        no-summary: {}
+                    - id: '5'
+                      filter-list:
+                        - direction: 'in'
+                          prefix: 'test'
+                      # Getting error: "Virtual links are not allowed in NSSA and stub areas"
+                      virtual-link:
+                        - id: '10.200.200.200'
+                  passive-interface:
+                    interface:
+                      - name: 'GigabitEthernet7'
+                  network:
+                    - ip: '10.250.0.0'
+                      mask: '0.0.255.255'
+                      area: '4'
+                    - ip: '10.250.25.0'
+                      mask: '0.0.0.255'
+                      area: '5'
+                    - ip: '0.0.0.0'
+                      mask: '255.255.255.255'
+                      area: '0'
                   mpls:
-                    ldp:
-                      sync: {}
-                  timers:
-                    throttle:
-                      lsa:
-                        start-interval: 1000
-                        hold-interval: 10000
-                        max-interval: 10000
-                      spf:
-                        spf-start: 10000
-                        spf-hold: 20000
-                        spf-max-wait: 20000
-                  auto-cost:
-                    reference-bandwidth: '100000'
+                    traffic-eng:
+                      area: ['4']
+                  neighbor:
+                    ip: '10.10.10.10'
+                    cost-database-filter-container:
+                      cost: 100
+                  redistribute:
+                    bgp:
+                      as-no: 1
+                      route-map: test
+                - id: '100'
+                  area:
+                    - id: '1'
+                      filter-list:
+                        - direction: 'in'
+                          prefix: 'test'
+                  network:
+                    - ip: '10.255.100.1'
+                      mask: '0.0.0.0'
+                      area: '1'
+                    - ip: '0.0.0.0'
+                      mask: '255.255.255.255'
+                      area: '0'
           - name: NED configure static route
             tags:
               - static_route_config
@@ -578,164 +587,33 @@
                         interface: 'Null0'
                         tag: '179'
                         metric: 200
-                        name: 'vrf_abc_to_bgp'
-                  - name: 'abc'
-                    ip-route-interface-list:
-                      - prefix: '90.0.0.0'
-                        mask: '255.0.0.0'
-                        interface: 'dhcp'
-                  - name: 'xyz'
-                    ip-route-interface-list:
-                      - prefix: '80.0.0.0'
-                        mask: '255.0.0.0'
-                        interface: 'Null0'
-                    ip-route-forwarding-list:
-                      - prefix: '81.0.0.0'
-                        mask: '255.0.0.0'
-                        forwarding-address: '5.5.5.5'
+                        name: 'vrf_to_bgp'
         assertions:
-          # These are testing for network instances
-          - "'default' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
-          - "'abc' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
-          - "'xyz' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
-
-          # Testing RDs and RTs
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['route-distinguisher'] == '1:1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['openconfig-network-instance-ext:route-targets-import'][0] == '100:100'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['openconfig-network-instance-ext:route-targets-export'][1] == '202:202'"
-
-          # Testing static routes
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['static-routes']['static'][0]['config']['prefix'] == '90.0.0.0/8'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['static-routes']['static'][0]['next-hops']['next-hop'][0]['index'] == 'DHCP'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][0]['config']['prefix'] == '100.0.0.0/8'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][0]['next-hops']['next-hop'][0]['index'] == '1.1.1.1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][1]['config']['prefix'] == '101.0.0.0/8'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][1]['next-hops']['next-hop'][0]['index'] == 'GigabitEthernet5'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][2]['config']['prefix'] == '102.0.0.0/8'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][2]['config']['description'] == 'to_bgp'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][2]['next-hops']['next-hop'][0]['index'] == 'DROP'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][3]['config']['prefix'] == '103.0.0.0/8'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][3]['next-hops']['next-hop'][0]['index'] == 'DHCP'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][4]['config']['prefix'] == '104.0.0.0/8'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][4]['next-hops']['next-hop'][0]['index'] == 'GigabitEthernet6'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][4]['next-hops']['next-hop'][0]['config']['next-hop'] == 'openconfig-local-routing:LOCAL_LINK'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][5]['config']['prefix'] == '105.0.0.0/8'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][5]['next-hops']['next-hop'][0]['index'] == 'GigabitEthernet8'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][2]['static-routes']['static'][5]['next-hops']['next-hop'][0]['interface-ref']['config']['subinterface'] == 10"
-
-          # The rest of these are for OC
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['name'] == '2'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['config']['hide-transit-only-networks'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['config']['log-adjacency-changes'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['config']['router-id'] == '1.1.1.1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['config']['summary-route-cost-mode'] == 'RFC1583_COMPATIBLE'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['graceful-restart']['config']['enabled'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['config']['openconfig-ospfv2-ext:capability-vrf-lite'] == false"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['config']['openconfig-ospfv2-ext:default-information-originate']['config']['metric'] == '5'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['config']['openconfig-ospfv2-ext:default-information-originate']['config']['metric-type'] == 1"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['config']['openconfig-ospfv2-ext:auto-cost-ref-bandwidth'] == 100000"
-          # TODO Add route-maps to OC services
-          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['config']['openconfig-ospfv2-ext:default-information-originate']['config']['route-map'] == 'TEST'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['config']['openconfig-ospfv2-ext:default-information-originate']['config']['always'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['mpls']['igp-ldp-sync']['config']['enabled'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['timers']['lsa-generation']['config']['initial-delay'] == 1000"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['timers']['lsa-generation']['config']['maximum-delay'] == 10000"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['timers']['lsa-generation']['config']['openconfig-ospfv2-ext:hold-time'] == 10000"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['timers']['spf']['config']['initial-delay'] == 10000"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['timers']['spf']['config']['maximum-delay'] == 20000"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['timers']['spf']['config']['openconfig-ospfv2-ext:hold-time'] == 20000"
-
-    - name: Run XE network instance OSPF areas tests
-      include_role:
-        name: ned-to-oc-test
-      vars:
-        will_save_rollback: False
-        script_path: ../../../package_nso_to_oc/xe/xe_network_instances.py
-        api_test_data:
-          - name: NED configure areas config
-            tags:
-              - ospf_areas_config
-            api_path: config/tailf-ned-cisco-ios:router/ospf
-            api_method: PATCH
-            content: |
-              ospf:
-                - id: '100'
-                  area:
-                    - id: '1'
-                      filter-list:
-                        - direction: 'in'
-                          prefix: 'test'
-                  network:
-                    - ip: '10.255.100.1'
-                      mask: '0.0.0.0'
-                      area: '1'
-                    - ip: '0.0.0.0'
-                      mask: '255.255.255.255'
-                      area: '0'
-                - id: '2'
-                  vrf: 'internal_0'
-                  area:
-                    - id: '1'
-                      stub:
-                        no-summary: {}
-                    - id: '4'
-                      filter-list:
-                        - direction: 'in'
-                          prefix: 'test'
-                      # Getting error: "Area is configured as NSSA already"
-                      nssa:
-                        default-information-originate: {}
-                        no-summary: {}
-                    - id: '5'
-                      filter-list:
-                        - direction: 'in'
-                          prefix: 'test'
-                      # Getting error: "Virtual links are not allowed in NSSA and stub areas"
-                      virtual-link:
-                        - id: '10.200.200.200'
-                  passive-interface:
-                    interface:
-                      - name: 'GigabitEthernet7'
-                  network:
-                    - ip: '10.250.0.0'
-                      mask: '0.0.255.255'
-                      area: '4'
-                    - ip: '10.250.25.0'
-                      mask: '0.0.0.255'
-                      area: '5'
-                    - ip: '0.0.0.0'
-                      mask: '255.255.255.255'
-                      area: '0'
-                  mpls:
-                    traffic-eng:
-                      area: ['4']
-                  neighbor:
-                    ip: '10.10.10.10'
-                    cost-database-filter-container:
-                      cost: 100
-        assertions:
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][0]['interfaces']['interface'][0]['config']['id'] == 'Loopback10'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][0]['interfaces']['interface'][0]['config']['passive'] == false"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][1]['openconfig-ospfv2-ext:stub-options']['totally-stubby']['config']['enabled'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['id'] == 'GigabitEthernet7'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['passive'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['metric'] == 10"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['network-type'] == 'openconfig-ospf-types:NON_BROADCAST_NETWORK'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][2]['openconfig-ospfv2-ext:stub-options']['nssa']['config']['no-summary'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][3]['virtual-links']['virtual-link'][0]['config']['remote-router-id'] == '10.200.200.200'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['passive'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['neighbors']['neighbor'][0]['router-id'] == '10.10.10.10'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['neighbors']['neighbor'][0]['config']['metric'] == 100"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][2]['mpls']['config']['traffic-engineering-enabled'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['authentication-type'] == 'MD5'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][3]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['authentication-type'] == 'NULL'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][0]['config']['key-id'] == 1"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][0]['config']['key'] == 'pass1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][1]['config']['key-id'] == 2"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][1]['config']['key'] == '140713181F56'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][0]['interfaces']['interface'][0]['config']['id'] == 'Loopback10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][0]['interfaces']['interface'][0]['config']['passive'] == false"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][1]['openconfig-ospfv2-ext:stub-options']['totally-stubby']['config']['enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['id'] == 'GigabitEthernet7'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['passive'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['metric'] == 10"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['network-type'] == 'openconfig-ospf-types:NON_BROADCAST_NETWORK'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['openconfig-ospfv2-ext:stub-options']['nssa']['config']['no-summary'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][3]['virtual-links']['virtual-link'][0]['config']['remote-router-id'] == '10.200.200.200'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['passive'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['neighbors']['neighbor'][0]['router-id'] == '10.10.10.10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['neighbors']['neighbor'][0]['config']['metric'] == 100"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['mpls']['config']['traffic-engineering-enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['authentication-type'] == 'MD5'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][3]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['authentication-type'] == 'NULL'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][0]['config']['key-id'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][0]['config']['key'] == 'pass1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][1]['config']['key-id'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][1]['config']['key'] == '140713181F56'"
           # This is testing for globals, but areas are required, so we test that portion of globals here.
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['src-area'] == 0"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['dst-area'] == 4"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['config']['src-area'] == 0"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['config']['dst-area'] == 4"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][1]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['config']['import-policy'][0] == 'test'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['src-area'] == 0"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['dst-area'] == 4"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['config']['src-area'] == 0"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['config']['dst-area'] == 4"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['config']['import-policy'][0] == 'test'"
+          # OSPF Redistribute
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['table-connections']['table-connection'][0]['config']['src-protocol'] == 'openconfig-policy-types:BGP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['table-connections']['table-connection'][0]['config']['openconfig-network-instance-ext:src-protocol-process-number'] == 1"

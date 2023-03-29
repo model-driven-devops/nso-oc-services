@@ -134,7 +134,6 @@ def get_interfaces_by_vrf(config_before):
 
     return interfaces_by_vrf
 
-
 def get_route_forwarding_list_by_vrf(config_before):
     route_forwarding_list_by_vrf = {}
     ip_obj = config_before.get("tailf-ned-cisco-ios:ip", {"route": {}}).get("route", {})
@@ -155,8 +154,25 @@ def get_route_forwarding_list_by_vrf(config_before):
 
     return route_forwarding_list_by_vrf
 
+def build_router_ospf_by_vrf(config_before):
+    router_ospf_by_vrf = {}
+
+    for index, ospf in enumerate(config_before.get("tailf-ned-cisco-ios:router", {}).get("ospf", [])):
+        if "vrf" in ospf:
+            vrf_name = ospf["vrf"]
+        else:
+            vrf_name = "default"
+
+        if not vrf_name in router_ospf_by_vrf:
+            router_ospf_by_vrf[vrf_name] = []
+
+        router_ospf_by_vrf[vrf_name].append(index)
+        
+    return router_ospf_by_vrf
 
 def configure_network_instances(config_before, config_leftover, interfaces_by_vrf, route_forwarding_list_by_vrf):
+    router_ospf_by_vrf = build_router_ospf_by_vrf(config_before)
+
     for net_inst in openconfig_network_instances["openconfig-network-instance:network-instances"][
         "openconfig-network-instance:network-instance"]:
         configure_network_interfaces(net_inst, interfaces_by_vrf)
@@ -168,9 +184,10 @@ def configure_network_instances(config_before, config_leftover, interfaces_by_vr
             vrf_forwarding_list = route_forwarding_list_by_vrf.get(net_inst["openconfig-network-instance:name"])
             xe_static_route.configure_xe_static_routes(net_inst, vrf_forwarding_list, config_leftover,
                                                        network_instances_notes)
-
+        
+        xe_ospfv2.configure_xe_ospf_redistribution(net_inst, config_before, config_leftover, router_ospf_by_vrf)
         xe_bgp.configure_xe_bgp(net_inst, config_before, config_leftover, network_instances_notes)
-        xe_bgp.configure_xe_bgp_redistribution(net_inst, config_before, config_leftover, network_instances_notes)
+        xe_bgp.configure_xe_bgp_redistribution(net_inst, config_before, config_leftover)
 
 
 def configure_network_interfaces(net_inst, interfaces_by_vrf):
