@@ -1,0 +1,110 @@
+---
+- hosts: localhost
+  gather_facts: no
+  environment:
+    NSO_DEVICE: xe1
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+  tasks:
+    - name: Run XE network instance OSPF global and static routes tests
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_load_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_network_instances.py
+        api_test_data:
+          - name: Set up OC service config
+            tags:
+              - oc_set_up
+            api_path: mdd:openconfig
+            api_method: PUT
+            content: |
+              mdd:openconfig:
+                openconfig-interfaces:interfaces:
+                  openconfig-interfaces:interface:
+                    - openconfig-interfaces:name: 'GigabitEthernet2'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:name: 'GigabitEthernet2'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:type: 'ethernetCsmacd'
+                        openconfig-interfaces:description: 'Test gigabitethernet2 - IGMP'
+                      openconfig-if-ethernet:ethernet:
+                        openconfig-if-ethernet:config:
+                          openconfig-if-ethernet:auto-negotiate: true
+                          openconfig-if-ethernet:enable-flow-control: false
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '172.16.100.1'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '172.16.100.1'
+                                      openconfig-if-ip:prefix-length: 30
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                    - openconfig-interfaces:name: 'GigabitEthernet3'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:name: 'GigabitEthernet3'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:type: 'ethernetCsmacd'
+                        openconfig-interfaces:description: 'Test gigabitethernet3 - IGMP'
+                      openconfig-if-ethernet:ethernet:
+                        openconfig-if-ethernet:config:
+                          openconfig-if-ethernet:auto-negotiate: true
+                          openconfig-if-ethernet:enable-flow-control: false
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '172.16.100.5'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '172.16.100.5'
+                                      openconfig-if-ip:prefix-length: 30
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                openconfig-network-instance:network-instances:
+                  openconfig-network-instance:network-instance:
+                    - openconfig-network-instance:name: 'default'
+                      openconfig-network-instance:config:
+                        openconfig-network-instance:name: 'default'
+                        openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                        openconfig-network-instance:enabled: true
+          - name: NED init interface
+            tags:
+              - init_intf
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                GigabitEthernet:
+                  - name: '2'
+                    ip:
+                      igmp:
+                        version: '3'
+                        query-interval: '20'
+                        access-group: 'Gig2-ACL'
+                  - name: '3'
+                    ip:
+                      igmp:
+                        version: '1'
+                        query-interval: '30'
+                        access-group: 'Gig3-ACL'
+
+        assertions:
+          # These are testing for network instances
+          - "'default' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['name'] == 'IGMP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][0]['config']['version'] == 3"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][0]['config']['query-interval'] == 20"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][0]['config']['filter-prefixes'] == 'Gig2-ACL'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][1]['config']['version'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][1]['config']['query-interval'] == 30"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][1]['config']['filter-prefixes'] == 'Gig3-ACL'"
