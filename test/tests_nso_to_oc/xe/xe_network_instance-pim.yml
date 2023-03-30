@@ -96,16 +96,22 @@
                         mode: 'sparse-dense-mode'
                         query-interval: '33'
                         dr-priority: '333'
-
+          - name: NED init multicast
+            tags:
+              - init_multicast
+            api_path: config/tailf-ned-cisco-ios:ip
+            api_method: PATCH
+            content: |
+              ip:
+                multicast-routing:
+                  distributed: 
+                    - null
         assertions:
           # These are testing for network instances
           - "'default' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['name'] == 'PIM'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['pim']['interfaces']['interface'][0]['config']['mode'] == 'openconfig-p
-im-types:PIM_MODE_SPARSE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['pim']['interfaces']['interface'][0]['config']['mode'] == 'openconfig-pim-types:PIM_MODE_SPARSE'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['pim']['interfaces']['interface'][0]['config']['hello-interval'] == 22"
-
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['pim']['interfaces']['interface'][0]['config']['dr-priority'] == 222"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['pim']['interfaces']['interface'][1]['config']['mode'] == 'openconfig-p
-im-types:PIM_MODE_DENSE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['pim']['interfaces']['interface'][1]['config']['mode'] == 'openconfig-pim-types:PIM_MODE_DENSE'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['pim']['interfaces']['interface'][1]['config']['hello-interval'] == 33"

@@ -393,6 +393,14 @@ def process_match(route_map_match, conditions):
             }
         })
 
+
+def format_well_known_communities(community_number):
+    for i in well_known_members:
+        if i in community_number:
+            index = community_number.index(i)
+            community_number[index] = well_known_members.get(i, i)
+
+
 def process_set(route_map_set, actions):
     if "tag" in route_map_set:
         actions.update({
@@ -458,6 +466,7 @@ def process_set(route_map_set, actions):
             actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-community"]["openconfig-bgp-policy:config"][
                 "openconfig-bgp-policy:options"] = "REPLACE"
 
+        format_well_known_communities(community_number)
         actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-community"].update({
             "openconfig-bgp-policy:inline": {
                 "openconfig-bgp-policy:config": {
