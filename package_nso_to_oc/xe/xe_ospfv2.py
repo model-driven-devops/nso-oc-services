@@ -337,7 +337,6 @@ def check_areas(ospf_leftover, net_protocols, vrf_interfaces, config_leftover, p
     interfaces_by_area = get_interfaces_by_area(ospf.get("network", []), vrf_interfaces)
     area_list = populate_area_list(ospf)
     is_area_0_present = check_for_area_0(area_list)
-
     for area in area_list:
         leftover_area = list(filter(lambda temp_area: temp_area["id"] == area["id"], ospf_leftover.get("area", [])))
         set_ospfv2_areas(ospfv2_area, area, leftover_area, ospf, ospf_leftover)
@@ -373,6 +372,8 @@ def populate_area_list(ospf):
 
         if area_id in area_id_set:
             continue
+        else:
+            area_id_set.add(area_id)
 
         area_list.append({"id": area_id})
     return area_list
