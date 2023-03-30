@@ -90,7 +90,7 @@ def configure_xe_bgp(net_inst, config_before, config_leftover, network_instances
     
     network_instances_notes += xe_bgp_notes
 
-def configure_xe_bgp_redistribution(net_inst, config_before, config_leftover, network_instances_notes):
+def configure_xe_bgp_redistribution(net_inst, config_before, config_leftover):
     bgp_before = config_before.get("tailf-ned-cisco-ios:router", {"bgp": []}).get("bgp")
 
     if bgp_before == None or len(bgp_before) == 0:
@@ -102,25 +102,25 @@ def configure_xe_bgp_redistribution(net_inst, config_before, config_leftover, ne
     afi = (bgp_protocol.get("openconfig-network-instance:bgp", {}).get("openconfig-network-instance:global", {})
         .get("openconfig-network-instance:afi-safis", {}).get("openconfig-network-instance:afi-safi", []))
     bgp_leftover = config_leftover.get("tailf-ned-cisco-ios:router", {"bgp": []}).get("bgp")
-
     redistribute = None
     redistribute_leftover = {}
-
     vrf_index = None
     ipv4_index = None
+    
     if len(afi) > 0:
-        if "with-vrf" in bgp_leftover[0]["address-family"]:
+        if "with-vrf" in bgp_leftover[0]["address-family"] and instance_name != "default":
             (redistribute, ipv4_index, vrf_index) = get_vrf_redistribute(instance_name, bgp_before[0])
         else:
             (redistribute, ipv4_index) = get_global_redistribute(bgp_before[0])
 
-    if vrf_index is None and ipv4_index:
+    if vrf_index is None and ipv4_index != None:
         if len(afi) > 0:
-            if len(bgp_leftover[0].get("address-family", {}).get("ipv4", [])) > 0:
+            if (len(bgp_leftover[0].get("address-family", {}).get("ipv4", [])) > 0
+                and bgp_leftover[0]["address-family"]["ipv4"][ipv4_index]):
                 redistribute_leftover = bgp_leftover[0]["address-family"]["ipv4"][ipv4_index].get("redistribute")
             else:
                 redistribute_leftover = {}
-    elif vrf_index and ipv4_index:
+    elif vrf_index != None and ipv4_index != None:
         if len(afi) > 0:
             if len(bgp_leftover[0].get("address-family", {}).get("with-vrf", {}).get("ipv4", [])) > ipv4_index:
                 ipv4_vrf = bgp_leftover[0]["address-family"]["with-vrf"]["ipv4"][ipv4_index]
@@ -133,15 +133,21 @@ def configure_xe_bgp_redistribution(net_inst, config_before, config_leftover, ne
             else:
                 redistribute_leftover = {}
 
-    process_redistribute(net_inst, redistribute, redistribute_leftover)
+    common_xe.process_redistribute(net_inst, redistribute, redistribute_leftover, "BGP")
 
-    if vrf_index is None and ipv4_index:
-        if len(afi) > 0 and redistribute_leftover != None and len(redistribute_leftover) == 0:
+    if vrf_index is None and ipv4_index != None:
+        if (len(afi) > 0 and redistribute_leftover != None and len(redistribute_leftover) == 0
+            and bgp_leftover[0]["address-family"]["ipv4"][ipv4_index]):
+            
             del bgp_leftover[0]["address-family"]["ipv4"][ipv4_index]["redistribute"]
-        elif redistribute_leftover != None and len(redistribute_leftover) == 0:
+        elif (redistribute_leftover != None and len(redistribute_leftover) == 0
+            and bgp_leftover[0].get("redistribute")):
+            
             del bgp_leftover[0]["redistribute"]
-    elif vrf_index and ipv4_index:
-        if len(afi) > 0 and redistribute_leftover != None and len(redistribute_leftover) == 0:
+    elif vrf_index != None and ipv4_index != None:
+        if (len(afi) > 0 and redistribute_leftover != None and len(redistribute_leftover) == 0
+            and bgp_leftover[0]["address-family"]["with-vrf"]["ipv4"][ipv4_index]["vrf"][vrf_index]):
+            
             del bgp_leftover[0]["address-family"]["with-vrf"]["ipv4"][ipv4_index]["vrf"][vrf_index]["redistribute"]
 
 def get_global_redistribute(ned_bgp):
@@ -159,81 +165,6 @@ def get_vrf_redistribute(vrf_name, ned_bgp):
                     return (vrf.get("redistribute"), ipv4_index, vrf_index)
     
     return (None, None, None)
-
-def process_redistribute(net_inst, redistribute, redistribute_leftover):
-    if not redistribute:
-        return
-
-    net_inst["openconfig-network-instance:table-connections"] = {
-        "openconfig-network-instance:table-connection": []
-    }
-    table_connections = net_inst["openconfig-network-instance:table-connections"][
-        "openconfig-network-instance:table-connection"]
-
-    if "connected" in redistribute:
-        create_protocol_config(table_connections, redistribute, redistribute_leftover, "connected")
-    if "static" in redistribute:
-        create_protocol_config(table_connections, redistribute, redistribute_leftover, "static")
-    if "ospf" in redistribute:
-        create_protocol_config(table_connections, redistribute, redistribute_leftover, "ospf")
-
-def create_protocol_config(table_connections, redistribute, redistribute_leftover, protocol):
-    if type(redistribute[protocol]) == list:
-        updated_prot_list = []
-
-        for prot_index, prot_item in enumerate(redistribute[protocol]):
-            proto_config = append_new_to_table_connections(protocol, table_connections)
-            if len(redistribute_leftover.get(protocol, [])) > prot_index:
-                prot_item_leftover = redistribute_leftover[protocol][prot_index]
-            else:
-                prot_item_leftover = None
-
-            process_protocol(proto_config, prot_item, prot_item_leftover)
-
-            if prot_item_leftover and len(prot_item_leftover) == 0:
-                redistribute_leftover[protocol][prot_index] = None
-        
-        for leftover_prot in redistribute_leftover.get(protocol, []):
-            if leftover_prot:
-                updated_prot_list.append(leftover_prot)
-        
-        if len(updated_prot_list) > 0:
-            redistribute_leftover[protocol] = updated_prot_list
-        else:
-            if redistribute_leftover != {}:
-                del redistribute_leftover[protocol]
-    else:
-        proto_config = append_new_to_table_connections(protocol, table_connections)
-        temp_redistribute_leftover = redistribute_leftover.get(protocol) if redistribute_leftover else None
-        process_protocol(proto_config, redistribute[protocol], temp_redistribute_leftover)
-
-        if (redistribute_leftover and redistribute_leftover[protocol] != None 
-            and len(redistribute_leftover[protocol]) == 0):
-            del redistribute_leftover[protocol]
-
-def append_new_to_table_connections(protocol, table_connections):
-    proto_config = {
-        "openconfig-network-instance:src-protocol": redistribute_type[protocol],
-        "openconfig-network-instance:dst-protocol": "BGP",
-        "openconfig-network-instance:address-family": "IPV4"
-    }
-    proto_config_parent = copy.deepcopy(proto_config)
-    proto_config_parent["openconfig-network-instance:config"] = proto_config
-    table_connections.append(proto_config_parent)
-
-    return proto_config
-
-def process_protocol(proto_config, redistribute_protocol, redistribute_protocol_leftover):
-    if "id" in redistribute_protocol:
-        proto_config["openconfig-network-instance-ext:src-protocol-process-number"] = redistribute_protocol["id"]
-
-        if (redistribute_protocol_leftover and redistribute_protocol_leftover.get("id")):
-            del redistribute_protocol_leftover["id"]
-    if "route-map" in redistribute_protocol:
-        proto_config["openconfig-network-instance:import-policy"] = redistribute_protocol["route-map"]
-
-        if redistribute_protocol_leftover and redistribute_protocol_leftover.get("route-map"):
-            del redistribute_protocol_leftover["route-map"]
 
 def get_bgp_protocol(net_protocols):   
     bgp_protocol = {

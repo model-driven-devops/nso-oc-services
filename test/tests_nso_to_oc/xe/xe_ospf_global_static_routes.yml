@@ -1,0 +1,660 @@
+---
+- hosts: localhost
+  gather_facts: no
+  environment:
+    NSO_DEVICE: xe1
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+  tasks:
+    - name: Run XE network instance OSPF global and static routes tests
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        script_path: ../../../package_nso_to_oc/xe/xe_network_instances.py
+        api_test_data:
+          - name: Set up OC service config
+            tags:
+              - oc_set_up
+            api_path: mdd:openconfig
+            api_method: PUT
+            content: |
+              mdd:openconfig:
+                openconfig-interfaces:interfaces:
+                  openconfig-interfaces:interface:
+                    - openconfig-interfaces:name: 'Loopback10'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:name: 'Loopback10'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:type: 'softwareLoopback'
+                        openconfig-interfaces:description: 'Test loopback'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '10.255.10.1'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '10.255.10.1'
+                                      openconfig-if-ip:prefix-length: 24
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                    - openconfig-interfaces:name: 'Loopback100'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:name: 'Loopback100'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:type: 'softwareLoopback'
+                        openconfig-interfaces:description: 'Test loopback'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '10.255.100.1'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '10.255.100.1'
+                                      openconfig-if-ip:prefix-length: 24
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                    - openconfig-interfaces:name: 'GigabitEthernet7'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:name: 'GigabitEthernet7'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:type: 'ethernetCsmacd'
+                        openconfig-interfaces:description: 'Test gigabitethernet'
+                      openconfig-if-ethernet:ethernet:
+                        openconfig-if-ethernet:config:
+                          openconfig-if-ethernet:auto-negotiate: true
+                          openconfig-if-ethernet:enable-flow-control: false
+                      openconfig-interfaces:hold-time:
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:down: '10'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '10.250.20.1'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '10.250.20.1'
+                                      openconfig-if-ip:prefix-length: 24
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                    - openconfig-interfaces:name: 'GigabitEthernet3'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:name: 'GigabitEthernet3'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:type: 'ethernetCsmacd'
+                        openconfig-interfaces:description: 'Test gigabitethernet'
+                      openconfig-if-ethernet:ethernet:
+                        openconfig-if-ethernet:config:
+                          openconfig-if-ethernet:auto-negotiate: true
+                          openconfig-if-ethernet:enable-flow-control: false
+                      openconfig-interfaces:hold-time:
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:down: '10'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '10.3.0.2'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '10.3.0.2'
+                                      openconfig-if-ip:prefix-length: 24
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                    - openconfig-interfaces:name: 'GigabitEthernet5'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:name: 'GigabitEthernet5'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:type: 'ethernetCsmacd'
+                        openconfig-interfaces:description: 'Test gigabitethernet'
+                      openconfig-if-ethernet:ethernet:
+                        openconfig-if-ethernet:config:
+                          openconfig-if-ethernet:auto-negotiate: true
+                          openconfig-if-ethernet:enable-flow-control: false
+                      openconfig-interfaces:hold-time:
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:down: '10'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '10.5.0.2'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '10.5.0.2'
+                                      openconfig-if-ip:prefix-length: 24
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                    - openconfig-interfaces:name: 'GigabitEthernet6'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:name: 'GigabitEthernet6'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:type: 'ethernetCsmacd'
+                        openconfig-interfaces:description: 'Test gigabitethernet'
+                      openconfig-if-ethernet:ethernet:
+                        openconfig-if-ethernet:config:
+                          openconfig-if-ethernet:auto-negotiate: true
+                          openconfig-if-ethernet:enable-flow-control: false
+                      openconfig-interfaces:hold-time:
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:down: '10'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '10.6.0.1'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '10.6.0.1'
+                                      openconfig-if-ip:prefix-length: 24
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                    - openconfig-interfaces:name: 'GigabitEthernet8'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:name: 'GigabitEthernet8'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:type: 'ethernetCsmacd'
+                        openconfig-interfaces:description: 'Test gigabitethernet'
+                      openconfig-if-ethernet:ethernet:
+                        openconfig-if-ethernet:config:
+                          openconfig-if-ethernet:auto-negotiate: true
+                          openconfig-if-ethernet:enable-flow-control: false
+                      openconfig-interfaces:hold-time:
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:down: '10'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '10.250.25.1'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '10.250.25.1'
+                                      openconfig-if-ip:prefix-length: 24
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                          - openconfig-interfaces:index: 10
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 10
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '10.8.10.2'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '10.8.10.2'
+                                      openconfig-if-ip:prefix-length: 24
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                    - openconfig-interfaces:name: 'Tunnel1'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:name: 'Tunnel1'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:type: 'tunnel'
+                        openconfig-interfaces:mtu: 1476
+                        openconfig-interfaces:description: 'Test tunnel'
+                      openconfig-if-tunnel:tunnel:
+                        openconfig-if-tunnel:config:
+                          openconfig-if-tunnel:src: '10.255.0.1'
+                          openconfig-if-tunnel:dst: '192.168.172.1'
+                          openconfig-if-tunnel:gre-key: 1
+                          openconfig-if-tunnel-ext:keepalives:
+                            openconfig-if-tunnel-ext:period: 5
+                            openconfig-if-tunnel-ext:retries: 3
+                      openconfig-interfaces:hold-time:
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:down: '10'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '10.254.0.1'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '10.254.0.1'
+                                      openconfig-if-ip:prefix-length: 24
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                    - openconfig-interfaces:name: 'vasileft1'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:name: 'vasileft1'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:type: 'vasi'
+                        openconfig-interfaces:description: 'Test vasi'
+                      openconfig-interfaces:hold-time:
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:down: '10'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '192.168.1.1'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '192.168.1.1'
+                                      openconfig-if-ip:prefix-length: 30
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                    - openconfig-interfaces:name: 'vasiright1'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:name: 'vasiright1'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:type: 'vasi'
+                        openconfig-interfaces:description: 'Test vasi'
+                      openconfig-interfaces:hold-time:
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:down: '10'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '192.168.2.2'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '192.168.2.2'
+                                      openconfig-if-ip:prefix-length: 30
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                openconfig-routing-policy:routing-policy:
+                  openconfig-routing-policy:defined-sets:
+                    openconfig-routing-policy:prefix-sets:
+                      openconfig-routing-policy:prefix-set:
+                        - openconfig-routing-policy:name: 'prefix_test'
+                          openconfig-routing-policy:config:
+                            openconfig-routing-policy:name: 'prefix_test'
+                            openconfig-routing-policy:mode: 'IPV4'
+                          openconfig-routing-policy:prefixes:
+                            openconfig-routing-policy:prefix:
+                              - openconfig-routing-policy:ip-prefix: '10.0.0.0/24'
+                                openconfig-routing-policy:masklength-range: 'exact'
+                                openconfig-routing-policy:config:
+                                  openconfig-routing-policy:ip-prefix: '10.0.0.0/24'
+                                  openconfig-routing-policy:masklength-range: 'exact'
+                                  openconfig-routing-policy-ext:seq: 10
+                              - openconfig-routing-policy:ip-prefix: '10.0.0.0/23'
+                                openconfig-routing-policy:masklength-range: '24..30'
+                                openconfig-routing-policy:config:
+                                  openconfig-routing-policy:ip-prefix: '10.0.0.0/23'
+                                  openconfig-routing-policy:masklength-range: '24..30'
+                                  openconfig-routing-policy-ext:seq: 20
+                  openconfig-routing-policy:policy-definitions:
+                    openconfig-routing-policy:policy-definition:
+                      - openconfig-routing-policy:name: 'TEST'
+                        openconfig-routing-policy:config:
+                          openconfig-routing-policy:name: 'TEST'
+                        openconfig-routing-policy:statements:
+                          openconfig-routing-policy:statement:
+                            - openconfig-routing-policy:name: '10'
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:name: '10'
+                              openconfig-routing-policy:actions:
+                                openconfig-routing-policy:config:
+                                  openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'
+                      - openconfig-routing-policy:name: 'test'
+                        openconfig-routing-policy:config:
+                          openconfig-routing-policy:name: 'test'
+                        openconfig-routing-policy:statements:
+                          openconfig-routing-policy:statement:
+                            - openconfig-routing-policy:name: '10'
+                              openconfig-routing-policy:config:
+                                openconfig-routing-policy:name: '10'
+                              openconfig-routing-policy:actions:
+                                openconfig-routing-policy:config:
+                                  openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'
+                              openconfig-routing-policy:conditions:
+                                openconfig-routing-policy:match-prefix-set:
+                                  openconfig-routing-policy:config:
+                                    openconfig-routing-policy:prefix-set: 'prefix_test'
+                                    openconfig-routing-policy:match-set-options: 'ANY'
+                openconfig-network-instance:network-instances:
+                  openconfig-network-instance:network-instance:
+                    - openconfig-network-instance:name: 'default'
+                      openconfig-network-instance:config:
+                        openconfig-network-instance:name: 'default'
+                        openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                        openconfig-network-instance:enabled: true
+          - name: NED init OSPF
+            tags:
+              - init_ospf
+            api_path: config/tailf-ned-cisco-ios:router/ospf
+            api_method: PATCH
+            content: |
+              ospf:
+                - id: '2'
+                - id: '100'
+          - name: NED init VRF
+            tags:
+              - init_vrf
+            api_path: config/tailf-ned-cisco-ios:vrf/definition
+            api_method: PATCH
+            content: |
+              definition:
+                - name: 'internal_0'
+                  address-family:
+                    ipv4: {}
+                    ipv6: {}
+                - name: abc
+                  address-family:
+                    ipv4: {}
+                    ipv6: {}
+                  rd: '1:1'
+                  route-target:
+                    import:
+                      - asn-ip: '100:100'
+                      - asn-ip: '101:101'
+                    export:
+                      - asn-ip: '200:200'
+                      - asn-ip: '202:202'
+                - name: xyz
+                  address-family:
+                    ipv4: {}
+                    ipv6: {}
+          - name: NED init interface
+            tags:
+              - init_intf
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                Loopback:
+                  - name: '10'
+                    vrf:
+                      forwarding: 'internal_0'
+                    ip:
+                      address:
+                        primary:
+                          address: 10.255.10.1
+                          mask: 255.255.255.255
+                  - name: 100
+                    ip:
+                      address:
+                        primary:
+                          address: 10.255.100.1
+                          mask: 255.255.255.255
+                GigabitEthernet:
+                  - name: '5'
+                    description: 'Description for GigabitEthernet5'
+                    ip:
+                      address:
+                        primary:
+                          address: '10.5.0.2'
+                          mask: '255.255.255.0'
+                  - name: '6'
+                    description: 'Description for GigabitEthernet6'
+                    ip:
+                      address:
+                        primary:
+                          address: '10.6.0.1'
+                          mask: '255.255.255.0'
+                  - name: '8.10'
+                    description: TESTDESCRIPT
+                    encapsulation:
+                      dot1Q:
+                        vlan-id: 10
+                    ip:
+                      address:
+                        primary:
+                          address: '10.8.10.2'
+                          mask: 255.255.255.0
+                  - name: '7'
+                    vrf:
+                      forwarding: 'internal_0'
+                    description: 'Description for GigabitEthernet7'
+                    negotiation:
+                      auto: True
+                    mop:
+                      xenabled: False
+                      sysid: False
+                    ip:
+                      address:
+                        primary:
+                          address: '10.250.20.1'
+                          mask: '255.255.255.0'
+                      ospf:
+                        network: 
+                          - 'non-broadcast'
+                        dead-interval:
+                          seconds: 60
+                        hello-interval: 15
+                        retransmit-interval: 10
+                        bfd: {}
+                        cost: 10
+                        priority: 10
+                        authentication:
+                          message-digest: ''
+                        message-digest-key: 
+                          - id: '1'
+                            md5:
+                              type: '0'
+                              secret: 'pass1'
+                          - id: '2'
+                            md5:
+                              type: '7'
+                              secret: '140713181F56'
+                      policy:
+                        route-map: 'TEST'
+                    shutdown: []
+                    carrier-delay:
+                      msec: 10
+                  - name: '8'
+                    vrf:
+                      forwarding: 'internal_0'
+                    description: 'Description for GigabitEthernet8'
+                    negotiation:
+                      auto: True
+                    mop:
+                      xenabled: False
+                      sysid: False
+                    ip:
+                      address:
+                        primary:
+                          address: '10.250.25.1'
+                          mask: '255.255.255.0'
+                      ospf:
+                        network: 
+                          - 'non-broadcast'
+                        dead-interval:
+                          seconds: 60
+                        hello-interval: 15
+                        retransmit-interval: 10
+                        bfd: {}
+                        cost: 10
+                        priority: 10
+                        authentication:
+                          null: ''
+                      policy:
+                        route-map: 'TEST'
+                    shutdown: []
+                    carrier-delay:
+                      msec: 10
+          - name: NED configure global config
+            tags:
+              - ospf_global_config
+            api_path: config/tailf-ned-cisco-ios:router/ospf
+            api_method: PATCH
+            content: |
+              ospf:
+                - id: '2'
+                  vrf: 'internal_0'
+                  router-id: '1.1.1.1'
+                  log-adjacency-changes:
+                    detail: ''
+                  compatible:
+                    rfc1583: True
+                  prefix-suppression: ''
+                  nsf-ietf:
+                    nsf:
+                      ietf: {}
+                  default-information:
+                    originate:
+                      always: {}
+                      metric: '5'
+                      metric-type: '1'
+                      route-map: 'TEST'
+                  mpls:
+                    ldp:
+                      sync: {}
+                  timers:
+                    throttle:
+                      lsa:
+                        start-interval: 1000
+                        hold-interval: 10000
+                        max-interval: 10000
+                      spf:
+                        spf-start: 10000
+                        spf-hold: 20000
+                        spf-max-wait: 20000
+                  auto-cost:
+                    reference-bandwidth: '100000'
+                  redistribute:
+                    connected:
+                      route-map: test
+                    static:
+                      route-map: test
+                    ospf:
+                      - id: 1
+          - name: NED configure static route
+            tags:
+              - static_route_config
+            api_path: config/tailf-ned-cisco-ios:ip/route
+            api_method: PATCH
+            content: |
+              route:
+                ip-route-interface-forwarding-list:
+                  - prefix: '101.0.0.0'
+                    mask: '255.0.0.0'
+                    interface: 'GigabitEthernet5'
+                    forwarding-address: '199.10.0.1'
+                ip-route-interface-list:
+                  - prefix: '102.0.0.0'
+                    mask: '255.0.0.0'
+                    interface: 'Null0'
+                    tag: '179'
+                    metric: 200
+                    name: 'to_bgp'
+                  - prefix: '103.0.0.0'
+                    mask: '255.0.0.0'
+                    interface: 'dhcp'
+                  - prefix: '104.0.0.0'
+                    mask: '255.0.0.0'
+                    interface: 'GigabitEthernet6'
+                  - prefix: '105.0.0.0'
+                    mask: '255.0.0.0'
+                    interface: 'GigabitEthernet8.10'
+                ip-route-forwarding-list:
+                  - prefix: '100.0.0.0'
+                    mask: '255.0.0.0'
+                    forwarding-address: '1.1.1.1'
+                vrf:
+                  - name: 'internal_0'
+                    ip-route-interface-list:
+                      - prefix: '70.0.0.0'
+                        mask: '255.0.0.0'
+                        interface: 'Null0'
+                        tag: '179'
+                        metric: 200
+                        name: 'vrf_abc_to_bgp'
+                  - name: 'abc'
+                    ip-route-interface-list:
+                      - prefix: '90.0.0.0'
+                        mask: '255.0.0.0'
+                        interface: 'dhcp'
+                  - name: 'xyz'
+                    ip-route-interface-list:
+                      - prefix: '80.0.0.0'
+                        mask: '255.0.0.0'
+                        interface: 'Null0'
+                    ip-route-forwarding-list:
+                      - prefix: '81.0.0.0'
+                        mask: '255.0.0.0'
+                        forwarding-address: '5.5.5.5'
+        assertions:
+          # These are testing for network instances
+          - "'default' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
+          - "'abc' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
+          - "'xyz' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
+
+          # Testing RDs and RTs
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['route-distinguisher'] == '1:1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['openconfig-network-instance-ext:route-targets-import'][0] == '100:100'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['openconfig-network-instance-ext:route-targets-export'][1] == '202:202'"
+
+          # Testing static routes
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][0]['config']['prefix'] == '90.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][0]['next-hops']['next-hop'][0]['index'] == 'DHCP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][0]['config']['prefix'] == '100.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][0]['next-hops']['next-hop'][0]['index'] == '1.1.1.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][1]['config']['prefix'] == '101.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][1]['next-hops']['next-hop'][0]['index'] == 'GigabitEthernet5'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][2]['config']['prefix'] == '102.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][2]['config']['description'] == 'to_bgp'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][2]['next-hops']['next-hop'][0]['index'] == 'DROP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][3]['config']['prefix'] == '103.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][3]['next-hops']['next-hop'][0]['index'] == 'DHCP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][4]['config']['prefix'] == '104.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][4]['next-hops']['next-hop'][0]['index'] == 'GigabitEthernet6'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][4]['next-hops']['next-hop'][0]['config']['next-hop'] == 'openconfig-local-routing:LOCAL_LINK'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][5]['config']['prefix'] == '105.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][5]['next-hops']['next-hop'][0]['index'] == 'GigabitEthernet8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][1]['static-routes']['static'][5]['next-hops']['next-hop'][0]['interface-ref']['config']['subinterface'] == 10"
+
+          # The rest of these are for OC
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['name'] == '2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['hide-transit-only-networks'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['log-adjacency-changes'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['router-id'] == '1.1.1.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['summary-route-cost-mode'] == 'RFC1583_COMPATIBLE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['graceful-restart']['config']['enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['openconfig-ospfv2-ext:capability-vrf-lite'] == false"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['openconfig-ospfv2-ext:default-information-originate']['config']['metric'] == '5'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['openconfig-ospfv2-ext:default-information-originate']['config']['metric-type'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['openconfig-ospfv2-ext:auto-cost-ref-bandwidth'] == 100000"
+          # TODO Add route-maps to OC services
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['openconfig-ospfv2-ext:default-information-originate']['config']['route-map'] == 'TEST'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['config']['openconfig-ospfv2-ext:default-information-originate']['config']['always'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['mpls']['igp-ldp-sync']['config']['enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['lsa-generation']['config']['initial-delay'] == 1000"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['lsa-generation']['config']['maximum-delay'] == 10000"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['lsa-generation']['config']['openconfig-ospfv2-ext:hold-time'] == 10000"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['spf']['config']['initial-delay'] == 10000"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['spf']['config']['maximum-delay'] == 20000"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['protocols']['protocol'][0]['ospfv2']['global']['timers']['spf']['config']['openconfig-ospfv2-ext:hold-time'] == 20000"
+          # OSPF Redistribute
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['table-connections']['table-connection'][0]['config']['dst-protocol'] == 'openconfig-policy-types:OSPF'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['table-connections']['table-connection'][0]['config']['src-protocol'] == 'openconfig-policy-types:DIRECTLY_CONNECTED'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['table-connections']['table-connection'][0]['config']['openconfig-network-instance-ext:dst-protocol-process-number'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['table-connections']['table-connection'][0]['config']['import-policy'][0] == 'test'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['table-connections']['table-connection'][1]['config']['src-protocol'] == 'openconfig-policy-types:OSPF'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['table-connections']['table-connection'][1]['config']['openconfig-network-instance-ext:src-protocol-process-number'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][2]['table-connections']['table-connection'][2]['config']['src-protocol'] == 'openconfig-policy-types:STATIC'"
