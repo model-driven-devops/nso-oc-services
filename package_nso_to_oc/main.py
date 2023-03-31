@@ -25,22 +25,9 @@ import copy
 import json
 import os
 from importlib.util import find_spec
-if (find_spec("package_nso_to_oc") is not None):
-    from package_nso_to_oc.xe import main_xe
-    from package_nso_to_oc.xr import main_xr
-    from package_nso_to_oc import common
-else:
-    import common
-    from xe import main_xe
-    from xr import main_xr
 from pathlib import Path, os as path_os
 
 def main():
-    sys.path.append(".")
-    sys.path.append("../")
-    sys.path.append("../../")
-    sys.path.append("../../../")
-
     if os.environ.get("NSO_URL", False) and os.environ.get("NSO_NED_FILE", False):
         print("environment variable NSO_URL or NSO_NED_FILE must be set: not both")
         exit()
@@ -78,4 +65,28 @@ def main():
         config_remaining_name, oc_name, translation_notes)
 
 if __name__ == '__main__':
+    sys.path.append(".")
+    sys.path.append("../")
+    sys.path.append("../../")
+    sys.path.append("../../../")
+
+    # Python won't let us place these duplicate imports in a function...
+    if (find_spec("package_nso_to_oc") is not None):
+        from package_nso_to_oc.xe import main_xe
+        from package_nso_to_oc.xr import main_xr
+        from package_nso_to_oc import common
+    else:
+        import common
+        from xe import main_xe
+        from xr import main_xr
+        
     main()
+else:
+    if (find_spec("package_nso_to_oc") is not None):
+        from package_nso_to_oc.xe import main_xe
+        from package_nso_to_oc.xr import main_xr
+        from package_nso_to_oc import common
+    else:
+        import common
+        from xe import main_xe
+        from xr import main_xr
