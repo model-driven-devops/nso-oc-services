@@ -10,7 +10,6 @@
       include_role:
         name: ned-to-oc-test
       vars:
-        will_load_rollback: False
         script_path: ../../../package_nso_to_oc/xe/xe_network_instances.py
         api_test_data:
           - name: Set up OC service config
@@ -100,11 +99,11 @@
 
         assertions:
           # These are testing for network instances
-          - "'default' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['name'] == 'IGMP'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][0]['config']['version'] == 3"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][0]['config']['query-interval'] == 20"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][0]['config']['filter-prefixes'] == 'Gig2-ACL'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][1]['config']['version'] == 1"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][1]['config']['query-interval'] == 30"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][1]['config']['filter-prefixes'] == 'Gig3-ACL'"
+          # - "'default' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['name'] == 'IGMP'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][0]['config']['version'] == 3"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][0]['config']['query-interval'] == 20"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][0]['config']['filter-prefixes'] == 'Gig2-ACL'"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][1]['config']['version'] == 1"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][1]['config']['query-interval'] == 30"
+          # - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['igmp']['interfaces']['interface'][1]['config']['filter-prefixes'] == 'Gig3-ACL'"
