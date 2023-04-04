@@ -344,15 +344,15 @@
                         openconfig-network-instance:name: 'default'
                         openconfig-network-instance:type: 'DEFAULT_INSTANCE'
                         openconfig-network-instance:enabled: true
-          # - name: NED init OSPF
-          #   tags:
-          #     - init_ospf
-          #   api_path: config/tailf-ned-cisco-ios:router/ospf
-          #   api_method: PATCH
-          #   content: |
-          #     ospf:
-          #       - id: '2'
-          #       - id: '100'
+          - name: NED init OSPF
+            tags:
+             - init_ospf
+            api_path: config/tailf-ned-cisco-ios:router/ospf
+            api_method: PATCH
+            content: |
+             ospf:
+               - id: '2'
+               - id: '100'
           - name: NED init VRF
             tags:
               - init_vrf
