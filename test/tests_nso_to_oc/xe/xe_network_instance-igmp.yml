@@ -6,7 +6,7 @@
   vars:
     device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
   tasks:
-    - name: Run XE network instance OSPF global and static routes tests
+    - name: Run XE network instance IGMP interface tests
       include_role:
         name: ned-to-oc-test
       vars:
@@ -77,9 +77,9 @@
                         openconfig-network-instance:name: 'default'
                         openconfig-network-instance:type: 'DEFAULT_INSTANCE'
                         openconfig-network-instance:enabled: true
-          - name: NED init interface
+          - name: NED init interface for IGMP
             tags:
-              - init_intf
+              - init_intf_igmp
             api_path: config/tailf-ned-cisco-ios:interface
             api_method: PATCH
             content: |
@@ -97,7 +97,16 @@
                         version: '1'
                         query-interval: '30'
                         access-group: 'Gig3-ACL'
-
+          - name: NED init multicast
+            tags:
+              - init_multicast
+            api_path: config/tailf-ned-cisco-ios:ip
+            api_method: PATCH
+            content: |
+              ip:
+                multicast-routing:
+                  distributed: 
+                    - null
         assertions:
           # These are testing for network instances
           - "'default' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
