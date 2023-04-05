@@ -91,7 +91,16 @@
                   - name: '3'
                     ip:
                       cgmp: {}
-
+          - name: NED init multicast
+            tags:
+              - init_multicast
+            api_path: config/tailf-ned-cisco-ios:ip
+            api_method: PATCH
+            content: |
+              ip:
+                multicast-routing:
+                  distributed: 
+                    - null
         assertions:
           # These are testing for network instances
           - "'default' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
