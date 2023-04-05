@@ -135,7 +135,7 @@
           - "' interface GigabitEthernet3:' in changes"
           - "'+ description int G3 - CGMP enabled:' in changes"
           - "'+ ip cgmp:' in changes"
-          - "' interface GigabitEthernet4.1:' in changes"
+          - "'+interface GigabitEthernet4.1:' in changes"
           - "'+ description int G4.1 - CGMP enabled:' in changes"
           - "'+ ip cgmp:' in changes"
 
