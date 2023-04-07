@@ -296,8 +296,20 @@ class BaseAcl:
             self.__get_ipv4_config(entry)[self._src_addr_key] = f"{ip}/32"
 
             return current_index + 1
+        elif not common.is_valid_ip(ip):
+            return current_index
+        
         hostmask = rule_parts[current_index + 1]
-        temp_ip = IPv4Network((0, hostmask))
+        
+        if hostmask in port_operators:
+            return current_index + 1
+        
+        try:
+            temp_ip = IPv4Network((0, hostmask))
+        except Exception as err:
+            self.__add_acl_entry_note(" ".join(rule_parts), err)
+            self.acl_success = False
+            raise Exception(str(err))
 
         # 0.0.0.0 and 255.255.255.255 are wrong using IPv4Network.prefixlen()
         if hostmask == "0.0.0.0":
@@ -329,14 +341,14 @@ class BaseAcl:
 
         try:
             current_port = current_port if current_port.isdigit() else socket.getservbyname(current_port)
-        except OSError:
+        except OSError as os_err:
             try:
                 current_port = common.port_name_number_mapping[current_port]
             except Exception as err:
                 self.__add_acl_entry_note(" ".join(rule_parts),
                                           f"Unable to convert service {current_port} to a port number")
                 self.acl_success = False
-                raise Exception
+                raise Exception(str(os_err))
 
         if rule_parts[current_index] == "range":
             end_port = rule_parts[current_index + 2]
