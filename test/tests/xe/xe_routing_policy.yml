@@ -31,19 +31,46 @@
                               openconfig-routing-policy:ip-prefix: '1.1.1.1/32'
                               openconfig-routing-policy:masklength-range: 'exact'
                               openconfig-routing-policy-ext:seq: 10
+                              openconfig-routing-policy-ext:policy_action: 'PERMIT_ROUTE'
+                          - openconfig-routing-policy:ip-prefix: '192.168.1.0/24'
+                            openconfig-routing-policy:masklength-range: 'exact'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '192.168.1.0/24'
+                              openconfig-routing-policy:masklength-range: 'exact'
+                              openconfig-routing-policy-ext:seq: 20
+                              openconfig-routing-policy-ext:policy_action: 'DENY_ROUTE'
+                          - openconfig-routing-policy:ip-prefix: '192.168.2.0/24'
+                            openconfig-routing-policy:masklength-range: 'exact'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '192.168.2.0/24'
+                              openconfig-routing-policy:masklength-range: 'exact'
+                              openconfig-routing-policy-ext:seq: 30
                           - openconfig-routing-policy:ip-prefix: '2.2.2.0/23'
                             openconfig-routing-policy:masklength-range: '24..30'
                             openconfig-routing-policy:config:
                               openconfig-routing-policy:ip-prefix: '2.2.2.0/23'
                               openconfig-routing-policy:masklength-range: '24..30'
-                              openconfig-routing-policy-ext:seq: 20
+                              openconfig-routing-policy-ext:seq: 100
+                              openconfig-routing-policy-ext:policy_action: 'PERMIT_ROUTE'
+                          - openconfig-routing-policy:ip-prefix: '3.3.0.0/16'
+                            openconfig-routing-policy:masklength-range: '24..30'
+                            openconfig-routing-policy:config:
+                              openconfig-routing-policy:ip-prefix: '3.3.0.0/16'
+                              openconfig-routing-policy:masklength-range: '24..30'
+                              openconfig-routing-policy-ext:seq: 200
+                              openconfig-routing-policy-ext:policy_action: 'DENY_ROUTE'
+
         api_method: PUT
         api_ignore_errors: false
         rollback: true
         assertion_ignore_errors: false
         assertions:
           - "'+ip prefix-list LOCAL-PREFIXES seq 10 permit 1.1.1.1/32:' in changes"
-          - "'+ip prefix-list LOCAL-PREFIXES seq 20 permit 2.2.2.0/23 ge 24 le 30:' in changes"
+          - "'+ip prefix-list LOCAL-PREFIXES seq 20 deny 192.168.1.0/24:' in changes"
+          - "'+ip prefix-list LOCAL-PREFIXES seq 30 permit 192.168.2.0/24:' in changes"
+          - "'+ip prefix-list LOCAL-PREFIXES seq 100 permit 2.2.2.0/23 ge 24 le 30:' in changes"
+          - "'+ip prefix-list LOCAL-PREFIXES seq 200 deny 3.3.0.0/16 ge 24 le 30:' in changes"
+
 
     - name: test as-path-list
       tags:

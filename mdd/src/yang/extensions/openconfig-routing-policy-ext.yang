@@ -25,16 +25,40 @@ module openconfig-routing-policy-ext{
   description
     "Augmentation to openconfig routing-policy model.";
 
+  revision "2023-04-11" {
+    description
+      "Updated to include policy_action extension";
+  }
   revision "2021-10-15" {
     description
       "Initial revision";
   }
+
+  typedef policy_action-type {
+    type enumeration {
+      enum PERMIT_ROUTE {
+        description
+          "Policy to permit the route";
+      }
+      enum DENY_ROUTE {
+        description
+          "Policy to deny the route";
+      }
+    }
+  }
+
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-rpol:routing-policy/oc-rpol:defined-sets/oc-rpol:prefix-sets/oc-rpol:prefix-set/oc-rpol:prefixes/oc-rpol:prefix/oc-rpol:config {
     leaf seq {
       type uint16;
       tailf:info "ios: prefix-list statement sequence number";
       description
         "Sets a sequence number for prefix-list statements.";
+    }
+    leaf policy_action {
+      type policy_action-type;
+      tailf:info "ios: prefix-list statement permit/deny action";
+      description
+        "Enables permit/deny for prefix-list statements.";
     }
   }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-rpol:routing-policy/oc-rpol:policy-definitions/oc-rpol:policy-definition/oc-rpol:statements/oc-rpol:statement/oc-rpol:conditions {

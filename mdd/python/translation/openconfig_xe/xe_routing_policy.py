@@ -121,15 +121,24 @@ def prefix_sets_configure(self) -> None:
             for service_prefix in service_prefix_set.prefixes.prefix:
                 if service_prefix.config.masklength_range.lower() == 'exact':
                     statement = prefix_list_cdb.seq.create(service_prefix.config.seq)
-                    statement.permit.ip = service_prefix.config.ip_prefix
+                    if service_prefix.config.policy_action == 'DENY_ROUTE':
+                        statement.deny.ip = service_prefix.config.ip_prefix
+                    else:
+                        statement.permit.ip = service_prefix.config.ip_prefix
                 else:
                     result = regex_ipv4_masklength_range.match(service_prefix.config.masklength_range)
                     ml = [int(result.group(1)), int(result.group(2))]
                     ml.sort()
                     statement = prefix_list_cdb.seq.create(service_prefix.config.seq)
-                    statement.permit.ip = service_prefix.config.ip_prefix
-                    statement.permit.ge = ml[0]
-                    statement.permit.le = ml[1]
+                    if service_prefix.config.policy_action == 'DENY_ROUTE':
+                        statement.deny.ip = service_prefix.config.ip_prefix
+                        statement.deny.ge = ml[0]
+                        statement.deny.le = ml[1]
+                    else:
+                        statement.permit.ip = service_prefix.config.ip_prefix
+                        statement.permit.ge = ml[0]
+                        statement.permit.le = ml[1]
+
 
 
 def as_path_sets_configure(self) -> None:
