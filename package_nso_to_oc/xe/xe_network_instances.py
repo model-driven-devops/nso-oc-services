@@ -98,6 +98,7 @@ def xe_network_instances(config_before: dict, config_leftover: dict) -> None:
     if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("multicast-routing", {}).get("distributed", '')) is list:
         configure_pim_network_instance(config_before, config_leftover)
         configure_igmp_network_instance(config_before, config_leftover)
+        configure_cgmp_network_instance(config_before, config_leftover)
 
     cleanup_null_ospf_leftovers(config_leftover)
     cleanup_null_static_route_leftovers(config_leftover)
@@ -403,6 +404,88 @@ def configure_igmp_network_instance(config_before, config_leftover):
                     openconfig_network_instances["openconfig-network-instance:network-instances"]["openconfig-network-instance:network-instance"][index]["openconfig-network-instance:protocols"]["openconfig-network-instance:protocol"].append(network_instance)
             index += 1
 
+
+def configure_cgmp_network_instance(config_before, config_leftover):
+    """
+    Translates NSO XE NED to MDD OpenConfig Network Instance for IP multicast and interface CGMP configuration
+    """
+
+    cgmp_protocol_by_networkinstance = {}
+
+    cgmp_protocol_instance = {
+        "openconfig-network-instance:identifier": "CGMP",
+        "openconfig-network-instance:name": "CGMP",
+        "openconfig-network-instance:config": {
+            "openconfig-network-instance:identifier": "CGMP",
+            "openconfig-network-instance:name": "CGMP",
+            "openconfig-network-instance:enabled": True,
+            "openconfig-network-instance:default-metric": 1
+        },
+        "openconfig-network-instance:cgmp": {
+            "openconfig-network-instance:interfaces": {
+                "openconfig-network-instance:interface": [
+                ]
+            }
+        }
+    }
+
+    cgmp_interface = {
+        "openconfig-network-instance:interface-id": "",
+        "openconfig-network-instance:config": {
+            "openconfig-network-instance:enabled": "",
+            "openconfig-network-instance:interface-id": "",
+            "openconfig-network-instance:cgmp-options": "NOT_APPLICABLE",
+        },
+        "openconfig-network-instance:interface-ref": {
+            "openconfig-network-instance:config": {
+                "openconfig-network-instance:interface": "",
+                "openconfig-network-instance:subinterface": ""
+            }
+        }
+    }
+
+    for interface_type in config_before.get("tailf-ned-cisco-ios:interface", {}):
+        for nso_index, value in enumerate(config_before["tailf-ned-cisco-ios:interface"][interface_type]):
+            tmp_cgmp_interface = copy.deepcopy(cgmp_interface)
+            if type(value.get("ip", {}).get("cgmp", '')) is dict:
+                int_num = str(value['name']).split(".")[0]
+                subint_num = 0
+                if "." in str(value['name']):
+                    subint_num = value['name'].split(".")[1]
+
+                tmp_cgmp_interface["openconfig-network-instance:interface-id"] = int_num
+                tmp_cgmp_interface["openconfig-network-instance:config"]["openconfig-network-instance:enabled"] = True
+                tmp_cgmp_interface["openconfig-network-instance:config"]["openconfig-network-instance:interface-id"] = int_num
+                tmp_cgmp_interface["openconfig-network-instance:interface-ref"]["openconfig-network-instance:config"]["openconfig-network-instance:interface"] = interface_type + int_num
+                tmp_cgmp_interface["openconfig-network-instance:interface-ref"]["openconfig-network-instance:config"]["openconfig-network-instance:subinterface"] = subint_num
+
+                if value.get("vrf", {}).get("forwarding", {}):
+                    vrf_name = value["vrf"]["forwarding"]
+                    if cgmp_protocol_by_networkinstance.get(vrf_name) is None:
+                        cgmp_protocol_by_networkinstance[vrf_name] = {}
+                        tmp_cgmp_protocol_instance = copy.deepcopy(cgmp_protocol_instance)
+                        cgmp_protocol_by_networkinstance.update({vrf_name : tmp_cgmp_protocol_instance})
+                else:
+                    vrf_name = "default"
+                    if cgmp_protocol_by_networkinstance.get(vrf_name) is None:
+                        cgmp_protocol_by_networkinstance[vrf_name] = {}
+                        tmp_cgmp_protocol_instance = copy.deepcopy(cgmp_protocol_instance)
+                        cgmp_protocol_by_networkinstance.update({vrf_name : tmp_cgmp_protocol_instance})
+
+                cgmp_protocol_by_networkinstance[vrf_name]["openconfig-network-instance:cgmp"]["openconfig-network-instance:interfaces"]["openconfig-network-instance:interface"].append(tmp_cgmp_interface)
+
+                del config_leftover["tailf-ned-cisco-ios:interface"][interface_type][nso_index]["ip"]["cgmp"]
+
+    if "multicast-routing" in config_leftover.get("tailf-ned-cisco-ios:ip", {}):
+        del config_leftover["tailf-ned-cisco-ios:ip"]["multicast-routing"]
+
+    for instance_name, network_instance in cgmp_protocol_by_networkinstance.items():
+        index = 0
+        for oc_name in openconfig_network_instances["openconfig-network-instance:network-instances"]["openconfig-network-instance:network-instance"]:
+            for oc_instance, oc_instance_name in oc_name.items():
+                if oc_instance_name == instance_name:
+                    openconfig_network_instances["openconfig-network-instance:network-instances"]["openconfig-network-instance:network-instance"][index]["openconfig-network-instance:protocols"]["openconfig-network-instance:protocol"].append(network_instance)
+            index += 1
 
 def process_rd_rt(temp_vrf, vrf, vrf_index, config_leftover):
     if "rd" in vrf:
