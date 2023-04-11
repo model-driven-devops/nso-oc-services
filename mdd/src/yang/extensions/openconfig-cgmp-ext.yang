@@ -1,0 +1,116 @@
+module openconfig-cgmp-ext{
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/openconfig-cgmp-ext";
+
+  prefix "oc-cgmp-ext";
+
+  import tailf-ncs { prefix ncs; }
+  import tailf-common { prefix tailf; }
+  import mdd { prefix mdd; }
+  import openconfig-network-instance-types { prefix "oc-ni-types"; }
+  import openconfig-extensions { prefix oc-ext; }
+  import openconfig-routing-policy { prefix oc-rpol; }
+  import openconfig-interfaces { prefix "oc-if"; }
+
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Augmentation to openconfig network instance protocols model for CGMP.";
+
+  revision "2023-03-15" {
+    description
+      "Initial revision";
+  }
+
+  grouping admin-config {
+    description
+      "Re-usable grouping to enable or disable a particular feature.";
+
+    leaf enabled {
+      type boolean;
+      description
+        "When set to true, the functionality within which this
+        leaf is defined is enabled, when set to false it is
+        explicitly disabled.";
+    }
+  }
+
+  grouping cgmp-interface-config {
+    description
+      "Configuration data for CGMP on each interface.";
+
+    leaf interface-id {
+      type oc-if:interface-id;
+      description
+        "Reference to an interface on which CGMP is enabled.";
+    }
+
+    uses admin-config;
+
+    leaf cgmp-options {
+      type enumeration {
+        enum NOT_APPLICABLE;     // default
+        enum BATCH-JOINS;        // Send CGMP batch Join messages when IGMP
+        enum PROCESS-LEAVES;     // Send CGMP Leave messages when IGMP Leaves received
+        enum PROXY;              // CGMP for hosts and proxy for multicast routers
+        enum ROUTER-ONLY;        // CGMP proxy for multicast routers only
+      }
+      default NOT_APPLICABLE;
+      description
+        "CGMP configuration options.";
+    }
+  }
+
+  grouping cgmp-interface-top {
+    description
+      "Configuration and state data for CGMP on each interface.";
+
+    container interfaces {
+      description
+        "The interfaces on which CGMP is configured.";
+
+      list interface {
+        key "interface-id";
+        description
+          "This container defines interface CGMP configuration and
+          state information.";
+
+        leaf interface-id {
+          type leafref {
+            path "../config/interface-id";
+          }
+          description
+            "Reference to an interface on which CGMP is enabled.";
+        }
+
+        container config {
+          description
+            "CGMP interface configuration.";
+
+          uses cgmp-interface-config;
+        }
+
+        uses oc-if:interface-ref;
+      }
+    }
+  }
+
+  grouping cgmp-top {
+    description
+      "Top-level grouping for CGMP.";
+
+    container cgmp {
+      description
+        "Top-level CGMP configuration.";
+
+      uses cgmp-interface-top;
+    }
+  }
+}

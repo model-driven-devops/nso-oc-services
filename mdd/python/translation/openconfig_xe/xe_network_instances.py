@@ -28,6 +28,7 @@ def xe_network_instances_program_service(self) -> None:
         xe_configure_mpls(self, network_instance)
         xe_configure_pim(self, network_instance)
         xe_configure_igmp(self, network_instance)
+        xe_configure_cgmp(self, network_instance)
         xe_get_table_connections(network_instance, service_table_connection_dict)
         configure_bgp_list(self, network_instance, instance_bgp_list)
     
@@ -552,3 +553,26 @@ def xe_configure_igmp(self, network_instance) -> None:
                         interface_cdb.ip.igmp.access_group = iid.config.filter_prefixes
                     elif iid.config.enabled == False:
                         interface_cdb.ip.igmp.delete()
+
+
+def xe_configure_cgmp(self, network_instance) -> None:
+    """
+    Configures the cgmp section of openconfig-network-instance
+    """
+    if network_instance.protocols.protocol:
+        for p in network_instance.protocols.protocol:
+            if p.identifier == 'oc-pol-types:CGMP':
+                for iid in p.cgmp.interfaces.interface:
+                    interface_type, interface_number = get_interface_type_and_number(iid.interface_ref.config.interface)
+                    class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface, interface_type)
+                    if iid.interface_ref.config.subinterface == 0:
+                        interface_cdb = class_attribute[interface_number]
+                    else:
+                        interface_cdb = class_attribute[f'{interface_number}.{iid.interface_ref.config.subinterface}']
+                    if iid.config.enabled == True:
+                        interface_cdb.ip.cgmp.create()
+                        if iid.config.cgmp_options != 'NOT_APPLICABLE':
+                            self.log.info("Unsupported IP CGMP option. Enabling CGMP without option")
+                    elif iid.config.enabled == False:
+                        if interface_cdb.ip.cgmp.exists():
+                            interface_cdb.ip.cgmp.delete()
