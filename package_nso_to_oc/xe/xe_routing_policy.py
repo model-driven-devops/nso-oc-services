@@ -79,51 +79,53 @@ def process_prefix_sets(config_before, config_after):
         }
         prefixes = new_prefix_set["openconfig-routing-policy:prefixes"]["openconfig-routing-policy:prefix"]
         seq_list_after = common.get_index_or_default(xe_prefixes_after, prefix_index, {}).get("seq", [])
-        all_processed = True
 
         for seq_index, seq in enumerate(prefix.get("seq", [])):
             if "deny" in seq:
-                all_processed = False
-                routing_policy_notes.append(
-f"""
-Prefix Name: {prefix.get("name")}
-Sequence Number: {seq.get("no")}
-This sequence contains a deny operation, which is not supported in OpenConfig. Translation, of the entire list, to OC will be skipped.
-""")
-                continue
-            if not "permit" in seq:
-                continue
-
-            masklength = "exact" if not "le" in seq["permit"] else f'{seq["permit"].get("ge", 0)}..{seq["permit"]["le"]}'
-            new_prefix = {
-                "openconfig-routing-policy:ip-prefix": seq["permit"].get("ip"),
-                "openconfig-routing-policy:masklength-range": masklength,
-                "openconfig-routing-policy:config": {
+                masklength = "exact" if not "le" in seq["deny"] else f'{seq["deny"].get("ge", 0)}..{seq["deny"]["le"]}'
+                new_prefix = {
+                    "openconfig-routing-policy:ip-prefix": seq["deny"].get("ip"),
+                    "openconfig-routing-policy:masklength-range": masklength,
+                    "openconfig-routing-policy:config": {
+                        "openconfig-routing-policy:ip-prefix": seq["deny"].get("ip"),
+                        "openconfig-routing-policy:masklength-range": masklength,
+                        "openconfig-routing-policy-ext:seq": seq["no"],
+                        "openconfig-routing-policy-ext:policy_action": 'DENY_ROUTE'
+                    }
+                }
+            elif "permit" in seq:
+                masklength = "exact" if not "le" in seq["permit"] else f'{seq["permit"].get("ge", 0)}..{seq["permit"]["le"]}'
+                new_prefix = {
                     "openconfig-routing-policy:ip-prefix": seq["permit"].get("ip"),
                     "openconfig-routing-policy:masklength-range": masklength,
-                    "openconfig-routing-policy-ext:seq": seq["no"]
+                    "openconfig-routing-policy:config": {
+                        "openconfig-routing-policy:ip-prefix": seq["permit"].get("ip"),
+                        "openconfig-routing-policy:masklength-range": masklength,
+                        "openconfig-routing-policy-ext:seq": seq["no"],
+                        "openconfig-routing-policy-ext:policy_action": 'PERMIT_ROUTE'
+                    }
                 }
-            }
+
             prefixes.append(new_prefix)
 
-            # # Ensure the value we're nullifying does exist
-            # if common.get_index_or_default(seq_list_after, seq_index, None):
-            #     seq_list_after[seq_index] = None
+            # Ensure the value we're nullifying does exist
+            if common.get_index_or_default(seq_list_after, seq_index, None):
+                seq_list_after[seq_index] = None
 
-        if all_processed:
-            prefix_sets["openconfig-routing-policy:prefix-sets"]["openconfig-routing-policy:prefix-set"].append(new_prefix_set)
-            common.get_index_or_default(xe_prefixes_after, prefix_index, {})["name"] = None
-    
+        prefix_sets["openconfig-routing-policy:prefix-sets"]["openconfig-routing-policy:prefix-set"].append(new_prefix_set)
+        common.get_index_or_default(xe_prefixes_after, prefix_index, {})["name"] = None
+
     for prefix_item in config_after.get("tailf-ned-cisco-ios:ip", {}).get("prefix-list", {}).get("prefixes", []):
         if "name" in prefix_item and prefix_item["name"]:
             prefixes_list.append(prefix_item)
-    
+
     if len(prefixes_list) > 0:
         config_after["tailf-ned-cisco-ios:ip"]["prefix-list"]["prefixes"] = prefixes_list
     elif "prefixes" in config_after.get("tailf-ned-cisco-ios:ip", {}).get("prefix-list", {}):
         del config_after["tailf-ned-cisco-ios:ip"]["prefix-list"]["prefixes"]
 
     openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:defined-sets"].update(prefix_sets)
+
 
 def process_as_path_sets(config_before, config_after):
     as_path_sets = {"openconfig-bgp-policy:as-path-sets": {"openconfig-bgp-policy:as-path-set": []}}
