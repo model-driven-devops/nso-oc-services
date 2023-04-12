@@ -359,7 +359,7 @@ class BaseAcl:
                 self.__get_transport_config(entry)["openconfig-acl:destination-port"] = f"{current_port}..{end_port}"
                 current_index = self.__set_tcp_flags(rule_parts, current_index + 3, entry)
 
-            return current_index
+            return current_index + 3
         elif rule_parts[current_index] == "lt":
             if is_source:
                 self.__get_transport_config(entry)["openconfig-acl:source-port"] = f"0..{int(current_port) - 1}"
