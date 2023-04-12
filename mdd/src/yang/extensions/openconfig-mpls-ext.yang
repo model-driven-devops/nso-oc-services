@@ -1,0 +1,48 @@
+module openconfig-mpls-ext{
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/openconfig-mpls-ext";
+
+  prefix "oc-mpls-ext";
+
+  import tailf-ncs { prefix ncs; }
+  import tailf-common { prefix tailf; }
+  import mdd { prefix mdd; }
+  import openconfig-network-instance-types { prefix "oc-ni-types"; }
+  import openconfig-extensions { prefix oc-ext; }
+  import openconfig-interfaces { prefix "oc-if"; }
+
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Augmentation to openconfig network instance protocols model for MPLS.";
+
+  revision "2023-03-27" {
+    description
+      "Initial revision";
+  }
+
+  grouping mpls-interface-config {
+    description
+      "Configuration data for MPLS on each interface.";
+
+    leaf mpls-mtu {
+      type uint16 {
+        range 64..1500;
+      }
+      description
+        "Configure MPLS MTU on this interface";
+    }
+    leaf mpls-bgp-forwarding {
+      type boolean;
+      description
+        "Enable MPLS BGP forwarding on this interface";
+    }
+  }
+}

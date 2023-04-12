@@ -184,7 +184,7 @@ module openconfig-mpls-ldp {
 
         uses mpls-ldp-global;
         uses mpls-ldp-graceful-restart;
-        uses mpls-ldp-authentication-top;
+//        uses mpls-ldp-authentication-top;
       }
 
       uses mpls-ldp-interface-attributes-top;
@@ -830,40 +830,40 @@ module openconfig-mpls-ldp {
 
     uses admin-config;
 
-    leaf reconnect-time {
-      type uint16;
-      description
-        "Interval for which the remote LDP peers
-        will wait for the local node to reconnect after a
-        failure";
-      reference "RFC3478 Graceful Restart Mechanism for Label
-        Distribution Protocol";
-    }
-
-    leaf recovery-time {
-      type uint16;
-      description
-        "Interval used to specify the time for the remote
-        peer to maintain the MPLS forwarding state after
-        the local node has succesfully reconnected";
-      reference "RFC3478 Graceful Restart Mechanism for Label
-        Distribution Protocol";
-    }
-
-    leaf forwarding-holdtime {
-      type uint16;
-      description
-        "Time that defines the interval for keeping the
-        node in recovery mode.";
-      reference "RFC3478 Graceful Restart Mechanism for Label
-        Distribution Protocol";
-    }
-
-    leaf helper-enable {
-      type boolean;
-      description
-        "Enables the graceful restart helper for LDP.";
-    }
+//    leaf reconnect-time {
+//      type uint16;
+//      description
+//        "Interval for which the remote LDP peers
+//        will wait for the local node to reconnect after a
+//        failure";
+//      reference "RFC3478 Graceful Restart Mechanism for Label
+//        Distribution Protocol";
+//    }
+//
+//    leaf recovery-time {
+//      type uint16;
+//      description
+//        "Interval used to specify the time for the remote
+//        peer to maintain the MPLS forwarding state after
+//        the local node has succesfully reconnected";
+//      reference "RFC3478 Graceful Restart Mechanism for Label
+//        Distribution Protocol";
+//    }
+//
+//    leaf forwarding-holdtime {
+//      type uint16;
+//      description
+//        "Time that defines the interval for keeping the
+//        node in recovery mode.";
+//      reference "RFC3478 Graceful Restart Mechanism for Label
+//        Distribution Protocol";
+//    }
+//
+//    leaf helper-enable {
+//      type boolean;
+//      description
+//        "Enables the graceful restart helper for LDP.";
+//    }
   }
 
   grouping igp-tunnel-ldp {
