@@ -123,7 +123,7 @@ def xe_acls_program_service(self) -> None:
                     rule += prefix_to_network_and_mask(i.oc_acl_ext__ipv4.config.source_address) + ' '
                 if i.actions.config.log_action:
                     if i.actions.config.log_action == 'oc-acl:LOG_SYSLOG':
-                        rule += 'log-input'
+                        rule += 'log'
                 rule = rule.strip()
                 rules_oc_config.append(rule)
             for i in rules_oc_config:
