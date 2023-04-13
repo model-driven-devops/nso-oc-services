@@ -390,7 +390,7 @@ def process_match(route_map_match, conditions):
         conditions.update({
             "openconfig-routing-policy-ext:match-acl-ipv4-set": {
                 "openconfig-routing-policy-ext:config": {
-                    "openconfig-routing-policy-ext:acl-set": route_map_match["ip"]["address"]["access-list"]
+                    "openconfig-routing-policy-ext:acl-set": route_map_match["ip"]["address"]["access-list"][0]
                 }
             }
         })
