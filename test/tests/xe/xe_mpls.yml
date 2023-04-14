@@ -113,8 +113,6 @@
                             openconfig-network-instance:config:
                               openconfig-network-instance:interface-id: 'GigabitEthernet5'
                               openconfig-network-instance:mpls-enabled: true
-                              openconfig-network-instance:mpls-mtu: 1287
-                              openconfig-network-instance:mpls-bgp-forwarding: true
                             openconfig-network-instance:interface-ref:
                               openconfig-network-instance:config:
                                 openconfig-network-instance:interface: 'GigabitEthernet5'
@@ -123,8 +121,6 @@
                             openconfig-network-instance:config:
                               openconfig-network-instance:interface-id: 'GigabitEthernet6'
                               openconfig-network-instance:mpls-enabled: true
-                              openconfig-network-instance:mpls-mtu: 1311
-                              openconfig-network-instance:mpls-bgp-forwarding: true
                             openconfig-network-instance:interface-ref:
                               openconfig-network-instance:config:
                                 openconfig-network-instance:interface: 'GigabitEthernet6'
@@ -154,13 +150,9 @@
           - "'+mpls ldp discovery hello holdtime 30:' in changes"
           - "'+mpls ldp discovery hello interval 10:' in changes"
           - "' interface GigabitEthernet5:' in changes"
-          - "'+ mpls mtu 1287:' in changes"
           - "'+ mpls ip:' in changes"
-          - "'+ mpls bgp forwarding:' in changes"
           - "' interface GigabitEthernet6:' in changes"
-          - "'+ mpls mtu 1311:' in changes"
           - "'+ mpls ip:' in changes"
-          - "'+ mpls bgp forwarding:' in changes"
 
 - hosts: nso
   connection: local
