@@ -17,9 +17,9 @@ ospf_network_types = {
     "point-to-point": "POINT_TO_POINT_NETWORK",
     "non-broadcast": "NON_BROADCAST_NETWORK"
 }
+xe_ospf_notes = []
 
-
-def configure_xe_ospf(net_inst, vrf_interfaces, config_before, config_leftover):
+def configure_xe_ospf(net_inst, vrf_interfaces, config_before, config_leftover, network_instances_notes):
     """
     Translates NSO XE NED to MDD OpenConfig Network Instances
     """
@@ -34,6 +34,8 @@ def configure_xe_ospf(net_inst, vrf_interfaces, config_before, config_leftover):
         if ((instance_type == "L3VRF" and "vrf" in ospf)
                 or (instance_type == "DEFAULT_INSTANCE" and not "vrf" in ospf)):
             process_ospf(net_protocols, vrf_interfaces, config_leftover, ospf_index, ospf)
+
+    network_instances_notes += xe_ospf_notes
 
 
 def configure_xe_ospf_redistribution(net_inst, config_before, config_leftover, router_ospf_by_vrf):
@@ -65,7 +67,7 @@ def configure_xe_ospf_redistribution(net_inst, config_before, config_leftover, r
             del router_ospf_leftover["id"]
 
 
-def get_interfaces_by_area(network_statements, vrf_interfaces):
+def get_interfaces_by_area(ospf_id, network_statements, vrf_interfaces):
     """
     Assigns OSPF enabled interfaces by area, based on OSPF network statements.
     Network statement wildcard masks are treated like ACLs to determine which interface will be attached
@@ -79,6 +81,15 @@ def get_interfaces_by_area(network_statements, vrf_interfaces):
     processed_interfaces = set()
     interfaces_by_area = {}
     sorted_network_statements = sorted(network_statements, key=cmp_to_key(sort_by_mask))
+    unmatched_statements = set()
+    matched_statements_with_intf = set()
+    # This is for tracking only, because the same statement can appear again for unmatched statements.
+    matched_statements = set()
+
+    if len(sorted_network_statements) > 0:
+        xe_ospf_notes.append("\n\nNo direct translation for network statements from XE to OC. \
+Below are the leftover network statements.")
+        xe_ospf_notes.append(f"OSPF ID: {ospf_id}")
 
     for net_stmt in sorted_network_statements:
         # Use get method for net_stmt, since it contains input values that we did not generate and cannot guarantee.
@@ -88,13 +99,21 @@ def get_interfaces_by_area(network_statements, vrf_interfaces):
 
         for vrf_intf in vrf_interfaces:
             full_intf_name = vrf_intf["type"] + vrf_intf["name"]
-
-            if (full_intf_name in processed_interfaces):
-                continue
-
-            merged_vrf_intf_ip = binary_merge(vrf_intf["ip"]["address"]["primary"]["address"], stmt_mask)
+            intf_addr = vrf_intf["ip"]["address"]["primary"]["address"]
+            merged_vrf_intf_ip = binary_merge(intf_addr, stmt_mask)
 
             if merged_statement_ip == merged_vrf_intf_ip:
+                matched_stmt = {
+                    "interface": full_intf_name,
+                    "interface_ip": intf_addr
+                }
+                matched_stmt.update(net_stmt)
+                matched_statements.add(net_stmt_to_str(net_stmt))
+                matched_statements_with_intf.add(net_stmt_to_str(matched_stmt))
+
+                if (full_intf_name in processed_interfaces):
+                    continue
+
                 # If there's a match, then this interface is OSPF enabled
                 processed_interfaces.add(full_intf_name)
 
@@ -102,8 +121,29 @@ def get_interfaces_by_area(network_statements, vrf_interfaces):
                     interfaces_by_area[area_id] = []
 
                 interfaces_by_area[area_id].append(vrf_intf)
+            else:
+                unmatched_statements.add(net_stmt_to_str(net_stmt))
+
+    if len(unmatched_statements) > 0 or len(matched_statements_with_intf) > 0:
+        unmatched_statements -= matched_statements
+        xe_ospf_notes.append("Matched statements:")
+        for matched_statement in matched_statements_with_intf: xe_ospf_notes.append(matched_statement)
+        xe_ospf_notes.append("Non-matching statements:")
+        for unmatched_statement in unmatched_statements: xe_ospf_notes.append(unmatched_statement)
+        xe_ospf_notes.append("\n")
 
     return interfaces_by_area
+
+
+def net_stmt_to_str(net_stmt):
+    net_stmt_str = ""
+    
+    if "interface" in net_stmt:
+        net_stmt_str += f"\tInterface: {net_stmt['interface']}, Interface IP: {net_stmt['interface_ip']}\n"
+    
+    net_stmt_str += f"\tMask: {net_stmt.get('mask', '')}, IP: {net_stmt.get('ip', '')}, Area: {net_stmt.get('area', '')}"
+
+    return net_stmt_str
 
 
 def sort_by_mask(stmt1, stmt2):
@@ -369,7 +409,7 @@ def set_default_info_originate(ospf_leftover, net_protocols, prot_index, ospf):
 def check_areas(ospf_leftover, net_protocols, vrf_interfaces, config_leftover, prot_index, ospf):
     intf_config_leftover = config_leftover.get("tailf-ned-cisco-ios:interface", {})
     ospfv2_area = get_ospfv2_area(net_protocols, prot_index)
-    interfaces_by_area = get_interfaces_by_area(ospf.get("network", []), vrf_interfaces)
+    interfaces_by_area = get_interfaces_by_area(ospf.get("id"), ospf.get("network", []), vrf_interfaces)
     area_list = populate_area_list(ospf)
     is_area_0_present = check_for_area_0(area_list)
     for area in area_list:
