@@ -181,7 +181,8 @@ def configure_network_instances(config_before, config_leftover, interfaces_by_vr
 
         if len(interfaces_by_vrf.get(net_inst["openconfig-network-instance:name"], [])) > 0:
             vrf_interfaces = interfaces_by_vrf.get(net_inst["openconfig-network-instance:name"])
-            xe_ospfv2.configure_xe_ospf(net_inst, vrf_interfaces, config_before, config_leftover)
+            xe_ospfv2.configure_xe_ospf(net_inst, vrf_interfaces, config_before, config_leftover, 
+                                        network_instances_notes)
         if len(route_forwarding_list_by_vrf.get(net_inst["openconfig-network-instance:name"], [])) > 0:
             vrf_forwarding_list = route_forwarding_list_by_vrf.get(net_inst["openconfig-network-instance:name"])
             xe_static_route.configure_xe_static_routes(net_inst, vrf_forwarding_list, config_leftover,
@@ -543,6 +544,7 @@ def cleanup_null_ospf_leftovers(config_leftover):
     updated_ospf_list = []
 
     for ospf_index in range(len(ospf_leftover)):
+        cleanup_network_statements(ospf_leftover[ospf_index])
         cleanup_neighbors(ospf_leftover[ospf_index])
         cleanup_traffic_area(ospf_leftover[ospf_index])
         cleanup_virtual_link(ospf_leftover[ospf_index])
@@ -554,6 +556,11 @@ def cleanup_null_ospf_leftovers(config_leftover):
         config_leftover.get("tailf-ned-cisco-ios:router", {})["ospf"] = updated_ospf_list
     elif "ospf" in config_leftover.get("tailf-ned-cisco-ios:router", {}):
         del config_leftover["tailf-ned-cisco-ios:router"]["ospf"]
+
+
+def cleanup_network_statements(ospf_leftover):
+    if "network" in ospf_leftover:
+        del ospf_leftover["network"]
 
 
 def cleanup_neighbors(ospf_leftover):
