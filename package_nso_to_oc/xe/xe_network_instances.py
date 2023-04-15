@@ -31,7 +31,6 @@ openconfig_network_instances = {
                     "openconfig-network-instance:type": "DEFAULT_INSTANCE",
                     "openconfig-network-instance:enabled": "true"
                 },
-                "openconfig-network-instance:mpls": {"openconfig-network-instance:global": {}},
                 "openconfig-network-instance:protocols": {"openconfig-network-instance:protocol": []},
                 "openconfig-network-instance:interfaces": {"openconfig-network-instance:interface": []},
                 "openconfig-network-instance:vlans": {}
@@ -95,9 +94,6 @@ def xe_network_instances(config_before: dict, config_leftover: dict) -> None:
     interfaces_by_vrf = get_interfaces_by_vrf(config_before)
     route_forwarding_list_by_vrf = get_route_forwarding_list_by_vrf(config_before)
     configure_network_instances(config_before, config_leftover, interfaces_by_vrf, route_forwarding_list_by_vrf)
-
-    if config_before.get("tailf-ned-cisco-ios:mpls", {}):
-        configure_mpls_default_network_instance(config_before, config_leftover)
 
     if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("multicast-routing", {}).get("distributed", '')) is list:
         configure_pim_network_instance(config_before, config_leftover)
@@ -315,111 +311,6 @@ def configure_pim_network_instance(config_before, config_leftover):
                     openconfig_network_instances["openconfig-network-instance:network-instances"]["openconfig-network-instance:network-instance"][index]["openconfig-network-instance:protocols"]["openconfig-network-instance:protocol"].append(network_instance)
             index += 1
 
-def configure_mpls_default_network_instance(config_before, config_leftover):
-
-    """
-    Translates NSO XE NED to MDD OpenConfig Network Instance for MPLS and interface MPLS configuration (default network instance)
-    """
-
-    ttl_propagate = {
-        "openconfig-network-instance:config": {
-            "openconfig-network-instance:ttl-propagation": None
-        }
-    }
-    signaling_protocols = {
-        "openconfig-network-instance:signaling-protocols": {
-            "openconfig-network-instance:ldp": {
-                "openconfig-network-instance:global": {
-                    "openconfig-network-instance:config": {
-                        "openconfig-network-instance:lsr-id": ""
-                    },
-                    "openconfig-network-instance:graceful-restart": {
-                        "openconfig-network-instance:config": {
-                            "openconfig-network-instance:enabled": False
-                        }
-                    }
-                },
-                "openconfig-network-instance:interface-attributes": {
-                    "openconfig-network-instance:config": {
-                        "openconfig-network-instance:hello-holdtime": None,
-                        "openconfig-network-instance:hello-interval": None
-                    }
-                }
-            }
-        }
-    }
-    mpls_interface_attributes = {
-        "openconfig-network-instance:interface-attributes": {
-            "openconfig-network-instance:interface": []
-        }
-    }
-    mpls_interface = {
-        "openconfig-network-instance:interface-id": "",
-        "openconfig-network-instance:config": {
-            "openconfig-network-instance:mpls-enabled": False,
-            "openconfig-network-instance:interface-id": "",
-            "openconfig-network-instance:mpls-mtu": 1500,
-            "openconfig-network-instance:mpls-bgp-forwarding": False
-        },
-        "openconfig-network-instance:interface-ref": {
-            "openconfig-network-instance:config": {
-                "openconfig-network-instance:interface": "",
-                "openconfig-network-instance:subinterface": ""
-            }
-        }
-    }
-
-    propagate_ttl = config_before.get("tailf-ned-cisco-ios:mpls", {}).get("mpls-ip-conf", {}).get("ip", {}).get("propagate-ttl-conf", {}).get("propagate-ttl", {})
-    if propagate_ttl is True:
-        ttl_propagate["openconfig-network-instance:config"]["openconfig-network-instance:ttl-propagation"] = True
-    elif propagate_ttl is False:
-        ttl_propagate["openconfig-network-instance:config"]["openconfig-network-instance:ttl-propagation"] = False
-    openconfig_network_instances["openconfig-network-instance:network-instances"]["openconfig-network-instance:network-instance"][0]["openconfig-network-instance:mpls"]["openconfig-network-instance:global"].update(ttl_propagate)
-    if "mpls-ip-conf" in config_leftover.get("tailf-ned-cisco-ios:mpls", {}):
-        del config_leftover["tailf-ned-cisco-ios:mpls"]["mpls-ip-conf"]
-
-    if config_before.get("tailf-ned-cisco-ios:mpls", {}).get("ldp", {}):
-        if config_before.get("tailf-ned-cisco-ios:mpls", {}).get("ldp", {}).get("graceful-restart-enable", {}).get("graceful-restart", ''):
-            signaling_protocols["openconfig-network-instance:signaling-protocols"]["openconfig-network-instance:ldp"]["openconfig-network-instance:global"]["openconfig-network-instance:graceful-restart"]["openconfig-network-instance:config"]["openconfig-network-instance:enabled"] = True
-        ldp_rid = config_before.get("tailf-ned-cisco-ios:mpls", {}).get("ldp", {}).get("router-id", {}).get("interface", '')
-        if ldp_rid:
-            signaling_protocols["openconfig-network-instance:signaling-protocols"]["openconfig-network-instance:ldp"]["openconfig-network-instance:global"]["openconfig-network-instance:config"]["openconfig-network-instance:lsr-id"] = ldp_rid
-        ldp_disc_holdtime = config_before.get("tailf-ned-cisco-ios:mpls", {}).get("ldp", {}).get("discovery", {}).get("hello", {}).get("holdtime", '')
-        ldp_disc_interval = config_before.get("tailf-ned-cisco-ios:mpls", {}).get("ldp", {}).get("discovery", {}).get("hello", {}).get("interval", '')
-        if ldp_disc_holdtime:
-            signaling_protocols["openconfig-network-instance:signaling-protocols"]["openconfig-network-instance:ldp"]["openconfig-network-instance:interface-attributes"]["openconfig-network-instance:config"]["openconfig-network-instance:hello-holdtime"] = ldp_disc_holdtime
-        if ldp_disc_interval:
-            signaling_protocols["openconfig-network-instance:signaling-protocols"]["openconfig-network-instance:ldp"]["openconfig-network-instance:interface-attributes"]["openconfig-network-instance:config"]["openconfig-network-instance:hello-interval"] = ldp_disc_interval
-        openconfig_network_instances["openconfig-network-instance:network-instances"]["openconfig-network-instance:network-instance"][0]["openconfig-network-instance:mpls"].update(signaling_protocols)
-        del config_leftover["tailf-ned-cisco-ios:mpls"]["ldp"]
-
-    for interface_type in config_before.get("tailf-ned-cisco-ios:interface", {}):
-        for nso_index, value in enumerate(config_before["tailf-ned-cisco-ios:interface"][interface_type]):
-            tmp_mpls_interface = copy.deepcopy(mpls_interface)
-            if value.get("mpls", {}):
-                int_num = str(value['name']).split(".")[0]
-                subint_num = 0
-                if "." in str(value['name']):
-                    subint_num = value['name'].split(".")[1]
-
-                tmp_mpls_interface["openconfig-network-instance:interface-id"] = int_num
-                tmp_mpls_interface["openconfig-network-instance:config"]["openconfig-network-instance:interface-id"] = int_num
-                tmp_mpls_interface["openconfig-network-instance:interface-ref"]["openconfig-network-instance:config"]["openconfig-network-instance:interface"] = interface_type + int_num
-                tmp_mpls_interface["openconfig-network-instance:interface-ref"]["openconfig-network-instance:config"]["openconfig-network-instance:subinterface"] = subint_num
-
-                for mpls_key, mpls_value in value.get("mpls", {}).items():
-                    if "ip" in mpls_key:
-                        tmp_mpls_interface["openconfig-network-instance:config"]["openconfig-network-instance:mpls-enabled"] = True
-                    if "mtu" in mpls_key:
-                        tmp_mpls_interface["openconfig-network-instance:config"]["openconfig-network-instance:mpls-mtu"] = mpls_value
-                    if "bgp" in mpls_key and "forwarding" in mpls_value:
-                        tmp_mpls_interface["openconfig-network-instance:config"]["openconfig-network-instance:mpls-bgp-forwarding"] = True
-
-                mpls_interface_attributes["openconfig-network-instance:interface-attributes"]["openconfig-network-instance:interface"].append(tmp_mpls_interface)
-                del config_leftover["tailf-ned-cisco-ios:interface"][interface_type][nso_index]["mpls"]
-
-    openconfig_network_instances["openconfig-network-instance:network-instances"]["openconfig-network-instance:network-instance"][0]["openconfig-network-instance:mpls"]["openconfig-network-instance:global"].update(mpls_interface_attributes)
-    del config_leftover["tailf-ned-cisco-ios:mpls"]
 
 def configure_igmp_network_instance(config_before, config_leftover):
     """

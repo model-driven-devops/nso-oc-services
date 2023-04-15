@@ -242,35 +242,6 @@ def xe_configure_mpls(self, network_instance) -> None:
                     interface_cdb = class_attribute[interface_number]
                 if interface_cdb.mpls.ip.exists():
                     interface_cdb.mpls.ip.delete()
-            if interface.config.mpls_mtu:
-                interface_type, interface_number = get_interface_type_and_number(interface.interface_ref.config.interface)
-                class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface, interface_type)
-                if interface.interface_ref.config.subinterface == 0:
-                    interface_cdb = class_attribute[interface_number]
-                else:
-                    interface_cdb = class_attribute[
-                        f'{interface_number}.{interface.interface_ref.config.subinterface}']
-                interface_cdb.mpls.mtu = interface.config.mpls_mtu
-            if interface.config.mpls_bgp_forwarding is True:
-                interface_type, interface_number = get_interface_type_and_number(interface.interface_ref.config.interface)
-                class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface, interface_type)
-                if interface.interface_ref.config.subinterface == 0:
-                    interface_cdb = class_attribute[interface_number]
-                else:
-                    interface_cdb = class_attribute[
-                        f'{interface_number}.{interface.interface_ref.config.subinterface}']
-                if not interface_cdb.mpls.bgp.forwarding.exists():
-                    interface_cdb.mpls.bgp.forwarding.create()
-            elif interface.config.mpls_bgp_forwarding is False:
-                interface_type, interface_number = get_interface_type_and_number(interface.interface_ref.config.interface)
-                class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface, interface_type)
-                if interface.interface_ref.config.subinterface == 0:
-                    interface_cdb = class_attribute[interface_number]
-                else:
-                    interface_cdb = class_attribute[
-                        f'{interface_number}.{interface.interface_ref.config.subinterface}']
-                if interface_cdb.mpls.bgp.forwarding.exists():
-                    interface_cdb.mpls.bgp.forwarding.delete()
     if network_instance.mpls.signaling_protocols:
         if network_instance.mpls.signaling_protocols.ldp:
             xe_configure_mpls_signaling_protocols_ldp(self, network_instance)

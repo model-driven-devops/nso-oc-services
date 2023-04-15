@@ -22,7 +22,6 @@ module openconfig-mpls {
   include openconfig-mpls-igp;
   include openconfig-mpls-static;
 
-  import openconfig-mpls-ext { prefix "oc-mpls-ext"; }
 
   // meta
   organization "OpenConfig working group";
@@ -210,6 +209,13 @@ module openconfig-mpls {
         container config {
           description
             "Configurable items for admin-groups";
+          uses mpls-admin-group-config;
+        }
+
+        container state {
+          config false;
+          description
+            "Operational state for admin-groups";
           uses mpls-admin-group-config;
         }
       }
@@ -606,11 +612,6 @@ module openconfig-mpls {
       description
         "Enable MPLS forwarding on this interface";
     }
-
-    //Augement
-    uses oc-mpls-ext:mpls-interface-config {
-    }
-
   }
 
   grouping mpls-label-block-config {
@@ -704,59 +705,59 @@ module openconfig-mpls {
        uses mpls-label-blocks-top;
       }
 
-//      container te-global-attributes {
-//        description
-//          "traffic-engineering global attributes";
-//        uses mpls-te-srlg-top;
-//        uses mpls-admin-groups-top;
-//        uses mpls-te-lsp-timers;
-//      }
+      container te-global-attributes {
+        description
+          "traffic-engineering global attributes";
+        uses mpls-te-srlg-top;
+        uses mpls-admin-groups-top;
+        uses mpls-te-lsp-timers;
+      }
 
-//      container te-interface-attributes {
-//        description
-//          "traffic engineering attributes specific
-//          for interfaces";
-//        uses te-interface-attributes-top;
-//      }
+      container te-interface-attributes {
+        description
+          "traffic engineering attributes specific
+          for interfaces";
+        uses te-interface-attributes-top;
+      }
 
       container signaling-protocols {
         description
           "top-level signaling protocol configuration";
 
-//        uses oc-rsvp:rsvp-global;
+        uses oc-rsvp:rsvp-global;
         uses oc-ldp:ldp-global;
 //        uses oc-sr:sr-mpls-top;
       }
 
-//      container lsps {
-//         description
-//           "LSP definitions and configuration";
-//
-//         container constrained-path {
-//           description
-//             "traffic-engineered LSPs supporting different
-//             path computation and signaling methods";
-//           uses explicit-paths-top;
-//           uses te-tunnels-top;
-//         }
-//
-//         container unconstrained-path {
-//           description
-//             "LSPs that use the IGP-determined path, i.e., non
-//             traffic-engineered, or non constrained-path";
-//
-//           uses igp-lsp-common;
-//           uses igp-lsp-setup;
-//         }
-//
-//         container static-lsps {
-//           description
-//             "statically configured LSPs, without dynamic
-//             signaling";
-//
-//           uses static-lsp-top;
-//         }
-//       }
+      container lsps {
+        description
+          "LSP definitions and configuration";
+
+        container constrained-path {
+          description
+            "traffic-engineered LSPs supporting different
+            path computation and signaling methods";
+          uses explicit-paths-top;
+          uses te-tunnels-top;
+        }
+
+        container unconstrained-path {
+          description
+            "LSPs that use the IGP-determined path, i.e., non
+            traffic-engineered, or non constrained-path";
+
+          uses igp-lsp-common;
+          uses igp-lsp-setup;
+        }
+
+        container static-lsps {
+          description
+            "statically configured LSPs, without dynamic
+            signaling";
+
+          uses static-lsp-top;
+        }
+      }
     }
   }
 
