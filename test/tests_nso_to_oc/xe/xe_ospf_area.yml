@@ -532,6 +532,7 @@
                       cost: 100
                   redistribute:
                     bgp:
+                      subnets: [null]
                       as-no: 1
                       route-map: test
                 - id: '100'

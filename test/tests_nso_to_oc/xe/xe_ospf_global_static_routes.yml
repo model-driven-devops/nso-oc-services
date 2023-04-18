@@ -539,11 +539,14 @@
                     reference-bandwidth: '100000'
                   redistribute:
                     connected:
+                      subnets: [null]
                       route-map: test
                     static:
+                      subnets: [null]
                       route-map: test
                     ospf:
                       - id: 1
+                        subnets: [null]
           - name: NED configure static route
             tags:
               - static_route_config
