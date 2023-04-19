@@ -17,7 +17,7 @@ submodule openconfig-qos-elements {
 
   contact
     "OpenConfig working group
-    netopenconfig@googlegroups.com";
+    www.openconfig.net";
 
   description
     "This submodule defines configuration and operational state
@@ -36,7 +36,44 @@ submodule openconfig-qos-elements {
       packets for transmission, including policer and shaper
       functions";
 
-  oc-ext:openconfig-version "0.2.3";
+  oc-ext:openconfig-version "0.8.0";
+
+  revision "2023-02-17" {
+    description
+      "Add queue identifier.";
+    reference "0.8.0";
+  }
+
+  revision "2023-02-08" {
+    description
+      "Remove incorrect output placement of interface-ref";
+    reference "0.7.0";
+  }
+
+  revision "2023-01-28" {
+    description
+      "Split groupings in interfaces for better leaf reuse.";
+    reference "0.6.1";
+  }
+
+  revision "2022-09-13" {
+    description
+      "Add queue octet drop counter.";
+    reference "0.6.0";
+  }
+
+  revision "2021-08-28" {
+    description
+      "Revision updating memory management profile WRED and RED configuration.";
+    reference "0.5.0";
+  }
+
+  revision "2021-04-28" {
+    description
+      "Revision updating buffer management and queue management
+      configuration.";
+    reference "0.3.0";
+  }
 
   revision "2019-11-28" {
     description
@@ -335,7 +372,33 @@ submodule openconfig-qos-elements {
         path "../../../../queues/queue/config/name";
       }
       description
-        "Queue for packets in this forwarding group.";
+        "Output queue for packets in this forwarding group.
+        This leaf applies to both multicast and unicast
+        packets. Where a user or system requires separate
+        queueing for multicast and unicast the unicast-output-queue
+        and multicast-output-queue leaves should be specified.";
+    }
+
+    leaf unicast-output-queue {
+      type leafref {
+        path "../../../../queues/queue/config/name";
+      }
+      description
+        "Output queue for unicast packets within this
+        forwarding group. Where an operator or system does
+        not require separate queueing for multicast and
+        unicast this leaf is not specified.";
+    }
+
+    leaf multicast-output-queue {
+      type leafref {
+        path "../../../../queues/queue/config/name";
+      }
+      description
+        "Output queue for multicast packets within this
+        forwarding group. Where an operator or system does
+        not require separate queueing for multicast and
+        unicast this leaf is not specified.";
     }
   }
 
@@ -393,7 +456,7 @@ submodule openconfig-qos-elements {
 
     leaf enable-ecn {
       type boolean;
-      //default false;
+      default false;
       description
         "When set to true, the device should mark packets that are
         ECN-capable rather than dropping them.  The receiver is
@@ -516,13 +579,11 @@ submodule openconfig-qos-elements {
       description
         "User-defined name of the queue";
     }
-
-    leaf queue-type {
-      type identityref {
-        base oc-qos-types:QOS_QUEUE_TYPE;
-      }
+    leaf queue-id {
+      type uint8;
       description
-        "Sets the type of the queue";
+        "An optional identifier which may be required by some hardware to map
+        the named queue to a hardware queue";
     }
   }
 
@@ -567,21 +628,6 @@ submodule openconfig-qos-elements {
           uses qos-queue-config;
           uses qos-queue-state;
         }
-
-        uses qos-queue-red-top {
-          when "./config/queue-type = 'oc-qos-types:RED'" {
-            description
-              "RED configuration is valid when the queue-type
-              is set accordingly.";
-          }
-        }
-        uses qos-queue-wred-top {
-          when "./config/queue-type = 'oc-qos-types:WRED'" {
-            description
-              "WRED configuration is valid when the queue-type
-              is set accordingly.";
-          }
-        }
       }
     }
   }
@@ -614,6 +660,11 @@ submodule openconfig-qos-elements {
     }
 
     leaf child-scheduler {
+      when "../output-type = 'SCHEDULER'" {
+        description
+          "The child-scheduler leaf is valid only when
+          the output type of the scheduler is a child scheduler";
+      }
       // TODO: consider whether both child (output) and parent
       // (input) references are needed; consider whether child
       // reference should separate in-profile and out-of-profile
@@ -624,11 +675,6 @@ submodule openconfig-qos-elements {
         path "../../../../../../../scheduler-policies/scheduler-policy/" +
              "config/name";
       }
-      when "../output-type = 'SCHEDULER'" {
-        description
-          "The child-scheduler leaf is valid only when
-          the output type of the scheduler is a child scheduler";
-      }
       description
         "When the scheduler output type is a child scheduler,
         this leaf provides a reference to the downstream
@@ -636,16 +682,16 @@ submodule openconfig-qos-elements {
     }
 
     leaf output-fwd-group {
-      type leafref {
-        path "../../../../../../../forwarding-groups/forwarding-group" +
-          "/config/name";
-      }
       when "../output-type = 'FWD_GROUP'" {
         description
           "The output-fwd-group leaf is valid only when
           the output type of the scheduler is a forwarding group";
       }
-      description
+       type leafref {
+        path "../../../../../../../forwarding-groups/forwarding-group" +
+          "/config/name";
+      }
+     description
         "When the scheduler output type is a forwarding group,
         this leaf provides a reference to the forwarding group.";
     }
@@ -714,15 +760,15 @@ submodule openconfig-qos-elements {
     }
 
     leaf queue {
-      type leafref {
-        // current loc: /qos/scheduler-policies/scheduler-policy/schedulers/
-        // scheduler/inputs/input/config/queue
-        path "../../../../../../../../queues/queue/name";
-      }
       when "../input-type = 'QUEUE'" {
         description
           "The queue leaf is valid only when
           the input type of the scheduler is a queue";
+      }
+      type leafref {
+        // current loc: /qos/scheduler-policies/scheduler-policy/schedulers/
+        // scheduler/inputs/input/config/queue
+        path "../../../../../../../../queues/queue/name";
       }
       description
         "Reference to a queue that is an input source for the

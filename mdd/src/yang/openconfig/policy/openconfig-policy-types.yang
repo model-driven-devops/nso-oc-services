@@ -228,4 +228,10 @@ module openconfig-policy-types {
     reference
       "RFC 3376";
   }
+  // Augment
+  identity CGMP {
+    base INSTALL_PROTOCOL_TYPE;
+    description
+      "Cisco Group Management Protocol";
+  }
 }

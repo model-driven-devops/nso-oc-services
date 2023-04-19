@@ -30,6 +30,8 @@ jobs:
         run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
       - name: Install Collections
         run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: Remove nso-oc from runner to use our latest changes for testing
+        run: pip uninstall nso-oc -y
       - name: Delete CML
         run: ansible-playbook cisco.cml.clean
         env:
@@ -211,6 +213,8 @@ jobs:
         run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
       - name: Install Collections
         run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: Remove nso-oc from runner to use our latest changes for testing
+        run: pip uninstall nso-oc -y
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
@@ -284,6 +288,8 @@ jobs:
         run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
       - name: Install Collections
         run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: Remove nso-oc from runner to use our latest changes for testing
+        run: pip uninstall nso-oc -y
       - name: NSO MDD remove logic for NSO to OC testing
         run: ansible-playbook ./test/remove_mdd_logic.yml
         env:
@@ -320,6 +326,8 @@ jobs:
         run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
       - name: Install Collections
         run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: Remove nso-oc from runner to use our latest changes for testing
+        run: pip uninstall nso-oc -y
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
@@ -401,6 +409,8 @@ jobs:
         run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
       - name: Install Collections
         run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: Remove nso-oc from runner to use our latest changes for testing
+        run: pip uninstall nso-oc -y
       - name: Delete CML
         run: ansible-playbook cisco.cml.clean
         env:
@@ -526,6 +536,8 @@ jobs:
         run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
       - name: Install Collections
         run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: Remove nso-oc from runner to use our latest changes for testing
+        run: pip uninstall nso-oc -y
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
@@ -595,6 +607,8 @@ jobs:
         run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
       - name: Install Collections
         run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: Remove nso-oc from runner to use our latest changes for testing
+        run: pip uninstall nso-oc -y
       - name: NSO MDD remove logic for NSO to OC testing
         run: ansible-playbook ./test/remove_mdd_logic.yml
         env:
@@ -631,6 +645,8 @@ jobs:
         run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
       - name: Install Collections
         run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: Remove nso-oc from runner to use our latest changes for testing
+        run: pip uninstall nso-oc -y
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
@@ -708,6 +724,8 @@ jobs:
         run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
       - name: Install Collections
         run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: Remove nso-oc from runner to use our latest changes for testing
+        run: pip uninstall nso-oc -y
       - name: Delete CML
         run: ansible-playbook cisco.cml.clean
         env:
@@ -830,6 +848,8 @@ jobs:
         run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
       - name: Install Collections
         run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: Remove nso-oc from runner to use our latest changes for testing
+        run: pip uninstall nso-oc -y
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
@@ -899,6 +919,8 @@ jobs:
         run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
       - name: Install Collections
         run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+      - name: Remove nso-oc from runner to use our latest changes for testing
+        run: pip uninstall nso-oc -y
       - name: NSO MDD remove logic for NSO to OC testing
         run: ansible-playbook ./test/remove_mdd_logic.yml
         env:
@@ -935,6 +957,8 @@ jobs:
 #        run: pip install ./mdd_repo/files/virl2_client-2.4.0+build.2-py3-none-any.whl
 #      - name: Install Collections
 #        run: ansible-galaxy collection install -r ./mdd_repo/requirements.yml
+#      - name: Remove nso-oc from runner to use our latest changes for testing
+#        run: pip uninstall nso-oc -y
 #      - name: Inventory CML
 #        run: ansible-playbook cisco.cml.inventory
 #        env:

@@ -130,6 +130,14 @@
                             ip: '2.2.2.0/23'
                             ge: 24
                             le: 30
+                        - 'no': 30
+                          deny:
+                            ip: '3.3.3.0/24'
+                        - 'no': 40
+                          deny:
+                            ip: '4.4.4.0/23'
+                            ge: 24
+                            le: 30
                     - name: 'prefix-test'
                       seq:
                         - 'no': 10
@@ -317,9 +325,19 @@
           - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][0]['config']['openconfig-routing-policy-ext:seq'] == 10"
           - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][0]['config']['masklength-range'] == 'exact'"
           - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][0]['config']['ip-prefix'] == '1.1.1.1/32'"
+          - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][0]['config']['openconfig-routing-policy-ext:policy_action'] == 'PERMIT_ROUTE'"
           - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][1]['config']['openconfig-routing-policy-ext:seq'] == 20"
           - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][1]['config']['masklength-range'] == '24..30'"
           - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][1]['config']['ip-prefix'] == '2.2.2.0/23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][1]['config']['openconfig-routing-policy-ext:policy_action'] == 'PERMIT_ROUTE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][2]['config']['openconfig-routing-policy-ext:seq'] == 30"
+          - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][2]['config']['masklength-range'] == 'exact'"
+          - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][2]['config']['ip-prefix'] == '3.3.3.0/24'"
+          - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][2]['config']['openconfig-routing-policy-ext:policy_action'] == 'DENY_ROUTE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][3]['config']['openconfig-routing-policy-ext:seq'] == 40"
+          - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][3]['config']['masklength-range'] == '24..30'"
+          - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][3]['config']['ip-prefix'] == '4.4.4.0/23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['prefix-sets']['prefix-set'][0]['prefixes']['prefix'][3]['config']['openconfig-routing-policy-ext:policy_action'] == 'DENY_ROUTE'"
           - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['as-path-sets']['as-path-set'][0]['config']['as-path-set-name'] == '12'"
           - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['as-path-sets']['as-path-set'][0]['config']['as-path-set-member'][0] == '^$'"
           - "oc_result.json['mdd:openconfig']['openconfig-routing-policy:routing-policy']['defined-sets']['openconfig-bgp-policy:bgp-defined-sets']['as-path-sets']['as-path-set'][0]['config']['as-path-set-member'][1] == '_100'"

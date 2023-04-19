@@ -37,8 +37,17 @@
     - name: Initial task rescue
       set_fact:
         is_initial_task_success: False
-    - debug:
-        msg: Initial task failed. No further processing will occur...
+    - name: Get last valid rollback ID
+      include_vars: "{{ rollback_file }}"
+      when: rollback_file is exists
+    - name: Rollback NSO
+      include_role:
+        name: ciscops.mdd.nso
+        tasks_from: rollback
+      when: rollback_id is defined
+    - name: Initial task failed. No further processing will occur...
+      fail: 
+        msg: Initial task was rescued. Exiting...
 
 - block:
   # This will skip the first task as it was previously completed. Complete any remaining tasks.
@@ -90,7 +99,10 @@
       include_role:
         name: ciscops.mdd.nso
         tasks_from: rollback
-      when: will_load_rollback | default(True)
+      when: not (will_load_rollback | default(False))
+    - name: Test failed and rescue occurred. 
+      fail: 
+        msg: A test task was rescued. Exiting...
 
   always:
     - name: Perform default rollback
@@ -100,5 +112,4 @@
         name: ciscops.mdd.nso
         tasks_from: rollback
       when: will_load_rollback | default(True)
-  
   when: is_initial_task_success

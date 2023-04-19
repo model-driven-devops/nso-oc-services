@@ -214,6 +214,19 @@
                             openconfig-if-ip:ipv4:
                               config:
                                 dhcp-client: true
+                openconfig-acl:acl:
+                  acl-sets:
+                    acl-set:
+                      - name: 'nat-acl1'
+                        type: 'ACL_IPV4_STANDARD'
+                        config:
+                          name: 'nat-acl1'
+                          type: 'ACL_IPV4_STANDARD'
+                      - name: 'nat-acl2'
+                        type: 'ACL_IPV4_STANDARD'
+                        config:
+                          name: 'nat-acl2'
+                          type: 'ACL_IPV4_STANDARD'
           - name: NED system init
             tags:
               - ned_init_1_of_1
@@ -659,6 +672,79 @@
                     name-server-list:
                       - address: "8.8.5.5"
                       - address: "8.8.6.6"
+          - name: NSO nat_pool_init
+            tags:
+              - nat_pool_init
+            api_path: config/tailf-ned-cisco-ios:ip/nat
+            api_method: PATCH
+            content: | 
+              nat:
+                pool:
+                  - id: "POOLONE"
+                    start-address: "10.0.0.2"
+                    end-address: "10.0.0.254"
+                    netmask: "255.255.255.0"
+                  - id: "POOLTWO"
+                    start-address: "11.0.0.2"
+                    end-address: "11.0.0.254"
+                    prefix-length: "24"
+          - name: NSO nat_inside_source_acl_init
+            tags:
+              - nat_inside_source_acl_init
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: | 
+              interface:
+                GigabitEthernet:
+                  - name: 6
+                    vrf:
+                      forwarding: default
+          - name: NSO nat_inside_source_acl_init
+            tags:
+              - nat_inside_source_acl_init
+            api_path: config/tailf-ned-cisco-ios:vrf
+            api_method: PATCH
+            content: | 
+              vrf:
+                definition:
+                  - name: "abc"
+                    address-family:
+                      ipv4: {}
+          - name: NSO nat_inside_source_acl_init
+            tags:
+              - nat_inside_source_acl_init
+            api_path: config/tailf-ned-cisco-ios:ip/access-list
+            api_method: PATCH
+            content: | 
+              access-list:
+                standard:
+                  std-named-acl:
+                    - name: "nat-acl1"
+                      std-access-list-rule:
+                        - rule: '10 permit 192.168.1.0 0.255.255.255'
+                        - rule: '20 permit 192.168.2.0 0.255.255.255'
+                    - name: "nat-acl2"
+                      std-access-list-rule:
+                        - rule: '30 permit 192.168.3.0 0.255.255.255'
+                        - rule: '40 permit 192.168.4.0 0.255.255.255'
+          - name: NSO nat_inside_source_acl_init
+            tags:
+              - nat_inside_source_acl_init
+            api_path: config/tailf-ned-cisco-ios:ip/nat
+            api_method: PATCH
+            content: | 
+              nat:
+                inside:
+                  source:
+                    list:
+                      - id: "nat-acl1"
+                        interface: "GigabitEthernet6"
+                        overload: ''
+                    list-vrf:
+                      list:
+                        - id: "nat-acl2"
+                          vrf: "abc"
+                          pool: "POOLONE"
         assertions:
         #   # NSO configure no boot network (no test for negative assertion)
         #   - "oc_result.json['mdd:openconfig']['openconfig-system:system']['config']['hostname'] == 'test123'"
@@ -854,6 +940,25 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][3]['address'] == '8.8.4.4'"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][3]['config']['address'] == '8.8.4.4'"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['dns']['servers']['server'][3]['config']['port'] == 53"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['pools']['pool'][0]['name'] == 'POOLONE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['pools']['pool'][0]['config']['name'] == 'POOLONE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['pools']['pool'][0]['config']['start-address'] == '10.0.0.2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['pools']['pool'][0]['config']['end-address'] == '10.0.0.254'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['pools']['pool'][0]['config']['netmask'] == '255.255.255.0'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['pools']['pool'][1]['name'] == 'POOLTWO'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['pools']['pool'][1]['config']['name'] == 'POOLTWO'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['pools']['pool'][1]['config']['start-address'] == '11.0.0.2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['pools']['pool'][1]['config']['end-address'] == '11.0.0.254'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['pools']['pool'][1]['config']['prefix-length'] == 24"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['inside']['source']['local-addresses-access-lists']['local-addresses-access-list'][0]['local-addresses-access-list-name'] == 'nat-acl1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['inside']['source']['local-addresses-access-lists']['local-addresses-access-list'][0]['config']['local-addresses-access-list-name'] == 'nat-acl1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['inside']['source']['local-addresses-access-lists']['local-addresses-access-list'][0]['config']['global-interface-name'] == 'GigabitEthernet6'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['inside']['source']['local-addresses-access-lists']['local-addresses-access-list'][0]['config']['overload'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['inside']['source']['local-addresses-access-lists']['local-addresses-access-list'][1]['local-addresses-access-list-name'] == 'nat-acl2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['inside']['source']['local-addresses-access-lists']['local-addresses-access-list'][1]['config']['local-addresses-access-list-name'] == 'nat-acl2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['inside']['source']['local-addresses-access-lists']['local-addresses-access-list'][1]['config']['global-pool-name'] == 'POOLONE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['nat']['inside']['source']['local-addresses-access-lists']['local-addresses-access-list'][1]['config']['vrf'] == 'abc'"
+
         #   - "'openconfig-system-ext:aes128-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
         #   - "'openconfig-system-ext:aes192-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
         #   - "'openconfig-system-ext:aes256-ctr' in oc_result.json['mdd:openconfig']['openconfig-system:system']['ssh-server']['openconfig-system-ext:algorithm']['config']['encryption']"
@@ -881,10 +986,10 @@
                   GigabitEthernet: 6
                 authentication-key:
                   - md5:
-                      secret: password1
+                      secret: "110756193F"
                     number: 1
                   - md5:
-                      secret: password2
+                      secret: "02316F1C"
                     number: 2
                   - md5:
                       secret: "11073E56193F"
@@ -902,15 +1007,14 @@
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['enable-ntp-auth'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['openconfig-system-ext:ntp-enable-logging'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['config']['ntp-source-address'] == '10.6.0.1'"
-          - "ntp_auth_key_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key']"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key'][0]['key-id'] == 1"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key'][0]['config']['key-id'] == 1"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key'][0]['config']['key-type'] == 'openconfig-system:NTP_AUTH_MD5'"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key'][0]['config']['key-value'] == 'password1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key'][0]['config']['key-value'] == '110756193F'"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key'][1]['key-id'] == 2"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key'][1]['config']['key-id'] == 2"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key'][1]['config']['key-type'] == 'openconfig-system:NTP_AUTH_MD5'"
-          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key'][1]['config']['key-value'] == 'password2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key'][1]['config']['key-value'] == '02316F1C'"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key'][2]['key-id'] == 3"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key'][2]['config']['key-id'] == 3"
           - "oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['ntp-keys']['ntp-key'][2]['config']['key-type'] == 'openconfig-system:NTP_AUTH_MD5'"

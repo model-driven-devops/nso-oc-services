@@ -629,6 +629,17 @@ def mtu_set(nso_before_interface: dict, nso_leftover_interface: dict, openconfig
         except:
             pass
 
+
+def xe_interface_encapsulation(nso_before_interface: dict, nso_leftover_interface: dict, openconfig_interface: dict) -> None:
+    # Encapsulation
+    if nso_before_interface.get("encapsulation", {}).get("dot1Q", {}).get("vlan-id"):
+        openconfig_interface.update(
+            {"openconfig-vlan:vlan": {"openconfig-vlan:config": {
+                "openconfig-vlan:vlan-id": nso_before_interface.get("encapsulation", {}).get("dot1Q", {}).get(
+                    "vlan-id")}}})
+        del nso_leftover_interface["encapsulation"]
+
+
 def xe_interface_config(nso_before_interface: dict, nso_leftover_interface: dict, openconfig_interface: dict) -> None:
     """
     Configure basic interface functions, i.e. description, shutdown, MTU
@@ -667,6 +678,8 @@ def xe_interface_hold_time(config_before: dict, config_leftover: dict, v: dict) 
 
 def xe_configure_vrrp_interfaces(nso_before_interface: dict, nso_leftover_interface: dict) -> dict:
     """Configure VRRP"""
+    updated_vrrp = []
+
     service_vrrp = {"openconfig-if-ip:vrrp": {"openconfig-if-ip:vrrp-group": []}}
     for number, group in enumerate(nso_before_interface.get("vrrp")):
         if group.get("id"):
@@ -700,6 +713,11 @@ def xe_configure_vrrp_interfaces(nso_before_interface: dict, nso_leftover_interf
                     group.get("timers", {}).get("advertise").get("seconds")) * 100
                 del nso_leftover_interface["vrrp"][number]["timers"]["advertise"]
             service_vrrp["openconfig-if-ip:vrrp"]["openconfig-if-ip:vrrp-group"].append(service_vrrp_group)
+            # Clean up
+            if nso_leftover_interface["vrrp"][number] and len(nso_leftover_interface["vrrp"][number]) > 0:
+                updated_vrrp.append(nso_leftover_interface["vrrp"][number])
+    nso_leftover_interface["vrrp"] = updated_vrrp
+    
     return service_vrrp
 
 
@@ -773,6 +791,7 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
 
         # Configure sub-interface
         xe_interface_config(nso_before_interface, nso_leftover_interface, openconfig_interface)
+        xe_interface_encapsulation(nso_before_interface, nso_leftover_interface, openconfig_interface)
 
         path_oc = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
                    interface_directory["oc_interface_index"]]
