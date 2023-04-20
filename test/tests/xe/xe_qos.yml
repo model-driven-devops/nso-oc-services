@@ -1,0 +1,207 @@
+---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- name: test QOS
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+#     - name: test qos
+#       tags:
+#         -  qos
+#       import_role:
+#         name: nso-openconfig-test
+#       vars:
+#         content: |
+#           mdd:openconfig:
+#             openconfig-interfaces:interfaces:
+#               openconfig-interfaces:interface:
+#                 - openconfig-interfaces:name: 'GigabitEthernet6'
+#                   openconfig-interfaces:config:
+#                     openconfig-interfaces:description: 'Physical Interface 6'
+#                     openconfig-interfaces:enabled: true
+#                     openconfig-interfaces:mtu: 1500
+#                     openconfig-interfaces:name: 'GigabitEthernet6'
+#                     openconfig-interfaces:type: 'ethernetCsmacd'
+#                   openconfig-interfaces:subinterfaces:
+#                     openconfig-interfaces:subinterface:
+#                       - openconfig-interfaces:index: 0
+#                         openconfig-interfaces:config:
+#                           openconfig-interfaces:index: 0
+#                         openconfig-if-ip:ipv4:
+#                           openconfig-if-ip:addresses:
+#                             openconfig-if-ip:address:
+#                               - openconfig-if-ip:ip: '10.6.0.1'
+#                                 openconfig-if-ip:config:
+#                                   openconfig-if-ip:ip: '10.6.0.1'
+#                                   openconfig-if-ip:prefix-length: 24
+#                           openconfig-if-ip:config:
+#                             openconfig-if-ip:dhcp-client: false
+
+#         api_method: PUT
+#         rollback: false
+#         assertion_ignore_errors: false
+#         assertions: false
+
+    - name: test qos_class_maps_match_all
+      tags:
+        - qos_class_maps_match_all
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-qos:qos:
+              openconfig-qos:classifiers:
+                openconfig-qos:classifier:
+                  - openconfig-qos:name: 'class-map-ip-dscp-11'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'class-map-ip-dscp-11'
+                      openconfig-qos:type: 'IPV4'
+                    openconfig-qos:terms:
+                      openconfig-qos:term:
+                        - openconfig-qos:id: 'term-ip-dscp-11'
+                          openconfig-qos:config:
+                            openconfig-qos:id: 'term-ip-dscp-11'
+                          openconfig-qos:conditions:
+                            openconfig-qos:ipv4:
+                              openconfig-qos:config:
+                                openconfig-qos:dscp: '11'
+                                openconfig-qos:protocol: 4  # IPv4
+                  - openconfig-qos:name: 'class-map-ip-dscp-41'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'class-map-ip-dscp-41'
+                      openconfig-qos:type: 'IPV4'
+                    openconfig-qos:terms:
+                      openconfig-qos:term:
+                        - openconfig-qos:id: 'term-ip-dscp-41'
+                          openconfig-qos:config:
+                            openconfig-qos:id: 'term-ip-dscp-41'
+                          openconfig-qos:conditions:
+                            openconfig-qos:ipv4:
+                              openconfig-qos:config:
+                                openconfig-qos:dscp: '41'
+                                openconfig-qos:protocol: 4  # IPv4
+                  - openconfig-qos:name: 'class-map-dscp-13'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'class-map-dscp-13'
+                      openconfig-qos:type: 'IPV4'
+                    openconfig-qos:terms:
+                      openconfig-qos:term:
+                        - openconfig-qos:id: 'term-dscp-13'
+                          openconfig-qos:config:
+                            openconfig-qos:id: 'term-dscp-13'
+                          openconfig-qos:conditions:
+                            openconfig-qos:ipv4:
+                              openconfig-qos:config:
+                                openconfig-qos:dscp: '13'
+                  - openconfig-qos:name: 'class-map-dscp-43'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'class-map-dscp-43'
+                      openconfig-qos:type: 'IPV4'
+                    openconfig-qos:terms:
+                      openconfig-qos:term:
+                        - openconfig-qos:id: 'term-dscp-43'
+                          openconfig-qos:config:
+                            openconfig-qos:id: 'term-dscp-43'
+                          openconfig-qos:conditions:
+                            openconfig-qos:ipv4:
+                              openconfig-qos:config:
+                                openconfig-qos:dscp: '43'
+                  - openconfig-qos:name: 'class-map-ip-dscp-cs1-cs2'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'class-map-ip-dscp-cs1-cs2'
+                      openconfig-qos:type: 'IPV4'
+                    openconfig-qos:terms:
+                      openconfig-qos:term:
+                        - openconfig-qos:id: 'term-ip-dscp-cs1-cs2'
+                          openconfig-qos:config:
+                            openconfig-qos:id: 'term-ip-dscp-cs1-cs2'
+                          openconfig-qos:conditions:
+                            openconfig-qos:ipv4:
+                              openconfig-qos:config:
+                                openconfig-qos:dscp-set: '11'
+                                openconfig-qos:dscp-set: '12'
+                                openconfig-qos:protocol: 4  # IPv4
+                  - openconfig-qos:name: 'class-map-ip-dscp-45-47'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'class-map-ip-dscp-45-47'
+                      openconfig-qos:type: 'IPV4'
+                    openconfig-qos:terms:
+                      openconfig-qos:term:
+                        - openconfig-qos:id: 'term-ip-dscp-45-47'
+                          openconfig-qos:config:
+                            openconfig-qos:id: 'term-ip-dscp-45-47'
+                          openconfig-qos:conditions:
+                            openconfig-qos:ipv4:
+                              openconfig-qos:config:
+                                openconfig-qos:dscp-set: '45'
+                                openconfig-qos:dscp-set: '47'
+                                openconfig-qos:protocol: 4  # IPv4
+                  - openconfig-qos:name: 'class-map-dscp-cs3-cs4'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'class-map-dscp-cs3-cs4'
+                      openconfig-qos:type: 'IPV4'
+                    openconfig-qos:terms:
+                      openconfig-qos:term:
+                        - openconfig-qos:id: 'term-dscp-cs3-cs4'
+                          openconfig-qos:config:
+                            openconfig-qos:id: 'term-dscp-cs3-cs4'
+                          openconfig-qos:conditions:
+                            openconfig-qos:ipv4:
+                              openconfig-qos:config:
+                                openconfig-qos:dscp-set: '13'
+                                openconfig-qos:dscp-set: '14'
+                  - openconfig-qos:name: 'class-map-dscp-49-51'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'class-map-dscp-49-51'
+                      openconfig-qos:type: 'IPV4'
+                    openconfig-qos:terms:
+                      openconfig-qos:term:
+                        - openconfig-qos:id: 'term-dscp-49-51'
+                          openconfig-qos:config:
+                            openconfig-qos:id: 'term-dscp-49-51'
+                          openconfig-qos:conditions:
+                            openconfig-qos:ipv4:
+                              openconfig-qos:config:
+                                openconfig-qos:dscp-set: '49'
+                                openconfig-qos:dscp-set: '51'
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+class-map match-all class-map-ip-dscp-11:' in changes"
+          - "'+ match ip dscp af12:' in changes"
+          - "'+class-map match-all class-map-ip-dscp-41:' in changes"
+          - "'+ match ip dscp 41:' in changes"
+          - "'+class-map match-all class-map-dscp-13:' in changes"
+          - "'+ match dscp af13:' in changes"
+          - "'+class-map match-all class-map-dscp-43:' in changes"
+          - "'+ match dscp 43:' in changes"
+          - "'+class-map match-all class-map-ip-dscp-cs1-cs2:' in changes"
+          - "'+ match ip dscp cs1 cs2:' in changes"
+          - "'+class-map match-all class-map-ip-dscp-45-47:' in changes"
+          - "'+ match ip dscp 45 47:' in changes"
+          - "'+class-map match-all class-map-dscp-cs3-cs4:' in changes"
+          - "'+ match ip dscp cs3 cs4:' in changes"
+          - "'+class-map match-all class-map-dscp-49-51:' in changes"
+          - "'+ match ip dscp 49 51:' in changes"
+
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-load
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
