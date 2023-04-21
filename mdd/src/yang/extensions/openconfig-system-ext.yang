@@ -321,6 +321,52 @@ module openconfig-system-ext{
             "Encrypt system passwords.";
         }
       }
+      container object-tracking {
+        list object-track {
+          key "id";
+          leaf id {
+            type leafref {
+              path "../config/id";
+            }
+          }
+          leaf type {
+            type enumeration {
+              enum INTERFACE;
+            }
+            mandatory true;
+          }
+          container config {
+            leaf id {
+              type uint16 {
+                range "0 .. 1000";
+              }
+            }
+            leaf track-interface {
+              type leafref {
+                path "/ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-if:name";
+              }
+              mandatory true;
+            }
+            leaf track-parameter {
+              type enumeration {
+                enum IP-ROUTING;
+                enum LINE-PROTOCOL;
+              }
+              mandatory true;
+            }
+          }
+        }
+        container config {
+          container timer {
+            leaf interface-timer {
+              type uint16 {
+                range "0 .. 3000";
+              }
+              units "seconds";
+            }
+          }
+        }
+      }
       container boot-network  {
         description
           "boot-network configurations";
