@@ -18,6 +18,7 @@ TEST - True or False. True enables sending the OpenConfig to the NSO server afte
 import sys
 from pathlib import Path
 from importlib.util import find_spec
+import copy
 
 TACACS = "tacacs"
 RADIUS = "radius"
