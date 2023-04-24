@@ -351,6 +351,23 @@
                       datetime:
                         msec: ''
                         localtime: ''
+                tailf-ned-cisco-ios:track:
+                  timer:
+                    interface:
+                      seconds: 124
+                  track-object:
+                    - object-number: 500
+                      interface:
+                        GigabitEthernet: 2
+                        line-protocol:
+                          - null
+                    - object-number: 501
+                      interface:
+                        GigabitEthernet: 3
+                        ip:
+                          routing:
+                            - null
+
         #   - name: NED AAA servers init
         #     tags:
         #       - aaa_servers_init
