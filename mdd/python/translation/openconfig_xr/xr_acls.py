@@ -7,7 +7,7 @@ from translation.common import get_interface_type_and_number
 regex_ports = re.compile(r'(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})\.\.(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})')
 
 
-def xr_acls_program_service(self) -> None:
+def xr_acls_program_service(self, nso_props) -> None:
     """
     Program service for xr NED features
     """
@@ -33,8 +33,8 @@ def xr_acls_program_service(self) -> None:
     actions_oc_to_xr = {'oc-acl:ACCEPT': 'permit',
                         'oc-acl:DROP': 'deny',
                         'oc-acl:REJECT': 'deny'}
-    device = self.root.devices.device[self.device_name].config
-    for service_acl in self.service.oc_acl__acl.acl_sets.acl_set:
+    device = nso_props.root.devices.device[nso_props.device_name].config
+    for service_acl in nso_props.service.oc_acl__acl.acl_sets.acl_set:
         if service_acl.type == 'oc-acl:ACL_IPV4':
             if device.cisco_ios_xr__ipv4.access_list.named_acl.exists(service_acl.name):
                 del device.cisco_ios_xr__ipv4.access_list.named_acl[service_acl.name]
@@ -104,7 +104,7 @@ def xr_acls_program_service(self) -> None:
                 rule = rule.strip()
                 rules_oc_config.append((str(i.sequence_id), rule))
             for i in rules_oc_config:
-                self.log.debug(f'{self.device_name} ACL {service_acl.name} ACE: {i}')
+                self.log.debug(f'{nso_props.device_name} ACL {service_acl.name} ACE: {i}')
                 r = acl.rule.create(i[0])
                 r.line = i[1]
 
@@ -112,23 +112,23 @@ def xr_acls_program_service(self) -> None:
             raise ValueError('XR does not support ACL type oc-acl-ext:ACL_IPV4_STANDARD.')
 
 
-def xr_acls_interfaces_program_service(self) -> None:
+def xr_acls_interfaces_program_service(self, nso_props) -> None:
     """
     Program xr interfaces ingress and egress acls
     """
-    for service_acl_interface in self.service.oc_acl__acl.interfaces.interface:
+    for service_acl_interface in nso_props.service.oc_acl__acl.interfaces.interface:
         # Get interface object
         interface_type, interface_number = get_interface_type_and_number(
             service_acl_interface.interface_ref.config.interface)
         if interface_type == 'Port_channel':
             interface_type = 'Bundle_Ether'
-        class_attribute = getattr(self.root.devices.device[self.device_name].config.cisco_ios_xr__interface,
+        class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__interface,
                                   interface_type)
 
         if service_acl_interface.interface_ref.config.subinterface == 0 or not service_acl_interface.interface_ref.config.subinterface:
             interface_cdb = class_attribute[interface_number]
         else:
-            attribute1 = getattr(self.root.devices.device[self.device_name].config.cisco_ios_xr__interface,
+            attribute1 = getattr(nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__interface,
                                  f'{interface_type}_subinterface')
             sub_interface = getattr(attribute1, interface_type)
             interface_cdb = sub_interface[f'{interface_number}.{service_acl_interface.interface_ref.config.subinterface}']
@@ -141,7 +141,7 @@ def xr_acls_interfaces_program_service(self) -> None:
                         interface_cdb.ipv4.access_group.create('egress')
                     interface_cdb.ipv4.access_group['egress'].name = acl.set_name
                     self.log.info(
-                        f'{self.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} egress')
+                        f'{nso_props.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} egress')
                 elif acl.type == 'oc-acl-ext:ACL_IPV4_STANDARD':
                     raise ValueError('XR does not support ACL type oc-acl-ext:ACL_IPV4_STANDARD.')
 
@@ -151,17 +151,17 @@ def xr_acls_interfaces_program_service(self) -> None:
                     if not interface_cdb.ipv4.access_group.exists('ingress'):
                         interface_cdb.ipv4.access_group.create('ingress')
                     interface_cdb.ipv4.access_group['ingress'].name = acl.set_name
-                    self.log.info(f'{self.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} ingress')
+                    self.log.info(f'{nso_props.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} ingress')
                 elif acl.type == 'oc-acl-ext:ACL_IPV4_STANDARD':
                     raise ValueError('XR does not support ACL type oc-acl-ext:ACL_IPV4_STANDARD.')
 
 
-def xr_acls_lines_program_service(self) -> None:
+def xr_acls_lines_program_service(self, nso_props) -> None:
     """
     Program xr lines ingress and egress acls. Uses default template to configure lines.
     """
-    device = self.root.devices.device[self.device_name].config
-    for service_line in self.service.oc_acl__acl.oc_acl_ext__lines.line:
+    device = nso_props.root.devices.device[nso_props.device_name].config
+    for service_line in nso_props.service.oc_acl__acl.oc_acl_ext__lines.line:
         if 'vty ' in service_line.id.lower():
             matches = re.findall(r'[0-9]+', service_line.id)
             if len(matches) == 2:
@@ -186,20 +186,20 @@ def xr_acls_lines_program_service(self) -> None:
                 raise ValueError('line vty takes a start and an end line number range')
 
 
-def xr_acls_ntp_program_service(self) -> None:
+def xr_acls_ntp_program_service(self, nso_props) -> None:
     """
     Apply NTP ACLs
     """
-    device = self.root.devices.device[self.device_name].config
-    if self.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set or self.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set:
+    device = nso_props.root.devices.device[nso_props.device_name].config
+    if nso_props.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set or nso_props.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set:
         device.cisco_ios_xr__ntp.access_group.delete()
 
     # Serve
-    if self.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set:
+    if nso_props.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set:
         serve = device.cisco_ios_xr__ntp.access_group.create(('ipv4', 'serve'))
-        serve.name = self.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set
+        serve.name = nso_props.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set
 
     # Peer
-    if self.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set:
+    if nso_props.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set:
         peer = device.cisco_ios_xr__ntp.access_group.create(('ipv4', 'peer'))
-        peer.name = self.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set
+        peer.name = nso_props.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set
