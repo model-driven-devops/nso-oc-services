@@ -3,19 +3,19 @@ import ncs
 from translation.common import get_interface_type_and_number
 
 
-def find_portfast_version(self):
+def find_portfast_version(nso_props):
     """
     return old if not using portfast edge configs
     return new if using portfast edge. Assume new
     """
-    ios_switch = getattr(self.root.devices.device[self.device_name].config, "ios__switch", None)
+    ios_switch = getattr(nso_props.root.devices.device[nso_props.device_name].config, "ios__switch", None)
     if ios_switch:
         provision_list = ios_switch.list
         if provision_list and provision_list["1"]["provision"] == "c9kv-uadp-8p":
             return "old"
-    for interface_type in self.root.devices.device[self.device_name].config.ios__interface:
+    for interface_type in nso_props.root.devices.device[nso_props.device_name].config.ios__interface:
         if "Ethernet" in interface_type:
-            for interface in self.root.devices.device[self.device_name].config.ios__interface[interface_type]:
+            for interface in nso_props.root.devices.device[nso_props.device_name].config.ios__interface[interface_type]:
                 if interface.spanning_tree.portfast.edge.exists():
                     return "new"
                 elif interface.spanning_tree.portfast.exists():
@@ -23,15 +23,15 @@ def find_portfast_version(self):
     return "new"
 
 
-def xe_stp_program_service(self) -> None:
+def xe_stp_program_service(self, nso_props) -> None:
     """
     Program service for xe NED features.
     """
-    portfast_version = find_portfast_version(self)
-    xe_stp_global(self, portfast_version)
-    if len(self.service.oc_stp__stp.interfaces.interface) > 0:
-        xe_stp_interfaces(self, portfast_version)
-    stp_version_handler[self.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.as_list()[0]]["handler"](self)
+    portfast_version = find_portfast_version(nso_props)
+    xe_stp_global(self, nso_props, portfast_version)
+    if len(nso_props.service.oc_stp__stp.interfaces.interface) > 0:
+        xe_stp_interfaces(nso_props, portfast_version)
+    stp_version_handler[nso_props.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.as_list()[0]]["handler"](nso_props)
 
 
 def config_vlan_stp_timers(service_vlan, device_cdb) -> None:
@@ -78,7 +78,7 @@ def check_stp_xpvst_vlan_interface_values(xpvst_vlan_interfaces) -> None:
                 raise ValueError("For IOS XE, spanning-tree interface cost and port-priorities must be the same under all VLANs.")
 
 
-def process_xpvst_interfaces(self, if_list: list) -> None:
+def process_xpvst_interfaces(nso_props, if_list: list) -> None:
     for interface in if_list:
         """
         interface[0] = interface name
@@ -86,7 +86,7 @@ def process_xpvst_interfaces(self, if_list: list) -> None:
         interface[2] = interface port_priority
         """
         interface_type, interface_number = get_interface_type_and_number(interface[0])
-        class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+        class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.ios__interface,
                                   interface_type)
         stp_interface = class_attribute[interface_number]
         if interface[1]:
@@ -95,7 +95,7 @@ def process_xpvst_interfaces(self, if_list: list) -> None:
             stp_interface.spanning_tree.port_priority = interface[2]
 
 
-def process_mst_instance_interfaces(self, if_list: list, mst_id: int) -> None:
+def process_mst_instance_interfaces(nso_props, if_list: list, mst_id: int) -> None:
     for interface in if_list:
         """
         interface[0] = interface name
@@ -103,7 +103,7 @@ def process_mst_instance_interfaces(self, if_list: list, mst_id: int) -> None:
         interface[2] = interface port_priority
         """
         interface_type, interface_number = get_interface_type_and_number(interface[0])
-        class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+        class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.ios__interface,
                                   interface_type)
         stp_interface = class_attribute[interface_number]
         stp_if_mst_instance = stp_interface.spanning_tree.mst.instance_range.create(mst_id)
@@ -113,71 +113,71 @@ def process_mst_instance_interfaces(self, if_list: list, mst_id: int) -> None:
             stp_if_mst_instance.port_priority = interface[2]
 
 
-def xe_stp_rpvst(self) -> None:
+def xe_stp_rpvst(nso_props) -> None:
     """
     RPVST configuration
     """
-    if len(self.service.oc_stp__stp.rapid_pvst.vlan) > 0:
-        device_cdb = self.root.devices.device[self.device_name].config.ios__spanning_tree
+    if len(nso_props.service.oc_stp__stp.rapid_pvst.vlan) > 0:
+        device_cdb = nso_props.root.devices.device[nso_props.device_name].config.ios__spanning_tree
         rpvst_vlan_interfaces = []
-        for service_vlan in self.service.oc_stp__stp.rapid_pvst.vlan:
+        for service_vlan in nso_props.service.oc_stp__stp.rapid_pvst.vlan:
             config_vlan_stp_timers(service_vlan, device_cdb)
             rpvst_vlan_interfaces.append(get_pvst_vlan_interfaces(service_vlan))
         # XE doesn't allow STP cost and port priorities different per VLAN
         # Verify if interfaces are listed in VLANs, that they are in all VLANs and contain the same values
         check_stp_xpvst_vlan_interface_values(rpvst_vlan_interfaces)
         if len(rpvst_vlan_interfaces) > 0:
-            process_xpvst_interfaces(self, rpvst_vlan_interfaces[0])
+            process_xpvst_interfaces(nso_props, rpvst_vlan_interfaces[0])
 
 
-def xe_stp_pvst(self) -> None:
+def xe_stp_pvst(nso_props) -> None:
     """
     PVST configuration
     """
-    device_cdb = self.root.devices.device[self.device_name].config.ios__spanning_tree
+    device_cdb = nso_props.root.devices.device[nso_props.device_name].config.ios__spanning_tree
     # Uplinkfast
-    if self.service.oc_stp__stp.oc_stp__global.config.uplinkfast:
+    if nso_props.service.oc_stp__stp.oc_stp__global.config.uplinkfast:
         device_cdb.uplinkfast.create()
-    elif self.service.oc_stp__stp.oc_stp__global.config.uplinkfast is False and device_cdb.uplinkfast.exists():
+    elif nso_props.service.oc_stp__stp.oc_stp__global.config.uplinkfast is False and device_cdb.uplinkfast.exists():
             device_cdb.uplinkfast.delete()
     # Backbonefast
-    if self.service.oc_stp__stp.oc_stp__global.config.backbonefast:
+    if nso_props.service.oc_stp__stp.oc_stp__global.config.backbonefast:
         device_cdb.backbonefast.create()
-    elif self.service.oc_stp__stp.oc_stp__global.config.backbonefast is False and device_cdb.backbonefast.exists():
+    elif nso_props.service.oc_stp__stp.oc_stp__global.config.backbonefast is False and device_cdb.backbonefast.exists():
             device_cdb.backbonefast.delete()
-    if len(self.service.oc_stp__stp.oc_stp_ext__pvst.vlan) > 0:
+    if len(nso_props.service.oc_stp__stp.oc_stp_ext__pvst.vlan) > 0:
         pvst_vlan_interfaces = []
-        for service_vlan in self.service.oc_stp__stp.oc_stp_ext__pvst.vlan:
+        for service_vlan in nso_props.service.oc_stp__stp.oc_stp_ext__pvst.vlan:
             config_vlan_stp_timers(service_vlan, device_cdb)
             pvst_vlan_interfaces.append(get_pvst_vlan_interfaces(service_vlan))
         # XE doesn't allow STP cost and port priorities different per VLAN
         # Verify if interfaces are listed in VLANs, that they are in all VLANs and contain the same values
         check_stp_xpvst_vlan_interface_values(pvst_vlan_interfaces)
         if len(pvst_vlan_interfaces) > 0:
-            process_xpvst_interfaces(self, pvst_vlan_interfaces[0])
+            process_xpvst_interfaces(nso_props, pvst_vlan_interfaces[0])
 
 
-def xe_stp_mstp(self) -> None:
+def xe_stp_mstp(nso_props) -> None:
     """
     MSTP configuration
     """
-    if len(self.service.oc_stp__stp.mstp.mst_instances.mst_instance) > 0:
-        device_cdb = self.root.devices.device[self.device_name].config.ios__spanning_tree
-        if self.service.oc_stp__stp.mstp.config.name:
-            device_cdb.mst.configuration.name = self.service.oc_stp__stp.mstp.config.name
-        if self.service.oc_stp__stp.mstp.config.revision:
-            device_cdb.mst.configuration.revision = self.service.oc_stp__stp.mstp.config.revision
-        if self.service.oc_stp__stp.mstp.config.max_hop:
+    if len(nso_props.service.oc_stp__stp.mstp.mst_instances.mst_instance) > 0:
+        device_cdb = nso_props.root.devices.device[nso_props.device_name].config.ios__spanning_tree
+        if nso_props.service.oc_stp__stp.mstp.config.name:
+            device_cdb.mst.configuration.name = nso_props.service.oc_stp__stp.mstp.config.name
+        if nso_props.service.oc_stp__stp.mstp.config.revision:
+            device_cdb.mst.configuration.revision = nso_props.service.oc_stp__stp.mstp.config.revision
+        if nso_props.service.oc_stp__stp.mstp.config.max_hop:
             raise ValueError("XE NED cisco-ios-cli-6.85 does not support multiple spanning-tree max-hop")
-        if self.service.oc_stp__stp.mstp.config.hello_time:
+        if nso_props.service.oc_stp__stp.mstp.config.hello_time:
             raise ValueError("XE NED cisco-ios-cli-6.85 does not support multiple spanning-tree hello-time")
-        if self.service.oc_stp__stp.mstp.config.max_age:
+        if nso_props.service.oc_stp__stp.mstp.config.max_age:
             raise ValueError("XE NED cisco-ios-cli-6.85 does not support multiple spanning-tree max-age")
-        if self.service.oc_stp__stp.mstp.config.forwarding_delay:
-            device_cdb.mst.forward_time = self.service.oc_stp__stp.mstp.config.forwarding_delay
-        if self.service.oc_stp__stp.mstp.config.hold_count:
+        if nso_props.service.oc_stp__stp.mstp.config.forwarding_delay:
+            device_cdb.mst.forward_time = nso_props.service.oc_stp__stp.mstp.config.forwarding_delay
+        if nso_props.service.oc_stp__stp.mstp.config.hold_count:
             raise ValueError("XE NED cisco-ios-cli-6.85 does not support multiple spanning-tree hold-count")
-        for service_mst_instance in self.service.oc_stp__stp.mstp.mst_instances.mst_instance:
+        for service_mst_instance in nso_props.service.oc_stp__stp.mstp.mst_instances.mst_instance:
             mst_id = service_mst_instance.config.mst_id
             bridge_priority = service_mst_instance.config.bridge_priority
             vlan_list = service_mst_instance.config.vlan.as_list()
@@ -195,7 +195,7 @@ def xe_stp_mstp(self) -> None:
             # Configure interfaces for MST instance
             if len(service_mst_instance.interfaces.interface) > 0:
                 service_if_tuples = get_pvst_vlan_interfaces(service_mst_instance)
-                process_mst_instance_interfaces(self, service_if_tuples, mst_id)
+                process_mst_instance_interfaces(nso_props, service_if_tuples, mst_id)
 
 
 stp_version_handler = {
@@ -205,62 +205,62 @@ stp_version_handler = {
     }
 
 
-def xe_stp_global(self, portfast_ver) -> None:
+def xe_stp_global(self, nso_props, portfast_ver) -> None:
     """
     STP global configuration
     """
-    device_cdb = self.root.devices.device[self.device_name].config.ios__spanning_tree
+    device_cdb = nso_props.root.devices.device[nso_props.device_name].config.ios__spanning_tree
     # STP mode
-    if len(self.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.as_list()) > 1:
+    if len(nso_props.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.as_list()) > 1:
         raise ValueError(
-            f"XE devices support running only one version of STP at a time. Your OpenConfig is trying to configure {len(self.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.as_list())}.")
-    if not stp_version_handler.get(self.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.as_list()[0], False):
+            f"XE devices support running only one version of STP at a time. Your OpenConfig is trying to configure {len(nso_props.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.as_list())}.")
+    if not stp_version_handler.get(nso_props.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.as_list()[0], False):
         raise ValueError(
-            f"STP mode {self.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.as_list()[0]} is not implemented at this time.")
+            f"STP mode {nso_props.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.as_list()[0]} is not implemented at this time.")
     else:
         device_cdb.mode = stp_version_handler.get(
-            self.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.as_list()[0]).get("type")
+            nso_props.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.as_list()[0]).get("type")
 
     # Bridge assurance
-    if self.service.oc_stp__stp.oc_stp__global.config.bridge_assurance:
+    if nso_props.service.oc_stp__stp.oc_stp__global.config.bridge_assurance:
         raise ValueError(
             f"STP bridge assurance is not implemented at this time.")
     # Loopguard
-    if self.service.oc_stp__stp.oc_stp__global.config.loop_guard:
+    if nso_props.service.oc_stp__stp.oc_stp__global.config.loop_guard:
         device_cdb.loopguard.default.create()
-    elif self.service.oc_stp__stp.oc_stp__global.config.loop_guard is False and device_cdb.loopguard.default.exists():
+    elif nso_props.service.oc_stp__stp.oc_stp__global.config.loop_guard is False and device_cdb.loopguard.default.exists():
         device_cdb.loopguard.default.delete()
     # Etherchannel-misconfig-guard
-    if self.service.oc_stp__stp.oc_stp__global.config.etherchannel_misconfig_guard:
+    if nso_props.service.oc_stp__stp.oc_stp__global.config.etherchannel_misconfig_guard:
         device_cdb.etherchannel.guard.misconfig.create()
-    elif self.service.oc_stp__stp.oc_stp__global.config.etherchannel_misconfig_guard is False and device_cdb.etherchannel.guard.misconfig.exists():
+    elif nso_props.service.oc_stp__stp.oc_stp__global.config.etherchannel_misconfig_guard is False and device_cdb.etherchannel.guard.misconfig.exists():
         device_cdb.etherchannel.guard.misconfig.delete()
     # BPDU guard
-    if self.service.oc_stp__stp.oc_stp__global.config.bpdu_guard and portfast_ver == "new":
+    if nso_props.service.oc_stp__stp.oc_stp__global.config.bpdu_guard and portfast_ver == "new":
         device_cdb.portfast.edge.bpduguard.default.create()
-    elif self.service.oc_stp__stp.oc_stp__global.config.bpdu_guard is False and device_cdb.portfast.edge.bpduguard.default.exists() and portfast_ver == "new":
+    elif nso_props.service.oc_stp__stp.oc_stp__global.config.bpdu_guard is False and device_cdb.portfast.edge.bpduguard.default.exists() and portfast_ver == "new":
         device_cdb.portfast.edge.bpduguard.default.delete()
-    elif self.service.oc_stp__stp.oc_stp__global.config.bpdu_guard and portfast_ver == "old":
+    elif nso_props.service.oc_stp__stp.oc_stp__global.config.bpdu_guard and portfast_ver == "old":
         device_cdb.portfast.bpduguard.default.create()
-    elif self.service.oc_stp__stp.oc_stp__global.config.bpdu_guard is False and device_cdb.portfast.bpduguard.default.exists() and portfast_ver == "old":
+    elif nso_props.service.oc_stp__stp.oc_stp__global.config.bpdu_guard is False and device_cdb.portfast.bpduguard.default.exists() and portfast_ver == "old":
         device_cdb.portfast.bpduguard.default.delete()
     # BPDU filter
-    if self.service.oc_stp__stp.oc_stp__global.config.bpdu_filter and portfast_ver == "new":
+    if nso_props.service.oc_stp__stp.oc_stp__global.config.bpdu_filter and portfast_ver == "new":
         device_cdb.portfast.edge.bpdufilter.default.create()
-    elif self.service.oc_stp__stp.oc_stp__global.config.bpdu_filter is False and device_cdb.portfast.edge.bpdufilter.default.exists() and portfast_ver == "new":
+    elif nso_props.service.oc_stp__stp.oc_stp__global.config.bpdu_filter is False and device_cdb.portfast.edge.bpdufilter.default.exists() and portfast_ver == "new":
         device_cdb.portfast.edge.bpdufilter.default.delete()
-    elif self.service.oc_stp__stp.oc_stp__global.config.bpdu_filter and portfast_ver == "old":
+    elif nso_props.service.oc_stp__stp.oc_stp__global.config.bpdu_filter and portfast_ver == "old":
         device_cdb.portfast.bpdufilter.default.create()
-    elif self.service.oc_stp__stp.oc_stp__global.config.bpdu_filter is False and device_cdb.portfast.bpdufilter.default.exists() and portfast_ver == "old":
+    elif nso_props.service.oc_stp__stp.oc_stp__global.config.bpdu_filter is False and device_cdb.portfast.bpdufilter.default.exists() and portfast_ver == "old":
         device_cdb.portfast.bpdufilter.default.delete()
 
-def get_l2vlan_interfaces(self) -> dict:
+def get_l2vlan_interfaces(nso_props) -> dict:
     """
     Check all interfaces for TRUNK or ACCESS status
     Return dict of interface names to modes, i.e. {"GigabitEthernet1/0": "TRUNK", "GigabitEthernet1/1": "ACCESS"}
     """
     service_l2vlan_interfaces = {}
-    for interface in self.service.oc_if__interfaces.interface:
+    for interface in nso_props.service.oc_if__interfaces.interface:
         if interface.config.type == "ianaift:l2vlan" or (
                 interface.config.type == "ianaift:ethernetCsmacd" and interface.ethernet.config.aggregate_id) or (
                 interface.config.type == "ianaift:ieee8023adLag" and len(interface.subinterfaces.subinterface) == 0):
@@ -272,15 +272,15 @@ def get_l2vlan_interfaces(self) -> dict:
     return service_l2vlan_interfaces
 
 
-def xe_stp_interfaces(self, portfast_ver) -> None:
+def xe_stp_interfaces(nso_props, portfast_ver) -> None:
     """
     STP interface configuration
     """
-    service_l2vlan_interfaces = get_l2vlan_interfaces(self)
+    service_l2vlan_interfaces = get_l2vlan_interfaces(nso_props)
     stp_edge_auto_flag = False
-    for service_interface in self.service.oc_stp__stp.interfaces.interface:
+    for service_interface in nso_props.service.oc_stp__stp.interfaces.interface:
         interface_type, interface_number = get_interface_type_and_number(service_interface.config.name)
-        class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface, interface_type)
+        class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.ios__interface, interface_type)
         physical_interface_cdb = class_attribute[interface_number]
         # Guard - Root or Loop
         if service_interface.config.guard == "ROOT":
@@ -337,6 +337,6 @@ def xe_stp_interfaces(self, portfast_ver) -> None:
 
     # ENABLE STP Portfast default is using STP EDGE_AUTO interface configurations
     if stp_edge_auto_flag and portfast_ver == "new":
-        self.root.devices.device[self.device_name].config.ios__spanning_tree.portfast.edge.default.create()
+        nso_props.root.devices.device[nso_props.device_name].config.ios__spanning_tree.portfast.edge.default.create()
     if stp_edge_auto_flag and portfast_ver == "old":
-        self.root.devices.device[self.device_name].config.ios__spanning_tree.portfast.default.create()
+        nso_props.root.devices.device[nso_props.device_name].config.ios__spanning_tree.portfast.default.create()

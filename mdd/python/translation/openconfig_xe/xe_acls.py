@@ -7,7 +7,7 @@ from translation.common import get_interface_type_and_number
 regex_ports = re.compile(r'(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})\.\.(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})')
 
 
-def xe_acls_program_service(self) -> None:
+def xe_acls_program_service(self, nso_props) -> None:
     """
     Program service for xe NED features
     """
@@ -33,8 +33,8 @@ def xe_acls_program_service(self) -> None:
     actions_oc_to_xe = {'oc-acl:ACCEPT': 'permit',
                         'oc-acl:DROP': 'deny',
                         'oc-acl:REJECT': 'deny'}
-    device = self.root.devices.device[self.device_name].config
-    for service_acl in self.service.oc_acl__acl.acl_sets.acl_set:
+    device = nso_props.root.devices.device[nso_props.device_name].config
+    for service_acl in nso_props.service.oc_acl__acl.acl_sets.acl_set:
         if service_acl.type == 'oc-acl:ACL_IPV4':
             if device.ios__ip.access_list.extended.ext_named_acl.exists(service_acl.name):
                 del device.ios__ip.access_list.extended.ext_named_acl[service_acl.name]
@@ -104,7 +104,7 @@ def xe_acls_program_service(self) -> None:
                 rule = rule.strip()
                 rules_oc_config.append(rule)
             for i in rules_oc_config:
-                self.log.debug(f'{self.device_name} ACL {service_acl.name} ACE: {i}')
+                self.log.debug(f'{nso_props.device_name} ACL {service_acl.name} ACE: {i}')
                 acl.ext_access_list_rule.create(i)
 
         if service_acl.type == 'oc-acl-ext:ACL_IPV4_STANDARD':
@@ -127,19 +127,19 @@ def xe_acls_program_service(self) -> None:
                 rule = rule.strip()
                 rules_oc_config.append(rule)
             for i in rules_oc_config:
-                self.log.debug(f'{self.device_name} ACL {service_acl.name} ACE: {i}')
+                self.log.debug(f'{nso_props.device_name} ACL {service_acl.name} ACE: {i}')
                 acl.std_access_list_rule.create(i)
 
 
-def xe_acls_interfaces_program_service(self) -> None:
+def xe_acls_interfaces_program_service(self, nso_props) -> None:
     """
     Program xe interfaces ingress and egress acls
     """
-    for service_acl_interface in self.service.oc_acl__acl.interfaces.interface:
+    for service_acl_interface in nso_props.service.oc_acl__acl.interfaces.interface:
         # Get interface object
         interface_type, interface_number = get_interface_type_and_number(
             service_acl_interface.interface_ref.config.interface)
-        class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+        class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.ios__interface,
                                   interface_type)
         if service_acl_interface.interface_ref.config.subinterface == 0 or not service_acl_interface.interface_ref.config.subinterface:
             interface_cdb = class_attribute[interface_number]
@@ -147,7 +147,7 @@ def xe_acls_interfaces_program_service(self) -> None:
             interface_cdb = class_attribute[
                 f'{interface_number}.{service_acl_interface.interface_ref.config.subinterface}']
         elif interface_type == 'Port_channel':
-            interface_cdb = self.root.devices.device[self.device_name].config.ios__interface.Port_channel_subinterface.Port_channel[
+            interface_cdb = nso_props.root.devices.device[nso_props.device_name].config.ios__interface.Port_channel_subinterface.Port_channel[
                 f'{interface_number}.{service_acl_interface.interface_ref.config.subinterface}']
 
         # Apply ACLs  TODO add other ACL types
@@ -157,32 +157,32 @@ def xe_acls_interfaces_program_service(self) -> None:
                     if not interface_cdb.ip.access_group.exists('out'):
                         interface_cdb.ip.access_group.create('out')
                     interface_cdb.ip.access_group['out'].access_list = acl.set_name
-                    self.log.info(f'{self.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} egress')
+                    self.log.info(f'{nso_props.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} egress')
                 if acl.type == 'oc-acl-ext:ACL_IPV4_STANDARD':
                     if not interface_cdb.ip.access_group.exists('out'):
                         interface_cdb.ip.access_group.create('out')
                     interface_cdb.ip.access_group['out'].access_list = acl.set_name
-                    self.log.info(f'{self.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} egress')
+                    self.log.info(f'{nso_props.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} egress')
         if service_acl_interface.ingress_acl_sets:
             for acl in service_acl_interface.ingress_acl_sets.ingress_acl_set:
                 if acl.type == 'oc-acl:ACL_IPV4':
                     if not interface_cdb.ip.access_group.exists('in'):
                         interface_cdb.ip.access_group.create('in')
                     interface_cdb.ip.access_group['in'].access_list = acl.set_name
-                    self.log.info(f'{self.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} ingress')
+                    self.log.info(f'{nso_props.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} ingress')
                 if acl.type == 'oc-acl-ext:ACL_IPV4_STANDARD':
                     if not interface_cdb.ip.access_group.exists('in'):
                         interface_cdb.ip.access_group.create('in')
                     interface_cdb.ip.access_group['in'].access_list = acl.set_name
-                    self.log.info(f'{self.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} ingress')
+                    self.log.info(f'{nso_props.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} ingress')
 
 
-def xe_acls_lines_program_service(self) -> None:
+def xe_acls_lines_program_service(self, nso_props) -> None:
     """
     Program xe lines ingress and egress acls
     """
-    device = self.root.devices.device[self.device_name].config
-    for service_line in self.service.oc_acl__acl.oc_acl_ext__lines.line:
+    device = nso_props.root.devices.device[nso_props.device_name].config
+    for service_line in nso_props.service.oc_acl__acl.oc_acl_ext__lines.line:
         if 'vty ' in service_line.id.lower():
             matches = re.findall(r'[0-9]+', service_line.id)
             if len(matches) == 2:
@@ -209,18 +209,18 @@ def xe_acls_lines_program_service(self) -> None:
                 raise ValueError('line vty takes a start and an end line number range')
 
 
-def xe_acls_ntp_program_service(self) -> None:
+def xe_acls_ntp_program_service(self, nso_props) -> None:
     """
     Apply NTP ACLs
     """
-    device = self.root.devices.device[self.device_name].config
+    device = nso_props.root.devices.device[nso_props.device_name].config
     # Server
-    if self.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set:
-        device.ios__ntp.access_group.serve.access_list = self.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set
+    if nso_props.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set:
+        device.ios__ntp.access_group.serve.access_list = nso_props.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set
     else:
         device.ios__ntp.access_group.serve.access_list = None
     # Peer
-    if self.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set:
-        device.ios__ntp.access_group.peer.access_list = self.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set
+    if nso_props.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set:
+        device.ios__ntp.access_group.peer.access_list = nso_props.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set
     else:
         device.ios__ntp.access_group.peer.access_list = None

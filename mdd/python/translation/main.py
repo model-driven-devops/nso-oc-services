@@ -9,26 +9,25 @@ from translation.openconfig_xe.xe_main import check_xe_features
 from translation.openconfig_xr.xr_main import check_xr_features
 from translation.openconfig_nx.nx_main import check_nx_features
 
+from translation.common import NsoProps
+
 regex_device = compile(r'device{(.*)}\/')
 
 class OCCallback(Service):
     @Service.create
     def cb_create(self, tctx: TransCtxRef, root: Root, service: ListElement, proplist: list):
         self.log.info(f'Service create(service={service._path})')
-        self.service = service
-        self.root = root
-        self.proplist = proplist
         # Get device name from service path
         r = regex_device.search(service._path)
-        self.device_name = r.group(1)
+        nso_props = NsoProps(service, root, proplist, r.group(1)) 
 
         # Each NED may have a template and will have python processing code
-        if 'cisco-ios-cli' in self.root.devices.device[self.device_name].device_type.cli.ned_id:
-            check_xe_features(self)
-        elif 'cisco-iosxr-cli' in self.root.devices.device[self.device_name].device_type.cli.ned_id:
-            check_xr_features(self)
-        elif 'cisco-nx-cli' in self.root.devices.device[self.device_name].device_type.cli.ned_id:
-            check_nx_features(self)
+        if 'cisco-ios-cli' in nso_props.root.devices.device[nso_props.device_name].device_type.cli.ned_id:
+            check_xe_features(self, nso_props)
+        elif 'cisco-iosxr-cli' in nso_props.root.devices.device[nso_props.device_name].device_type.cli.ned_id:
+            check_xr_features(self, nso_props)
+        elif 'cisco-nx-cli' in nso_props.root.devices.device[nso_props.device_name].device_type.cli.ned_id:
+            check_nx_features(self, nso_props)
 
 
 def update_vars(initial_vars: dict, proplist: list) -> dict:

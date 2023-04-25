@@ -8,34 +8,34 @@ from translation.openconfig_xr.xr_acls import xr_acls_lines_program_service
 from translation.openconfig_xr.xr_acls import xr_acls_ntp_program_service
 
 
-def check_xr_features(self) -> None:
+def check_xr_features(self, nso_props) -> None:
     """
     Check the OC - XR features.
     """
     # OpenConfig Interfaces
-    if len(self.service.oc_if__interfaces.interface) > 0:
-        xr_interfaces_program_service(self)
+    if len(nso_props.service.oc_if__interfaces.interface) > 0:
+        xr_interfaces_program_service(self, nso_props)
     # Spanning-tree
-    if self.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.exists():
+    if nso_props.service.oc_stp__stp.oc_stp__global.config.enabled_protocol.exists():
         raise NotImplementedError('openconfig-stp has not yet been implemented for XR')
     # # OpenConfig ACL
-    if len(self.service.oc_acl__acl.acl_sets.acl_set) > 0:
-        xr_acls_program_service(self)
-    if len(self.service.oc_acl__acl.interfaces.interface) > 0:
-        xr_acls_interfaces_program_service(self)
-    if len(self.service.oc_acl__acl.oc_acl_ext__lines.line) > 0:
-        xr_acls_lines_program_service(self)
-    if (self.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set or
-        self.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set):
-        xr_acls_ntp_program_service(self)
+    if len(nso_props.service.oc_acl__acl.acl_sets.acl_set) > 0:
+        xr_acls_program_service(self, nso_props)
+    if len(nso_props.service.oc_acl__acl.interfaces.interface) > 0:
+        xr_acls_interfaces_program_service(self, nso_props)
+    if len(nso_props.service.oc_acl__acl.oc_acl_ext__lines.line) > 0:
+        xr_acls_lines_program_service(self, nso_props)
+    if (nso_props.service.oc_acl__acl.oc_acl_ext__ntp.server.config.server_acl_set or
+        nso_props.service.oc_acl__acl.oc_acl_ext__ntp.peer.config.peer_acl_set):
+        xr_acls_ntp_program_service(self, nso_props)
 
     # OpenConfig routing-policy
-    if is_oc_routing_policy_configured(self):
+    if is_oc_routing_policy_configured(nso_props):
         raise NotImplementedError('openconfig-routing-policy has not yet been implemented for XR')
 
     # OpenConfig Network Instances
-    if len(self.service.oc_netinst__network_instances.network_instance) > 0:
+    if len(nso_props.service.oc_netinst__network_instances.network_instance) > 0:
         raise NotImplementedError('openconfig-network-instance has not yet been implemented for XR')
 
     # OpenConfig System
-    xr_system_program_service(self)
+    xr_system_program_service(self, nso_props)

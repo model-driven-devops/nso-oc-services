@@ -8,15 +8,15 @@ ospf_network_types = {
 }
 
 
-def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_name) -> None:
+def xe_ospf_program_service(self, nso_props, service_protocol, network_instance_type, vrf_name) -> None:
     """
     Program service for xe NED features
     """
-    self.log.info(f'{self.device_name} OSPF')
+    self.log.info(f'{nso_props.device_name} OSPF')
     # Process
-    if not self.root.devices.device[self.device_name].config.ios__router.ospf.exists(service_protocol.name):
-        self.root.devices.device[self.device_name].config.ios__router.ospf.create(service_protocol.name)
-    device_ospf_cbd = self.root.devices.device[self.device_name].config.ios__router.ospf[
+    if not nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf.exists(service_protocol.name):
+        nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf.create(service_protocol.name)
+    device_ospf_cbd = nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf[
         service_protocol.name]
     # Process VRF
     if network_instance_type == 'oc-ni-types:L3VRF':
@@ -119,15 +119,15 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
                         service_interface.id)
                     interface_type = interface_type.replace("-", "_")
                     if interface_type == "Port_channel" and "." in interface_number:
-                        init_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+                        init_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.ios__interface,
                                                   f"{interface_type}_subinterface")
                         class_attribute = getattr(init_attribute, interface_type)
                     else:
-                        class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+                        class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.ios__interface,
                                                   interface_type)
                     interface_cdb = class_attribute[interface_number]
                     # router ospf network statement
-                    create_area_network_statement(self, service_interface, device_ospf_cbd, service_area)
+                    create_area_network_statement(nso_props, service_interface, device_ospf_cbd, service_area)
                     # interface ospf network type
                     if service_interface.config.network_type:
                         interface_cdb.ip.ospf.network = [ospf_network_types[service_interface.config.network_type]]
@@ -274,30 +274,30 @@ def xe_ospf_program_service(self, service_protocol, network_instance_type, vrf_n
 
 
 
-def create_area_network_statement(self, service_interface, device_ospf_cbd, service_area) -> None:
+def create_area_network_statement(nso_props, service_interface, device_ospf_cbd, service_area) -> None:
     """
     If needed, creates ospf area and network statement for interface
     """
     if '.' in service_interface.id:
         int_name_and_subint = service_interface.id.split('.')
-        interface_ip = str(self.root.devices.device[self.device_name].mdd__openconfig.oc_if__interfaces.interface[
+        interface_ip = str(nso_props.root.devices.device[nso_props.device_name].mdd__openconfig.oc_if__interfaces.interface[
                                int_name_and_subint[0]].subinterfaces.subinterface[
                                int_name_and_subint[1]].oc_ip__ipv4.addresses.address.keys()[0]).lstrip('{').rstrip('}')
     # what about tunnel, vlan, port-channel
     elif "Tunnel" in service_interface.id:
-        interface_ip = str(self.root.devices.device[self.device_name].mdd__openconfig.oc_if__interfaces.interface[
+        interface_ip = str(nso_props.root.devices.device[nso_props.device_name].mdd__openconfig.oc_if__interfaces.interface[
                                service_interface.id].oc_tun__tunnel.ipv4.addresses.address.keys()[
                                0]).lstrip('{').rstrip('}')
     elif "Vlan" in service_interface.id:
-        interface_ip = str(self.root.devices.device[self.device_name].mdd__openconfig.oc_if__interfaces.interface[
+        interface_ip = str(nso_props.root.devices.device[nso_props.device_name].mdd__openconfig.oc_if__interfaces.interface[
                                service_interface.id].oc_vlan__routed_vlan.oc_ip__ipv4.addresses.address.keys()[
                                0]).lstrip('{').rstrip('}')
     elif "Port-channel" in service_interface.id:
-        interface_ip = str(self.root.devices.device[self.device_name].mdd__openconfig.oc_if__interfaces.interface[
+        interface_ip = str(nso_props.root.devices.device[nso_props.device_name].mdd__openconfig.oc_if__interfaces.interface[
                                service_interface.id].oc_lag__aggregation.oc_ip__ipv4.addresses.address.keys()[
                                0]).lstrip('{').rstrip('}')
     else:
-        interface_ip = str(self.root.devices.device[self.device_name].mdd__openconfig.oc_if__interfaces.interface[
+        interface_ip = str(nso_props.root.devices.device[nso_props.device_name].mdd__openconfig.oc_if__interfaces.interface[
                                service_interface.id].subinterfaces.subinterface[0].oc_ip__ipv4.addresses.address.keys()[
                                0]).lstrip('{').rstrip('}')
     if not device_ospf_cbd.network.exists((interface_ip, '0.0.0.0')):
@@ -306,48 +306,48 @@ def create_area_network_statement(self, service_interface, device_ospf_cbd, serv
         device_ospf_cbd.network[(interface_ip, '0.0.0.0')].area = service_area.identifier
 
 
-def xe_ospf_redistribution_program_service(self, table_connections) -> None:
+def xe_ospf_redistribution_program_service(self, nso_props, table_connections) -> None:
     """
     Program service for xe NED features
     """
-    self.log.info(f'{self.device_name} OSPF redistribution')
+    self.log.info(f'{nso_props.device_name} OSPF redistribution')
     for service_table_connection in table_connections:
         for service_table_connection_ospf in table_connections[service_table_connection]['destination_protocols'][
             'OSPF']:
             if service_table_connection_ospf['src-protocol'] == 'oc-pol-types:STATIC' and \
                     service_table_connection_ospf['address-family'] == 'oc-types:IPV4':
-                self.root.devices.device[self.device_name].config.ios__router.ospf[
+                nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf[
                     service_table_connection_ospf['dst-protocol-process-number']].redistribute.static.create()
                 if service_table_connection_ospf['import-policy']:
-                    self.root.devices.device[self.device_name].config.ios__router.ospf[
+                    nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf[
                         service_table_connection_ospf['dst-protocol-process-number']].redistribute.static.route_map = \
                         service_table_connection_ospf['import-policy']
             elif service_table_connection_ospf['src-protocol'] == 'oc-pol-types:DIRECTLY_CONNECTED' and \
                     service_table_connection_ospf['address-family'] == 'oc-types:IPV4':
-                self.root.devices.device[self.device_name].config.ios__router.ospf[
+                nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf[
                     service_table_connection_ospf['dst-protocol-process-number']].redistribute.connected.create()
                 if service_table_connection_ospf['import-policy']:
-                    self.root.devices.device[self.device_name].config.ios__router.ospf[
+                    nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf[
                         service_table_connection_ospf['dst-protocol-process-number']].redistribute.connected.route_map = \
                         service_table_connection_ospf['import-policy']
 
             if service_table_connection_ospf['src-protocol'] == 'oc-pol-types:BGP' and service_table_connection_ospf[
                 'address-family'] == 'oc-types:IPV4':
-                self.root.devices.device[self.device_name].config.ios__router.ospf[
+                nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf[
                     service_table_connection_ospf['dst-protocol-process-number']].redistribute.bgp.as_no = \
                         service_table_connection_ospf['src-protocol-process-number']
                 if service_table_connection_ospf['import-policy']:
-                    self.root.devices.device[self.device_name].config.ios__router.ospf[
+                    nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf[
                         service_table_connection_ospf['dst-protocol-process-number']].redistribute.bgp.route_map = \
                             service_table_connection_ospf['import-policy']
 
             if service_table_connection_ospf['src-protocol'] == 'oc-pol-types:OSPF' and service_table_connection_ospf[
                 'address-family'] == 'oc-types:IPV4':
-                self.root.devices.device[self.device_name].config.ios__router.ospf[
+                nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf[
                     service_table_connection_ospf['dst-protocol-process-number']].redistribute.ospf.create(
                     service_table_connection_ospf['src-protocol-process-number'])
                 if service_table_connection_ospf['import-policy']:
-                    self.root.devices.device[self.device_name].config.ios__router.ospf[
+                    nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf[
                         service_table_connection_ospf['dst-protocol-process-number']].redistribute.ospf[
                         service_table_connection_ospf['src-protocol-process-number']].route_map = \
                         service_table_connection_ospf['import-policy']

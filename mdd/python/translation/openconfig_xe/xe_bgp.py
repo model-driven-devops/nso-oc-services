@@ -2,19 +2,19 @@
 from translation.common import get_interface_type_and_number
 
 
-def xe_bgp_global_program_service(self, service_protocol, network_instance_type, vrf_name) -> None:
+def xe_bgp_global_program_service(self, nso_props, service_protocol, network_instance_type, vrf_name) -> None:
     """
     Program service for xe NED features
     """
-    self.log.info(f'{self.device_name} BGP global')
+    self.log.info(f'{nso_props.device_name} BGP global')
     service_bgp_global = service_protocol.bgp.oc_netinst__global
 
     if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE':
-        if not self.root.devices.device[self.device_name].config.ios__router.bgp.exists(
+        if not nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp.exists(
                 service_bgp_global.config.oc_netinst__as):
-            self.root.devices.device[self.device_name].config.ios__router.bgp.create(
+            nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp.create(
                 service_bgp_global.config.oc_netinst__as)
-        device_bgp_cbd = self.root.devices.device[self.device_name].config.ios__router.bgp[
+        device_bgp_cbd = nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[
             service_bgp_global.config.oc_netinst__as]
         if service_bgp_global.config.router_id:
             device_bgp_cbd.bgp.router_id = service_bgp_global.config.router_id
@@ -60,7 +60,7 @@ def xe_bgp_global_program_service(self, service_protocol, network_instance_type,
                 device_bgp_cbd.bgp.listen.range.create(service_dynamic_neighbor.config.prefix,
                                                        service_dynamic_neighbor.config.peer_group)
 
-    device_bgp_cbd = self.root.devices.device[self.device_name].config.ios__router.bgp[
+    device_bgp_cbd = nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[
         service_bgp_global.config.oc_netinst__as]
     if len(service_bgp_global.afi_safis.afi_safi) > 0:
         device_bgp_cbd.bgp.default.ipv4_unicast = False  # If using AFI_SAFI turn off BGP ipv4 default
@@ -107,15 +107,15 @@ def xe_bgp_global_program_service(self, service_protocol, network_instance_type,
                     raise NotImplementedError('oc-bgp-types:IPV6_UNICAST has not yet been implemented for XE')
 
 
-def xe_bgp_redistribution_program_service(self, service_protocol, network_instance_type, vrf_name,
+def xe_bgp_redistribution_program_service(self, nso_props, service_protocol, network_instance_type, vrf_name,
                                           table_connections) -> None:
     """
     Program service for xe NED features
     """
-    self.log.info(f'{self.device_name} BGP redistribution')
+    self.log.info(f'{nso_props.device_name} BGP redistribution')
     if table_connections.get(vrf_name):
         if table_connections[vrf_name]['destination_protocols']['BGP']:
-            device_bgp_cbd = self.root.devices.device[self.device_name].config.ios__router.bgp[
+            device_bgp_cbd = nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[
                 service_protocol.bgp.oc_netinst__global.config.oc_netinst__as]
             for protocol in table_connections[vrf_name]['destination_protocols']['BGP']:
                 if protocol['src-protocol'] == 'oc-pol-types:OSPF' and protocol['address-family'] == 'oc-types:IPV4':
@@ -313,28 +313,28 @@ def activate_peer_group(afi_safi_service, neighbor_object_cdb, service_bgp_neigh
         route_reflector_client_remove(neighbor_object_cdb)
 
 
-def xe_bgp_neighbors_program_service(self, service_protocol, network_instance_type, vrf_name) -> None:
+def xe_bgp_neighbors_program_service(self, nso_props, service_protocol, network_instance_type, vrf_name) -> None:
     """
     Program service for xe NED features
     """
     # If not afi then do below, else create the neighbors in the appropriate afis
-    self.log.info(f'{self.device_name} BGP neighbors')
+    self.log.info(f'{nso_props.device_name} BGP neighbors')
     asn = service_protocol.bgp.oc_netinst__global.config.oc_netinst__as
     if asn:
         for service_bgp_neighbor in service_protocol.bgp.neighbors.neighbor:
             if service_bgp_neighbor.neighbor_address and (
                     service_bgp_neighbor.config.peer_as or service_bgp_neighbor.config.peer_group):
-                if not self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor.exists(
+                if not nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[asn].neighbor.exists(
                         service_bgp_neighbor.neighbor_address):
-                    self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor.create(
+                    nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[asn].neighbor.create(
                         service_bgp_neighbor.neighbor_address)
-                neighbor = self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor[
+                neighbor = nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[asn].neighbor[
                     service_bgp_neighbor.neighbor_address]
 
                 xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor)
 
                 if len(service_bgp_neighbor.afi_safis.afi_safi) > 0:
-                    device_bgp_cbd = self.root.devices.device[self.device_name].config.ios__router.bgp[asn]
+                    device_bgp_cbd = nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[asn]
                     for afi_safi_service in service_bgp_neighbor.afi_safis.afi_safi:
                         if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE':
                             if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
@@ -444,7 +444,7 @@ def get_peer_groups_with_dynamic_neighbors(service_protocol) -> list:
     return peer_groups
 
 
-def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_type, vrf_name) -> None:
+def xe_bgp_peer_groups_program_service(self, nso_props, service_protocol, network_instance_type, vrf_name) -> None:
     """
     Program service for xe NED features
     """
@@ -452,19 +452,19 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
     # helper functions
     def configure_global_peer_group() -> None:
         if service_bgp_peergroup.peer_group_name:
-            if not self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor.exists(
+            if not nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor.exists(
                     service_bgp_peergroup.peer_group_name):
-                self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor.create(
+                nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor.create(
                     service_bgp_peergroup.peer_group_name)
             peer_group = \
-                self.root.devices.device[self.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor[
+                nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[asn].neighbor_tag.neighbor[
                     service_bgp_peergroup.peer_group_name]
             if not peer_group.peer_group.exists():
                 peer_group.peer_group.create()
             xe_bgp_configure_peer_group(service_bgp_peergroup, peer_group)
 
     # If not afi then do below, else create the peer-groups in the appropriate afis
-    self.log.info(f'{self.device_name} BGP peer-groups')
+    self.log.info(f'{nso_props.device_name} BGP peer-groups')
     asn = service_protocol.bgp.oc_netinst__global.config.oc_netinst__as
     if asn:
         peer_groups_with_dynamic_neighbors = get_peer_groups_with_dynamic_neighbors(service_protocol)
@@ -475,7 +475,7 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                 service_dynamic_neighbors = False
             flag_configure_global_peer_group = True
             if len(service_bgp_peergroup.afi_safis.afi_safi) > 0:
-                device_bgp_cbd = self.root.devices.device[self.device_name].config.ios__router.bgp[asn]
+                device_bgp_cbd = nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[asn]
                 for afi_safi_service in service_bgp_peergroup.afi_safis.afi_safi:
                     if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE':
                         if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
@@ -539,13 +539,13 @@ def xe_bgp_peer_groups_program_service(self, service_protocol, network_instance_
                                 neighbor_object_cdb.send_label.create()
             else:
                 if service_bgp_peergroup.peer_group_name:
-                    if not self.root.devices.device[self.device_name].config.ios__router.bgp[
+                    if not nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[
                         asn].neighbor_tag.neighbor.exists(service_bgp_peergroup.peer_group_name):
-                        self.root.devices.device[self.device_name].config.ios__router.bgp[
+                        nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[
                             asn].neighbor_tag.neighbor.create(
                             service_bgp_peergroup.peer_group_name)
                     peer_group = \
-                        self.root.devices.device[self.device_name].config.ios__router.bgp[
+                        nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[
                             asn].neighbor_tag.neighbor[
                             service_bgp_peergroup.peer_group_name]
                     if not peer_group.peer_group.exists():
