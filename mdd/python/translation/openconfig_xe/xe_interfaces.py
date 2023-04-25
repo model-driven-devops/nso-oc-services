@@ -13,28 +13,28 @@ speeds_oc_to_xe = {
 }
 
 
-def xe_interfaces_program_service(self) -> None:
+def xe_interfaces_program_service(self, nso_props) -> None:
     """
     Program service for xe NED features too complex for XML template.
     """
-    xe_update_vlan_db(self)
-    xe_process_interfaces(self)
+    xe_update_vlan_db(self, nso_props)
+    xe_process_interfaces(self, nso_props)
 
 
-def xe_update_vlan_db(self) -> None:
+def xe_update_vlan_db(self, nso_props) -> None:
     """
     Ensure vlan is available for incoming configuration
     """
 
     # Get VLANs from device VLAN DB
     vlans_device_db = list()
-    for v in self.root.devices.device[self.device_name].config.ios__vlan.vlan_list:
+    for v in nso_props.root.devices.device[nso_props.device_name].config.ios__vlan.vlan_list:
         vlans_device_db.append(v.id)
-    self.log.info(f'{self.device_name} VLANs in device DB: {vlans_device_db}')
+    self.log.info(f'{nso_props.device_name} VLANs in device DB: {vlans_device_db}')
 
     # Get VLANs from incoming config
     vlans_in_model_configs = list()
-    for interface in self.service.oc_if__interfaces.interface:
+    for interface in nso_props.service.oc_if__interfaces.interface:
         if interface.aggregation.switched_vlan.config.access_vlan:
             vlans_in_model_configs.append(interface.aggregation.switched_vlan.config.access_vlan)
         for x in interface.aggregation.switched_vlan.config.trunk_vlans:
@@ -47,25 +47,25 @@ def xe_update_vlan_db(self) -> None:
             vlans_in_model_configs.append(interface.ethernet.switched_vlan.config.native_vlan)
         if interface.routed_vlan.config.vlan:
             vlans_in_model_configs.append(interface.routed_vlan.config.vlan)
-    self.log.info(f'{self.device_name} VLANs from configs: {vlans_in_model_configs}')
+    self.log.info(f'{nso_props.device_name} VLANs from configs: {vlans_in_model_configs}')
 
     # Find VLANs to create in device VLAN DB
     vlans_to_create_in_db = [v for v in vlans_in_model_configs if v not in set(vlans_device_db)]
-    self.log.info(f'{self.device_name} vlans_to_create_in_db: {vlans_to_create_in_db}')
+    self.log.info(f'{nso_props.device_name} vlans_to_create_in_db: {vlans_to_create_in_db}')
 
     # Create VLANs in device VLAN DB
     for v in vlans_to_create_in_db:
-        self.root.devices.device[self.device_name].config.ios__vlan.vlan_list.create(v)
-        vlan = self.root.devices.device[self.device_name].config.ios__vlan.vlan_list[v]
+        nso_props.root.devices.device[nso_props.device_name].config.ios__vlan.vlan_list.create(v)
+        vlan = nso_props.root.devices.device[nso_props.device_name].config.ios__vlan.vlan_list[v]
         if vlan.shutdown.exists():
             vlan.shutdown.delete()
 
 
-def check_for_ipv6(s):
+def check_for_ipv6(nso_props):
     """
     Is IPv6 being used?
     """
-    for interface in s.service.oc_if__interfaces.interface:
+    for interface in nso_props.service.oc_if__interfaces.interface:
         for sub_if in interface.subinterfaces.subinterface:
             if sub_if.oc_ip__ipv6.addresses.address:
                 return True
@@ -78,23 +78,23 @@ def check_for_ipv6(s):
     return False
 
 
-def xe_process_interfaces(self) -> None:
+def xe_process_interfaces(self, nso_props) -> None:
     """
     Programs device interfaces as defined in model
     """
-    routing_ipv6 = check_for_ipv6(self)
+    routing_ipv6 = check_for_ipv6(nso_props)
     if routing_ipv6:
-        self.root.devices.device[self.device_name].config.ios__ipv6.unicast_routing.create()
-        self.root.devices.device[self.device_name].config.ios__fhrp.version.vrrp = 'v3'
-    for interface in self.service.oc_if__interfaces.interface:
+        nso_props.root.devices.device[nso_props.device_name].config.ios__ipv6.unicast_routing.create()
+        nso_props.root.devices.device[nso_props.device_name].config.ios__fhrp.version.vrrp = 'v3'
+    for interface in nso_props.service.oc_if__interfaces.interface:
         # Layer 3 VLAN interfaces
         if interface.config.type == 'ianaift:l3ipvlan':
-            if not self.root.devices.device[self.device_name].config.ios__interface.Vlan.exists(
+            if not nso_props.root.devices.device[nso_props.device_name].config.ios__interface.Vlan.exists(
                     interface.routed_vlan.config.vlan):
-                self.root.devices.device[self.device_name].config.ios__interface.Vlan.create(
+                nso_props.root.devices.device[nso_props.device_name].config.ios__interface.Vlan.create(
                     interface.routed_vlan.config.vlan)
 
-            vlan = self.root.devices.device[self.device_name].config.ios__interface.Vlan[
+            vlan = nso_props.root.devices.device[nso_props.device_name].config.ios__interface.Vlan[
                 interface.routed_vlan.config.vlan]
             if interface.config.description:
                 vlan.description = interface.config.description
@@ -119,17 +119,17 @@ def xe_process_interfaces(self) -> None:
         elif interface.config.type == 'ianaift:l2vlan' or (
                 interface.config.type == 'ianaift:ethernetCsmacd' and interface.ethernet.config.aggregate_id):
             interface_type, interface_number = get_interface_type_and_number(interface.config.name)
-            class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+            class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.ios__interface,
                                       interface_type)
             l2_interface = class_attribute[interface_number]
             xe_interface_config(interface, l2_interface)
             xe_interface_hold_time(interface, l2_interface)
-            xe_interface_ethernet(self, interface, l2_interface)
+            xe_interface_ethernet(self, nso_props, interface, l2_interface)
 
         # Port channels
         elif interface.config.type == 'ianaift:ieee8023adLag':
             interface_type, interface_number = get_interface_type_and_number(interface.config.name)
-            class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+            class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.ios__interface,
                                       interface_type)
             if not class_attribute.exists(interface_number):
                 class_attribute.create(interface_number)
@@ -137,12 +137,12 @@ def xe_process_interfaces(self) -> None:
             xe_interface_config(interface, port_channel)
             xe_interface_hold_time(interface, port_channel)
             if len(interface.subinterfaces.subinterface) == 0:
-                xe_interface_aggregation(self, interface, port_channel, routing_ipv6)
+                xe_interface_aggregation(self, nso_props, interface, port_channel, routing_ipv6)
             else:
                 for subinterface_service in interface.subinterfaces.subinterface:
                     if subinterface_service.index != 0:
-                        class_attribute_sub_if = self.root.devices.device[
-                            self.device_name].config.ios__interface.Port_channel_subinterface.Port_channel
+                        class_attribute_sub_if = nso_props.root.devices.device[
+                            nso_props.device_name].config.ios__interface.Port_channel_subinterface.Port_channel
                         if not class_attribute_sub_if.exists(f'{interface_number}.{subinterface_service.index}'):
                             class_attribute_sub_if.create(f'{interface_number}.{subinterface_service.index}')
                         subinterface_cdb = class_attribute_sub_if[f'{interface_number}.{subinterface_service.index}']
@@ -177,7 +177,7 @@ def xe_process_interfaces(self) -> None:
         # Physical and Sub-interfaces
         elif interface.config.type == 'ianaift:ethernetCsmacd':
             interface_type, interface_number = get_interface_type_and_number(interface.config.name)
-            class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+            class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.ios__interface,
                                       interface_type)
             physical_interface = class_attribute[interface_number]
             xe_interface_config(interface, physical_interface)
@@ -187,7 +187,7 @@ def xe_process_interfaces(self) -> None:
                     f"Interface {interface_type}{interface_number} is configured a type \
                     'ethernetCSMACD'. It should be type 'l2vlan' when configured as a \
                     {interface.ethernet.switched_vlan.config.interface_mode} port.")
-            xe_interface_ethernet(self, interface, physical_interface)
+            xe_interface_ethernet(self, nso_props, interface, physical_interface)
             for subinterface_service in interface.subinterfaces.subinterface:
                 if subinterface_service.index != 0:
                     if not class_attribute.exists(f'{interface_number}.{subinterface_service.index}'):
@@ -234,9 +234,9 @@ def xe_process_interfaces(self) -> None:
         # Loopback interfaces
         elif interface.config.type == 'ianaift:softwareLoopback':
             interface_type, interface_number = get_interface_type_and_number(interface.config.name)
-            if not self.root.devices.device[self.device_name].config.ios__interface.Loopback.exists(interface_number):
-                self.root.devices.device[self.device_name].config.ios__interface.Loopback.create(interface_number)
-            loopback = self.root.devices.device[self.device_name].config.ios__interface.Loopback[interface_number]
+            if not nso_props.root.devices.device[nso_props.device_name].config.ios__interface.Loopback.exists(interface_number):
+                nso_props.root.devices.device[nso_props.device_name].config.ios__interface.Loopback.create(interface_number)
+            loopback = nso_props.root.devices.device[nso_props.device_name].config.ios__interface.Loopback[interface_number]
             xe_interface_config(interface, loopback)
             xe_configure_ipv4(self, loopback, interface.subinterfaces.subinterface[0].ipv4)
             xe_configure_ipv6(self, loopback, interface.subinterfaces.subinterface[0].ipv6)
@@ -244,7 +244,7 @@ def xe_process_interfaces(self) -> None:
         # VASI interfaces
         elif interface.config.type == 'iftext:vasi':
             interface_type, interface_number = get_interface_type_and_number(interface.config.name)
-            class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+            class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.ios__interface,
                                       interface_type)
             if not class_attribute.exists(interface_number):
                 class_attribute.create(interface_number)
@@ -256,7 +256,7 @@ def xe_process_interfaces(self) -> None:
         # GRE Tunnel interface
         elif interface.config.type == 'ianaift:tunnel':
             interface_type, interface_number = get_interface_type_and_number(interface.config.name)
-            class_attribute = getattr(self.root.devices.device[self.device_name].config.ios__interface,
+            class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.ios__interface,
                                       interface_type)
             if not class_attribute.exists(interface_number):
                 class_attribute.create(interface_number)
@@ -290,12 +290,12 @@ def xe_configure_tunnel_interface(interface_service: ncs.maagic.ListElement,
         raise ValueError('NSO XE CLI NED cisco-ios-cli-6.74 does not support Tunnel TTL')
 
 
-def xe_get_subinterfaces(self) -> list:
+def xe_get_subinterfaces(self, nso_props) -> list:
     """
     Returns a list of existing subinterfaces
     """
     interfaces = list()
-    device_config = self.root.devices.device[self.device_name].config
+    device_config = nso_props.root.devices.device[nso_props.device_name].config
     for a in dir(device_config.ios__interface):
         if not a.startswith('__'):
             class_method = getattr(device_config.ios__interface, a)
@@ -308,7 +308,7 @@ def xe_get_subinterfaces(self) -> list:
     return interfaces
 
 
-def xe_interface_ethernet(s, interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
+def xe_interface_ethernet(self, nso_props, interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
     # auto-negotiate
     if interface_service.ethernet.config.auto_negotiate:
         interface_cdb.negotiation.auto = interface_service.ethernet.config.auto_negotiate
@@ -340,7 +340,7 @@ def xe_interface_ethernet(s, interface_service: ncs.maagic.ListElement, interfac
 
     # switched-vlan interface-mode
     if interface_service.ethernet.switched_vlan.config.interface_mode:
-        xe_configure_switched_vlan(s, interface_cdb, interface_service.ethernet.switched_vlan)
+        xe_configure_switched_vlan(self, nso_props, interface_cdb, interface_service.ethernet.switched_vlan)
     else:
         if interface_cdb.switchport.exists():
             interface_cdb.switchport.delete()
@@ -350,29 +350,29 @@ def xe_interface_ethernet(s, interface_service: ncs.maagic.ListElement, interfac
         interface_cdb.channel_group.mode = 'active'
 
 
-def xe_interface_aggregation(s, interface_service: ncs.maagic.ListElement,
+def xe_interface_aggregation(self, nso_props, interface_service: ncs.maagic.ListElement,
                              interface_cdb: ncs.maagic.ListElement, ipv6: bool) -> None:
     if interface_service.aggregation.config.min_links:
         interface_cdb.port_channel.min_links = int(interface_service.aggregation.config.min_links)
 
     # switched-vlan interface-mode
     if interface_service.aggregation.switched_vlan.config.interface_mode:
-        xe_configure_switched_vlan(s, interface_cdb, interface_service.aggregation.switched_vlan)
+        xe_configure_switched_vlan(self, nso_props, interface_cdb, interface_service.aggregation.switched_vlan)
     else:
         if interface_cdb.switchport.exists():
             interface_cdb.switchport.delete()
     if interface_service.aggregation.ipv4.addresses.address:
-        xe_configure_ipv4(s, interface_cdb, interface_service.aggregation.ipv4)
-        xe_configure_hsrp_v1(s, interface_cdb, interface_service.aggregation.ipv4)
-        xe_configure_ipv6(s, interface_cdb, interface_service.aggregation.ipv6)
+        xe_configure_ipv4(self, interface_cdb, interface_service.aggregation.ipv4)
+        xe_configure_hsrp_v1(self, interface_cdb, interface_service.aggregation.ipv4)
+        xe_configure_ipv6(self, interface_cdb, interface_service.aggregation.ipv6)
         if ipv6:
-            xe_configure_vrrp_v3(s, interface_cdb, interface_service.aggregation.ipv4, 'ipv4')
-            xe_configure_vrrp_v3(s, interface_cdb, interface_service.aggregation.ipv6, 'ipv6')
+            xe_configure_vrrp_v3(self, interface_cdb, interface_service.aggregation.ipv4, 'ipv4')
+            xe_configure_vrrp_v3(self, interface_cdb, interface_service.aggregation.ipv6, 'ipv6')
         else:
-            xe_configure_vrrp_v2_legacy(s, interface_cdb, interface_service.aggregation.ipv4)
+            xe_configure_vrrp_v2_legacy(self, interface_cdb, interface_service.aggregation.ipv4)
 
 
-def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container) -> None:
+def xe_configure_ipv4(self, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container) -> None:
     """
     Configures openconfig-if-ip ipv4-top
     """
@@ -451,7 +451,7 @@ def xe_configure_ipv4(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: nc
             interface_cdb.ip.nat.outside.delete()
 
 
-def xe_configure_ipv6(s, interface_cdb: ncs.maagic.ListElement, service_ipv6: ncs.maagic.Container) -> None:
+def xe_configure_ipv6(self, interface_cdb: ncs.maagic.ListElement, service_ipv6: ncs.maagic.Container) -> None:
     """
     Configures openconfig-if-ip ipv6-top
     """
@@ -502,7 +502,7 @@ def xe_configure_ipv6(s, interface_cdb: ncs.maagic.ListElement, service_ipv6: nc
         interface_cdb.ipv6.unreachables = False
 
 
-def xe_configure_vrrp_v3(s, interface_cdb: ncs.maagic.ListElement,
+def xe_configure_vrrp_v3(self, interface_cdb: ncs.maagic.ListElement,
                               service_ip: ncs.maagic.Container,
                               address_family: str) -> None:
     """
@@ -517,7 +517,7 @@ def xe_configure_vrrp_v3(s, interface_cdb: ncs.maagic.ListElement,
                     vrrp_group = interface_cdb.vrrv3p_v3.vrrp[v.virtual_router_id, address_family]
                     configure_vrrp(vrrp_group, v, False, address_family)
 
-def xe_configure_vrrp_v2_legacy(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container) -> None:
+def xe_configure_vrrp_v2_legacy(self, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container) -> None:
     """
     Configures ipv4 vrrp v2 legacy
     """
@@ -581,7 +581,7 @@ def configure_vrrp(vrrp_group, oc_vrrp_group, is_v2 = True, address_family = Non
             vrrp_group.timers.advertise.seconds.delete()
     # VRRP interface tracking TODO
 
-def xe_configure_hsrp_v1(s, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container) -> None:
+def xe_configure_hsrp_v1(self, interface_cdb: ncs.maagic.ListElement, service_ipv4: ncs.maagic.Container) -> None:
     """
     Configures ipv4 hsrp
     """
@@ -617,7 +617,7 @@ def xe_configure_hsrp_v1(s, interface_cdb: ncs.maagic.ListElement, service_ipv4:
                         hsrp_group.timers.hold_time.seconds = v.config.timers.holdtime
 
 
-def xe_configure_switched_vlan(self,
+def xe_configure_switched_vlan(self, nso_props,
                                interface_cdb: ncs.maagic.ListElement,
                                service_switched_vlan: ncs.maagic.Container) -> None:
     """
@@ -627,8 +627,8 @@ def xe_configure_switched_vlan(self,
     if service_switched_vlan.config.interface_mode == 'TRUNK':
         if not interface_cdb.switchport.exists():
             interface_cdb.switchport.create()
-        if len(self.root.devices.device[self.device_name].config.ios__switch.list) > 0:
-            if 'c9k' in self.root.devices.device[self.device_name].config.ios__switch.list[1].provision:
+        if len(nso_props.root.devices.device[nso_props.device_name].config.ios__switch.list) > 0:
+            if 'c9k' in nso_props.root.devices.device[nso_props.device_name].config.ios__switch.list[1].provision:
                 pass
             else:
                 interface_cdb.switchport.trunk.encapsulation = 'dot1q'

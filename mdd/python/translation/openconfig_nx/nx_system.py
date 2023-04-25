@@ -1,253 +1,253 @@
 # -*- mode: python; python-indent: 4 -*-
 
-def nx_system_program_service(self) -> None:
+def nx_system_program_service(self, nso_props) -> None:
     """
     Program service
     """
 
-    device_cdb = self.root.devices.device[self.device_name].config
+    device_cdb = nso_props.root.devices.device[nso_props.device_name].config
     
     # Services
     # config
-    if self.service.oc_sys__system.config.domain_name:
-        device_cdb.ip.domain_name = self.service.oc_sys__system.config.domain_name
+    if nso_props.service.oc_sys__system.config.domain_name:
+        device_cdb.ip.domain_name = nso_props.service.oc_sys__system.config.domain_name
     # TODO Research this issue
     # For some odd reason, setting the hostname here messes up our after config copy. The result returns the following
     # "stdout": [
     #     "\u001b[5D\u001b[J"
     # ]
     # This causes our assertions to fail as the before config has only that unicode string to compare against.
-    # if self.service.oc_sys__system.config.hostname:
+    # if nso_props.service.oc_sys__system.config.hostname:
     #     device_cdb.hostname = 'test'
-    #     device_cdb.hostname = self.service.oc_sys__system.config.hostname
-    if self.service.oc_sys__system.config.login_banner:
+    #     device_cdb.hostname = nso_props.service.oc_sys__system.config.hostname
+    if nso_props.service.oc_sys__system.config.login_banner:
         device_cdb.banner.exec.start_marker = '^'
-        device_cdb.banner.exec.message = self.service.oc_sys__system.config.login_banner
+        device_cdb.banner.exec.message = nso_props.service.oc_sys__system.config.login_banner
         device_cdb.banner.exec.end_marker = '^'
-    if self.service.oc_sys__system.config.motd_banner:
+    if nso_props.service.oc_sys__system.config.motd_banner:
         device_cdb.banner.motd.start_marker = '^'
-        device_cdb.banner.motd.message = self.service.oc_sys__system.config.motd_banner
+        device_cdb.banner.motd.message = nso_props.service.oc_sys__system.config.motd_banner
         device_cdb.banner.motd.end_marker = '^'
-    if self.service.oc_sys__system.config.enable_secret:
+    if nso_props.service.oc_sys__system.config.enable_secret:
         self.log.warn('There is no concept of enable-secret for NX. This will be skipped.')
-    if self.service.oc_sys__system.config.console_exec_timeout_seconds:
-        seconds_all = int(self.service.oc_sys__system.config.console_exec_timeout_seconds)
+    if nso_props.service.oc_sys__system.config.console_exec_timeout_seconds:
+        seconds_all = int(nso_props.service.oc_sys__system.config.console_exec_timeout_seconds)
         # NX only stores minutes. We truncate the decimals.
         device_cdb.line.console.exec_timeout = str(int(seconds_all / 60))
-    if self.service.oc_sys__system.config.ip_options:
+    if nso_props.service.oc_sys__system.config.ip_options:
         raise NotImplementedError('openconfig-system-config-ip-options has not yet been implemented for NX')
-    if self.service.oc_sys__system.timestamps.logging.config.enabled and (
-            self.service.oc_sys__system.timestamps.logging.config.datetime or self.service.oc_sys__system.timestamps.logging.config.uptime):
+    if nso_props.service.oc_sys__system.timestamps.logging.config.enabled and (
+            nso_props.service.oc_sys__system.timestamps.logging.config.datetime or nso_props.service.oc_sys__system.timestamps.logging.config.uptime):
         raise NotImplementedError('openconfig-system-config-ip-options has not yet been implemented for NX')
-    elif self.service.oc_sys__system.timestamps.logging.config.datetime and self.service.oc_sys__system.timestamps.logging.config.uptime:
+    elif nso_props.service.oc_sys__system.timestamps.logging.config.datetime and nso_props.service.oc_sys__system.timestamps.logging.config.uptime:
         raise ValueError('Can not use timestamp logging with both uptime and datetime')
-    elif self.service.oc_sys__system.timestamps.logging.config.enabled and (
-            not self.service.oc_sys__system.timestamps.logging.config.datetime or not self.service.oc_sys__system.timestamps.logging.config.uptime):
+    elif nso_props.service.oc_sys__system.timestamps.logging.config.enabled and (
+            not nso_props.service.oc_sys__system.timestamps.logging.config.datetime or not nso_props.service.oc_sys__system.timestamps.logging.config.uptime):
         raise ValueError('Logging timestamps must use datetime or uptime')
-    if self.service.oc_sys__system.timestamps.debugging.config.enabled and (
-            self.service.oc_sys__system.timestamps.debugging.config.datetime or self.service.oc_sys__system.timestamps.debugging.config.uptime):
+    if nso_props.service.oc_sys__system.timestamps.debugging.config.enabled and (
+            nso_props.service.oc_sys__system.timestamps.debugging.config.datetime or nso_props.service.oc_sys__system.timestamps.debugging.config.uptime):
         raise NotImplementedError('openconfig-system-config-timestamps-debugging has not yet been implemented for NX')
-    elif self.service.oc_sys__system.timestamps.debugging.config.datetime and self.service.oc_sys__system.timestamps.debugging.config.uptime:
+    elif nso_props.service.oc_sys__system.timestamps.debugging.config.datetime and nso_props.service.oc_sys__system.timestamps.debugging.config.uptime:
         raise ValueError('Can not use timestamp debugging with both uptime and datetime')
-    elif self.service.oc_sys__system.timestamps.debugging.config.enabled and (
-            not self.service.oc_sys__system.timestamps.debugging.config.datetime or not self.service.oc_sys__system.timestamps.debugging.config.uptime):
+    elif nso_props.service.oc_sys__system.timestamps.debugging.config.enabled and (
+            not nso_props.service.oc_sys__system.timestamps.debugging.config.datetime or not nso_props.service.oc_sys__system.timestamps.debugging.config.uptime):
         raise ValueError('Debugging timestamps must use datetime or uptime')
     # login on-success
-    if self.service.oc_sys__system.services.login_security_policy.config.on_success:
+    if nso_props.service.oc_sys__system.services.login_security_policy.config.on_success:
         raise ValueError('login_security_policy not supported in NX')
-    elif self.service.oc_sys__system.services.login_security_policy.config.on_success is False:
+    elif nso_props.service.oc_sys__system.services.login_security_policy.config.on_success is False:
         raise ValueError('login_security_policy not supported in NX')
     # login on-failure
-    if self.service.oc_sys__system.services.login_security_policy.config.on_failure:
+    if nso_props.service.oc_sys__system.services.login_security_policy.config.on_failure:
         raise ValueError('login_security_policy not supported in NX')
-    elif self.service.oc_sys__system.services.login_security_policy.config.on_failure is False:
+    elif nso_props.service.oc_sys__system.services.login_security_policy.config.on_failure is False:
         raise ValueError('login_security_policy not supported in NX')
     # login block-for
-    if self.service.oc_sys__system.services.login_security_policy.block_for.config.seconds and \
-            self.service.oc_sys__system.services.login_security_policy.block_for.config.attempts and \
-            self.service.oc_sys__system.services.login_security_policy.block_for.config.within:
+    if nso_props.service.oc_sys__system.services.login_security_policy.block_for.config.seconds and \
+            nso_props.service.oc_sys__system.services.login_security_policy.block_for.config.attempts and \
+            nso_props.service.oc_sys__system.services.login_security_policy.block_for.config.within:
         raise ValueError('login_security_policy not supported in NX')
     # service password-encryption
-    if self.service.oc_sys__system.services.config.service_password_encryption:
+    if nso_props.service.oc_sys__system.services.config.service_password_encryption:
         raise ValueError('service_password_encryption not supported in NX')
-    elif self.service.oc_sys__system.services.config.service_password_encryption is False:
+    elif nso_props.service.oc_sys__system.services.config.service_password_encryption is False:
         raise ValueError('service_password_encryption not supported in NX')
     # DNS servers
-    if len(self.service.oc_sys__system.dns.servers.server) > 0:
+    if len(nso_props.service.oc_sys__system.dns.servers.server) > 0:
         raise NotImplementedError('openconfig-system-dns has not yet been implemented for NX')
     # SSH server
-    if self.service.oc_sys__system.ssh_server.config.enable:
+    if nso_props.service.oc_sys__system.ssh_server.config.enable:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
-    elif self.service.oc_sys__system.ssh_server.config.enable is False:
+    elif nso_props.service.oc_sys__system.ssh_server.config.enable is False:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
-    if self.service.oc_sys__system.ssh_server.config.protocol_version == 'V2':
+    if nso_props.service.oc_sys__system.ssh_server.config.protocol_version == 'V2':
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
-    elif self.service.oc_sys__system.ssh_server.config.protocol_version == 'V1':
+    elif nso_props.service.oc_sys__system.ssh_server.config.protocol_version == 'V1':
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
-    elif self.service.oc_sys__system.ssh_server.config.protocol_version == 'V1_V2':
+    elif nso_props.service.oc_sys__system.ssh_server.config.protocol_version == 'V1_V2':
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
-    if self.service.oc_sys__system.ssh_server.config.rate_limit:
+    if nso_props.service.oc_sys__system.ssh_server.config.rate_limit:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
-    if self.service.oc_sys__system.ssh_server.config.session_limit:
+    if nso_props.service.oc_sys__system.ssh_server.config.session_limit:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
-    if self.service.oc_sys__system.ssh_server.config.timeout:
+    if nso_props.service.oc_sys__system.ssh_server.config.timeout:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
-    if self.service.oc_sys__system.ssh_server.config.absolute_timeout_minutes:
+    if nso_props.service.oc_sys__system.ssh_server.config.absolute_timeout_minutes:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
-    if self.service.oc_sys__system.ssh_server.config.ssh_timeout:
+    if nso_props.service.oc_sys__system.ssh_server.config.ssh_timeout:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
-    if self.service.oc_sys__system.ssh_server.config.ssh_source_interface:
+    if nso_props.service.oc_sys__system.ssh_server.config.ssh_source_interface:
         raise NotImplementedError('openconfig-system-ssh-server-config has not yet been implemented for NX')
-    if self.service.oc_sys__system.ssh_server.algorithm.config.encryption:
+    if nso_props.service.oc_sys__system.ssh_server.algorithm.config.encryption:
         raise NotImplementedError('openconfig-system-ssh-server-algorithm-config-encryption has not yet been implemented for NX')
-    if self.service.oc_sys__system.ssh_server.algorithm.config.mac:
+    if nso_props.service.oc_sys__system.ssh_server.algorithm.config.mac:
         raise NotImplementedError('openconfig-system-ssh-server-algorithm-config-mac has not yet been implemented for NX')
 
     # NTP
-    if self.service.oc_sys__system.ntp.config.enabled:
+    if nso_props.service.oc_sys__system.ntp.config.enabled:
         raise NotImplementedError('openconfig-system-ntp-config has not yet been implemented for NX')
-    elif self.service.oc_sys__system.ntp.config.enabled is False:
+    elif nso_props.service.oc_sys__system.ntp.config.enabled is False:
         raise NotImplementedError('openconfig-system-ntp-config has not yet been implemented for NX')
     # Logging
-    if self.service.oc_sys__system.logging.buffered.config.severity and self.service.oc_sys__system.logging.buffered.config.buffer_size:
+    if nso_props.service.oc_sys__system.logging.buffered.config.severity and nso_props.service.oc_sys__system.logging.buffered.config.buffer_size:
         raise NotImplementedError('openconfig-system-logging-buffered-config has not yet been implemented for NX')
-    elif self.service.oc_sys__system.logging.buffered.config.enabled is False:
+    elif nso_props.service.oc_sys__system.logging.buffered.config.enabled is False:
         raise NotImplementedError('openconfig-system-logging-buffered-config has not yet been implemented for NX')
-    if self.service.oc_sys__system.logging.console.config.enabled is False:
+    if nso_props.service.oc_sys__system.logging.console.config.enabled is False:
         raise NotImplementedError('openconfig-system-logging-console-config has not yet been implemented for NX')
-    elif self.service.oc_sys__system.logging.console.selectors.selector:
+    elif nso_props.service.oc_sys__system.logging.console.selectors.selector:
         raise NotImplementedError('openconfig-system-logging-console-config has not yet been implemented for NX')
-    if self.service.oc_sys__system.logging.terminal_monitor.selectors.selector:
+    if nso_props.service.oc_sys__system.logging.terminal_monitor.selectors.selector:
         raise NotImplementedError('openconfig-system-logging-terminal-config has not yet been implemented for NX')
-    if self.service.oc_sys__system.logging.remote_servers.remote_server:
+    if nso_props.service.oc_sys__system.logging.remote_servers.remote_server:
         raise NotImplementedError('openconfig-system-logging-remote-servers-config has not yet been implemented for NX')
     # aaa server-groups
     # gather group and server configurations
-    if len(self.service.oc_sys__system.aaa.server_groups.server_group) > 0:
+    if len(nso_props.service.oc_sys__system.aaa.server_groups.server_group) > 0:
         raise NotImplementedError('openconfig-system-aaa-server-groups has not yet been implemented for NX')
     # aaa authentication
-    if self.service.oc_sys__system.aaa.authentication.admin_user.config.admin_password:
+    if nso_props.service.oc_sys__system.aaa.authentication.admin_user.config.admin_password:
         raise NotImplementedError('openconfig-system-aaa-authentication-config has not yet been implemented for NX')
-    if len(self.service.oc_sys__system.aaa.authentication.config.authentication_method) > 0:
+    if len(nso_props.service.oc_sys__system.aaa.authentication.config.authentication_method) > 0:
         raise NotImplementedError('openconfig-system-aaa-authentication-config has not yet been implemented for NX')
-    if len(self.service.oc_sys__system.aaa.authentication.oc_system_ext__authentication_lists_login.config.authentication_method) > 0:
+    if len(nso_props.service.oc_sys__system.aaa.authentication.oc_system_ext__authentication_lists_login.config.authentication_method) > 0:
         raise NotImplementedError('openconfig-system-aaa-authentication-config has not yet been implemented for NX')
-    if self.service.oc_sys__system.aaa.authentication.users.user:
+    if nso_props.service.oc_sys__system.aaa.authentication.users.user:
         raise NotImplementedError('openconfig-system-aaa-authentication-config has not yet been implemented for NX')
     # aaa authorization
-    if self.service.oc_sys__system.aaa.authorization.events.event:
+    if nso_props.service.oc_sys__system.aaa.authorization.events.event:
         raise NotImplementedError('openconfig-system-aaa-authorization-config has not yet been implemented for NX')
     # aaa accounting
-    if self.service.oc_sys__system.aaa.accounting.config.accounting_method:
+    if nso_props.service.oc_sys__system.aaa.accounting.config.accounting_method:
         raise NotImplementedError('openconfig-system-aaa-accounting-config has not yet been implemented for NX')
-    if self.service.oc_sys__system.aaa.accounting.events.event:
+    if nso_props.service.oc_sys__system.aaa.accounting.events.event:
         raise NotImplementedError('openconfig-system-aaa-accounting-config has not yet been implemented for NX')
     # service domain lookup disable (no ip domain lookup)
-    device_cdb.nx__ip.domain_lookup = self.service.oc_sys__system.services.config.ip_domain_lookup
+    device_cdb.nx__ip.domain_lookup = nso_props.service.oc_sys__system.services.config.ip_domain_lookup
     # service finger
-    if self.service.oc_sys__system.services.config.finger:
+    if nso_props.service.oc_sys__system.services.config.finger:
         raise NotImplementedError('openconfig-system-service-finger has not yet been implemented for NX')
-    elif self.service.oc_sys__system.services.config.finger is False:
+    elif nso_props.service.oc_sys__system.services.config.finger is False:
         raise NotImplementedError('openconfig-system-service-finger has not yet been implemented for NX')
     # ip gratuitous arps
-    if self.service.oc_sys__system.services.config.ip_gratuitous_arps:
+    if nso_props.service.oc_sys__system.services.config.ip_gratuitous_arps:
         raise NotImplementedError('openconfig-system-ip-gratuitous-arp has not yet been implemented for NX')
-    elif self.service.oc_sys__system.services.config.ip_gratuitous_arps is False:
+    elif nso_props.service.oc_sys__system.services.config.ip_gratuitous_arps is False:
         raise NotImplementedError('openconfig-system-ip-gratuitous-arp has not yet been implemented for NX')
     # service password-encryption
-    if self.service.oc_sys__system.services.config.service_password_encryption:
+    if nso_props.service.oc_sys__system.services.config.service_password_encryption:
         raise NotImplementedError('openconfig-system-service-password-encryption has not yet been implemented for NX')
-    elif self.service.oc_sys__system.services.config.service_password_encryption is False:
+    elif nso_props.service.oc_sys__system.services.config.service_password_encryption is False:
         raise NotImplementedError('openconfig-system-service-password-encryption has not yet been implemented for NX')
     # service-tcp-small-servers
-    if self.service.oc_sys__system.services.config.service_tcp_small_servers:
+    if nso_props.service.oc_sys__system.services.config.service_tcp_small_servers:
         raise NotImplementedError('openconfig-system-service-tcp-small-servers has not yet been implemented for NX')
-    elif self.service.oc_sys__system.services.config.service_tcp_small_servers is False:
+    elif nso_props.service.oc_sys__system.services.config.service_tcp_small_servers is False:
         raise NotImplementedError('openconfig-system-service-tcp-small-servers has not yet been implemented for NX')
     # service-udp-small-servers
-    if self.service.oc_sys__system.services.config.service_udp_small_servers:
+    if nso_props.service.oc_sys__system.services.config.service_udp_small_servers:
         raise NotImplementedError('openconfig-system-service-udp-small-servers has not yet been implemented for NX')
-    elif self.service.oc_sys__system.services.config.service_udp_small_servers is False:
+    elif nso_props.service.oc_sys__system.services.config.service_udp_small_servers is False:
         raise NotImplementedError('openconfig-system-service-udp-small-servers has not yet been implemented for NX')
     # archive logging
-    if self.service.oc_sys__system.services.config.archive_logging:
+    if nso_props.service.oc_sys__system.services.config.archive_logging:
         raise ValueError('archive logging not supported in NX')
-    elif self.service.oc_sys__system.services.config.archive_logging is False:
+    elif nso_props.service.oc_sys__system.services.config.archive_logging is False:
         raise ValueError('archive logging not supported in NX')
     # boot network
-    if self.service.oc_sys__system.services.boot_network.config.bootnetwork_enabled == "DISABLED":
+    if nso_props.service.oc_sys__system.services.boot_network.config.bootnetwork_enabled == "DISABLED":
         raise ValueError('boot_network not supported in NX')
     # IP bootp server
-    if self.service.oc_sys__system.services.config.ip_bootp_server:
+    if nso_props.service.oc_sys__system.services.config.ip_bootp_server:
         raise ValueError('ip_bootp_server not supported in NX')
-    elif self.service.oc_sys__system.services.config.ip_bootp_server is False:
+    elif nso_props.service.oc_sys__system.services.config.ip_bootp_server is False:
         raise ValueError('ip_bootp_server not supported in NX')
     # IP DNS server
-    if self.service.oc_sys__system.services.config.ip_dns_server:
+    if nso_props.service.oc_sys__system.services.config.ip_dns_server:
         raise ValueError('ip_dns_server not supported in NX')
-    elif self.service.oc_sys__system.services.config.ip_dns_server is False:
+    elif nso_props.service.oc_sys__system.services.config.ip_dns_server is False:
         raise ValueError('ip_dns_server not supported in NX')
     # IP identd
-    if self.service.oc_sys__system.services.config.ip_identd:
+    if nso_props.service.oc_sys__system.services.config.ip_identd:
         raise ValueError('ip_identd not supported in NX')
-    elif self.service.oc_sys__system.services.config.ip_identd is False:
+    elif nso_props.service.oc_sys__system.services.config.ip_identd is False:
         raise ValueError('ip_identd not supported in NX')
     # IP rcmd RCP enable
-    if self.service.oc_sys__system.services.config.ip_rcmd_rcp_enable:
+    if nso_props.service.oc_sys__system.services.config.ip_rcmd_rcp_enable:
         raise ValueError('ip_rcmd_rcp_enable not supported in NX')
-    elif self.service.oc_sys__system.services.config.ip_rcmd_rcp_enable is False:
+    elif nso_props.service.oc_sys__system.services.config.ip_rcmd_rcp_enable is False:
         raise ValueError('ip_rcmd_rcp_enable not supported in NX')
     # IP rcmd RSH enable
-    if self.service.oc_sys__system.services.config.ip_rcmd_rsh_enable:
+    if nso_props.service.oc_sys__system.services.config.ip_rcmd_rsh_enable:
         raise ValueError('ip_rcmd_rsh_enable not supported in NX')
-    elif self.service.oc_sys__system.services.config.ip_rcmd_rsh_enable is False:
+    elif nso_props.service.oc_sys__system.services.config.ip_rcmd_rsh_enable is False:
         raise ValueError('ip_rcmd_rsh_enable not supported in NX')
     # service finger
-    if self.service.oc_sys__system.services.config.finger:
+    if nso_props.service.oc_sys__system.services.config.finger:
         raise ValueError('finger not supported in NX')
-    elif self.service.oc_sys__system.services.config.finger is False:
+    elif nso_props.service.oc_sys__system.services.config.finger is False:
         raise ValueError('finger not supported in NX')
     # service config
-    if self.service.oc_sys__system.services.config.service_config:
+    if nso_props.service.oc_sys__system.services.config.service_config:
         raise ValueError('service_config not supported in NX')
-    elif self.service.oc_sys__system.services.config.service_config is False:
+    elif nso_props.service.oc_sys__system.services.config.service_config is False:
         raise ValueError('service_config not supported in NX')
     # service-tcp-small-servers
-    if self.service.oc_sys__system.services.config.service_tcp_small_servers:
+    if nso_props.service.oc_sys__system.services.config.service_tcp_small_servers:
         raise ValueError('finger not supported in NX')
-    elif self.service.oc_sys__system.services.config.service_tcp_small_servers is False:
+    elif nso_props.service.oc_sys__system.services.config.service_tcp_small_servers is False:
         raise ValueError('finger not supported in NX')
     # service-udp-small-servers
-    if self.service.oc_sys__system.services.config.service_udp_small_servers:
+    if nso_props.service.oc_sys__system.services.config.service_udp_small_servers:
         raise ValueError('finger not supported in NX')
-    elif self.service.oc_sys__system.services.config.service_udp_small_servers is False:
+    elif nso_props.service.oc_sys__system.services.config.service_udp_small_servers is False:
         raise ValueError('finger not supported in NX')
     # service pad
-    if self.service.oc_sys__system.services.config.service_pad:
+    if nso_props.service.oc_sys__system.services.config.service_pad:
         raise ValueError('finger not supported in NX')
-    elif self.service.oc_sys__system.services.config.service_pad is False:
+    elif nso_props.service.oc_sys__system.services.config.service_pad is False:
         raise ValueError('finger not supported in NX')
     # service http
-    if self.service.oc_sys__system.services.http.config.http_enabled:
+    if nso_props.service.oc_sys__system.services.http.config.http_enabled:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for NX')
-    elif self.service.oc_sys__system.services.http.config.http_enabled is False:
+    elif nso_props.service.oc_sys__system.services.http.config.http_enabled is False:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for NX')
-    if self.service.oc_sys__system.services.http.config.https_enabled:
+    if nso_props.service.oc_sys__system.services.http.config.https_enabled:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for NX')
-    elif self.service.oc_sys__system.services.http.config.https_enabled is False:
+    elif nso_props.service.oc_sys__system.services.http.config.https_enabled is False:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for NX')
-    if self.service.oc_sys__system.services.http.config.ip_http_max_connections:
+    if nso_props.service.oc_sys__system.services.http.config.ip_http_max_connections:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for NX')
-    if self.service.oc_sys__system.services.http.config.ip_http_secure_ciphersuite:
+    if nso_props.service.oc_sys__system.services.http.config.ip_http_secure_ciphersuite:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for NX')
-    if self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.connection and self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.life and self.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.requests:
+    if nso_props.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.connection and nso_props.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.life and nso_props.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.requests:
         raise NotImplementedError('openconfig-system-service-http has not yet been implemented for NX')
     # nat pools
-    if len(self.service.oc_sys__system.services.nat.pools.pool) > 0:
+    if len(nso_props.service.oc_sys__system.services.nat.pools.pool) > 0:
         raise NotImplementedError('openconfig-system-nat-pools has not yet been implemented for NX')
     # nat source inside local acl
-    if len(self.service.oc_sys__system.services.nat.inside.source.local_addresses_access_lists.local_addresses_access_list) > 0:
+    if len(nso_props.service.oc_sys__system.services.nat.inside.source.local_addresses_access_lists.local_addresses_access_list) > 0:
         raise NotImplementedError('openconfig-system-nat-source-inside-local-acl has not yet been implemented for NX')
     # clock
-    if self.service.oc_sys__system.clock.config.timezone_name:
+    if nso_props.service.oc_sys__system.clock.config.timezone_name:
         raise NotImplementedError('openconfig-system-clock-config has not yet been implemented for NX')

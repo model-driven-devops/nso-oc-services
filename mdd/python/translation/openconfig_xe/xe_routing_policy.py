@@ -6,22 +6,22 @@ regex_ipv4_masklength_range = re.compile(r'([0-9]{1,2})\.\.([0-9]{1,2})')
 regex_meta = {'[', '\\', '.', '^', '$', '*', '+', '?', '{', '|', '('}
 
 
-def xe_routing_policy_program_service(self) -> None:
-    if len(self.service.oc_rpol__routing_policy.defined_sets.prefix_sets.prefix_set) > 0:
-        prefix_sets_configure(self)
-    if len(self.service.oc_rpol__routing_policy.defined_sets.bgp_defined_sets.as_path_sets.as_path_set) > 0:
-        as_path_sets_configure(self)
-    if len(self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.community_sets.community_set) > 0:
-        community_sets_configure(self)
-    if len(self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set) > 0:
-        ext_community_sets_configure(self)
-    if len(self.service.oc_rpol__routing_policy.policy_definitions.policy_definition) > 0:
-        policy_definitions_configure(self)
+def xe_routing_policy_program_service(self, nso_props) -> None:
+    if len(nso_props.service.oc_rpol__routing_policy.defined_sets.prefix_sets.prefix_set) > 0:
+        prefix_sets_configure(nso_props)
+    if len(nso_props.service.oc_rpol__routing_policy.defined_sets.bgp_defined_sets.as_path_sets.as_path_set) > 0:
+        as_path_sets_configure(nso_props)
+    if len(nso_props.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.community_sets.community_set) > 0:
+        community_sets_configure(nso_props)
+    if len(nso_props.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set) > 0:
+        ext_community_sets_configure(nso_props)
+    if len(nso_props.service.oc_rpol__routing_policy.policy_definitions.policy_definition) > 0:
+        policy_definitions_configure(nso_props)
 
 
-def policy_definitions_configure(self) -> None:
-    device = self.root.devices.device[self.device_name].config
-    for service_policy_definition in self.service.oc_rpol__routing_policy.policy_definitions.policy_definition:
+def policy_definitions_configure(nso_props) -> None:
+    device = nso_props.root.devices.device[nso_props.device_name].config
+    for service_policy_definition in nso_props.service.oc_rpol__routing_policy.policy_definitions.policy_definition:
         if len(service_policy_definition.statements.statement) > 0:
             for service_policy_statement in service_policy_definition.statements.statement:
                 route_map_statement = device.ios__route_map.create(service_policy_definition.name, service_policy_statement.name)
@@ -93,7 +93,7 @@ def policy_definitions_configure(self) -> None:
                         route_map_statement.match.ip.address.prefix_list.create(service_policy_statement.conditions.match_prefix_set.config.prefix_set)
                     if service_policy_statement.conditions.match_tag_set.config.tag_set:
                         tag_list_name = service_policy_statement.conditions.match_tag_set.config.tag_set
-                        tag_list_element = self.service.oc_rpol__routing_policy.defined_sets.tag_sets.tag_set[tag_list_name]
+                        tag_list_element = nso_props.service.oc_rpol__routing_policy.defined_sets.tag_sets.tag_set[tag_list_name]
                         if len(tag_list_element.config.tag_value.as_list()) == 1:
                             route_map_statement.match.tag = [tag_list_element.config.tag_value.as_list()[0]]
                         else:
@@ -109,9 +109,9 @@ def policy_definitions_configure(self) -> None:
                         route_map_statement.match.ip.address.access_list = [service_policy_statement.conditions.oc_routing_policy_ext__match_acl_ipv4_set.config.acl_set]
 
 
-def prefix_sets_configure(self) -> None:
-    device = self.root.devices.device[self.device_name].config
-    for service_prefix_set in self.service.oc_rpol__routing_policy.defined_sets.prefix_sets.prefix_set:
+def prefix_sets_configure(nso_props) -> None:
+    device = nso_props.root.devices.device[nso_props.device_name].config
+    for service_prefix_set in nso_props.service.oc_rpol__routing_policy.defined_sets.prefix_sets.prefix_set:
         if service_prefix_set.config.mode == 'IPV4':
             if not device.ios__ip.prefix_list.prefixes.exists(service_prefix_set.config.name):
                 device.ios__ip.prefix_list.prefixes.create(service_prefix_set.config.name)
@@ -140,10 +140,9 @@ def prefix_sets_configure(self) -> None:
                         statement.permit.le = ml[1]
 
 
-
-def as_path_sets_configure(self) -> None:
-    device = self.root.devices.device[self.device_name].config
-    for service_as_path_set in self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.as_path_sets.as_path_set:
+def as_path_sets_configure(nso_props) -> None:
+    device = nso_props.root.devices.device[nso_props.device_name].config
+    for service_as_path_set in nso_props.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.as_path_sets.as_path_set:
         if not device.ios__ip.as_path.access_list.exists(service_as_path_set.config.as_path_set_name):
             device.ios__ip.as_path.access_list.create(service_as_path_set.config.as_path_set_name)
 
@@ -153,14 +152,14 @@ def as_path_sets_configure(self) -> None:
             as_path_list_cdb.as_path_rule.create(('permit', as_path_member))
 
 
-def community_sets_configure(self) -> None:
-    device = self.root.devices.device[self.device_name].config
+def community_sets_configure(nso_props) -> None:
+    device = nso_props.root.devices.device[nso_props.device_name].config
     # Always use ip bgp-community new-format
     if not device.ios__ip.bgp_community.new_format.exists():
         device.ios__ip.bgp_community.new_format.create()
 
     requested_community_lists = list()
-    for service_community_set in self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.community_sets.community_set:
+    for service_community_set in nso_props.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.community_sets.community_set:
         temp_dict = {'name': service_community_set.config.community_set_name,
                      'match-set-options': service_community_set.config.match_set_options,
                      'list_type': 'standard',
@@ -196,13 +195,13 @@ def community_sets_configure(self) -> None:
                 community_list_cdb.entry.create(f'permit {community_member}')
 
 
-def ext_community_sets_configure(self) -> None:
-    device = self.root.devices.device[self.device_name].config
+def ext_community_sets_configure(nso_props) -> None:
+    device = nso_props.root.devices.device[nso_props.device_name].config
     # Always use ip bgp-community new-format
     if not device.ios__ip.bgp_community.new_format.exists():
         device.ios__ip.bgp_community.new_format.create()
 
-    for service_ext_community_set in self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set:
+    for service_ext_community_set in nso_props.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set:
         ext_community_list = list()
         for community in service_ext_community_set.config.ext_community_member:
             ext_community_list.append(community)

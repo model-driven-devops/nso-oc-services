@@ -2,12 +2,25 @@ from typing import Tuple
 import re
 import ipaddress
 
-def is_oc_routing_policy_configured(oc_self):
-    if (len(oc_self.service.oc_rpol__routing_policy.defined_sets.prefix_sets.prefix_set) > 0 or
-        len(oc_self.service.oc_rpol__routing_policy.defined_sets.bgp_defined_sets.as_path_sets.as_path_set) > 0 or
-        len(oc_self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.community_sets.community_set) > 0 or
-        len(oc_self.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set) > 0 or
-        len(oc_self.service.oc_rpol__routing_policy.policy_definitions.policy_definition) > 0):
+class NsoProps:
+    """
+    Holds the NSO service, root, and proplist attributes.
+    :param service: NSO ListElement
+    :param root: NSO root
+    :param proplist: list of tuples containing template variable to value
+    """
+    def __init__(self, service, root, proplist, device_name) -> None:
+        self.service = service
+        self.root = root
+        self.proplist = proplist
+        self.device_name = device_name
+
+def is_oc_routing_policy_configured(nso_props):
+    if (len(nso_props.service.oc_rpol__routing_policy.defined_sets.prefix_sets.prefix_set) > 0 or
+        len(nso_props.service.oc_rpol__routing_policy.defined_sets.bgp_defined_sets.as_path_sets.as_path_set) > 0 or
+        len(nso_props.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.community_sets.community_set) > 0 or
+        len(nso_props.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set) > 0 or
+        len(nso_props.service.oc_rpol__routing_policy.policy_definitions.policy_definition) > 0):
         return True
     
     return False
@@ -63,4 +76,3 @@ def verify_ipv4(ip: str) -> bool:
             return False
     except ValueError:
         return False
-        
