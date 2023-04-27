@@ -132,11 +132,13 @@ def prefix_sets_configure(nso_props) -> None:
                     statement = prefix_list_cdb.seq.create(service_prefix.config.seq)
                     if service_prefix.config.policy_action == 'DENY_ROUTE':
                         statement.deny.ip = service_prefix.config.ip_prefix
-                        statement.deny.ge = ml[0]
+                        if ml[0] > 0:  # if ge == 0; shouldn't add to statement
+                            statement.deny.ge = ml[0]
                         statement.deny.le = ml[1]
                     else:
                         statement.permit.ip = service_prefix.config.ip_prefix
-                        statement.permit.ge = ml[0]
+                        if ml[0] > 0:  # if ge == 0; shouldn't add to statement
+                            statement.permit.ge = ml[0]
                         statement.permit.le = ml[1]
 
 
