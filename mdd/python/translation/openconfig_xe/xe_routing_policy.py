@@ -138,7 +138,7 @@ def prefix_sets_configure(nso_props) -> None:
                     else:
                         statement.permit.ip = service_prefix.config.ip_prefix
                         if ml[0] > 0:  # if ge == 0; shouldn't add to statement
-                            statement.deny.ge = ml[0]
+                            statement.permit.ge = ml[0]
                         statement.permit.le = ml[1]
 
 
