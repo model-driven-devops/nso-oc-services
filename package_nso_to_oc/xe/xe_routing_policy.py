@@ -183,6 +183,7 @@ def process_community_sets(config_before, config_after):
     community_sets = {"openconfig-bgp-policy:community-sets": {"openconfig-bgp-policy:community-set": []}}
     community_list = config_before.get("tailf-ned-cisco-ios:ip", {}).get("community-list", {})
     community_list_after = config_after.get("tailf-ned-cisco-ios:ip", {}).get("community-list", {})
+    process_community_members(community_sets, "number", community_list, community_list_after)
     process_community_members(community_sets, "standard", community_list, community_list_after)
     process_community_members(community_sets, "expanded", community_list, community_list_after)
     openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:defined-sets"]["openconfig-bgp-policy:bgp-defined-sets"].update(community_sets)
@@ -190,12 +191,13 @@ def process_community_sets(config_before, config_after):
 def process_community_members(community_sets, type, community_list, community_list_after):
     all_processed = True
     updated_community_list = []
+    name_or_num_key = "no" if type == "number" else "name"
 
     for community_index, community in enumerate(community_list.get(type, [])):
         new_community_set = {
-            "openconfig-bgp-policy:community-set-name": community.get("name"),
+            "openconfig-bgp-policy:community-set-name": community.get(name_or_num_key),
             "openconfig-bgp-policy:config": {
-                "openconfig-bgp-policy:community-set-name": community.get("name"),
+                "openconfig-bgp-policy:community-set-name": community.get(name_or_num_key),
                 "openconfig-bgp-policy:match-set-options": "ANY", # IOS only supports ANY
                 "openconfig-bgp-policy:community-member": []
             }
@@ -210,7 +212,7 @@ def process_community_members(community_sets, type, community_list, community_li
                 all_processed = False
                 routing_policy_notes.append(
 f"""
-Community Name: {community.get("name")}
+Community Name: {community.get(name_or_num_key)}
 Community Type: {type}
 Entry: {entry["expr"]}
 This entry contains a deny operation, which is not supported in OpenConfig. Translation, of the entire list, to OC will be skipped.
@@ -226,10 +228,10 @@ This entry contains a deny operation, which is not supported in OpenConfig. Tran
 
         if all_processed:
             community_sets["openconfig-bgp-policy:community-sets"]["openconfig-bgp-policy:community-set"].append(new_community_set)
-            common.get_index_or_default(community_list_after.get(type, []), community_index, {})["name"] = None
+            common.get_index_or_default(community_list_after.get(type, []), community_index, {})[name_or_num_key] = None
     
     for community_list_item in community_list_after.get(type, []):
-        if "name" in community_list_item and community_list_item["name"]:
+        if name_or_num_key in community_list_item and community_list_item[name_or_num_key]:
             updated_community_list.append(community_list_item)
     
     if len(updated_community_list) > 0:
@@ -241,6 +243,7 @@ def process_ext_community_sets(config_before, config_after):
     ext_community_sets = {"openconfig-bgp-policy:ext-community-sets": {"openconfig-bgp-policy:ext-community-set": []}}
     ext_community_list = config_before.get("tailf-ned-cisco-ios:ip", {}).get("extcommunity-list", {})
     ext_community_list_after = config_after.get("tailf-ned-cisco-ios:ip", {}).get("extcommunity-list", {})
+    process_ext_community_members(ext_community_sets, "number", ext_community_list, ext_community_list_after)
     process_ext_community_members(ext_community_sets, "standard", ext_community_list, ext_community_list_after)
     process_ext_community_members(ext_community_sets, "expanded", ext_community_list, ext_community_list_after)
     openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:defined-sets"]["openconfig-bgp-policy:bgp-defined-sets"].update(ext_community_sets)
@@ -248,12 +251,13 @@ def process_ext_community_sets(config_before, config_after):
 def process_ext_community_members(ext_community_sets, type, ext_community_list, ext_community_list_after):
     all_processed = True
     updated_ext_community_list = []
+    name_or_num_key = "no" if type == "number" else "name"
 
     for ext_community_index, ext_community in enumerate(ext_community_list.get(type, {"no-mode-list": []}).get("no-mode-list", [])):
         ext_new_community_set = {
-            "openconfig-bgp-policy:ext-community-set-name": ext_community.get("name"),
+            "openconfig-bgp-policy:ext-community-set-name": ext_community.get(name_or_num_key),
             "openconfig-bgp-policy:config": {
-                "openconfig-bgp-policy:ext-community-set-name": ext_community.get("name"),
+                "openconfig-bgp-policy:ext-community-set-name": ext_community.get(name_or_num_key),
                 "openconfig-bgp-policy:ext-community-member": []
             }
         }
@@ -267,7 +271,7 @@ def process_ext_community_members(ext_community_sets, type, ext_community_list, 
                 all_processed = False
                 routing_policy_notes.append(
 f"""
-Ext Community Name: {ext_community.get("name")}
+Ext Community Name: {ext_community.get(name_or_num_key)}
 Ext Community Type: {type}
 Ext Entry: {entry["expr"]}
 This ext entry contains a deny operation, which is not supported in OpenConfig. Translation, of the entire list, to OC will be skipped.
@@ -283,10 +287,10 @@ This ext entry contains a deny operation, which is not supported in OpenConfig. 
 
         if all_processed:
             ext_community_sets["openconfig-bgp-policy:ext-community-sets"]["openconfig-bgp-policy:ext-community-set"].append(ext_new_community_set)
-            common.get_index_or_default(ext_community_list_after.get(type, {"no-mode-list": []}).get("no-mode-list", []), ext_community_index, {})["name"] = None
+            common.get_index_or_default(ext_community_list_after.get(type, {"no-mode-list": []}).get("no-mode-list", []), ext_community_index, {})[name_or_num_key] = None
     
     for community_list_item in ext_community_list_after.get(type, {"no-mode-list": []}).get("no-mode-list", []):
-        if "name" in community_list_item and community_list_item["name"]:
+        if name_or_num_key in community_list_item and community_list_item[name_or_num_key]:
             updated_ext_community_list.append(community_list_item)
     
     if len(updated_ext_community_list) > 0:
