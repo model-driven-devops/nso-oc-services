@@ -125,6 +125,7 @@ def xe_process_interfaces(self) -> None:
             xe_interface_config(interface, l2_interface)
             xe_interface_hold_time(interface, l2_interface)
             xe_interface_ethernet(self, interface, l2_interface)
+            xe_interface_storm_control(interface, l2_interface)
 
         # Port channels
         elif interface.config.type == 'ianaift:ieee8023adLag':
@@ -172,7 +173,7 @@ def xe_process_interfaces(self) -> None:
                         # Remove switchport
                         if physical_interface.switchport.exists():
                             physical_interface.switchport.delete()
-                        xe_interface_aggregation(self, interface, port_channel, routing_ipv6)
+                        xe_interface_aggregation(interface, port_channel, routing_ipv6)
 
         # Physical and Sub-interfaces
         elif interface.config.type == 'ianaift:ethernetCsmacd':
@@ -182,6 +183,8 @@ def xe_process_interfaces(self) -> None:
             physical_interface = class_attribute[interface_number]
             xe_interface_config(interface, physical_interface)
             xe_interface_hold_time(interface, physical_interface)
+            xe_interface_storm_control(interface, physical_interface)
+
             if interface.ethernet.switched_vlan.config.interface_mode:
                 raise ValueError(
                     f"Interface {interface_type}{interface_number} is configured a type \
@@ -687,3 +690,24 @@ def xe_interface_hold_time(interface_service: ncs.maagic.ListElement, interface_
 def xe_get_port_channel_number(interface: str) -> int:
     pn = re.search(r'\d+', interface)
     return int(pn.group(0))
+
+
+def xe_interface_storm_control(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
+    # broadcast
+    if interface_service.oc_eth__ethernet.storm_control.broadcast.level.config.suppression_type == "NONE":
+        if interface_cdb.storm_control.broadcast.level_bps_pps.level.bps or interface_cdb.storm_control.broadcast.level_bps_pps.level.pps:
+            interface_cdb.storm_control.broadcast.delete()
+    elif interface_service.oc_eth__ethernet.storm_control.broadcast.level.config.suppression_type != "NONE":
+        if interface_service.oc_eth__ethernet.storm_control.broadcast.level.config.suppression_type == "BPS":
+            interface_cdb.storm_control.broadcast.level_bps_pps.level.bps = interface_service.oc_eth__ethernet.storm_control.broadcast.level.config.bps
+        elif interface_service.oc_eth__ethernet.storm_control.broadcast.level.config.suppression_type == "PPS":
+            interface_cdb.storm_control.broadcast.level_bps_pps.level.pps = interface_service.oc_eth__ethernet.storm_control.broadcast.level.config.pps
+      # unicast
+    if interface_service.oc_eth__ethernet.storm_control.unicast.level.config.suppression_type == "NONE":
+        if interface_cdb.storm_control.unicast.level_bps_pps.level.bps or interface_cdb.storm_control.unicast.level_bps_pps.level.pps:
+            interface_cdb.storm_control.unicast.delete()
+    elif interface_service.oc_eth__ethernet.storm_control.unicast.level.config.suppression_type != "NONE":
+        if interface_service.oc_eth__ethernet.storm_control.unicast.level.config.suppression_type == "BPS":
+            interface_cdb.storm_control.unicast.level_bps_pps.level.bps = interface_service.oc_eth__ethernet.storm_control.unicast.level.config.bps
+        elif interface_service.oc_eth__ethernet.storm_control.unicast.level.config.suppression_type == "PPS":
+            interface_cdb.storm_control.unicast.level_bps_pps.level.pps = interface_service.oc_eth__ethernet.storm_control.unicast.level.config.pps

@@ -1,0 +1,132 @@
+module openconfig-if-ethernet-mdd-ext {
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/openconfig-if-ethernet-mdd-ext";
+
+  prefix "oc-if-ethernet-mdd-ext";
+
+  import tailf-ncs { prefix ncs; }
+  import tailf-common { prefix tailf; }
+  import mdd { prefix mdd; }
+  import openconfig-interfaces { prefix oc-if; }
+  import openconfig-if-ethernet { prefix oc-eth; }
+  import openconfig-inet-types { prefix oc-inet; }
+  import openconfig-if-tunnel { prefix oc-tun; }
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Augmentation to openconfig if ethernet model.";
+
+  revision "2023-01-17" {
+    description
+      "Initial revision";
+  }
+
+  grouping storm-control-extensions {
+    description
+      "Top-level grouping for Storm Control";
+
+    container storm-control {
+      description
+        "Enclosing container for storm-control handled by this interface";
+
+      container broadcast {
+        description
+          "Enclosing container for broadcast address storm control";
+
+        container level {
+          description
+            "Enclosing container - set storm suppression level on this interface";
+
+          container config {
+            description
+              "Configuration data for storm-control";
+
+            leaf suppression-type {
+              type enumeration {
+                enum NONE;
+                enum BPS;
+                enum PPS;
+               }
+               default NONE;
+               description
+                 "Select the broadcast suppression type.";
+            }
+            leaf bps {
+              when "../suppression-type = 'BPS'" {
+                description
+                  "Suppression level in bits per second";
+              }
+              type string;
+            }
+            leaf pps {
+              when "../suppression-type = 'PPS'" {
+                description
+                  "Suppression level in packets per second";
+              }
+              type string;
+            }
+          }
+        }
+      }
+      container unicast {
+        description
+          "Enclosing container for unicast address storm control";
+
+        container level {
+          description
+            "Enclosing container - set storm suppression level on this interface";
+
+          container config {
+            description
+              "Configuration data for storm-control";
+
+            leaf suppression-type {
+              type enumeration {
+                enum NONE;
+                enum BPS;
+                enum PPS;
+               }
+               default NONE;
+               description
+                 "Select the unicast suppression type.";
+            }
+            leaf bps {
+              when "../suppression-type = 'BPS'" {
+                description
+                  "Suppression level in bits per second";
+              }
+              type uint64 {
+                range 0..400000000000;
+              }
+            }
+            leaf pps {
+              when "../suppression-type = 'PPS'" {
+                description
+                  "Suppression level in packets per second";
+              }
+              type uint64 {
+                range 0..400000000000;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // augment statements
+
+  augment "/ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-eth:ethernet" {
+      description
+        "storm control extensions to ethernet interfaces";
+
+      uses storm-control-extensions;
+  }
+}
