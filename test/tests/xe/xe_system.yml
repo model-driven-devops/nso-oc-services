@@ -1626,6 +1626,64 @@
         assertions:
           - "'+ip ssh server algorithm mac hmac-sha2-256 hmac-sha2-512:' in changes"
 
+    - name: test track_object
+      tags:
+        - track_object
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet2'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet2'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
+                - openconfig-interfaces:name: 'GigabitEthernet3'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet3'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:object-tracking:
+                  openconfig-system-ext:config:
+                    openconfig-system-ext:timer:
+                      openconfig-system-ext:interface-timer: 567
+                  openconfig-system-ext:object-track:
+                    - openconfig-system-ext:id: 100
+                      openconfig-system-ext:type: INTERFACE
+                      openconfig-system-ext:config:
+                        openconfig-system-ext:id: 100
+                        openconfig-system-ext:track-interface: GigabitEthernet2
+                        openconfig-system-ext:track-parameter: LINE-PROTOCOL
+                    - openconfig-system-ext:id: 101
+                      openconfig-system-ext:type: INTERFACE
+                      openconfig-system-ext:config:
+                        openconfig-system-ext:id: 101
+                        openconfig-system-ext:track-interface: GigabitEthernet3
+                        openconfig-system-ext:track-parameter: IP-ROUTING
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+track timer interface 567:' in changes"
+          - "'+track 100 interface GigabitEthernet2 line-protocol:' in changes"
+          - "'+track 101 interface GigabitEthernet3 ip routing:' in changes"
+
 - hosts: nso
   connection: local
   gather_facts: no

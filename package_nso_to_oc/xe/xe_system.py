@@ -18,6 +18,7 @@ TEST - True or False. True enables sending the OpenConfig to the NSO server afte
 import sys
 from pathlib import Path
 from importlib.util import find_spec
+import copy
 
 TACACS = "tacacs"
 RADIUS = "radius"
@@ -68,6 +69,10 @@ openconfig_system = {
             "openconfig-system-ext:login-security-policy": {
                 "openconfig-system-ext:config": {},
                 "openconfig-system-ext:block-for": {"openconfig-system-ext:config": {}}
+            },
+            "openconfig-system-ext:object-tracking": {
+                "openconfig-system-ext:config": {"openconfig-system-ext:timer": {}},
+                "openconfig-system-ext:object-track": []
             },
             "openconfig-system-ext:boot-network": {
                 "openconfig-system-ext:config": {},
@@ -122,6 +127,12 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
     if config_before.get("tailf-ned-cisco-ios:login", {}).get("block-for", {}).get("within"):
         openconfig_system_services["openconfig-system-ext:login-security-policy"]["openconfig-system-ext:block-for"]["openconfig-system-ext:config"]["openconfig-system-ext:within"] = config_before.get("tailf-ned-cisco-ios:login", {}).get("block-for", {}).get("within")
         del config_leftover["tailf-ned-cisco-ios:login"]["block-for"]["within"]
+    # track-object
+    if config_before.get("tailf-ned-cisco-ios:track", {}).get("timer", {}).get("interface", {}).get("seconds"):
+        openconfig_system_services["openconfig-system-ext:object-tracking"]["openconfig-system-ext:config"]["openconfig-system-ext:timer"]["openconfig-system-ext:interface-timer"] = config_before.get("tailf-ned-cisco-ios:track", {}).get("timer", {}).get("interface", {}).get("seconds")
+        del config_leftover["tailf-ned-cisco-ios:track"]["timer"]
+    if type(config_before.get("tailf-ned-cisco-ios:track", {}).get("track-object", '')) is list:
+        xe_system_object_track(config_before, config_leftover)
     # Archive Logging
     if type(config_before.get("tailf-ned-cisco-ios:archive", {}).get("log", {}).get("config", {}).get("logging", {}).get("enable", '')) is list:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:archive-logging"] = True
@@ -296,6 +307,44 @@ def xe_system_config(config_before: dict, config_leftover: dict) -> None:
         seconds += config_before["tailf-ned-cisco-ios:line"]["console"][0]["exec-timeout"].get("seconds", 0)
         openconfig_system_config["openconfig-system-ext:console-exec-timeout-seconds"] = seconds
         del config_leftover["tailf-ned-cisco-ios:line"]["console"][0]["exec-timeout"]
+
+def xe_system_object_track(config_before: dict, config_leftover: dict) -> None:
+    """
+    Translates NSO XE NED to MDD OpenConfig System Object Tracking
+    """
+    track_object = {
+        "openconfig-system-ext:id": "",
+        "openconfig-system-ext:type": "",
+        "openconfig-system-ext:config": {
+            "openconfig-system-ext:id": "",
+            "openconfig-system-ext:track-interface": "",
+            "openconfig-system-ext:track-parameter": ""
+        }
+    }
+    for track_object_index, track_object_list in enumerate(config_before.get("tailf-ned-cisco-ios:track", {}).get("track-object", '')):
+        tmp_track_object = copy.deepcopy(track_object)
+        for k, v in track_object_list.items():
+            if "object-number" in k:
+                track_id = str(v)
+                tmp_track_object["openconfig-system-ext:id"] = str(v)
+                tmp_track_object["openconfig-system-ext:config"]["openconfig-system-ext:id"] = str(v)
+            elif "interface" in k:
+                tmp_track_object["openconfig-system-ext:type"] = 'INTERFACE'
+                for key in v:
+                    # Check if key is of type string.  This is the interface type and number
+                    if isinstance(key, str) and isinstance(v[key], str):
+                        tmp_track_object["openconfig-system-ext:config"]["openconfig-system-ext:track-interface"] = key + v[key]
+                    if type(v.get("ip", {}).get("routing", '')) is list:
+                        tmp_track_object["openconfig-system-ext:config"]["openconfig-system-ext:track-parameter"] = 'IP-ROUTING'
+                    elif type(v.get("line-protocol", '')) is list:
+                        tmp_track_object["openconfig-system-ext:config"]["openconfig-system-ext:track-parameter"] = 'LINE-PROTOCOL'
+                    else:
+                        track_parameter = 'UNKNOWN'
+            else:
+                print("Invalid track_object data structure")
+        openconfig_system["openconfig-system:system"]["openconfig-system-ext:services"]["openconfig-system-ext:object-tracking"]["openconfig-system-ext:object-track"].append(tmp_track_object)
+    if config_leftover["tailf-ned-cisco-ios:track"]["track-object"]:
+        del config_leftover["tailf-ned-cisco-ios:track"]["track-object"]
 
 
 def xe_system_ssh_server(config_before: dict, config_leftover: dict) -> None:

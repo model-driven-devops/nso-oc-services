@@ -217,6 +217,25 @@ def xe_system_program_service(self, nso_props) -> None:
         device_cdb.ios__ip.http.timeout_policy.idle = nso_props.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.connection
         device_cdb.ios__ip.http.timeout_policy.life = nso_props.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.life
         device_cdb.ios__ip.http.timeout_policy.requests = nso_props.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.requests
+    # object tracking
+    if len(nso_props.service.oc_sys__system.services.object_tracking.object_track) > 0:
+        for object_track in nso_props.service.oc_sys__system.services.object_tracking.object_track:
+            device_cdb.ios__track.track_object.create(str(object_track.id))
+            if object_track.type == 'INTERFACE':
+                interface_type, interface_number = get_interface_type_and_number(
+                    object_track.config.track_interface)
+                int_num = str(object_track.config.track_interface).replace(interface_type, '')
+                setattr(device_cdb.ios__track.track_object[str(object_track.id)].interface, interface_type, int_num)
+                if str(object_track.config.track_parameter) == 'LINE-PROTOCOL':
+                    device_cdb.ios__track.track_object[str(object_track.id)].interface.line_protocol.create()
+                elif str(object_track.config.track_parameter) == 'IP-ROUTING':
+                    device_cdb.ios__track.track_object[str(object_track.id)].interface.ip.routing.create()
+                else:
+                    raise ValueError('Invalid track-parameter')
+            else:
+                raise ValueError('Invalid object_track type')
+    if nso_props.service.oc_sys__system.services.object_tracking.config.timer.interface_timer:
+        device_cdb.ios__track.timer.interface.seconds = nso_props.service.oc_sys__system.services.object_tracking.config.timer.interface_timer
     # nat pools
     if len(nso_props.service.oc_sys__system.services.nat.pools.pool) > 0:
         for service_pool in nso_props.service.oc_sys__system.services.nat.pools.pool:
