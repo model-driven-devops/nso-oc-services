@@ -676,6 +676,63 @@ def xe_interface_hold_time(config_before: dict, config_leftover: dict, v: dict) 
             "carrier-delay"]["msec"]
 
 
+def xe_interface_storm_control(openconfig_interface: dict, nso_before_interface: dict, config_leftover: dict, v: dict) -> None:
+    """Configure physical interface storm control"""
+
+    openconfig_interface.update({"openconfig-if-ethernet:ethernet": {
+        "openconfig-if-ethernet-mdd-ext:storm-control": {
+            "openconfig-if-ethernet-mdd-ext:broadcast": {
+                "openconfig-if-ethernet-mdd-ext:level": {
+                    "openconfig-if-ethernet-mdd-ext:config": {}
+                }
+            },
+            "openconfig-if-ethernet-mdd-ext:unicast": {
+                "openconfig-if-ethernet-mdd-ext:level": {
+                    "openconfig-if-ethernet-mdd-ext:config": {}
+                }
+            }
+        }
+    }})
+    # broadcast
+    if nso_before_interface.get("storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get("bps"):
+        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+            "openconfig-if-ethernet-mdd-ext:broadcast"]["openconfig-if-ethernet-mdd-ext:level"][
+            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:suppression-type"] = 'BPS'
+        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+            "openconfig-if-ethernet-mdd-ext:broadcast"]["openconfig-if-ethernet-mdd-ext:level"][
+            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:bps"] = nso_before_interface.get("storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get("bps")
+        del config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]][
+                "storm-control"]["broadcast"]["level-bps-pps"]["level"]["bps"]
+    elif nso_before_interface.get("storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get("pps"):
+        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+            "openconfig-if-ethernet-mdd-ext:broadcast"]["openconfig-if-ethernet-mdd-ext:level"][
+            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:suppression-type"] = 'PPS'
+        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+            "openconfig-if-ethernet-mdd-ext:broadcast"]["openconfig-if-ethernet-mdd-ext:level"][
+            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:pps"] = nso_before_interface.get("storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get("pps")
+        del config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]][
+                "storm-control"]["broadcast"]["level-bps-pps"]["level"]["pps"]
+    # unicast
+    if nso_before_interface.get("storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get("bps"):
+        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+            "openconfig-if-ethernet-mdd-ext:unicast"]["openconfig-if-ethernet-mdd-ext:level"][
+            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:suppression-type"] = 'BPS'
+        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+            "openconfig-if-ethernet-mdd-ext:unicast"]["openconfig-if-ethernet-mdd-ext:level"][
+            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:bps"] = nso_before_interface.get("storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get("bps")
+        del config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]][
+                "storm-control"]["unicast"]["level-bps-pps"]["level"]["bps"]
+    elif nso_before_interface.get("storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get("pps"):
+        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+            "openconfig-if-ethernet-mdd-ext:unicast"]["openconfig-if-ethernet-mdd-ext:level"][
+            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:suppression-type"] = 'PPS'
+        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+            "openconfig-if-ethernet-mdd-ext:unicast"]["openconfig-if-ethernet-mdd-ext:level"][
+            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:pps"] = nso_before_interface.get("storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get("pps")
+        del config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]][
+                "storm-control"]["unicast"]["level-bps-pps"]["level"]["pps"]
+
+
 def xe_configure_vrrp_interfaces(nso_before_interface: dict, nso_leftover_interface: dict) -> dict:
     """Configure VRRP"""
     updated_vrrp = []
@@ -805,6 +862,8 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
 
         # Configure ethernet settings
         openconfig_interface.update({"openconfig-if-ethernet:ethernet": {"openconfig-if-ethernet:config": {}}})
+        if nso_before_interface.get("storm-control"):
+            xe_interface_storm_control(openconfig_interface, nso_before_interface, config_leftover, interface_directory)
         if nso_before_interface.get("negotiation", {}).get("auto"):
             openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet:config"][
                 "openconfig-if-ethernet:auto-negotiate"] = True
