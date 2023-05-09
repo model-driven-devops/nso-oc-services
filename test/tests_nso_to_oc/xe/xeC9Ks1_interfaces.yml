@@ -27,13 +27,6 @@
                         name: 'default'
                         type: 'DEFAULT_INSTANCE'
                         enabled: true
-                    - name: 'abc'
-                      config:
-                        name: 'abc'
-                        type: 'L3VRF'
-                        enabled: true
-                        enabled-address-families:
-                          - 'IPV4'
                 openconfig-system:system:
                   config:
                     hostname: 'test'
@@ -77,43 +70,12 @@
               interface:
                 GigabitEthernet:
                   - name: '1/0/6'
-                    description: 'access port'
+                    description: 'access port with storm-control'
                     switchport:
                       mode:
                         access: {}
                       access:
                         vlan: 99
-                  - name: '1/0/7'
-                    description: 'access port'
-                    switchport:
-                      mode:
-                        access: {}
-                      access:
-                        vlan: 100
-                  - name: '1/0/8'
-                    description: 'access port'
-                    switchport:
-                      mode:
-                        access: {}
-                      access:
-                        vlan: 101
-
-    - name: Run XE interfaces storm-control tests
-      include_role:
-        name: ned-to-oc-test
-      vars:
-        will_save_rollback: False
-        script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
-        api_test_data:
-          - name: NSO configure Interfaces
-            tags:
-              - storm-control
-            api_method: PATCH
-            api_path: config/tailf-ned-cisco-ios:interface
-            content: |
-              interface:
-                GigabitEthernet:
-                  - name: '1/0/6'
                     storm-control:
                       broadcast:
                         level-bps-pps:
@@ -124,6 +86,12 @@
                           level:
                             pps: 6789
                   - name: '1/0/7'
+                    description: 'access port with storm-control'
+                    switchport:
+                      mode:
+                        access: {}
+                      access:
+                        vlan: 100
                     storm-control:
                       broadcast:
                         level-bps-pps:
@@ -134,6 +102,12 @@
                           level:
                             pps: 32000
                   - name: '1/0/8'
+                    description: 'access port with storm-control'
+                    switchport:
+                      mode:
+                        access: {}
+                      access:
+                        vlan: 101
                     storm-control:
                       broadcast:
                         level-bps-pps:
@@ -143,10 +117,11 @@
                         level-bps-pps:
                           level:
                             pps: 42000000
+
         assertions:
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][21]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['broadcast']['level']['config']['bps'] == '1234'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][21]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps']   == '6789'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][21]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps'] == '6789'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][22]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['broadcast']['level']['config']['bps'] == '31000'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][22]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps']   == '32000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][22]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps'] == '32000'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][23]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['broadcast']['level']['config']['bps'] == '41000000'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][23]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps']   == '42000000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][23]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps'] == '42000000'"
