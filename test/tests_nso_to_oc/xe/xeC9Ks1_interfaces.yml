@@ -6,6 +6,98 @@
   vars:
     device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xeswitch1', True) }}"
   tasks:
+    - name: Run xes1 set up VLANs
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_load_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_vlans.py
+        api_test_data:
+          - name: Set up OC
+            tags:
+              - set_up_oc
+            api_path: mdd:openconfig
+            api_method: PUT
+            content: |
+              mdd:openconfig:
+                openconfig-network-instance:network-instances:
+                  network-instance:
+                    - name: 'default'
+                      config:
+                        name: 'default'
+                        type: 'DEFAULT_INSTANCE'
+                        enabled: true
+                    - name: 'abc'
+                      config:
+                        name: 'abc'
+                        type: 'L3VRF'
+                        enabled: true
+                        enabled-address-families:
+                          - 'IPV4'
+                openconfig-system:system:
+                  config:
+                    hostname: 'test'
+
+          - name: NED init VLANs
+            tags:
+              - init_vlans
+            api_path: config/tailf-ned-cisco-ios:vlan
+            api_method: PATCH
+            content: |
+              vlan:
+                vlan-list:
+                  - id: 1
+                    name: default
+                  - id: 99
+                    name: VLAN99
+                  - id: 100
+                    name: VLAN100
+                  - id: 101
+                    name: VLAN101
+                    shutdown:
+                      - null
+                  - id: 105
+                    name: VLAN105
+                  - id: 106
+                    name: VLAN106
+
+    - name: Run xes1 interfaces tests 1
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
+        api_test_data:
+          - name: NED init interfaces
+            tags:
+              - init_interfaces
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                GigabitEthernet:
+                  - name: '1/0/6'
+                    description: 'access port'
+                    switchport:
+                      mode:
+                        access: {}
+                      access:
+                        vlan: 99
+                  - name: '1/0/7'
+                    description: 'access port'
+                    switchport:
+                      mode:
+                        access: {}
+                      access:
+                        vlan: 100
+                  - name: '1/0/8'
+                    description: 'access port'
+                    switchport:
+                      mode:
+                        access: {}
+                      access:
+                        vlan: 101
+
     - name: Run XE interfaces storm-control tests
       include_role:
         name: ned-to-oc-test
@@ -53,8 +145,8 @@
                             pps: 42000000
         assertions:
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][21]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['broadcast']['level']['config']['bps'] == '1234'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][21]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps'] == '6789'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][21]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps']   == '6789'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][22]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['broadcast']['level']['config']['bps'] == '31000'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][22]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps'] == '32000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][22]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps']   == '32000'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][23]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['broadcast']['level']['config']['bps'] == '41000000'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][23]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps'] == '42000000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][23]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps']   == '42000000'"
