@@ -1,0 +1,137 @@
+---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- name: test interfaces_switch
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test storm control integer
+      tags:
+        -  storm-control1
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/2'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 1/0/2'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/2'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    openconfig-if-ethernet-mdd-ext:storm-control:
+                      openconfig-if-ethernet-mdd-ext:broadcast:
+                        openconfig-if-ethernet-mdd-ext:level:
+                          openconfig-if-ethernet-mdd-ext:config:
+                            openconfig-if-ethernet-mdd-ext:suppression-type: BPS
+                            openconfig-if-ethernet-mdd-ext:bps: 11111
+                      openconfig-if-ethernet-mdd-ext:unicast:
+                        openconfig-if-ethernet-mdd-ext:level:
+                          openconfig-if-ethernet-mdd-ext:config:
+                            openconfig-if-ethernet-mdd-ext:suppression-type: PPS
+                            openconfig-if-ethernet-mdd-ext:pps: 22222
+
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet1/0/2:' in changes"
+          - "'+ storm-control broadcast level bps 11111:' in changes"
+          - "'+ storm-control unicast level pps 22222:' in changes"
+
+    - name: test storm control k
+      tags:
+        -  storm-control2
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/3'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 1/0/3'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/3'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    openconfig-if-ethernet-mdd-ext:storm-control:
+                      openconfig-if-ethernet-mdd-ext:broadcast:
+                        openconfig-if-ethernet-mdd-ext:level:
+                          openconfig-if-ethernet-mdd-ext:config:
+                            openconfig-if-ethernet-mdd-ext:suppression-type: BPS
+                            openconfig-if-ethernet-mdd-ext:bps: 25000
+                      openconfig-if-ethernet-mdd-ext:unicast:
+                        openconfig-if-ethernet-mdd-ext:level:
+                          openconfig-if-ethernet-mdd-ext:config:
+                            openconfig-if-ethernet-mdd-ext:suppression-type: PPS
+                            openconfig-if-ethernet-mdd-ext:pps: 26000
+
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet1/0/3:' in changes"
+          - "'+ storm-control broadcast level bps 25k:' in changes"
+          - "'+ storm-control unicast level pps 26k:' in changes"
+
+    - name: test storm control m
+      tags:
+        -  storm-control3
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/4'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 1/0/4'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/4'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    openconfig-if-ethernet-mdd-ext:storm-control:
+                      openconfig-if-ethernet-mdd-ext:broadcast:
+                        openconfig-if-ethernet-mdd-ext:level:
+                          openconfig-if-ethernet-mdd-ext:config:
+                            openconfig-if-ethernet-mdd-ext:suppression-type: BPS
+                            openconfig-if-ethernet-mdd-ext:bps: 27000000
+                      openconfig-if-ethernet-mdd-ext:unicast:
+                        openconfig-if-ethernet-mdd-ext:level:
+                          openconfig-if-ethernet-mdd-ext:config:
+                            openconfig-if-ethernet-mdd-ext:suppression-type: PPS
+                            openconfig-if-ethernet-mdd-ext:pps: 28000000
+
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet1/0/4:' in changes"
+          - "'+ storm-control broadcast level bps 27m:' in changes"
+          - "'+ storm-control unicast level pps 28m:' in changes"
+
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-load
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
