@@ -699,6 +699,7 @@ def xe_interface_storm_control(openconfig_interface: dict, nso_before_interface:
     """Configure physical interface storm control"""
 
     openconfig_interface.update({"openconfig-if-ethernet:ethernet": {
+        "openconfig-if-ethernet:config": {},
         "openconfig-if-ethernet-mdd-ext:storm-control": {
             "openconfig-if-ethernet-mdd-ext:broadcast": {
                 "openconfig-if-ethernet-mdd-ext:level": {
@@ -902,9 +903,10 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
         xe_interface_hold_time(config_before, config_leftover, interface_directory)
 
         # Configure ethernet settings
-        openconfig_interface.update({"openconfig-if-ethernet:ethernet": {"openconfig-if-ethernet:config": {}}})
         if nso_before_interface.get("storm-control"):
             xe_interface_storm_control(openconfig_interface, nso_before_interface, config_leftover, interface_directory)
+        else:
+            openconfig_interface.update({"openconfig-if-ethernet:ethernet": {"openconfig-if-ethernet:config": {}}})
         if nso_before_interface.get("negotiation", {}).get("auto"):
             openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet:config"][
                 "openconfig-if-ethernet:auto-negotiate"] = True
