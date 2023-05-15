@@ -6,7 +6,7 @@ all:
       - https://colabucket.s3.amazonaws.com/sw/cisco/nso/6.1/ncs-6.1-cisco-ios-6.92.7.signed.bin
       - https://colabucket.s3.amazonaws.com/sw/cisco/nso/6.1/ncs-6.1-cisco-nx-5.23.13.signed.bin
       - https://colabucket.s3.amazonaws.com/sw/cisco/nso/6.1/ncs-6.1-cisco-iosxr-7.49.2.signed.bin
-      - https://colabucket.s3.amazonaws.com/sw/cisco/nso/6.1/ncs-6.0.3-cisco-asa-6.18.8.signed.bin
+      - https://colabucket.s3.amazonaws.com/sw/cisco/nso/6.1/ncs-6.0.3-cisco-asa-6.18.3.signed.bin
     nso_default_ned: cisco-ios-cli-6.92.7
     nso_ned_dict:
       ios: "cisco-ios-cli-6.92.7"
