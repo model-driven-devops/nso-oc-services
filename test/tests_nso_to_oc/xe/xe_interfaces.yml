@@ -52,6 +52,10 @@
                         primary:
                           address: 10.5.0.2
                           mask: 255.255.255.0
+                        secondary:
+                          - address: 10.5.0.3
+                            mask: 255.255.255.0
+                            secondary: [null]
                       mtu: 1476
                       unreachables: false
                       redirects: false
@@ -73,6 +77,16 @@
                             seconds: 3
                         ip:
                           address: 10.5.0.100
+                          secondary-address:
+                            - address: 10.5.0.101
+                              secondary: [null]
+                      - id: 7
+                        preempt:
+                          delay:
+                            minimum: 5
+                        timers:
+                          advertise:
+                            seconds: 6
                   - name: 6
                     ip:
                       address:
@@ -89,6 +103,9 @@
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['preempt'] == True"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['preempt-delay'] == 10"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['advertisement-interval'] == 300"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['virtual-address'][0] == '10.5.0.100'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['vrrp']['vrrp-group'][0]['config']['virtual-address'][1] == '10.5.0.101'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][1]['config']['ip'] == '10.5.0.3'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['mtu'] == 1476"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:tcp-adjust-mss'] == 1400"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][4]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['config']['openconfig-if-ip-mdd-ext:redirects'] == False"
@@ -296,12 +313,29 @@
                         primary:
                           address: 10.3.0.2
                           mask: 255.255.255.0
+                        secondary:
+                          - address: 10.3.0.3
+                            mask: 255.255.255.0
+                            secondary: [null]
                     standby:
                       standby-list:
                         - group-number: 3
                           ip:
                             address: 10.3.0.110
+                            secondary:
+                              - address: 10.3.0.111
+                                secondary: [null]
                           priority: 200
+                          preempt:
+                            delay:
+                              minimum: 3500
+                          timers:
+                            hello-interval:
+                              seconds: 30
+                            hold-time:
+                              seconds: 100
+                        - group-number: 4
+                          priority: 201
                           preempt:
                             delay:
                               minimum: 3500
@@ -312,9 +346,12 @@
                               seconds: 100
         assertions:
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['virtual-address'][0] == '10.3.0.110'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['virtual-address'][1] == '10.3.0.111'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['group-number'] == 3"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['preempt'] == True"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['preempt-delay'] == 3500"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['priority'] == 200"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['timers']['hello-interval'] == 30"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['openconfig-if-ip-mdd-ext:hsrp']['hsrp-group'][0]['config']['timers']['holdtime'] == 100"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][0]['ip'] == '10.3.0.2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][2]['subinterfaces']['subinterface'][0]['openconfig-if-ip:ipv4']['addresses']['address'][1]['ip'] == '10.3.0.3'"

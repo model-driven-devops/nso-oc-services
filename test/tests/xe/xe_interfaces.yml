@@ -54,7 +54,23 @@
                                         openconfig-if-ip:priority: 200  # vrrp 5 priority 200
                                         openconfig-if-ip:virtual-address:  # vrrp 5 ip 10.6.0.100
                                           - '10.6.0.100'
+                                          - '10.6.0.101'
                                         openconfig-if-ip:virtual-router-id: 6  # group number
+                              - openconfig-if-ip:ip: '10.6.0.3'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.3'
+                                  openconfig-if-ip:prefix-length: 24
+                                openconfig-if-ip:vrrp:
+                                  openconfig-if-ip:vrrp-group:
+                                    - openconfig-if-ip:virtual-router-id: 7
+                                      openconfig-if-ip:config:
+                                        openconfig-if-ip:advertisement-interval: 300
+                                        openconfig-if-ip:preempt: true
+                                        openconfig-if-ip:preempt-delay: 10
+                                        openconfig-if-ip:priority: 200
+                                        openconfig-if-ip:virtual-address:
+                                          - '10.6.0.200'
+                                        openconfig-if-ip:virtual-router-id: 7
                           openconfig-if-ip:config:
                             openconfig-if-ip:dhcp-client: false
         api_method: PUT
@@ -65,6 +81,7 @@
           - "'+ description Physical Interface 6 VRRP:' in changes"
           - "'+ ip address 10.6.0.2 255.255.255.0:' in changes"
           - "'+ vrrp 6 ip 10.6.0.100:' in changes"
+          - "'+ vrrp 6 ip 10.6.0.101 secondary:' in changes"
           - "'+ vrrp 6 preempt delay minimum 10:' in changes"
           - "'+ vrrp 6 priority 200:' in changes"
           - "'+ vrrp 6 timers advertise 3:' in changes"
@@ -99,6 +116,10 @@
                                 openconfig-if-ip:config:
                                   openconfig-if-ip:ip: '10.7.5.1'
                                   openconfig-if-ip:prefix-length: '24'
+                              - openconfig-if-ip:ip: '10.7.5.2'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.7.5.2'
+                                  openconfig-if-ip:prefix-length: '24'
                           openconfig-if-ip:config:
                             openconfig-if-ip:dhcp-client: false
                             openconfig-if-ip:enabled: true
@@ -117,6 +138,10 @@
                                 openconfig-if-ip:config:
                                   openconfig-if-ip:ip: '10.7.6.1'
                                   openconfig-if-ip:prefix-length: '24'
+                              - openconfig-if-ip:ip: '10.7.6.2'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.7.6.2'
+                                  openconfig-if-ip:prefix-length: '24'
                           openconfig-if-ip:config:
                             openconfig-if-ip:dhcp-client: false
                             openconfig-if-ip:enabled: true
@@ -133,10 +158,12 @@
           - "'+ description Sub interface 5:' in changes"
           - "'+ encapsulation dot1Q 5:' in changes"
           - "'+ ip address 10.7.5.1 255.255.255.0:' in changes"
+          - "'+ ip address 10.7.5.2 255.255.255.0 secondary:' in changes"
           - "'+interface GigabitEthernet7.6:' in changes"
           - "'+ description Sub interface 6:' in changes"
           - "'+ encapsulation dot1Q 6:' in changes"
           - "'+ ip address 10.7.6.1 255.255.255.0:' in changes"
+          - "'+ ip address 10.7.6.2 255.255.255.0 secondary:' in changes"
 
     - name: test loopback interface
       tags:
@@ -859,11 +886,11 @@
           mdd:openconfig:
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
-                - openconfig-interfaces:name: 'GigabitEthernet6'
+                - openconfig-interfaces:name: 'GigabitEthernet7'
                   openconfig-interfaces:config:
-                    openconfig-interfaces:description: 'Physical Interface 6 HSRP'
+                    openconfig-interfaces:description: 'Physical Interface 7 HSRP'
                     openconfig-interfaces:enabled: true
-                    openconfig-interfaces:name: 'GigabitEthernet6'
+                    openconfig-interfaces:name: 'GigabitEthernet7'
                     openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-interfaces:subinterfaces:
                     openconfig-interfaces:subinterface:
@@ -873,9 +900,9 @@
                         openconfig-if-ip:ipv4:
                           openconfig-if-ip:addresses:
                             openconfig-if-ip:address:
-                              - openconfig-if-ip:ip: '10.6.0.2'
+                              - openconfig-if-ip:ip: '10.7.0.2'
                                 openconfig-if-ip:config:
-                                  openconfig-if-ip:ip: '10.6.0.2'
+                                  openconfig-if-ip:ip: '10.7.0.2'
                                   openconfig-if-ip:prefix-length: 24
                                 openconfig-if-ip-mdd-ext:hsrp:
                                   openconfig-if-ip-mdd-ext:hsrp-group:
@@ -884,9 +911,27 @@
                                         openconfig-if-ip-mdd-ext:preempt: true
                                         openconfig-if-ip-mdd-ext:preempt-delay: 3500  # hsrp 5 preempt delay mi
                                         openconfig-if-ip-mdd-ext:priority: 200  # hsrp 7 priority 200
-                                        openconfig-if-ip-mdd-ext:virtual-address:  # hsrp 3 ip 10.6.0.110
-                                          - '10.6.0.110'
+                                        openconfig-if-ip-mdd-ext:virtual-address:  # hsrp 3 ip 10.7.0.110 and .111
+                                          - '10.7.0.110'
+                                          - '10.7.0.111'
                                         openconfig-if-ip-mdd-ext:group-number: 3  # group number
+                                        openconfig-if-ip-mdd-ext:timers:
+                                          openconfig-if-ip-mdd-ext:hello-interval: 30
+                                          openconfig-if-ip-mdd-ext:holdtime: 100
+                              - openconfig-if-ip:ip: '10.7.0.3'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.7.0.3'
+                                  openconfig-if-ip:prefix-length: 24
+                                openconfig-if-ip-mdd-ext:hsrp:
+                                  openconfig-if-ip-mdd-ext:hsrp-group:
+                                    - openconfig-if-ip-mdd-ext:group-number: 4
+                                      openconfig-if-ip-mdd-ext:config:
+                                        openconfig-if-ip-mdd-ext:preempt: true
+                                        openconfig-if-ip-mdd-ext:preempt-delay: 3500
+                                        openconfig-if-ip-mdd-ext:priority: 200
+                                        openconfig-if-ip-mdd-ext:virtual-address:
+                                          - '10.7.0.120'
+                                        openconfig-if-ip-mdd-ext:group-number: 4
                                         openconfig-if-ip-mdd-ext:timers:
                                           openconfig-if-ip-mdd-ext:hello-interval: 30
                                           openconfig-if-ip-mdd-ext:holdtime: 100
@@ -896,8 +941,9 @@
         rollback: false
         assertion_ignore_errors: false
         assertions:
-          - "' interface GigabitEthernet6:' in changes"
-          - "'+ standby 3 ip 10.6.0.110:' in changes"
+          - "' interface GigabitEthernet7:' in changes"
+          - "'+ standby 3 ip 10.7.0.110:' in changes"
+          - "'+ standby 3 ip 10.7.0.111 secondary:' in changes"
           - "'+ standby 3 preempt delay minimum 3500:' in changes"
           - "'+ standby 3 priority 200:' in changes"
           - "'+ standby 3 timers 30 100:' in changes"

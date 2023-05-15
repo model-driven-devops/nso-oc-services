@@ -405,9 +405,10 @@ def xe_configure_ipv4(self, interface_cdb: ncs.maagic.ListElement, service_ipv4:
             if counter == 0:
                 interface_cdb.ip.address.primary.address = ip_mask[0]
                 interface_cdb.ip.address.primary.mask = ip_mask[1]
-            # elif counter > 0: TODO
-            #     if not interface_cdb.ip.address.secondary.exists(ip_mask):
-            #         interface_cdb.ip.address.secondary.create(ip_mask)
+            elif counter > 0:
+                if not interface_cdb.ip.address.secondary.exists(ip_mask):
+                    s1 = interface_cdb.ip.address.secondary.create(ip_mask[0], ip_mask[1])
+                    s1.secondary.create()
     else:
         if service_ipv4.config.dhcp_client:
             interface_cdb.ip.address.dhcp.create()
@@ -557,15 +558,17 @@ def configure_vrrp(vrrp_group, oc_vrrp_group, is_v2 = True, address_family = Non
             if is_v2:
                 if counter == 0:
                     vrrp_group.ip.address = address
-                # else:  TODO add secondaries
-                #     vrrp_group.ip.secondary_address.create(address)
+                else:
+                    secondary_ip = vrrp_group.ip.secondary_address.create(address)
+                    secondary_ip.secondary.create()
             else:
                 if counter == 0:
                     address_1 = vrrp_group.address.primary_list.create(address)
                     if address_family == 'ipv6':
                         address_1.primary.create()
-                # else:  TODO add secondaries
-                #     vrrp_group.address.secondary_address.create(address)
+                else:
+                    secondary_ip = vrrp_group.address.secondary_address.create(address)
+                    secondary_ip.secondary.create()
     else:
         if vrrp_group.ip.address:
             vrrp_group.ip.address.delete()
@@ -612,8 +615,10 @@ def xe_configure_hsrp_v1(self, interface_cdb: ncs.maagic.ListElement, service_ip
                         for counter, address in enumerate(v.config.virtual_address):
                             if counter == 0:
                                 hsrp_group.ip.address = address
-                            # else:  TODO add secondaries
-                            #     hsrp_group.ip.secondary_address.create(address)
+                            else:
+                                # hsrp_group.ip.secondary.address.create(address)
+                                secondary_ip = hsrp_group.ip.secondary.create(address)
+                                secondary_ip.secondary.create()
                     if v.config.timers:
                         hsrp_group.timers.hello_interval.seconds = v.config.timers.hello_interval
                         hsrp_group.timers.hold_time.seconds = v.config.timers.holdtime
