@@ -326,9 +326,9 @@ def process_ip_address(ip_and_masks, openconfig_interface, nso_before_interface,
         if len(ipv4_address_structure) > 0:
             openconfig_interface[f"{key_prefix}:ipv4"][f"{key_prefix}:addresses"][
                 f"{key_prefix}:address"].append(ipv4_address_structure)
-        
+
         process_vrrp_hsrp(vrrp_leftovers, hsrp_leftovers, index, nso_before_interface, nso_leftover_interface, ipv4_address_structure)
-    
+
     if len(vrrp_leftovers) > 0:
         nso_leftover_interface["vrrp"] = vrrp_leftovers
     elif "vrrp" in nso_leftover_interface and len(vrrp_leftovers) == 0:
@@ -448,7 +448,7 @@ def xe_configure_tunnel_ipv4_interface(nso_before_interface: dict, nso_leftover_
                 "openconfig-if-ip-mdd-ext:nat"] = {
                 "openconfig-if-ip-mdd-ext:nat-choice": "outside"}
             del nso_leftover_interface["ip"]["nat"]["outside"]
-        
+
 
 def configure_software_loopback(config_before: dict, config_leftover: dict, interface_data: dict) -> None:
     """Configure Loopbacks"""
@@ -800,7 +800,7 @@ def xe_configure_vrrp_interfaces(nso_before_interface: dict, nso_leftover_interf
         # Keep object if it contains more properties
         if current_vrrp and len(current_vrrp) > 0:
             vrrp_leftover = current_vrrp
-    
+
     return (service_vrrp, vrrp_leftover)
 
 
@@ -860,7 +860,7 @@ def xe_configure_hsrp_interfaces(nso_before_interface: dict, nso_leftover_interf
 
         service_hsrp["openconfig-if-ip-mdd-ext:hsrp"]["openconfig-if-ip-mdd-ext:hsrp-group"].append(
             service_hsrp_group)
-        
+
         # Keep object if it contains more properties
         if current_standby and len(current_standby) > 0:
             hsrp_leftover = current_standby
