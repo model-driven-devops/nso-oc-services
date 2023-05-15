@@ -64,6 +64,7 @@ port_speeds = {
     "800000": "SPEED_800GB",
 }
 
+
 def interfaces_notes_add(note):
     interfaces_notes.append(note)
 
@@ -249,7 +250,8 @@ def xe_configure_ipv4_interface(nso_before_interface: dict, nso_leftover_interfa
         if len(nso_before_interface["ip"].get("address", {}).get("secondary", [])) > 0:
             ip_and_masks.extend(nso_before_interface["ip"]["address"]["secondary"])
 
-        process_ip_address(ip_and_masks, openconfig_interface, nso_before_interface, nso_leftover_interface, "openconfig-if-ip")
+        process_ip_address(ip_and_masks, openconfig_interface, nso_before_interface, nso_leftover_interface,
+                           "openconfig-if-ip")
 
         # IP MTU
         if nso_before_interface.get("ip", {}).get("mtu"):
@@ -322,13 +324,14 @@ def process_ip_address(ip_and_masks, openconfig_interface, nso_before_interface,
             ip = ip_and_mask.get("address")
             ipv4_address_structure.update({f"{key_prefix}:ip": ip,
                                            f"{key_prefix}:config": {f"{key_prefix}:ip": ip,
-                                                                       f"{key_prefix}:prefix-length": mask}})
+                                                                    f"{key_prefix}:prefix-length": mask}})
         if len(ipv4_address_structure) > 0:
             openconfig_interface[f"{key_prefix}:ipv4"][f"{key_prefix}:addresses"][
                 f"{key_prefix}:address"].append(ipv4_address_structure)
-        
-        process_vrrp_hsrp(vrrp_leftovers, hsrp_leftovers, index, nso_before_interface, nso_leftover_interface, ipv4_address_structure)
-    
+
+        process_vrrp_hsrp(vrrp_leftovers, hsrp_leftovers, index, nso_before_interface, nso_leftover_interface,
+                          ipv4_address_structure)
+
     if len(vrrp_leftovers) > 0:
         nso_leftover_interface["vrrp"] = vrrp_leftovers
     elif "vrrp" in nso_leftover_interface and len(vrrp_leftovers) == 0:
@@ -354,7 +357,8 @@ def process_ip_address(ip_and_masks, openconfig_interface, nso_before_interface,
             f"{key_prefix}:dhcp-client"] = False
 
 
-def process_vrrp_hsrp(vrrp_leftovers, hsrp_leftovers, index, nso_before_interface, nso_leftover_interface, ipv4_address_structure):
+def process_vrrp_hsrp(vrrp_leftovers, hsrp_leftovers, index, nso_before_interface, nso_leftover_interface,
+                      ipv4_address_structure):
     vrrp_before = nso_before_interface.get("vrrp")
     hsrp_before = nso_before_interface.get("standby", {}).get("standby-list")
 
@@ -390,7 +394,8 @@ def xe_configure_tunnel_ipv4_interface(nso_before_interface: dict, nso_leftover_
         if len(nso_before_interface["ip"].get("address", {}).get("secondary", [])) > 0:
             ip_and_masks.extend(nso_before_interface["ip"]["address"]["secondary"])
 
-        process_ip_address(ip_and_masks, openconfig_interface, nso_before_interface, nso_leftover_interface, "openconfig-if-tunnel")
+        process_ip_address(ip_and_masks, openconfig_interface, nso_before_interface, nso_leftover_interface,
+                           "openconfig-if-tunnel")
 
         # IP MTU
         if nso_before_interface.get("ip", {}).get("mtu"):
@@ -448,7 +453,7 @@ def xe_configure_tunnel_ipv4_interface(nso_before_interface: dict, nso_leftover_
                 "openconfig-if-ip-mdd-ext:nat"] = {
                 "openconfig-if-ip-mdd-ext:nat-choice": "outside"}
             del nso_leftover_interface["ip"]["nat"]["outside"]
-        
+
 
 def configure_software_loopback(config_before: dict, config_leftover: dict, interface_data: dict) -> None:
     """Configure Loopbacks"""
@@ -605,7 +610,7 @@ def configure_software_tunnel(config_before: dict, config_leftover: dict, interf
                     "openconfig-if-tunnel:src"] = tunnel_src
             else:
                 openconfig_interface_tunnel["openconfig-if-tunnel:config"][
-                "openconfig-if-tunnel:src"] = if_ip.get(tunnel_src)
+                    "openconfig-if-tunnel:src"] = if_ip.get(tunnel_src)
             del nso_leftover_interface["tunnel"]["source"]
         # destination IP
         if nso_before_interface.get("tunnel", {}).get("destination"):
@@ -649,7 +654,8 @@ def mtu_set(nso_before_interface: dict, nso_leftover_interface: dict, openconfig
             pass
 
 
-def xe_interface_encapsulation(nso_before_interface: dict, nso_leftover_interface: dict, openconfig_interface: dict) -> None:
+def xe_interface_encapsulation(nso_before_interface: dict, nso_leftover_interface: dict,
+                               openconfig_interface: dict) -> None:
     # Encapsulation
     if nso_before_interface.get("encapsulation", {}).get("dot1Q", {}).get("vlan-id"):
         openconfig_interface.update(
@@ -695,10 +701,12 @@ def xe_interface_hold_time(config_before: dict, config_leftover: dict, v: dict) 
             "carrier-delay"]["msec"]
 
 
-def xe_interface_storm_control(openconfig_interface: dict, nso_before_interface: dict, config_leftover: dict, v: dict) -> None:
+def xe_interface_storm_control(openconfig_interface: dict, nso_before_interface: dict, config_leftover: dict,
+                               v: dict) -> None:
     """Configure physical interface storm control"""
 
     openconfig_interface.update({"openconfig-if-ethernet:ethernet": {
+        "openconfig-if-ethernet:config": {},
         "openconfig-if-ethernet-mdd-ext:storm-control": {
             "openconfig-if-ethernet-mdd-ext:broadcast": {
                 "openconfig-if-ethernet-mdd-ext:level": {
@@ -713,43 +721,51 @@ def xe_interface_storm_control(openconfig_interface: dict, nso_before_interface:
         }
     }})
     # broadcast
-    if nso_before_interface.get("storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get("bps"):
+    if nso_before_interface.get("storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get(
+            "bps"):
         openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:broadcast"]["openconfig-if-ethernet-mdd-ext:level"][
             "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:suppression-type"] = 'BPS'
         openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:broadcast"]["openconfig-if-ethernet-mdd-ext:level"][
-            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:bps"] = nso_before_interface.get("storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get("bps")
+            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:bps"] = nso_before_interface.get(
+            "storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get("bps")
         del config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]][
-                "storm-control"]["broadcast"]["level-bps-pps"]["level"]["bps"]
-    elif nso_before_interface.get("storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get("pps"):
+            "storm-control"]["broadcast"]["level-bps-pps"]["level"]["bps"]
+    elif nso_before_interface.get("storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level",
+                                                                                                         {}).get("pps"):
         openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:broadcast"]["openconfig-if-ethernet-mdd-ext:level"][
             "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:suppression-type"] = 'PPS'
         openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:broadcast"]["openconfig-if-ethernet-mdd-ext:level"][
-            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:pps"] = nso_before_interface.get("storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get("pps")
+            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:pps"] = nso_before_interface.get(
+            "storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get("pps")
         del config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]][
-                "storm-control"]["broadcast"]["level-bps-pps"]["level"]["pps"]
+            "storm-control"]["broadcast"]["level-bps-pps"]["level"]["pps"]
     # unicast
-    if nso_before_interface.get("storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get("bps"):
+    if nso_before_interface.get("storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get(
+            "bps"):
         openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:unicast"]["openconfig-if-ethernet-mdd-ext:level"][
             "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:suppression-type"] = 'BPS'
         openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:unicast"]["openconfig-if-ethernet-mdd-ext:level"][
-            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:bps"] = nso_before_interface.get("storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get("bps")
+            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:bps"] = nso_before_interface.get(
+            "storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get("bps")
         del config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]][
-                "storm-control"]["unicast"]["level-bps-pps"]["level"]["bps"]
-    elif nso_before_interface.get("storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get("pps"):
+            "storm-control"]["unicast"]["level-bps-pps"]["level"]["bps"]
+    elif nso_before_interface.get("storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get(
+            "pps"):
         openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:unicast"]["openconfig-if-ethernet-mdd-ext:level"][
             "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:suppression-type"] = 'PPS'
         openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:unicast"]["openconfig-if-ethernet-mdd-ext:level"][
-            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:pps"] = nso_before_interface.get("storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get("pps")
+            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:pps"] = nso_before_interface.get(
+            "storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get("pps")
         del config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]][
-                "storm-control"]["unicast"]["level-bps-pps"]["level"]["pps"]
+            "storm-control"]["unicast"]["level-bps-pps"]["level"]["pps"]
 
 
 def xe_configure_vrrp_interfaces(nso_before_interface: dict, nso_leftover_interface: dict, index: int) -> tuple:
@@ -762,7 +778,7 @@ def xe_configure_vrrp_interfaces(nso_before_interface: dict, nso_leftover_interf
     if group.get("id"):
         # Group
         service_vrrp_group = {"openconfig-if-ip:virtual-router-id": group.get("id"),
-                                "openconfig-if-ip:config": {"openconfig-if-ip:virtual-router-id": group.get("id")}}
+                              "openconfig-if-ip:config": {"openconfig-if-ip:virtual-router-id": group.get("id")}}
         del current_vrrp["id"]
         # Preempt delay
         if group.get("preempt", {}).get("delay", {}).get("minimum"):
@@ -800,7 +816,7 @@ def xe_configure_vrrp_interfaces(nso_before_interface: dict, nso_leftover_interf
         # Keep object if it contains more properties
         if current_vrrp and len(current_vrrp) > 0:
             vrrp_leftover = current_vrrp
-    
+
     return (service_vrrp, vrrp_leftover)
 
 
@@ -814,14 +830,14 @@ def xe_configure_hsrp_interfaces(nso_before_interface: dict, nso_leftover_interf
     if group.get("group-number"):
         # Group
         service_hsrp_group = {"openconfig-if-ip-mdd-ext:group-number": group.get("group-number"),
-                                "openconfig-if-ip-mdd-ext:config": {
-                                    "openconfig-if-ip-mdd-ext:group-number": group.get("group-number")}}
+                              "openconfig-if-ip-mdd-ext:config": {
+                                  "openconfig-if-ip-mdd-ext:group-number": group.get("group-number")}}
         del current_standby["group-number"]
         # Preempt delay
         if group.get("preempt", {}).get("delay", {}).get("minimum"):
             service_hsrp_group["openconfig-if-ip-mdd-ext:config"][
                 "openconfig-if-ip-mdd-ext:preempt-delay"] = group.get("preempt",
-                                                                        {}).get(
+                                                                      {}).get(
                 "delay", {}).get("minimum")
             del current_standby["preempt"]["delay"]
         # Preempt
@@ -860,7 +876,7 @@ def xe_configure_hsrp_interfaces(nso_before_interface: dict, nso_leftover_interf
 
         service_hsrp["openconfig-if-ip-mdd-ext:hsrp"]["openconfig-if-ip-mdd-ext:hsrp-group"].append(
             service_hsrp_group)
-        
+
         # Keep object if it contains more properties
         if current_standby and len(current_standby) > 0:
             hsrp_leftover = current_standby
@@ -902,16 +918,17 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
         xe_interface_hold_time(config_before, config_leftover, interface_directory)
 
         # Configure ethernet settings
-        openconfig_interface.update({"openconfig-if-ethernet:ethernet": {"openconfig-if-ethernet:config": {}}})
         if nso_before_interface.get("storm-control"):
             xe_interface_storm_control(openconfig_interface, nso_before_interface, config_leftover, interface_directory)
+        else:
+            openconfig_interface.update({"openconfig-if-ethernet:ethernet": {"openconfig-if-ethernet:config": {}}})
         if nso_before_interface.get("negotiation", {}).get("auto"):
             openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet:config"][
                 "openconfig-if-ethernet:auto-negotiate"] = True
             del nso_leftover_interface["negotiation"]["auto"]
         elif (nso_before_interface.get("speed") == "auto") and (nso_before_interface.get("duplex") == "auto"):
             openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet:config"][
-            "openconfig-if-ethernet:auto-negotiate"] = True
+                "openconfig-if-ethernet:auto-negotiate"] = True
             del nso_leftover_interface["speed"]
             del nso_leftover_interface["duplex"]
         else:
