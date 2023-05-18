@@ -236,6 +236,310 @@ def xe_system_program_service(self, nso_props) -> None:
                 raise ValueError('Invalid object_track type')
     if nso_props.service.oc_sys__system.services.object_tracking.config.timer.interface_timer:
         device_cdb.ios__track.timer.interface.seconds = nso_props.service.oc_sys__system.services.object_tracking.config.timer.interface_timer
+    # key-chain
+    if len(self.service.oc_sys__system.services.key_chains.key_chain) > 0:
+        for kc in self.service.oc_sys__system.services.key_chains.key_chain:
+            name = kc.name
+            # Type is NA (default)
+            if kc.type == 'NOT_APPLICABLE':
+                device_cdb.ios__key.chain.create(name)
+                for kc_id in kc.keys:
+                    key_id = str(kc_id.id)
+                    key_string = kc_id.config.key_string
+                    crypto_alg = kc_id.config.cryptographic_algorithm
+                    device_cdb.ios__key.chain[name].key.create(key_id)
+                    device_cdb.ios__key.chain[name].key[key_id].key_string.type = '0'
+                    device_cdb.ios__key.chain[name].key[key_id].key_string.secret = key_string
+                    device_cdb.ios__key.chain[name].key[key_id].cryptographic_algorithm = str(crypto_alg)
+                    # accept_lifetime
+                    global_accept_start_time = kc_id.config.accept_lifetime.start_time
+                    global_accept_start_date = kc_id.config.accept_lifetime.start_date
+                    global_accept_start_month = kc_id.config.accept_lifetime.start_month
+                    global_accept_start_year = kc_id.config.accept_lifetime.start_year
+                    global_accept_duration = kc_id.config.accept_lifetime.duration
+                    global_accept_infinite = kc_id.config.accept_lifetime.infinite
+                    local_accept_start_time = kc_id.config.accept_lifetime.local.start_time
+                    local_accept_start_month = kc_id.config.accept_lifetime.local.start_month
+                    local_accept_start_date = kc_id.config.accept_lifetime.local.start_date
+                    local_accept_start_year = kc_id.config.accept_lifetime.local.start_year
+                    local_accept_duration = kc_id.config.accept_lifetime.local.duration
+                    local_accept_infinite = kc_id.config.accept_lifetime.local.infinite
+                    if global_accept_start_time is None and global_accept_start_month is None and global_accept_start_date is None and global_accept_start_year is None:
+                        accept_is_global = False
+                    elif local_accept_start_time is None and local_accept_start_month is None and local_accept_start_date is None and local_accept_start_year is None:
+                        accept_is_global = True
+                    else:
+                        raise ValueError('Invalid key-chain accept global/local settings.')
+                    if accept_is_global == True:
+                        device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.start_time = global_accept_start_time
+                        device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.start_date = global_accept_start_date
+                        device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.start_month = global_accept_start_month
+                        device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.start_year = global_accept_start_year
+                        global_accept_stop_time = kc_id.config.accept_lifetime.stop_time
+                        global_accept_stop_date = kc_id.config.accept_lifetime.stop_date
+                        global_accept_stop_month = kc_id.config.accept_lifetime.stop_month
+                        global_accept_stop_year = kc_id.config.accept_lifetime.stop_year
+                        if global_accept_infinite == True:
+                            if global_accept_duration is not None or global_accept_stop_time is not None or global_accept_stop_date is not None or global_accept_stop_year is not None:
+                                raise ValueError('Invalid key-chain global accept infinite/duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.infinite.create()
+                        elif global_accept_duration is not None:
+                            if global_accept_stop_time is not None or global_accept_stop_date is not None or global_accept_stop_year is not None:
+                                raise ValueError('Invalid key-chain global accept duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.duration = global_accept_duration
+                        elif global_accept_stop_time is not None and global_accept_stop_date is not None and global_accept_stop_year is not None:
+                            device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.stop_time = global_accept_stop_time
+                            device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.stop_date = global_accept_stop_date
+                            device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.stop_month = global_accept_stop_month
+                            device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.stop_year = global_accept_stop_year
+                    elif accept_is_global == False:
+                        device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.local.start_time = local_accept_start_time
+                        device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.local.start_date = local_accept_start_date
+                        device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.local.start_month = local_accept_start_month
+                        device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.local.start_year = local_accept_start_year
+                        local_accept_stop_time = kc_id.config.accept_lifetime.local.stop_time
+                        local_accept_stop_date = kc_id.config.accept_lifetime.local.stop_date
+                        local_accept_stop_month = kc_id.config.accept_lifetime.local.stop_month
+                        local_accept_stop_year = kc_id.config.accept_lifetime.local.stop_year
+                        if local_accept_infinite == True:
+                            if local_accept_duration is not None or local_accept_stop_time is not None or local_accept_stop_date is not None or local_accept_stop_year is not None:
+                                raise ValueError('Invalid key-chain local accept infinite/duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.local.infinite.create()
+                        elif local_accept_duration is not None:
+                            if local_accept_stop_time is not None or local_accept_stop_date is not None or local_accept_stop_year is not None:
+                                raise ValueError('Invalid key-chain local accept duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.local.duration = local_accept_duration
+                        elif local_accept_stop_time is not None and local_accept_stop_date is not None and local_accept_stop_year is not None:
+                            device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.local.stop_time = local_accept_stop_time
+                            device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.local.stop_date = local_accept_stop_date
+                            device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.local.stop_month = local_accept_stop_month
+                            device_cdb.ios__key.chain[name].key[key_id].accept_lifetime.local.stop_year = local_accept_stop_year
+                    # send_lifetime
+                    global_send_start_time = kc_id.config.send_lifetime.start_time
+                    global_send_start_date = kc_id.config.send_lifetime.start_date
+                    global_send_start_month = kc_id.config.send_lifetime.start_month
+                    global_send_start_year = kc_id.config.send_lifetime.start_year
+                    global_send_duration = kc_id.config.send_lifetime.duration
+                    global_send_infinite = kc_id.config.send_lifetime.infinite
+                    local_send_start_time = kc_id.config.send_lifetime.local.start_time
+                    local_send_start_month = kc_id.config.send_lifetime.local.start_month
+                    local_send_start_date = kc_id.config.send_lifetime.local.start_date
+                    local_send_start_year = kc_id.config.send_lifetime.local.start_year
+                    local_send_duration = kc_id.config.send_lifetime.local.duration
+                    local_send_infinite = kc_id.config.send_lifetime.local.infinite
+                    if global_send_start_time is None and global_send_start_month is None and global_send_start_date is None and global_send_start_year is None:
+                        send_is_global = False
+                    elif local_send_start_time is None and local_send_start_month is None and local_send_start_date is None and local_send_start_year is None:
+                        send_is_global = True
+                    else:
+                        raise ValueError('Invalid key-chain send global/local settings.')
+                    if send_is_global == True:
+                        device_cdb.ios__key.chain[name].key[key_id].send_lifetime.start_time = global_send_start_time
+                        device_cdb.ios__key.chain[name].key[key_id].send_lifetime.start_date = global_send_start_date
+                        device_cdb.ios__key.chain[name].key[key_id].send_lifetime.start_month = global_send_start_month
+                        device_cdb.ios__key.chain[name].key[key_id].send_lifetime.start_year = global_send_start_year
+                        global_send_stop_time = kc_id.config.send_lifetime.stop_time
+                        global_send_stop_date = kc_id.config.send_lifetime.stop_date
+                        global_send_stop_month = kc_id.config.send_lifetime.stop_month
+                        global_send_stop_year = kc_id.config.send_lifetime.stop_year
+                        if global_send_infinite == True:
+                            if global_send_duration is not None or global_send_stop_time is not None or global_send_stop_date is not None or global_send_stop_year is not None:
+                                raise ValueError('Invalid key-chain global send infinite/duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.chain[name].key[key_id].send_lifetime.infinite.create()
+                        elif global_send_duration is not None:
+                            if global_send_stop_time is not None or global_send_stop_date is not None or global_send_stop_year is not None:
+                                raise ValueError('Invalid key-chain global send duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.chain[name].key[key_id].send_lifetime.duration = global_send_duration
+                        elif global_send_stop_time is not None and global_send_stop_date is not None and global_send_stop_year is not None:
+                            device_cdb.ios__key.chain[name].key[key_id].send_lifetime.stop_time = global_send_stop_time
+                            device_cdb.ios__key.chain[name].key[key_id].send_lifetime.stop_date = global_send_stop_date
+                            device_cdb.ios__key.chain[name].key[key_id].send_lifetime.stop_month = global_send_stop_month
+                            device_cdb.ios__key.chain[name].key[key_id].send_lifetime.stop_year = global_send_stop_year
+                    elif send_is_global == False:
+                        device_cdb.ios__key.chain[name].key[key_id].send_lifetime.local.start_time = local_send_start_time
+                        device_cdb.ios__key.chain[name].key[key_id].send_lifetime.local.start_date = local_send_start_date
+                        device_cdb.ios__key.chain[name].key[key_id].send_lifetime.local.start_month = local_send_start_month
+                        device_cdb.ios__key.chain[name].key[key_id].send_lifetime.local.start_year = local_send_start_year
+                        local_send_stop_time = kc_id.config.send_lifetime.local.stop_time
+                        local_send_stop_date = kc_id.config.send_lifetime.local.stop_date
+                        local_send_stop_month = kc_id.config.send_lifetime.local.stop_month
+                        local_send_stop_year = kc_id.config.send_lifetime.local.stop_year
+                        if local_send_infinite == True:
+                            if local_send_duration is not None or local_send_stop_time is not None or local_send_stop_date is not None or local_send_stop_year is not None:
+                                raise ValueError('Invalid key-chain local send infinite/duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.chain[name].key[key_id].send_lifetime.local.infinite.create()
+                        elif local_send_duration is not None:
+                            if local_send_stop_time is not None or local_send_stop_date is not None or local_send_stop_year is not None:
+                                raise ValueError('Invalid key-chain local send duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.chain[name].key[key_id].send_lifetime.local.duration = local_send_duration
+                        elif local_send_stop_time is not None and local_send_stop_date is not None and local_send_stop_year is not None:
+                            device_cdb.ios__key.chain[name].key[key_id].send_lifetime.local.stop_time = local_send_stop_time
+                            device_cdb.ios__key.chain[name].key[key_id].send_lifetime.local.stop_date = local_send_stop_date
+                            device_cdb.ios__key.chain[name].key[key_id].send_lifetime.local.stop_month = local_send_stop_month
+                            device_cdb.ios__key.chain[name].key[key_id].send_lifetime.local.stop_year = local_send_stop_year
+            # Type is TCP
+            elif kc.type == 'TCP':
+                device_cdb.ios__key.tcp.chain.create(name)
+                device_cdb.ios__key.tcp.chain[name].tcp.create()
+                for kc_id in kc.keys:
+                    key_id = str(kc_id.id)
+                    key_string = kc_id.config.key_string
+                    crypto_alg = kc_id.config.cryptographic_algorithm_tcp
+                    send_id = kc_id.config.send_id
+                    recv_id = kc_id.config.recv_id
+                    device_cdb.ios__key.tcp.chain[name].key.create(key_id)
+                    device_cdb.ios__key.tcp.chain[name].key[key_id].key_string.type = '0'
+                    device_cdb.ios__key.tcp.chain[name].key[key_id].key_string.secret = key_string
+                    device_cdb.ios__key.tcp.chain[name].key[key_id].cryptographic_algorithm = str(crypto_alg)
+                    device_cdb.ios__key.tcp.chain[name].key[key_id].send_id = send_id
+                    device_cdb.ios__key.tcp.chain[name].key[key_id].recv_id = recv_id
+                    # accept_lifetime
+                    global_accept_start_time = kc_id.config.accept_lifetime.start_time
+                    global_accept_start_date = kc_id.config.accept_lifetime.start_date
+                    global_accept_start_month = kc_id.config.accept_lifetime.start_month
+                    global_accept_start_year = kc_id.config.accept_lifetime.start_year
+                    global_accept_duration = kc_id.config.accept_lifetime.duration
+                    global_accept_infinite = kc_id.config.accept_lifetime.infinite
+                    local_accept_start_time = kc_id.config.accept_lifetime.local.start_time
+                    local_accept_start_month = kc_id.config.accept_lifetime.local.start_month
+                    local_accept_start_date = kc_id.config.accept_lifetime.local.start_date
+                    local_accept_start_year = kc_id.config.accept_lifetime.local.start_year
+                    local_accept_duration = kc_id.config.accept_lifetime.local.duration
+                    local_accept_infinite = kc_id.config.accept_lifetime.local.infinite
+                    if global_accept_start_time is None and global_accept_start_month is None and global_accept_start_date is None and global_accept_start_year is None:
+                        accept_is_global = False
+                    elif local_accept_start_time is None and local_accept_start_month is None and local_accept_start_date is None and local_accept_start_year is None:
+                        accept_is_global = True
+                    else:
+                        raise ValueError('Invalid key-chain accept global/local settings.')
+                    if accept_is_global == True:
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.start_time = global_accept_start_time
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.start_date = global_accept_start_date
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.start_month = global_accept_start_month
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.start_year = global_accept_start_year
+                        global_accept_stop_time = kc_id.config.accept_lifetime.stop_time
+                        global_accept_stop_date = kc_id.config.accept_lifetime.stop_date
+                        global_accept_stop_month = kc_id.config.accept_lifetime.stop_month
+                        global_accept_stop_year = kc_id.config.accept_lifetime.stop_year
+                        if global_accept_infinite == True:
+                            if global_accept_duration is not None or global_accept_stop_time is not None or global_accept_stop_date is not None or global_accept_stop_year is not None:
+                                raise ValueError('Invalid key-chain global accept infinite/duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.infinite.create()
+                        elif global_accept_duration is not None:
+                            if global_accept_stop_time is not None or global_accept_stop_date is not None or global_accept_stop_year is not None:
+                                raise ValueError('Invalid key-chain global accept duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.duration = global_accept_duration
+                        elif global_accept_stop_time is not None and global_accept_stop_date is not None and global_accept_stop_year is not None:
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.stop_time = global_accept_stop_time
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.stop_date = global_accept_stop_date
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.stop_month = global_accept_stop_month
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.stop_year = global_accept_stop_year
+                    elif accept_is_global == False:
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.local.start_time = local_accept_start_time
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.local.start_date = local_accept_start_date
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.local.start_month = local_accept_start_month
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.local.start_year = local_accept_start_year
+                        local_accept_stop_time = kc_id.config.accept_lifetime.local.stop_time
+                        local_accept_stop_date = kc_id.config.accept_lifetime.local.stop_date
+                        local_accept_stop_month = kc_id.config.accept_lifetime.local.stop_month
+                        local_accept_stop_year = kc_id.config.accept_lifetime.local.stop_year
+                        if local_accept_infinite == True:
+                            if local_accept_duration is not None or local_accept_stop_time is not None or local_accept_stop_date is not None or local_accept_stop_year is not None:
+                                raise ValueError('Invalid key-chain local accept infinite/duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.local.infinite.create()
+                        elif local_accept_duration is not None:
+                            if local_accept_stop_time is not None or local_accept_stop_date is not None or local_accept_stop_year is not None:
+                                raise ValueError('Invalid key-chain local accept duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.local.duration = local_accept_duration
+                        elif local_accept_stop_time is not None and local_accept_stop_date is not None and local_accept_stop_year is not None:
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.local.stop_time = local_accept_stop_time
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.local.stop_date = local_accept_stop_date
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.local.stop_month = local_accept_stop_month
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].accept_lifetime.local.stop_year = local_accept_stop_year
+                    # send_lifetime
+                    global_send_start_time = kc_id.config.send_lifetime.start_time
+                    global_send_start_date = kc_id.config.send_lifetime.start_date
+                    global_send_start_month = kc_id.config.send_lifetime.start_month
+                    global_send_start_year = kc_id.config.send_lifetime.start_year
+                    global_send_duration = kc_id.config.send_lifetime.duration
+                    global_send_infinite = kc_id.config.send_lifetime.infinite
+                    local_send_start_time = kc_id.config.send_lifetime.local.start_time
+                    local_send_start_month = kc_id.config.send_lifetime.local.start_month
+                    local_send_start_date = kc_id.config.send_lifetime.local.start_date
+                    local_send_start_year = kc_id.config.send_lifetime.local.start_year
+                    local_send_duration = kc_id.config.send_lifetime.local.duration
+                    local_send_infinite = kc_id.config.send_lifetime.local.infinite
+                    if global_send_start_time is None and global_send_start_month is None and global_send_start_date is None and global_send_start_year is None:
+                        send_is_global = False
+                    elif local_send_start_time is None and local_send_start_month is None and local_send_start_date is None and local_send_start_year is None:
+                        send_is_global = True
+                    else:
+                        raise ValueError('Invalid key-chain send global/local settings.')
+                    if send_is_global == True:
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.start_time = global_send_start_time
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.start_date = global_send_start_date
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.start_month = global_send_start_month
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.start_year = global_send_start_year
+                        global_send_stop_time = kc_id.config.send_lifetime.stop_time
+                        global_send_stop_date = kc_id.config.send_lifetime.stop_date
+                        global_send_stop_month = kc_id.config.send_lifetime.stop_month
+                        global_send_stop_year = kc_id.config.send_lifetime.stop_year
+                        if global_send_infinite == True:
+                            if global_send_duration is not None or global_send_stop_time is not None or global_send_stop_date is not None or global_send_stop_year is not None:
+                                raise ValueError('Invalid key-chain global send infinite/duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.infinite.create()
+                        elif global_send_duration is not None:
+                            if global_send_stop_time is not None or global_send_stop_date is not None or global_send_stop_year is not None:
+                                raise ValueError('Invalid key-chain global send duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.duration = global_send_duration
+                        elif global_send_stop_time is not None and global_send_stop_date is not None and global_send_stop_year is not None:
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.stop_time = global_send_stop_time
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.stop_date = global_send_stop_date
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.stop_month = global_send_stop_month
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.stop_year = global_send_stop_year
+                    elif send_is_global == False:
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.local.start_time = local_send_start_time
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.local.start_date = local_send_start_date
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.local.start_month = local_send_start_month
+                        device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.local.start_year = local_send_start_year
+                        local_send_stop_time = kc_id.config.send_lifetime.local.stop_time
+                        local_send_stop_date = kc_id.config.send_lifetime.local.stop_date
+                        local_send_stop_month = kc_id.config.send_lifetime.local.stop_month
+                        local_send_stop_year = kc_id.config.send_lifetime.local.stop_year
+                        if local_send_infinite == True:
+                            if local_send_duration is not None or local_send_stop_time is not None or local_send_stop_date is not None or local_send_stop_year is not None:
+                                raise ValueError('Invalid key-chain local send infinite/duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.local.infinite.create()
+                        elif local_send_duration is not None:
+                            if local_send_stop_time is not None or local_send_stop_date is not None or local_send_stop_year is not None:
+                                raise ValueError('Invalid key-chain local send duration/stop settings.')
+                            else:
+                                device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.local.duration = local_send_duration
+                        elif local_send_stop_time is not None and local_send_stop_date is not None and local_send_stop_year is not None:
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.local.stop_time = local_send_stop_time
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.local.stop_date = local_send_stop_date
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.local.stop_month = local_send_stop_month
+                            device_cdb.ios__key.tcp.chain[name].key[key_id].send_lifetime.local.stop_year = local_send_stop_year
+            # Type is MACSEC
+            elif kc.type == 'MACSEC':
+                raise ValueError('Unsupported key-chain type: MACSEC.')
+            else:
+                raise ValueError('Invalid key-chain type')
     # nat pools
     if len(nso_props.service.oc_sys__system.services.nat.pools.pool) > 0:
         for service_pool in nso_props.service.oc_sys__system.services.nat.pools.pool:
