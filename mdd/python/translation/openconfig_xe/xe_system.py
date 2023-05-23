@@ -237,8 +237,8 @@ def xe_system_program_service(self, nso_props) -> None:
     if nso_props.service.oc_sys__system.services.object_tracking.config.timer.interface_timer:
         device_cdb.ios__track.timer.interface.seconds = nso_props.service.oc_sys__system.services.object_tracking.config.timer.interface_timer
     # key-chain
-    if len(self.service.oc_sys__system.services.key_chains.key_chain) > 0:
-        for kc in self.service.oc_sys__system.services.key_chains.key_chain:
+    if len(nso_props.service.oc_sys__system.services.key_chains.key_chain) > 0:
+        for kc in nso_props.service.oc_sys__system.services.key_chains.key_chain:
             name = kc.name
             # Type is NA (default)
             if kc.type == 'NOT_APPLICABLE':
