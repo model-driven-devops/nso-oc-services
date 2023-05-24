@@ -1684,6 +1684,250 @@
           - "'+track 100 interface GigabitEthernet2 line-protocol:' in changes"
           - "'+track 101 interface GigabitEthernet3 ip routing:' in changes"
 
+    - name: test key_chain
+      tags:
+        - key_chain
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:key-chains:
+                  openconfig-system-ext:key-chain:
+                    - openconfig-system-ext:name: OSPF_KEYCHAIN1
+                      openconfig-system-ext:type: NOT_APPLICABLE
+                      openconfig-system-ext:keys:
+                        - openconfig-system-ext:id: 10
+                          openconfig-system-ext:config:
+                            openconfig-system-ext:id: 10
+                            openconfig-system-ext:key-string: "cisco"
+                            openconfig-system-ext:cryptographic-algorithm: "hmac-sha-1"
+                            openconfig-system-ext:accept-lifetime:
+                              openconfig-system-ext:start-time: "00:00:00"
+                              openconfig-system-ext:start-month: "Jan"
+                              openconfig-system-ext:start-date: 1
+                              openconfig-system-ext:start-year: 2023
+                              openconfig-system-ext:duration: 364
+                            openconfig-system-ext:send-lifetime:
+                              openconfig-system-ext:start-time: "00:00:01"
+                              openconfig-system-ext:start-month: "Feb"
+                              openconfig-system-ext:start-date: 2
+                              openconfig-system-ext:start-year: 2024
+                              openconfig-system-ext:duration: 365
+                        - openconfig-system-ext:id: 20
+                          openconfig-system-ext:config:
+                            openconfig-system-ext:id: 20
+                            openconfig-system-ext:key-string: "cisco"
+                            openconfig-system-ext:cryptographic-algorithm: "hmac-sha-512"
+                            openconfig-system-ext:accept-lifetime:
+                              openconfig-system-ext:start-time: "01:00:00"
+                              openconfig-system-ext:start-month: "Mar"
+                              openconfig-system-ext:start-date: 2
+                              openconfig-system-ext:start-year: 2023
+                              openconfig-system-ext:stop-time: "02:00:00"
+                              openconfig-system-ext:stop-month: "Jan"
+                              openconfig-system-ext:stop-date: 3
+                              openconfig-system-ext:stop-year: 2024
+                            openconfig-system-ext:send-lifetime:
+                              openconfig-system-ext:start-time: "03:00:01"
+                              openconfig-system-ext:start-month: "Apr"
+                              openconfig-system-ext:start-date: 4
+                              openconfig-system-ext:start-year: 2025
+                              openconfig-system-ext:stop-time: "04:00:00"
+                              openconfig-system-ext:stop-month: "Aug"
+                              openconfig-system-ext:stop-date: 5
+                              openconfig-system-ext:stop-year: 2026
+                        - openconfig-system-ext:id: 30
+                          openconfig-system-ext:config:
+                            openconfig-system-ext:id: 30
+                            openconfig-system-ext:key-string: "cisco"
+                            openconfig-system-ext:cryptographic-algorithm: "hmac-sha-512"
+                            openconfig-system-ext:accept-lifetime:
+                              openconfig-system-ext:local:
+                                openconfig-system-ext:start-time: "03:30:00"
+                                openconfig-system-ext:start-month: "Mar"
+                                openconfig-system-ext:start-date: 20
+                                openconfig-system-ext:start-year: 2024
+                                openconfig-system-ext:stop-time: "02:00:00"
+                                openconfig-system-ext:stop-month: "Jan"
+                                openconfig-system-ext:stop-date: 21
+                                openconfig-system-ext:stop-year: 2025
+                            openconfig-system-ext:send-lifetime:
+                              openconfig-system-ext:local:
+                                openconfig-system-ext:start-time: "04:30:01"
+                                openconfig-system-ext:start-month: "Apr"
+                                openconfig-system-ext:start-date: 15
+                                openconfig-system-ext:start-year: 2027
+                                openconfig-system-ext:infinite: false
+                                openconfig-system-ext:stop-time: "04:00:00"
+                                openconfig-system-ext:stop-month: "Aug"
+                                openconfig-system-ext:stop-date: 16
+                                openconfig-system-ext:stop-year: 2028
+                        - openconfig-system-ext:id: 40
+                          openconfig-system-ext:config:
+                            openconfig-system-ext:id: 40
+                            openconfig-system-ext:key-string: "cisco"
+                            openconfig-system-ext:cryptographic-algorithm: "hmac-sha-256"
+                            openconfig-system-ext:accept-lifetime:
+                              openconfig-system-ext:local:
+                                openconfig-system-ext:start-time: "23:30:00"
+                                openconfig-system-ext:start-month: "Dec"
+                                openconfig-system-ext:start-date: 1
+                                openconfig-system-ext:start-year: 2024
+                                openconfig-system-ext:infinite: true
+                            openconfig-system-ext:send-lifetime:
+                              openconfig-system-ext:local:
+                                openconfig-system-ext:start-time: "23:30:01"
+                                openconfig-system-ext:start-month: "Dec"
+                                openconfig-system-ext:start-date: 31
+                                openconfig-system-ext:start-year: 2028
+                                openconfig-system-ext:infinite: true
+                    - openconfig-system-ext:name: BGP-TCP_KEYCHAIN1
+                      openconfig-system-ext:type: TCP
+                      openconfig-system-ext:keys:
+                        - openconfig-system-ext:id: 10
+                          openconfig-system-ext:config:
+                            openconfig-system-ext:id: 10
+                            openconfig-system-ext:key-string: "cisco"
+                            openconfig-system-ext:cryptographic-algorithm-tcp: "hmac-sha-1"
+                            openconfig-system-ext:send-id: 99
+                            openconfig-system-ext:recv-id: 100
+                            openconfig-system-ext:accept-lifetime:
+                              openconfig-system-ext:start-time: "00:00:00"
+                              openconfig-system-ext:start-month: "Jan"
+                              openconfig-system-ext:start-date: 1
+                              openconfig-system-ext:start-year: 2023
+                              openconfig-system-ext:duration: 364
+                            openconfig-system-ext:send-lifetime:
+                              openconfig-system-ext:start-time: "00:00:01"
+                              openconfig-system-ext:start-month: "Feb"
+                              openconfig-system-ext:start-date: 2
+                              openconfig-system-ext:start-year: 2024
+                              openconfig-system-ext:duration: 365
+                        - openconfig-system-ext:id: 20
+                          openconfig-system-ext:config:
+                            openconfig-system-ext:id: 20
+                            openconfig-system-ext:key-string: "cisco"
+                            openconfig-system-ext:cryptographic-algorithm-tcp: "hmac-sha-256"
+                            openconfig-system-ext:send-id: 150
+                            openconfig-system-ext:recv-id: 151
+                            openconfig-system-ext:accept-lifetime:
+                              openconfig-system-ext:start-time: "01:00:00"
+                              openconfig-system-ext:start-month: "Mar"
+                              openconfig-system-ext:start-date: 2
+                              openconfig-system-ext:start-year: 2023
+                              openconfig-system-ext:stop-time: "02:00:00"
+                              openconfig-system-ext:stop-month: "Jan"
+                              openconfig-system-ext:stop-date: 3
+                              openconfig-system-ext:stop-year: 2024
+                            openconfig-system-ext:send-lifetime:
+                              openconfig-system-ext:start-time: "03:00:01"
+                              openconfig-system-ext:start-month: "Apr"
+                              openconfig-system-ext:start-date: 4
+                              openconfig-system-ext:start-year: 2025
+                              openconfig-system-ext:stop-time: "04:00:00"
+                              openconfig-system-ext:stop-month: "Aug"
+                              openconfig-system-ext:stop-date: 5
+                              openconfig-system-ext:stop-year: 2026
+                        - openconfig-system-ext:id: 30
+                          openconfig-system-ext:config:
+                            openconfig-system-ext:id: 30
+                            openconfig-system-ext:key-string: "cisco"
+                            openconfig-system-ext:cryptographic-algorithm-tcp: "aes-128-cmac"
+                            openconfig-system-ext:send-id: 200
+                            openconfig-system-ext:recv-id: 201
+                            openconfig-system-ext:accept-lifetime:
+                              openconfig-system-ext:local:
+                                openconfig-system-ext:start-time: "03:30:00"
+                                openconfig-system-ext:start-month: "Mar"
+                                openconfig-system-ext:start-date: 20
+                                openconfig-system-ext:start-year: 2024
+                                openconfig-system-ext:stop-time: "02:00:00"
+                                openconfig-system-ext:stop-month: "Jan"
+                                openconfig-system-ext:stop-date: 21
+                                openconfig-system-ext:stop-year: 2025
+                            openconfig-system-ext:send-lifetime:
+                              openconfig-system-ext:local:
+                                openconfig-system-ext:start-time: "04:30:01"
+                                openconfig-system-ext:start-month: "Apr"
+                                openconfig-system-ext:start-date: 15
+                                openconfig-system-ext:start-year: 2027
+                                openconfig-system-ext:infinite: false
+                                openconfig-system-ext:stop-time: "04:00:00"
+                                openconfig-system-ext:stop-month: "Aug"
+                                openconfig-system-ext:stop-date: 16
+                                openconfig-system-ext:stop-year: 2028
+                        - openconfig-system-ext:id: 40
+                          openconfig-system-ext:config:
+                            openconfig-system-ext:id: 40
+                            openconfig-system-ext:key-string: "cisco"
+                            openconfig-system-ext:cryptographic-algorithm-tcp: "aes-128-cmac"
+                            openconfig-system-ext:send-id: 225
+                            openconfig-system-ext:recv-id: 226
+                            openconfig-system-ext:accept-lifetime:
+                              openconfig-system-ext:local:
+                                openconfig-system-ext:start-time: "23:30:00"
+                                openconfig-system-ext:start-month: "Dec"
+                                openconfig-system-ext:start-date: 1
+                                openconfig-system-ext:start-year: 2024
+                                openconfig-system-ext:infinite: true
+                            openconfig-system-ext:send-lifetime:
+                              openconfig-system-ext:local:
+                                openconfig-system-ext:start-time: "23:30:01"
+                                openconfig-system-ext:start-month: "Dec"
+                                openconfig-system-ext:start-date: 31
+                                openconfig-system-ext:start-year: 2028
+                                openconfig-system-ext:infinite: true
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+key chain OSPF_KEYCHAIN1:' in changes"
+          - "'+ key 10:' in changes"
+          - "'+   cryptographic-algorithm hmac-sha-1:' in changes"
+          - "'+   accept-lifetime 00:00:00 Jan 1 2023 duration 364:' in changes"
+          - "'+   send-lifetime 00:00:01 Feb 2 2024 duration 365:' in changes"
+          - "'+ key 20:' in changes"
+          - "'+   cryptographic-algorithm hmac-sha-512:' in changes"
+          - "'+   accept-lifetime 01:00:00 Mar 2 2023 02:00:00 Jan 3 2024:' in changes"
+          - "'+   send-lifetime 03:00:01 Apr 4 2025 04:00:00 Aug 5 2026:' in changes"
+          - "'+ key 30:' in changes"
+          - "'+   cryptographic-algorithm hmac-sha-512:' in changes"
+          - "'+   accept-lifetime local 03:30:00 Mar 20 2024 02:00:00 Jan 21 2025:' in changes"
+          - "'+   send-lifetime local 04:30:01 Apr 15 2027 04:00:00 Aug 16 2028:' in changes"
+          - "'+ key 40:' in changes"
+          - "'+   cryptographic-algorithm hmac-sha-512:' in changes"
+          - "'+   accept-lifetime local 23:30:00 Dec 1 2024 infinite:' in changes"
+          - "'+   send-lifetime local 23:30:01 Dec 31 2028 infinite:' in changes"
+          - "'+key chain BGP-TCP_KEYCHAIN1 tcp:' in changes"
+          - "'+ key 10:' in changes"
+          - "'+   cryptographic-algorithm hmac-sha-1:' in changes"
+          - "'+   accept-lifetime 00:00:00 Jan 1 2023 duration 364:' in changes"
+          - "'+   send-lifetime 00:00:01 Feb 2 2024 duration 365:' in changes"
+          - "'+  send-id 99:' in changes"
+          - "'+  recv-id 100:' in changes"
+          - "'+ key 20:' in changes"
+          - "'+   cryptographic-algorithm hmac-sha-256:' in changes"
+          - "'+   accept-lifetime 01:00:00 Mar 2 2023 02:00:00 Jan 3 2024:' in changes"
+          - "'+   send-lifetime 03:00:01 Apr 4 2025 04:00:00 Aug 5 2026:' in changes"
+          - "'+  send-id 150:' in changes"
+          - "'+  recv-id 151:' in changes"
+          - "'+ key 30:' in changes"
+          - "'+   cryptographic-algorithm aes-128-cmac:' in changes"
+          - "'+   accept-lifetime local 03:30:00 Mar 20 2024 02:00:00 Jan 21 2025:' in changes"
+          - "'+   send-lifetime local 04:30:01 Apr 15 2027 04:00:00 Aug 16 2028:' in changes"
+          - "'+  send-id 200:' in changes"
+          - "'+  recv-id 201:' in changes"
+          - "'+ key 40:' in changes"
+          - "'+   cryptographic-algorithm aes-128-cmac:' in changes"
+          - "'+   accept-lifetime local 23:30:00 Dec 1 2024 infinite:' in changes"
+          - "'+   send-lifetime local 23:30:01 Dec 31 2028 infinite:' in changes"
+          - "'+  send-id 225:' in changes"
+          - "'+  recv-id 226:' in changes"
+
 - hosts: nso
   connection: local
   gather_facts: no
