@@ -1701,27 +1701,37 @@ def set_nat_inside(nat_inside_source, config_leftover):
     nat_inside_list = nat_inside["openconfig-system-ext:local-addresses-access-list"]
     # LIST OF NAT ACLs
     for inside_source in nat_inside_source.get("list", []):
-            overload = False # Initialize variable
-            if "overload" in inside_source:
-                overload = True
-            temp_nat_inside = {"openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}', 
-                              "openconfig-system-ext:config": {
-                                "openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}',
-                                "openconfig-system-ext:global-interface-name": f'{inside_source.get("interface")}',
-                                "openconfig-system-ext:overload": overload
-                                }}
-            nat_inside_list.append(temp_nat_inside)
+        overload = False  # Initialize variable
+        if "overload" in inside_source:
+            overload = True
+        temp_nat_inside = {"openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}',
+                           "openconfig-system-ext:config": {
+                               "openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}',
+                               "openconfig-system-ext:global-interface-name": f'{inside_source.get("interface")}',
+                               "openconfig-system-ext:overload": overload
+                           }}
+        nat_inside_list.append(temp_nat_inside)
     # LIST OF NAT ACLs WITH VRF
     for inside_source in nat_inside_source.get("list-vrf", {}).get("list", []):
-            temp_nat_inside = {"openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}', 
-                              "openconfig-system-ext:config": {
-                                "openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}',
-                                "openconfig-system-ext:global-pool-name": f'{inside_source.get("pool")}',
-                                "openconfig-system-ext:vrf": f'{inside_source.get("vrf")}'
-                            }}
-            nat_inside_list.append(temp_nat_inside)
+        overload = False  # Initialize variable
+        if "overload" in inside_source:
+            overload = True
+        temp_nat_inside = {"openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}',
+                           "openconfig-system-ext:config": {
+                               "openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}',
+                               "openconfig-system-ext:vrf": f'{inside_source.get("vrf")}',
+                               "openconfig-system-ext:overload": overload
+                           }}
+        if inside_source.get("pool"):
+            temp_nat_inside["openconfig-system-ext:config"][
+                "openconfig-system-ext:global-pool-name"] = inside_source.get("pool")
+        if inside_source.get("interface"):
+            temp_nat_inside["openconfig-system-ext:config"][
+                "openconfig-system-ext:global-interface-name"] = inside_source.get("interface")
+        nat_inside_list.append(temp_nat_inside)
     del config_leftover["tailf-ned-cisco-ios:ip"]["nat"]["inside"]
     return nat_inside
+
 
 def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []) -> dict:
     """
