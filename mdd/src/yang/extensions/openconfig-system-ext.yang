@@ -421,110 +421,110 @@ module openconfig-system-ext{
             }
            default NOT_APPLICABLE;
           }
-            list keys {
-              key "id";
+          list keys {
+            key "id";
+            leaf id {
+              type leafref {
+                path "../config/id";
+              }
+            }
+            container config {
               leaf id {
-                type leafref {
-                  path "../config/id";
+                type uint32 {
+                  range "0 .. 2147483647";
+                }
+                description
+                  "Key identifier.";
+              }
+              leaf key-string {
+                type string;
+                description
+                  "Set key string";
+              }
+              leaf cryptographic-algorithm {
+                when "../../../type = 'NOT_APPLICABLE'" {
+                  description
+                    "Set cryptographic authentication algorithm";
+                }
+                type enumeration {
+                  enum hmac-sha-1 {
+                    description "HMAC-SHA-1 authentication algorithm";
+                  }
+                  enum hmac-sha-256 {
+                    description "HMAC-SHA-256 authentication algorithm";
+                  }
+                  enum hmac-sha-384 {
+                    description "HMAC-SHA-384 authentication algorithm";
+                  }
+                  enum hmac-sha-512 {
+                    description "HMAC-SHA-512 authentication algorithm";
+                  }
+                  enum md5 {
+                   description "MD5 authentication algorithm";
+                  }
                 }
               }
-              container config {
-                leaf id {
-                  type uint32 {
-                    range "0 .. 2147483647";
-                  }
+              leaf cryptographic-algorithm-tcp {
+                when "../../../type = 'TCP'" {
                   description
-                    "Key identifier.";
+                    "Set cryptographic authentication algorithm for TCP key-chain";
                 }
-                leaf key-string {
-                  type string;
+                type enumeration {
+                  enum aes-128-cmac {
+                    description "AES-128-CMAC authentication algorithm";
+                  }
+                  enum hmac-sha-1 {
+                    description "HMAC-SHA-1 authentication algorithm";
+                  }
+                  enum hmac-sha-256 {
+                    description "HMAC-SHA-256 authentication algorithm";
+                  }
+                }
+              }
+              leaf send-id {
+                when "../../../type = 'TCP'" {
                   description
-                    "Set key string";
+                    "Configure a send id";
                 }
-                leaf cryptographic-algorithm {
-                  when "../../../type = 'NOT_APPLICABLE'" {
-                    description
-                      "Set cryptographic authentication algorithm";
-                  }
-                  type enumeration {
-                    enum hmac-sha-1 {
-                      description "HMAC-SHA-1 authentication algorithm";
-                    }
-                    enum hmac-sha-256 {
-                      description "HMAC-SHA-256 authentication algorithm";
-                    }
-                    enum hmac-sha-384 {
-                      description "HMAC-SHA-384 authentication algorithm";
-                    }
-                    enum hmac-sha-512 {
-                      description "HMAC-SHA-512 authentication algorithm";
-                    }
-                    enum md5 {
-                     description "MD5 authentication algorithm";
-                    }
-                  }
+                type uint8 {
+                  range "0..255";
                 }
-                leaf cryptographic-algorithm-tcp {
-                  when "../../../type = 'TCP'" {
-                    description
-                      "Set cryptographic authentication algorithm for TCP key-chain";
+              }
+              leaf recv-id {
+                when "../../../type = 'TCP'" {
+                  description
+                    "Configure a receive id";
+                }
+                type uint8 {
+                  range "0..255";
+                }
+              }
+              container accept-lifetime {
+                description "Set accept lifetime of key";
+                choice accept-lifetime-choice {
+                  case global {
+                    uses lifetime-grouping;
                   }
-                  type enumeration {
-                    enum aes-128-cmac {
-                      description "AES-128-CMAC authentication algorithm";
-                    }
-                    enum hmac-sha-1 {
-                      description "HMAC-SHA-1 authentication algorithm";
-                    }
-                    enum hmac-sha-256 {
-                      description "HMAC-SHA-256 authentication algorithm";
-                    }
+                  container local {
+                    description "Specify time in local timezone";
+                    uses lifetime-grouping;
                   }
                 }
-                leaf send-id {
-                  when "../../../type = 'TCP'" {
-                    description
-                      "Configure a send id";
+              }
+              container send-lifetime {
+                description "Set send lifetime of key";
+                choice send-lifetime-choice {
+                  case global {
+                    uses lifetime-grouping;
                   }
-                  type uint8 {
-                    range "0..255";
-                  }
-                }
-                leaf recv-id {
-                  when "../../../type = 'TCP'" {
-                    description
-                      "Configure a receive id";
-                  }
-                  type uint8 {
-                    range "0..255";
-                  }
-                }
-                container accept-lifetime {
-                  description "Set accept lifetime of key";
-                  choice accept-lifetime-choice {
-                    case global {
-                      uses lifetime-grouping;
-                    }
-                    container local {
-                      description "Specify time in local timezone";
-                      uses lifetime-grouping;
-                    }
-                  }
-                }
-                container send-lifetime {
-                  description "Set send lifetime of key";
-                  choice send-lifetime-choice {
-                    case global {
-                      uses lifetime-grouping;
-                    }
-                    container local {
-                      description "Specify time in local timezone";
-                      uses lifetime-grouping;
-                    }
+                  container local {
+                    description "Specify time in local timezone";
+                    uses lifetime-grouping;
                   }
                 }
               }
             }
+          }
         }
       }
       container object-tracking {

@@ -13,6 +13,8 @@ module openconfig-ospfv2-ext{
   import openconfig-network-instance { prefix "oc-netinst"; }
   import openconfig-extensions { prefix oc-ext; }
   import openconfig-routing-policy { prefix oc-rpol; }
+  import openconfig-system { prefix oc-sys; }
+  import openconfig-system-ext { prefix oc-system-ext; }
 
 
   // meta
@@ -24,11 +26,14 @@ module openconfig-ospfv2-ext{
   description
     "Augmentation to openconfig ospfv2 model.";
 
+  revision "2023-05-24" {
+    description
+      "Added OSPF authentication key-chain";
+  }
   revision "2022-11-07" {
     description
       "Added auto-cost reference-bandwidth";
   }
-
   revision "2022-05-28" {
     description
       "Added VRF-Lite capability";
@@ -185,6 +190,10 @@ module openconfig-ospfv2-ext{
               description
                 "This is also called Type 1 and it uses simple clear-text passwords.";
             }
+            enum KEY-CHAIN {
+              description
+                "This uses a key-chain for cryptographic authentication keys.";
+            }
             enum MD5 {
               description
                 "This is also called Type 2 and it uses MD5 cryptographic passwords.";
@@ -196,6 +205,14 @@ module openconfig-ospfv2-ext{
           type string;
           description
             "This is a plain text authentication password.";
+        }
+        leaf key-chain {
+          when "../authentication-type = 'KEY-CHAIN'";
+          description
+            "Use a key-chain for cryptographic authentication keys.";
+          type leafref {
+            path "/ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-system-ext:services/oc-system-ext:key-chains/oc-system-ext:key-chain/oc-system-ext:name";
+          }
         }
       }
       container md5-authentication-keys {
