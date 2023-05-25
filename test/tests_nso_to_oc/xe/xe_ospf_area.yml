@@ -61,9 +61,9 @@
                                       openconfig-if-ip:prefix-length: 24
                               openconfig-if-ip:config:
                                 openconfig-if-ip:dhcp-client: false
-                    - openconfig-interfaces:name: 'GigabitEthernet7'
+                    - openconfig-interfaces:name: 'GigabitEthernet2'
                       openconfig-interfaces:config:
-                        openconfig-interfaces:name: 'GigabitEthernet7'
+                        openconfig-interfaces:name: 'GigabitEthernet2'
                         openconfig-interfaces:enabled: true
                         openconfig-interfaces:type: 'ethernetCsmacd'
                         openconfig-interfaces:description: 'Test gigabitethernet'
@@ -82,9 +82,9 @@
                             openconfig-if-ip:ipv4:
                               openconfig-if-ip:addresses:
                                 openconfig-if-ip:address:
-                                  - openconfig-if-ip:ip: '10.250.20.1'
+                                  - openconfig-if-ip:ip: '10.2.0.2'
                                     openconfig-if-ip:config:
-                                      openconfig-if-ip:ip: '10.250.20.1'
+                                      openconfig-if-ip:ip: '10.2.0.2'
                                       openconfig-if-ip:prefix-length: 24
                               openconfig-if-ip:config:
                                 openconfig-if-ip:dhcp-client: false
@@ -166,6 +166,33 @@
                                   - openconfig-if-ip:ip: '10.6.0.1'
                                     openconfig-if-ip:config:
                                       openconfig-if-ip:ip: '10.6.0.1'
+                                      openconfig-if-ip:prefix-length: 24
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                    - openconfig-interfaces:name: 'GigabitEthernet7'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:name: 'GigabitEthernet7'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:type: 'ethernetCsmacd'
+                        openconfig-interfaces:description: 'Test gigabitethernet'
+                      openconfig-if-ethernet:ethernet:
+                        openconfig-if-ethernet:config:
+                          openconfig-if-ethernet:auto-negotiate: true
+                          openconfig-if-ethernet:enable-flow-control: false
+                      openconfig-interfaces:hold-time:
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:down: '10'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '10.250.20.1'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '10.250.20.1'
                                       openconfig-if-ip:prefix-length: 24
                               openconfig-if-ip:config:
                                 openconfig-if-ip:dhcp-client: false
@@ -344,6 +371,31 @@
                         openconfig-network-instance:name: 'default'
                         openconfig-network-instance:type: 'DEFAULT_INSTANCE'
                         openconfig-network-instance:enabled: true
+                openconfig-system:system:
+                  openconfig-system-ext:services:
+                    openconfig-system-ext:key-chains:
+                      openconfig-system-ext:key-chain:
+                        - openconfig-system-ext:name: OSPF_KEYCHAIN1
+                          openconfig-system-ext:type: NOT_APPLICABLE
+                          openconfig-system-ext:keys:
+                            - openconfig-system-ext:id: 10
+                              openconfig-system-ext:config:
+                                openconfig-system-ext:id: 10
+                                openconfig-system-ext:key-string: "cisco"
+                                openconfig-system-ext:cryptographic-algorithm: "hmac-sha-1"
+                                openconfig-system-ext:accept-lifetime:
+                                  openconfig-system-ext:start-time: "00:00:00"
+                                  openconfig-system-ext:start-month: "Jan"
+                                  openconfig-system-ext:start-date: 1
+                                  openconfig-system-ext:start-year: 2023
+                                  openconfig-system-ext:duration: 364
+                                openconfig-system-ext:send-lifetime:
+                                  openconfig-system-ext:start-time: "00:00:01"
+                                  openconfig-system-ext:start-month: "Feb"
+                                  openconfig-system-ext:start-date: 2
+                                  openconfig-system-ext:start-year: 2024
+                                  openconfig-system-ext:duration: 365
+
           - name: NED init OSPF
             tags:
              - init_ospf
@@ -482,6 +534,34 @@
                     shutdown: []
                     carrier-delay:
                       msec: 10
+                  - name: '2'
+                    description: 'Description for GigabitEthernet2'
+                    negotiation:
+                      auto: True
+                    mop:
+                      xenabled: False
+                      sysid: False
+                    ip:
+                      address:
+                        primary:
+                          address: '10.2.0.2'
+                          mask: '255.255.255.0'
+                      ospf:
+                        network:
+                          - 'non-broadcast'
+                        dead-interval:
+                          seconds: 60
+                        hello-interval: 15
+                        retransmit-interval: 10
+                        bfd: {}
+                        cost: 10
+                        priority: 10
+                        authentication:
+                          key-chain: OSPF_KEYCHAIN1
+                    shutdown: []
+                    carrier-delay:
+                      msec: 10
+
           - name: NED configure global config
             tags:
               - ospf_global_config
@@ -605,6 +685,8 @@
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['mpls']['config']['traffic-engineering-enabled'] == true"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['authentication-type'] == 'MD5'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][3]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['authentication-type'] == 'NULL'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['ospfv2']['areas']['area'][0]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['authentication-type'] == 'KEY-CHAIN'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['ospfv2']['areas']['area'][0]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['key-chain'] == 'OSPF_KEYCHAIN1'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][0]['config']['key-id'] == 1"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][0]['config']['key'] == 'pass1'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][1]['config']['key-id'] == 2"
