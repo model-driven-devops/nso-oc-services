@@ -338,8 +338,10 @@ def xe_system_object_track(config_before: dict, config_leftover: dict) -> None:
                 tmp_track_object["openconfig-system-ext:type"] = 'INTERFACE'
                 for key in v:
                     # Check if key is of type string.  This is the interface type and number
-                    if isinstance(key, str) and isinstance(v[key], str):
+                    if isinstance(key, str) and isinstance(v[key], str):  # GigabitEthernet number is str
                         tmp_track_object["openconfig-system-ext:config"]["openconfig-system-ext:track-interface"] = key + v[key]
+                    elif isinstance(key, str) and isinstance(v[key], int):  # VLAN number is int
+                        tmp_track_object["openconfig-system-ext:config"]["openconfig-system-ext:track-interface"] = key + str(v[key])
                     if type(v.get("ip", {}).get("routing", '')) is list:
                         tmp_track_object["openconfig-system-ext:config"]["openconfig-system-ext:track-parameter"] = 'IP-ROUTING'
                     elif type(v.get("line-protocol", '')) is list:
