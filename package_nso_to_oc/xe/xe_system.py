@@ -338,8 +338,10 @@ def xe_system_object_track(config_before: dict, config_leftover: dict) -> None:
                 tmp_track_object["openconfig-system-ext:type"] = 'INTERFACE'
                 for key in v:
                     # Check if key is of type string.  This is the interface type and number
-                    if isinstance(key, str) and isinstance(v[key], str):
+                    if isinstance(key, str) and isinstance(v[key], str):  # GigabitEthernet number is str
                         tmp_track_object["openconfig-system-ext:config"]["openconfig-system-ext:track-interface"] = key + v[key]
+                    elif isinstance(key, str) and isinstance(v[key], int):  # VLAN number is int
+                        tmp_track_object["openconfig-system-ext:config"]["openconfig-system-ext:track-interface"] = key + str(v[key])
                     if type(v.get("ip", {}).get("routing", '')) is list:
                         tmp_track_object["openconfig-system-ext:config"]["openconfig-system-ext:track-parameter"] = 'IP-ROUTING'
                     elif type(v.get("line-protocol", '')) is list:
@@ -609,11 +611,18 @@ def xe_add_oc_ntp_server(before_ntp_server_list: list, after_ntp_server_list: li
             del after_ntp_server_list[ntp_server_index]["key"]
         # source interface
         if ntp_server.get("source"):
-            for k, v in ntp_server.get("source").items():
-                nso_source_interface = f"{k}{v}"
-                ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-source-address"] = if_ip.get(
-                    nso_source_interface)
-                del after_ntp_server_list[ntp_server_index]["source"]
+            if ntp_server.get("source", {}).get("Port-channel-subinterface"):
+                for k, v in ntp_server.get("source").get("Port-channel-subinterface").items():
+                    nso_source_interface = f"{k}{v}"
+                    ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-source-address"] = if_ip.get(
+                        nso_source_interface)
+                    del after_ntp_server_list[ntp_server_index]["source"]
+            else:
+                for k, v in ntp_server.get("source").items():
+                    nso_source_interface = f"{k}{v}"
+                    ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-source-address"] = if_ip.get(
+                        nso_source_interface)
+                    del after_ntp_server_list[ntp_server_index]["source"]
         # vrf
         if ntp_vrf:
             ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-use-vrf"] = ntp_vrf
