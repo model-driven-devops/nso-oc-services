@@ -611,11 +611,18 @@ def xe_add_oc_ntp_server(before_ntp_server_list: list, after_ntp_server_list: li
             del after_ntp_server_list[ntp_server_index]["key"]
         # source interface
         if ntp_server.get("source"):
-            for k, v in ntp_server.get("source").items():
-                nso_source_interface = f"{k}{v}"
-                ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-source-address"] = if_ip.get(
-                    nso_source_interface)
-                del after_ntp_server_list[ntp_server_index]["source"]
+            if ntp_server.get("source", {}).get("Port-channel-subinterface"):
+                for k, v in ntp_server.get("source").get("Port-channel-subinterface").items():
+                    nso_source_interface = f"{k}{v}"
+                    ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-source-address"] = if_ip.get(
+                        nso_source_interface)
+                    del after_ntp_server_list[ntp_server_index]["source"]
+            else:
+                for k, v in ntp_server.get("source").items():
+                    nso_source_interface = f"{k}{v}"
+                    ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-source-address"] = if_ip.get(
+                        nso_source_interface)
+                    del after_ntp_server_list[ntp_server_index]["source"]
         # vrf
         if ntp_vrf:
             ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-use-vrf"] = ntp_vrf
