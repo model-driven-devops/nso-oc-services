@@ -191,6 +191,7 @@ def configure_network_instances(config_before, config_leftover, interfaces_by_vr
         xe_ospfv2.configure_xe_ospf_redistribution(net_inst, config_before, config_leftover, router_ospf_by_vrf)
         xe_bgp.configure_xe_bgp(net_inst, config_before, config_leftover, network_instances_notes)
         xe_bgp.configure_xe_bgp_redistribution(net_inst, config_before, config_leftover)
+        xe_mpls.configure_xe_mpls(net_inst, config_before, config_before, network_instances_notes)
 
 
 def configure_network_interfaces(net_inst, interfaces_by_vrf):
@@ -804,12 +805,14 @@ if __name__ == "__main__":
         from package_nso_to_oc.xe import xe_ospfv2
         from package_nso_to_oc.xe import xe_static_route
         from package_nso_to_oc.xe import xe_bgp
+        from package_nso_to_oc.xe import xe_mpls
         from package_nso_to_oc import common
     else:
         import common_xe
         import xe_ospfv2
         import xe_static_route
         import xe_bgp
+        import xe_mpls
         import common
 
     (config_before_dict, config_leftover_dict, interface_ip_dict) = common_xe.init_xe_configs()
@@ -827,10 +830,12 @@ else:
         from package_nso_to_oc.xe import xe_ospfv2
         from package_nso_to_oc.xe import xe_static_route
         from package_nso_to_oc.xe import xe_bgp
+        from package_nso_to_oc.xe import xe_mpls
         from package_nso_to_oc import common
     else:
         from xe import common_xe
         from xe import xe_ospfv2
         from xe import xe_static_route
         from xe import xe_bgp
+        from xe import xe_mpls
         import common
