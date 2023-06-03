@@ -14,7 +14,7 @@ mpls_notes = []
 
 
 def configure_xe_mpls(net_inst, config_before, config_leftover, network_instances_notes):
-    mpls_before = config_before.get("tailf-ned-cisco-ios:mpls")
+    mpls_before = config_before.get("tailf-ned-cisco-ios:mpls", {})
     mpls_leftover = config_leftover.get("tailf-ned-cisco-ios:mpls", {})
     process_propagate_ttl(net_inst, mpls_before, mpls_leftover)
     process_mpls_intf(net_inst, config_before, config_leftover, mpls_before, mpls_leftover)
