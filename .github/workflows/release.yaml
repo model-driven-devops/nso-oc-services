@@ -51,7 +51,7 @@ jobs:
 
       - name: Push changes
         run: |
-          git push --force origin HEAD:main
+          git push origin HEAD:main
         env:
           GITHUB_TOKEN: ${{ secrets.ACTIONS_FORCE }}
         continue-on-error: true
