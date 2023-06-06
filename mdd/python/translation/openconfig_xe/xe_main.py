@@ -8,7 +8,7 @@ from translation.openconfig_xe.xe_network_instances import xe_network_instances_
 from translation.openconfig_xe.xe_routing_policy import xe_routing_policy_program_service
 from translation.openconfig_xe.xe_system import xe_system_program_service
 from translation.openconfig_xe.xe_stp import xe_stp_program_service
-# from translation.openconfig_xe.xe_qos import xe_qos_program_service
+from translation.openconfig_xe.xe_qos import xe_qos_program_service
 
 def check_xe_features(oc_self, nso_props) -> None:
     """
@@ -40,6 +40,8 @@ def check_xe_features(oc_self, nso_props) -> None:
     # OpenConfig System
     xe_system_program_service(oc_self, nso_props)
 
-    # # OpenConfig QoS
-    if oc_self.service.oc_qos__qos:
-        xe_qos_program_service(oc_self)
+    # OpenConfig QoS
+    # oc_self.log.info("0*** LOGGING QoS MAIN\n\n")
+    if nso_props.service.oc_qos__qos:
+        # oc_self.log.info("1*** LOGGING QoS MAIN\n\n")
+        xe_qos_program_service(oc_self, nso_props)

@@ -193,6 +193,12 @@ def xe_ospf_program_service(self, nso_props, service_protocol, network_instance_
                         if service_interface.oc_ospfv2_ext__authentication.config.simple_password:
                             interface_cdb.ip.ospf.authentication_key.secret = service_interface.oc_ospfv2_ext__authentication.config.simple_password
                             interface_cdb.ip.ospf.authentication_key.type = 0
+                    elif service_interface.oc_ospfv2_ext__authentication.config.authentication_type == "KEY-CHAIN":
+                        if interface_cdb.ip.ospf.authentication.exists():
+                            del interface_cdb.ip.ospf.authentication
+                        interface_cdb.ip.ospf.authentication.create()
+                        if service_interface.oc_ospfv2_ext__authentication.config.key_chain:
+                            interface_cdb.ip.ospf.authentication.key_chain = service_interface.oc_ospfv2_ext__authentication.config.key_chain
             # mpls_traffic_eng_area
             if service_area.mpls.config.traffic_engineering_enabled:
                 device_ospf_cbd.mpls.traffic_eng.area.create(service_area.identifier)

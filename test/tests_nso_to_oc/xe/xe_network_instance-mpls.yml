@@ -1,0 +1,157 @@
+---
+- hosts: localhost
+  gather_facts: no
+  environment:
+    NSO_DEVICE: xe1
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
+  tasks:
+    - name: Run XE network instance MPLS interface tests
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        reset_oc: True
+        script_path: ../../../package_nso_to_oc/xe/xe_network_instances.py
+        api_test_data:
+          - name: Set up OC service config
+            tags:
+              - oc_set_up
+            api_path: mdd:openconfig
+            api_method: PUT
+            content: |
+              mdd:openconfig:
+                openconfig-interfaces:interfaces:
+                  openconfig-interfaces:interface:
+                    - openconfig-interfaces:name: 'Loopback0'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:description: 'Loopback 0'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:name: 'Loopback0'
+                        openconfig-interfaces:type: 'softwareLoopback'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '10.255.0.1'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '10.255.0.1'
+                                      openconfig-if-ip:prefix-length: '32'
+                    - openconfig-interfaces:name: 'GigabitEthernet5'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:description: 'Physical Interface 5'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:mtu: 1500
+                        openconfig-interfaces:name: 'GigabitEthernet5'
+                        openconfig-interfaces:type: 'ethernetCsmacd'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '10.5.0.1'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '10.5.0.1'
+                                      openconfig-if-ip:prefix-length: 24
+                    - openconfig-interfaces:name: 'GigabitEthernet6'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:description: 'Physical Interface 6'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:mtu: 1500
+                        openconfig-interfaces:name: 'GigabitEthernet6'
+                        openconfig-interfaces:type: 'ethernetCsmacd'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '10.6.0.1'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '10.6.0.1'
+                                      openconfig-if-ip:prefix-length: 24
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+          - name: NED init interface for MPLS
+            tags:
+              - init_intf_igmp
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                Loopback:
+                  - name: '0'
+                    description: 'Loopback 0'
+                    ip:
+                      address:
+                        primary:
+                          address: '10.255.0.1'
+                          mask: '255.255.255.255'
+                GigabitEthernet:
+                  - name: '5'
+                    description: 'Physical interface 5'
+                    negotiation:
+                      auto: true
+                    mop:
+                      xenabled: false
+                      sysid: false
+                    mpls:
+                      ip: [null]
+                    mtu: 1500
+                    ip:
+                      address:
+                        primary:
+                          address: '10.5.0.1'
+                          mask: '255.255.255.0'
+                  - name: '6'
+                    description: 'Physical interface 6'
+                    negotiation:
+                      auto: true
+                    mop:
+                      xenabled: false
+                      sysid: false
+                    mpls:
+                      ip: [null]
+                    mtu: 1500
+                    ip:
+                      address:
+                        primary:
+                          address: '10.6.0.1'
+                          mask: '255.255.255.0'
+          - name: NED init MPLS
+            tags:
+              - init_mmpls
+            api_path: config/tailf-ned-cisco-ios:mpls
+            api_method: PATCH
+            content: |
+              mpls:
+                ip: true
+                mpls-ip-conf:
+                  ip:
+                    propagate-ttl-conf:
+                      propagate-ttl: true
+                ldp:
+                  discovery:
+                    hello:
+                      holdtime: 30
+                      interval: 10
+                  graceful-restart-enable:
+                    graceful-restart: [null]
+                  router-id:
+                    interface: Loopback0
+                    force: [null]
+        assertions:
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['mpls']['global']['config']['ttl-propagation'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['mpls']['global']['interface-attributes']['interface'][0]['config']['mpls-enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['mpls']['signaling-protocols']['ldp']['global']['config']['lsr-id'] == '10.255.0.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['mpls']['signaling-protocols']['ldp']['global']['graceful-restart']['config']['enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['mpls']['signaling-protocols']['ldp']['interface-attributes']['config']['hello-holdtime'] == 30"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['mpls']['signaling-protocols']['ldp']['interface-attributes']['config']['hello-interval'] == 10"

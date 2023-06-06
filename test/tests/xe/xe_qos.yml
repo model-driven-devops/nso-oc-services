@@ -16,57 +16,109 @@
     device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
     ansible_network_os: 'cisco.ios.ios'
   tasks:
-#     - name: test qos
-#       tags:
-#         -  qos
-#       import_role:
-#         name: nso-openconfig-test
-#       vars:
-#         content: |
-#           mdd:openconfig:
-#             openconfig-interfaces:interfaces:
-#               openconfig-interfaces:interface:
-#                 - openconfig-interfaces:name: 'GigabitEthernet6'
-#                   openconfig-interfaces:config:
-#                     openconfig-interfaces:description: 'Physical Interface 6'
-#                     openconfig-interfaces:enabled: true
-#                     openconfig-interfaces:mtu: 1500
-#                     openconfig-interfaces:name: 'GigabitEthernet6'
-#                     openconfig-interfaces:type: 'ethernetCsmacd'
-#                   openconfig-interfaces:subinterfaces:
-#                     openconfig-interfaces:subinterface:
-#                       - openconfig-interfaces:index: 0
-#                         openconfig-interfaces:config:
-#                           openconfig-interfaces:index: 0
-#                         openconfig-if-ip:ipv4:
-#                           openconfig-if-ip:addresses:
-#                             openconfig-if-ip:address:
-#                               - openconfig-if-ip:ip: '10.6.0.1'
-#                                 openconfig-if-ip:config:
-#                                   openconfig-if-ip:ip: '10.6.0.1'
-#                                   openconfig-if-ip:prefix-length: 24
-#                           openconfig-if-ip:config:
-#                             openconfig-if-ip:dhcp-client: false
+    # - name: test qos
+    #   tags:
+    #     -  qos
+    #   import_role:
+    #     name: nso-openconfig-test
+    #   vars:
+    #     content: |
+    #       mdd:openconfig:
+            # openconfig-interfaces:interfaces:
+            #   openconfig-interfaces:interface:
+            #     - openconfig-interfaces:name: 'GigabitEthernet6'
+            #       openconfig-interfaces:config:
+            #         openconfig-interfaces:description: 'Physical Interface 6'
+            #         openconfig-interfaces:enabled: true
+            #         openconfig-interfaces:mtu: 1500
+            #         openconfig-interfaces:name: 'GigabitEthernet6'
+            #         openconfig-interfaces:type: 'ethernetCsmacd'
+            #       openconfig-interfaces:subinterfaces:
+            #         openconfig-interfaces:subinterface:
+            #           - openconfig-interfaces:index: 0
+            #             openconfig-interfaces:config:
+            #               openconfig-interfaces:index: 0
+            #             openconfig-if-ip:ipv4:
+            #               openconfig-if-ip:addresses:
+            #                 openconfig-if-ip:address:
+            #                   - openconfig-if-ip:ip: '10.6.0.1'
+            #                     openconfig-if-ip:config:
+            #                       openconfig-if-ip:ip: '10.6.0.1'
+            #                       openconfig-if-ip:prefix-length: 24
+            #               openconfig-if-ip:config:
+            #                 openconfig-if-ip:dhcp-client: false
+        #     openconfig-qos:qos:
+        #       openconfig-qos:forwarding-groups:
+        #         openconfig-qos:forwarding-group:
+        #           - openconfig-qos:name: 'pm-ip-dscp-11'
+        #             openconfig-qos:config:
+        #               openconfig-qos:name: 'pm-ip-dscp-11'
+        #           - openconfig-qos:name: 'pm-ip-dscp-13'
+        #             openconfig-qos:config:
+        #               openconfig-qos:name: 'pm-ip-dscp-13'
+        #           - openconfig-qos:name: 'pm-dscp-15'
+        #             openconfig-qos:config:
+        #               openconfig-qos:name: 'pm-dscp-15'
+        #           - openconfig-qos:name: 'pm-dscp-17'
+        #             openconfig-qos:config:
+        #               openconfig-qos:name: 'pm-dscp-17'
+        #           - openconfig-qos:name: 'pm-ip-dscp-45-47'
+        #             openconfig-qos:config:
+        #               openconfig-qos:name: 'pm-ip-dscp-45-47'
+        #           - openconfig-qos:name: 'pm-dscp-49-51'
+        #             openconfig-qos:config:
+        #               openconfig-qos:name: 'pm-dscp-49-51'                  
+        # api_method: PUT
+        # rollback: false
+        # assertion_ignore_errors: false
+        # assertions: false
 
-#         api_method: PUT
-#         rollback: false
-#         assertion_ignore_errors: false
-#         assertions: false
-
-    - name: test qos_class_maps_match_all
+    - name: test qos_policy_maps
       tags:
-        - qos_class_maps_match_all
+        - qos_policy_maps
       import_role:
         name: nso-openconfig-test
       vars:
         content: |
           mdd:openconfig:
             openconfig-qos:qos:
+              openconfig-qos:forwarding-groups:
+                openconfig-qos:forwarding-group:
+                  - openconfig-qos:name: 'pm-ip-dscp-11'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'pm-ip-dscp-11'
+                  - openconfig-qos:name: 'pm-ip-dscp-13'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'pm-ip-dscp-13'
+                  - openconfig-qos:name: 'pm-dscp-15'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'pm-dscp-15'
+                  - openconfig-qos:name: 'pm-dscp-17'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'pm-dscp-17'
+                  - openconfig-qos:name: 'pm-dscp-19'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'pm-dscp-19'
+                  - openconfig-qos:name: 'pm-dscp-21'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'pm-dscp-21'
+                  - openconfig-qos:name: 'pm-dscp-23'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'pm-dscp-23'
+                  - openconfig-qos:name: 'pm-dscp-25'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'pm-dscp-25'
+                  # - openconfig-qos:name: 'pm-ip-dscp-45-47'
+                  #   openconfig-qos:config:
+                  #     openconfig-qos:name: 'pm-ip-dscp-45-47'
+                  # - openconfig-qos:name: 'pm-dscp-49-51'
+                  #   openconfig-qos:config:
+                  #     openconfig-qos:name: 'pm-dscp-49-51'                  
               openconfig-qos:classifiers:
                 openconfig-qos:classifier:
-                  - openconfig-qos:name: 'class-map-ip-dscp-11'
+                  - openconfig-qos:name: 'cm-ip-dscp-11'
                     openconfig-qos:config:
-                      openconfig-qos:name: 'class-map-ip-dscp-11'
+                      openconfig-qos:name: 'cm-ip-dscp-11'
                       openconfig-qos:type: 'IPV4'
                     openconfig-qos:terms:
                       openconfig-qos:term:
@@ -78,124 +130,378 @@
                               openconfig-qos:config:
                                 openconfig-qos:dscp: '11'
                                 openconfig-qos:protocol: 4  # IPv4
-                  - openconfig-qos:name: 'class-map-ip-dscp-41'
+                          openconfig-qos:actions:
+                            openconfig-qos:config:
+                              openconfig-qos:target-group: 'pm-ip-dscp-11'
+                  - openconfig-qos:name: 'cm-ip-dscp-13'
                     openconfig-qos:config:
-                      openconfig-qos:name: 'class-map-ip-dscp-41'
+                      openconfig-qos:name: 'cm-ip-dscp-13'
                       openconfig-qos:type: 'IPV4'
                     openconfig-qos:terms:
                       openconfig-qos:term:
-                        - openconfig-qos:id: 'term-ip-dscp-41'
+                        - openconfig-qos:id: 'term-ip-dscp-13'
                           openconfig-qos:config:
-                            openconfig-qos:id: 'term-ip-dscp-41'
-                          openconfig-qos:conditions:
-                            openconfig-qos:ipv4:
-                              openconfig-qos:config:
-                                openconfig-qos:dscp: '41'
-                                openconfig-qos:protocol: 4  # IPv4
-                  - openconfig-qos:name: 'class-map-dscp-13'
-                    openconfig-qos:config:
-                      openconfig-qos:name: 'class-map-dscp-13'
-                      openconfig-qos:type: 'IPV4'
-                    openconfig-qos:terms:
-                      openconfig-qos:term:
-                        - openconfig-qos:id: 'term-dscp-13'
-                          openconfig-qos:config:
-                            openconfig-qos:id: 'term-dscp-13'
+                            openconfig-qos:id: 'term-ip-dscp-13'
                           openconfig-qos:conditions:
                             openconfig-qos:ipv4:
                               openconfig-qos:config:
                                 openconfig-qos:dscp: '13'
-                  - openconfig-qos:name: 'class-map-dscp-43'
-                    openconfig-qos:config:
-                      openconfig-qos:name: 'class-map-dscp-43'
-                      openconfig-qos:type: 'IPV4'
-                    openconfig-qos:terms:
-                      openconfig-qos:term:
-                        - openconfig-qos:id: 'term-dscp-43'
-                          openconfig-qos:config:
-                            openconfig-qos:id: 'term-dscp-43'
-                          openconfig-qos:conditions:
-                            openconfig-qos:ipv4:
-                              openconfig-qos:config:
-                                openconfig-qos:dscp: '43'
-                  - openconfig-qos:name: 'class-map-ip-dscp-cs1-cs2'
-                    openconfig-qos:config:
-                      openconfig-qos:name: 'class-map-ip-dscp-cs1-cs2'
-                      openconfig-qos:type: 'IPV4'
-                    openconfig-qos:terms:
-                      openconfig-qos:term:
-                        - openconfig-qos:id: 'term-ip-dscp-cs1-cs2'
-                          openconfig-qos:config:
-                            openconfig-qos:id: 'term-ip-dscp-cs1-cs2'
-                          openconfig-qos:conditions:
-                            openconfig-qos:ipv4:
-                              openconfig-qos:config:
-                                openconfig-qos:dscp-set: '11'
-                                openconfig-qos:dscp-set: '12'
                                 openconfig-qos:protocol: 4  # IPv4
-                  - openconfig-qos:name: 'class-map-ip-dscp-45-47'
+                          openconfig-qos:actions:
+                            openconfig-qos:config:
+                              openconfig-qos:target-group: 'pm-ip-dscp-13'
+                  - openconfig-qos:name: 'cm-dscp-15'
                     openconfig-qos:config:
-                      openconfig-qos:name: 'class-map-ip-dscp-45-47'
+                      openconfig-qos:name: 'cm-dscp-15'
                       openconfig-qos:type: 'IPV4'
                     openconfig-qos:terms:
                       openconfig-qos:term:
-                        - openconfig-qos:id: 'term-ip-dscp-45-47'
+                        - openconfig-qos:id: 'term-dscp-15'
                           openconfig-qos:config:
-                            openconfig-qos:id: 'term-ip-dscp-45-47'
+                            openconfig-qos:id: 'term-dscp-15'
                           openconfig-qos:conditions:
                             openconfig-qos:ipv4:
                               openconfig-qos:config:
-                                openconfig-qos:dscp-set: '45'
-                                openconfig-qos:dscp-set: '47'
-                                openconfig-qos:protocol: 4  # IPv4
-                  - openconfig-qos:name: 'class-map-dscp-cs3-cs4'
+                                openconfig-qos:dscp: '15'
+                          openconfig-qos:actions:
+                            openconfig-qos:config:
+                              openconfig-qos:target-group: 'pm-dscp-15'
+                  - openconfig-qos:name: 'cm-dscp-17'
                     openconfig-qos:config:
-                      openconfig-qos:name: 'class-map-dscp-cs3-cs4'
+                      openconfig-qos:name: 'cm-dscp-17'
                       openconfig-qos:type: 'IPV4'
                     openconfig-qos:terms:
                       openconfig-qos:term:
-                        - openconfig-qos:id: 'term-dscp-cs3-cs4'
+                        - openconfig-qos:id: 'term-dscp-17'
                           openconfig-qos:config:
-                            openconfig-qos:id: 'term-dscp-cs3-cs4'
+                            openconfig-qos:id: 'term-dscp-17'
                           openconfig-qos:conditions:
                             openconfig-qos:ipv4:
                               openconfig-qos:config:
-                                openconfig-qos:dscp-set: '13'
-                                openconfig-qos:dscp-set: '14'
-                  - openconfig-qos:name: 'class-map-dscp-49-51'
+                                openconfig-qos:dscp: '17'
+                          openconfig-qos:actions:
+                            openconfig-qos:config:
+                              openconfig-qos:target-group: 'pm-dscp-17'
+                  - openconfig-qos:name: 'cm-dscp-19'
                     openconfig-qos:config:
-                      openconfig-qos:name: 'class-map-dscp-49-51'
+                      openconfig-qos:name: 'cm-dscp-19'
                       openconfig-qos:type: 'IPV4'
                     openconfig-qos:terms:
                       openconfig-qos:term:
-                        - openconfig-qos:id: 'term-dscp-49-51'
+                        - openconfig-qos:id: 'term-dscp-19'
                           openconfig-qos:config:
-                            openconfig-qos:id: 'term-dscp-49-51'
+                            openconfig-qos:id: 'term-dscp-19'
                           openconfig-qos:conditions:
                             openconfig-qos:ipv4:
                               openconfig-qos:config:
-                                openconfig-qos:dscp-set: '49'
-                                openconfig-qos:dscp-set: '51'
+                                openconfig-qos:dscp: '19'
+                          openconfig-qos:actions:
+                            openconfig-qos:config:
+                              openconfig-qos:target-group: 'pm-dscp-19'
+                  - openconfig-qos:name: 'cm-dscp-21'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'cm-dscp-21'
+                      openconfig-qos:type: 'IPV4'
+                    openconfig-qos:terms:
+                      openconfig-qos:term:
+                        - openconfig-qos:id: 'term-dscp-21'
+                          openconfig-qos:config:
+                            openconfig-qos:id: 'term-dscp-21'
+                          openconfig-qos:conditions:
+                            openconfig-qos:ipv4:
+                              openconfig-qos:config:
+                                openconfig-qos:dscp: '21'
+                          openconfig-qos:actions:
+                            openconfig-qos:config:
+                              openconfig-qos:target-group: 'pm-dscp-21'
+                  - openconfig-qos:name: 'cm-dscp-23'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'cm-dscp-23'
+                      openconfig-qos:type: 'IPV4'
+                    openconfig-qos:terms:
+                      openconfig-qos:term:
+                        - openconfig-qos:id: 'term-dscp-23'
+                          openconfig-qos:config:
+                            openconfig-qos:id: 'term-dscp-23'
+                          openconfig-qos:conditions:
+                            openconfig-qos:ipv4:
+                              openconfig-qos:config:
+                                openconfig-qos:dscp: '23'
+                          openconfig-qos:actions:
+                            openconfig-qos:config:
+                              openconfig-qos:target-group: 'pm-dscp-23'
+                  - openconfig-qos:name: 'cm-dscp-25'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'cm-dscp-25'
+                      openconfig-qos:type: 'IPV4'
+                    openconfig-qos:terms:
+                      openconfig-qos:term:
+                        - openconfig-qos:id: 'term-dscp-25'
+                          openconfig-qos:config:
+                            openconfig-qos:id: 'term-dscp-25'
+                          openconfig-qos:conditions:
+                            openconfig-qos:ipv4:
+                              openconfig-qos:config:
+                                openconfig-qos:dscp: '25'
+                          openconfig-qos:actions:
+                            openconfig-qos:config:
+                              openconfig-qos:target-group: 'pm-dscp-25'
+                  # - openconfig-qos:name: 'cm-ip-dscp-45-47'
+                  #   openconfig-qos:config:
+                  #     openconfig-qos:name: 'cm-ip-dscp-45-47'
+                  #     openconfig-qos:type: 'IPV4'
+                  #   openconfig-qos:terms:
+                  #     openconfig-qos:term:
+                  #       - openconfig-qos:id: 'term-ip-dscp-45-47'
+                  #         openconfig-qos:config:
+                  #           openconfig-qos:id: 'term-ip-dscp-45-47'
+                  #         openconfig-qos:conditions:
+                  #           openconfig-qos:ipv4:
+                  #             openconfig-qos:config:
+                  #               openconfig-qos:dscp-set:
+                  #                 - '45'
+                  #                 - '47'
+                  #               openconfig-qos:protocol: 4  # IPv4
+                  #         openconfig-qos:actions:
+                  #           openconfig-qos:config:
+                  #             openconfig-qos:target-group: 'pm-ip-dscp-45-47'
+                  # - openconfig-qos:name: 'cm-dscp-49-51'
+                  #   openconfig-qos:config:
+                  #     openconfig-qos:name: 'cm-dscp-49-51'
+                  #     openconfig-qos:type: 'IPV4'
+                  #   openconfig-qos:terms:
+                  #     openconfig-qos:term:
+                  #       - openconfig-qos:id: 'term-dscp-49-51'
+                  #         openconfig-qos:config:
+                  #           openconfig-qos:id: 'term-dscp-49-51'
+                  #         openconfig-qos:conditions:
+                  #           openconfig-qos:ipv4:
+                  #             openconfig-qos:config:
+                  #               openconfig-qos:dscp-set:
+                  #                 - '49'
+                  #                 - '51'
+                  #         openconfig-qos:actions:
+                  #           openconfig-qos:config:
+                  #             openconfig-qos:target-group: 'pm-dscp-49-51'
+              openconfig-qos:scheduler-policies:
+                openconfig-qos:scheduler-policy:
+                  - openconfig-qos:name: 'sched-ip-dscp-11'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'sched-ip-dscp-11'
+                    openconfig-qos:schedulers:
+                      openconfig-qos:scheduler:
+                        - openconfig-qos:sequence: 10
+                          openconfig-qos:config:
+                            openconfig-qos:sequence: 10
+                            openconfig-qos:priority: 'STRICT'
+                            openconfig-qos:type: 'ONE_RATE_TWO_COLOR'
+                          openconfig-qos:output:
+                            openconfig-qos:config:
+                              openconfig-qos:output-type: 'FWD_GROUP'
+                              openconfig-qos:output-fwd-group: 'pm-ip-dscp-11'
+                          openconfig-qos:one-rate-two-color:
+                            openconfig-qos:config:
+                              openconfig-qos:cir-pct: 10 # Percentage
+                              openconfig-qos:queuing-behavior: 'SHAPE'
+                  - openconfig-qos:name: 'sched-ip-dscp-13'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'sched-ip-dscp-13'
+                    openconfig-qos:schedulers:
+                      openconfig-qos:scheduler:
+                        - openconfig-qos:sequence: 10
+                          openconfig-qos:config:
+                            openconfig-qos:sequence: 10
+                            openconfig-qos:priority: 'STRICT'
+                            openconfig-qos:type: 'ONE_RATE_TWO_COLOR'
+                          openconfig-qos:output:
+                            openconfig-qos:config:
+                              openconfig-qos:output-type: 'FWD_GROUP'
+                              openconfig-qos:output-fwd-group: 'pm-ip-dscp-13'
+                          openconfig-qos:one-rate-two-color:
+                            openconfig-qos:config:
+                              openconfig-qos:cir: 100000 # bits
+                              openconfig-qos:queuing-behavior: 'SHAPE'
+                  - openconfig-qos:name: 'sched-dscp-15'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'sched-dscp-15'
+                    openconfig-qos:schedulers:
+                      openconfig-qos:scheduler:
+                        - openconfig-qos:sequence: 10
+                          openconfig-qos:config:
+                            openconfig-qos:sequence: 10
+                            openconfig-qos:type: 'ONE_RATE_TWO_COLOR'
+                          openconfig-qos:output:
+                            openconfig-qos:config:
+                              openconfig-qos:output-type: 'FWD_GROUP'
+                              openconfig-qos:output-fwd-group: 'pm-dscp-15'
+                          openconfig-qos:one-rate-two-color:
+                            openconfig-qos:config:
+                              openconfig-qos:cir-pct: 20 # Percentage
+                              openconfig-qos:queuing-behavior: 'SHAPE'
+                  - openconfig-qos:name: 'sched-dscp-17'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'sched-dscp-17'
+                    openconfig-qos:schedulers:
+                      openconfig-qos:scheduler:
+                        - openconfig-qos:sequence: 10
+                          openconfig-qos:config:
+                            openconfig-qos:sequence: 10
+                            openconfig-qos:type: 'ONE_RATE_TWO_COLOR'
+                          openconfig-qos:output:
+                            openconfig-qos:config:
+                              openconfig-qos:output-type: 'FWD_GROUP'
+                              openconfig-qos:output-fwd-group: 'pm-dscp-17'
+                          openconfig-qos:one-rate-two-color:
+                            openconfig-qos:config:
+                              openconfig-qos:cir: 200000
+                              openconfig-qos:queuing-behavior: 'SHAPE'
+                  - openconfig-qos:name: 'sched-dscp-19'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'sched-dscp-19'
+                    openconfig-qos:schedulers:
+                      openconfig-qos:scheduler:
+                        - openconfig-qos:sequence: 10
+                          openconfig-qos:config:
+                            openconfig-qos:sequence: 10
+                            openconfig-qos:type: 'ONE_RATE_TWO_COLOR'
+                          openconfig-qos:output:
+                            openconfig-qos:config:
+                              openconfig-qos:output-type: 'FWD_GROUP'
+                              openconfig-qos:output-fwd-group: 'pm-dscp-19'
+                          openconfig-qos:one-rate-two-color:
+                            openconfig-qos:config:
+                              openconfig-qos:cir: 100000
+                              openconfig-qos:bc: 10000 # Unit Bytes
+                              openconfig-qos:queuing-behavior: 'POLICE'
+                            openconfig-qos:conform-action:
+                              openconfig-qos:config:
+                                openconfig-qos:set-dscp: 21
+                            openconfig-qos:exceed-action:
+                              openconfig-qos:config:
+                                openconfig-qos:set-dscp: 21
+                  - openconfig-qos:name: 'sched-dscp-21'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'sched-dscp-21'
+                    openconfig-qos:schedulers:
+                      openconfig-qos:scheduler:
+                        - openconfig-qos:sequence: 10
+                          openconfig-qos:config:
+                            openconfig-qos:sequence: 10
+                            openconfig-qos:type: 'ONE_RATE_TWO_COLOR'
+                          openconfig-qos:output:
+                            openconfig-qos:config:
+                              openconfig-qos:output-type: 'FWD_GROUP'
+                              openconfig-qos:output-fwd-group: 'pm-dscp-21'
+                          openconfig-qos:one-rate-two-color:
+                            openconfig-qos:config:
+                              openconfig-qos:cir-pct: 50
+                              openconfig-qos:bc: 1000 # Unit Bytes
+                              openconfig-qos:queuing-behavior: 'POLICE'
+                            openconfig-qos:conform-action:
+                              openconfig-qos:config:
+                                openconfig-qos:set-dscp: 23
+                            openconfig-qos:exceed-action:
+                              openconfig-qos:config:
+                                openconfig-qos:drop: True
+                  - openconfig-qos:name: 'sched-dscp-23'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'sched-dscp-23'
+                    openconfig-qos:schedulers:
+                      openconfig-qos:scheduler:
+                        - openconfig-qos:sequence: 10
+                          openconfig-qos:config:
+                            openconfig-qos:sequence: 10
+                            openconfig-qos:type: 'TWO_RATE_THREE_COLOR'
+                          openconfig-qos:output:
+                            openconfig-qos:config:
+                              openconfig-qos:output-type: 'FWD_GROUP'
+                              openconfig-qos:output-fwd-group: 'pm-dscp-23'
+                          openconfig-qos:two-rate-three-color:
+                            openconfig-qos:config:
+                              openconfig-qos:cir: 200000
+                              openconfig-qos:bc: 20000 # Unit Bytes
+                              # openconfig-qos:queuing-behavior: 'POLICE'
+                            openconfig-qos:conform-action:
+                              openconfig-qos:config:
+                                openconfig-qos:set-dscp: 25
+                            openconfig-qos:exceed-action:
+                              openconfig-qos:config:
+                                openconfig-qos:set-dscp: 27
+                            openconfig-qos:violate-action:
+                              openconfig-qos:config:
+                                openconfig-qos:set-dscp: 29
+                  - openconfig-qos:name: 'sched-dscp-25'
+                    openconfig-qos:config:
+                      openconfig-qos:name: 'sched-dscp-25'
+                    openconfig-qos:schedulers:
+                      openconfig-qos:scheduler:
+                        - openconfig-qos:sequence: 10
+                          openconfig-qos:config:
+                            openconfig-qos:sequence: 10
+                            openconfig-qos:type: 'TWO_RATE_THREE_COLOR'
+                          openconfig-qos:output:
+                            openconfig-qos:config:
+                              openconfig-qos:output-type: 'FWD_GROUP'
+                              openconfig-qos:output-fwd-group: 'pm-dscp-25'
+                          openconfig-qos:two-rate-three-color:
+                            openconfig-qos:config:
+                              openconfig-qos:cir-pct: 60
+                              openconfig-qos:bc: 15000 # Unit Bytes
+                              # openconfig-qos:queuing-behavior: 'POLICE'
+                            openconfig-qos:conform-action:
+                              openconfig-qos:config:
+                                openconfig-qos:set-dscp: 27
+                            openconfig-qos:exceed-action:
+                              openconfig-qos:config:
+                                openconfig-qos:set-dscp: 29
+                            openconfig-qos:violate-action:
+                              openconfig-qos:config:
+                                openconfig-qos:drop: True
+
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
         assertions:
-          - "'+class-map match-all class-map-ip-dscp-11:' in changes"
-          - "'+ match ip dscp af12:' in changes"
-          - "'+class-map match-all class-map-ip-dscp-41:' in changes"
-          - "'+ match ip dscp 41:' in changes"
-          - "'+class-map match-all class-map-dscp-13:' in changes"
-          - "'+ match dscp af13:' in changes"
-          - "'+class-map match-all class-map-dscp-43:' in changes"
-          - "'+ match dscp 43:' in changes"
-          - "'+class-map match-all class-map-ip-dscp-cs1-cs2:' in changes"
-          - "'+ match ip dscp cs1 cs2:' in changes"
-          - "'+class-map match-all class-map-ip-dscp-45-47:' in changes"
-          - "'+ match ip dscp 45 47:' in changes"
-          - "'+class-map match-all class-map-dscp-cs3-cs4:' in changes"
-          - "'+ match ip dscp cs3 cs4:' in changes"
-          - "'+class-map match-all class-map-dscp-49-51:' in changes"
-          - "'+ match ip dscp 49 51:' in changes"
+          - "'+class-map match-all cm-ip-dscp-11:' in changes"
+          - "'+ match ip dscp 11:' in changes"
+          - "'+class-map match-all cm-ip-dscp-13:' in changes"
+          - "'+ match ip dscp 13:' in changes"
+          - "'+class-map match-all cm-dscp-15:' in changes"
+          - "'+ match dscp 15:' in changes"
+          - "'+class-map match-all cm-dscp-17:' in changes"
+          - "'+ match dscp 17:' in changes"
+          # - "'+class-map match-all cm-ip-dscp-45-47:' in changes"
+          # - "'+ match ip dscp 45  47:' in changes"
+          # - "'+class-map match-all cm-dscp-49-51:' in changes"
+          # - "'+ match dscp 49  51:' in changes"
+          - "'+policy-map pm-ip-dscp-11:' in changes"
+          - "'+ class cm-ip-dscp-11:' in changes"
+          - "'+  priority percent 10:' in changes"
+          - "'+policy-map pm-ip-dscp-13:' in changes"
+          - "'+ class cm-ip-dscp-13:' in changes"
+          - "'+  priority 100000:' in changes"
+          - "'+policy-map pm-dscp-15:' in changes"
+          - "'+ class cm-dscp-15:' in changes"
+          - "'+  bandwidth percent 20:' in changes"
+          - "'+policy-map pm-dscp-17:' in changes"
+          - "'+ class cm-dscp-17:' in changes"
+          - "'+  bandwidth 200000:' in changes"
+          - "'+policy-map pm-dscp-19:' in changes"
+          - "'+ class cm-dscp-19:' in changes"
+          - "'+  police cir 100000 bc 10000:' in changes"
+          - "'+   conform-action set-dscp-transmit 21:' in changes"
+          - "'+   exceed-action set-dscp-transmit 21:' in changes"
+          - "'+policy-map pm-dscp-21:' in changes"
+          - "'+ class cm-dscp-21:' in changes"
+          - "'+  police cir percent 50 bc 1000 ms:' in changes"
+          - "'+   conform-action set-dscp-transmit 23:' in changes"
+          - "'+   exceed-action drop:' in changes"
+          - "'+policy-map pm-dscp-23:' in changes"
+          - "'+ class cm-dscp-23:' in changes"
+          - "'+  police cir 200000 bc 20000:' in changes"
+          - "'+   conform-action set-dscp-transmit 25:' in changes"
+          - "'+   exceed-action set-dscp-transmit 27:' in changes"
+          - "'+   violate-action set-dscp-transmit 29:' in changes"
 
 - hosts: nso
   connection: local
