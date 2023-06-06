@@ -6,6 +6,14 @@ regex_ipv4_masklength_range = re.compile(r'([0-9]{1,2})\.\.([0-9]{1,2})')
 regex_meta = {'[', '\\', '.', '^', '$', '*', '+', '?', '{', '|', '('}
 
 
+def translate_tags(tags: list) -> list:
+    """Used to translate OC well known communities to NSO"""
+    as_translate = {'NO_EXPORT': 'no-export',
+                    'NO_ADVERTISE': 'no-advertise',
+                    'NO_EXPORT_SUBCONFED': 'local-as'}
+    return [as_translate.get(item, item) for item in tags]
+
+
 def xe_routing_policy_program_service(self, nso_props) -> None:
     if len(nso_props.service.oc_rpol__routing_policy.defined_sets.prefix_sets.prefix_set) > 0:
         prefix_sets_configure(nso_props)
@@ -69,7 +77,8 @@ def policy_definitions_configure(nso_props) -> None:
                                         route_map_statement.set.community.community_number.create('additive')
                                 elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.options == 'REPLACE':
                                     if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.method == 'INLINE':
-                                        route_map_statement.set.community.community_number = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.inline.config.communities.as_list()
+                                        tags_service = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.inline.config.communities.as_list()
+                                        route_map_statement.set.community.community_number = translate_tags(tags_service)
                                 elif service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.options == 'REMOVE':
                                     if service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.config.method == 'REFERENCE':
                                         route_map_statement.set.comm_list.name = service_policy_statement.actions.oc_bgp_pol__bgp_actions.set_community.reference.config.community_set_ref

@@ -165,5 +165,7 @@ def configure_next_hop_index(route_forwarding):
 
     if "metric" in route_forwarding:
         new_index["openconfig-network-instance:config"]["openconfig-network-instance:metric"] = route_forwarding["metric"]
+    if "global" in route_forwarding:
+        new_index["openconfig-network-instance:config"]["openconfig-local-routing-ext:global"] = True
 
     return new_index

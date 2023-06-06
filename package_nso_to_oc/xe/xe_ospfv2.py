@@ -725,6 +725,15 @@ def set_authentication(intf, intf_leftover):
                 }
                 intf_leftover["ip"]["ospf"]["authentication"][index] = None
                 auth_list.append(config)
+            # Key-chain
+            if "key-chain" in intf["ip"]["ospf"]["authentication"]:
+                config = {
+                    "openconfig-ospfv2-ext:authentication-type": 'KEY-CHAIN'
+                }
+                if intf.get("ip", {}).get("ospf", {}).get("authentication", {}).get("key-chain", ""):
+                    config["openconfig-ospfv2-ext:key-chain"] = intf.get("ip", {}).get("ospf", {}).get("authentication", {}).get("key-chain", "")
+                intf_leftover["ip"]["ospf"]["authentication"][index] = None
+                auth_list.append(config)
             # MD5
             if "message-digest" in intf["ip"]["ospf"]["authentication"]:
                 config = {

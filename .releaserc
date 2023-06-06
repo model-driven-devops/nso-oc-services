@@ -6,6 +6,12 @@
     }],
     "@semantic-release/release-notes-generator",
     [
+        "@semantic-release/exec",
+        {
+            "prepareCmd": "sed -i 's|<package-version>.*</package-version>|<package-version>${nextRelease.version}</package-version>|g' mdd/package-meta-data.xml"
+        }
+    ],
+    [
         "semantic-release-pypi",
         {
             "repoUrl": "https://upload.pypi.org/legacy/"

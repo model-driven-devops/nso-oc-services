@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'mdd/package-meta-data.xml'
 
 jobs:
   release:
@@ -13,7 +15,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_FORCE }}
       # semantic-release requires at least node v14
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -34,6 +37,22 @@ jobs:
 
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_FORCE }}
           PYPI_TOKEN: ${{ secrets.CISCOPS_PYPI_TOKEN }}
         run: npx semantic-release
+
+      - name: Commit version change
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -m "Update version" -a
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_FORCE }}
+        continue-on-error: true
+
+      - name: Push changes
+        run: |
+          git push --force origin HEAD:main
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_FORCE }}
+        continue-on-error: true

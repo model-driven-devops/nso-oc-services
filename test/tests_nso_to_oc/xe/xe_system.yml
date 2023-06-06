@@ -1104,9 +1104,468 @@
                       peer-list:
                         - name: 10.0.0.5
                           key: 2
+          - name: NED key chain init
+            tags:
+              - ntp_keychain_init
+            api_path: config/tailf-ned-cisco-ios:key
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:key:
+                chain:
+                  - name: OSPF_KEY_CHAIN10
+                    key:
+                      - id: 100
+                        key-string:
+                          type: 0
+                          secret: cisco
+                        cryptographic-algorithm: hmac-sha-1
+                        accept-lifetime:
+                          start-time: 01:00:00
+                          start-month: Jan
+                          start-date: '1'
+                          start-year: '2025'
+                          stop-time: 01:00:01
+                          stop-month: Feb
+                          stop-date: '2'
+                          stop-year: '2026'
+                        send-lifetime:
+                          start-time: 01:00:00
+                          start-month: Mar
+                          start-date: '1'
+                          start-year: '2025'
+                          stop-time: 01:00:01
+                          stop-month: May
+                          stop-date: '2'
+                          stop-year: '2026'
+                      - id: 101
+                        key-string:
+                          type: 0
+                          secret: cisco
+                        cryptographic-algorithm: hmac-sha-256
+                        accept-lifetime:
+                          start-time: 01:00:00
+                          start-month: Jan
+                          start-date: '1'
+                          start-year: '2025'
+                          duration: 364
+                        send-lifetime:
+                          start-time: 01:00:00
+                          start-month: Mar
+                          start-date: '1'
+                          start-year: '2025'
+                          duration: 365
+                      - id: 102
+                        key-string:
+                          type: 0
+                          secret: cisco
+                        cryptographic-algorithm: md5
+                        accept-lifetime:
+                          start-time: 02:00:00
+                          start-month: May
+                          start-date: '1'
+                          start-year: '2026'
+                          infinite:
+                            - null
+                        send-lifetime:
+                          start-time: 02:00:01
+                          start-month: Sep
+                          start-date: '1'
+                          start-year: '2027'
+                          infinite:
+                            - null
+                  - name: OSPF_KEY_CHAIN11
+                    key:
+                      - id: 200
+                        key-string:
+                          type: 0
+                          secret: cisco
+                        cryptographic-algorithm: hmac-sha-1
+                        accept-lifetime:
+                          local:
+                            start-time: 01:00:00
+                            start-month: Jan
+                            start-date: '1'
+                            start-year: '2025'
+                            stop-time: 01:00:01
+                            stop-month: Feb
+                            stop-date: '2'
+                            stop-year: '2026'
+                        send-lifetime:
+                          local:
+                            start-time: 01:00:00
+                            start-month: Mar
+                            start-date: '1'
+                            start-year: '2025'
+                            stop-time: 01:00:01
+                            stop-month: May
+                            stop-date: '2'
+                            stop-year: '2026'
+                      - id: 201
+                        key-string:
+                          type: 0
+                          secret: cisco
+                        cryptographic-algorithm: hmac-sha-256
+                        accept-lifetime:
+                          local:
+                            start-time: 01:00:00
+                            start-month: Jan
+                            start-date: '1'
+                            start-year: '2025'
+                            duration: 364
+                        send-lifetime:
+                          local:
+                            start-time: 01:00:00
+                            start-month: Mar
+                            start-date: '1'
+                            start-year: '2025'
+                            duration: 365
+                      - id: 202
+                        key-string:
+                          type: 0
+                          secret: cisco
+                        cryptographic-algorithm: hmac-sha-512
+                        accept-lifetime:
+                          local:
+                            start-time: 02:00:00
+                            start-month: May
+                            start-date: '1'
+                            start-year: '2026'
+                            infinite:
+                              - null
+                        send-lifetime:
+                          local:
+                            start-time: 02:00:01
+                            start-month: Sep
+                            start-date: '1'
+                            start-year: '2027'
+                            infinite:
+                              - null
+                tcp:
+                  chain:
+                    - name: BGP_KEY_CHAIN1
+                      tcp:
+                        - null
+                      key:
+                        - id: 10
+                          key-string:
+                            type: 0
+                            secret: cisco
+                          cryptographic-algorithm: aes-128-cmac
+                          send-id: 10
+                          recv-id: 11
+                          accept-lifetime:
+                            start-time: 01:00:00
+                            start-month: Jan
+                            start-date: '1'
+                            start-year: '2025'
+                            stop-time: 01:00:01
+                            stop-month: Feb
+                            stop-date: '2'
+                            stop-year: '2026'
+                          send-lifetime:
+                            start-time: 01:00:00
+                            start-month: Mar
+                            start-date: '1'
+                            start-year: '2025'
+                            stop-time: 01:00:01
+                            stop-month: May
+                            stop-date: '2'
+                            stop-year: '2026'
+                        - id: 11
+                          key-string:
+                            type: 0
+                            secret: cisco
+                          cryptographic-algorithm: aes-128-cmac
+                          send-id: 11
+                          recv-id: 12
+                          accept-lifetime:
+                            start-time: 01:00:00
+                            start-month: Jan
+                            start-date: '1'
+                            start-year: '2025'
+                            duration: 364
+                          send-lifetime:
+                            start-time: 01:00:00
+                            start-month: Mar
+                            start-date: '1'
+                            start-year: '2025'
+                            duration: 365
+                        - id: 12
+                          key-string:
+                            type: 0
+                            secret: cisco
+                          cryptographic-algorithm: aes-128-cmac
+                          send-id: 12
+                          recv-id: 13
+                          accept-lifetime:
+                            start-time: 02:00:00
+                            start-month: May
+                            start-date: '1'
+                            start-year: '2026'
+                            infinite:
+                              - null
+                          send-lifetime:
+                            start-time: 02:00:01
+                            start-month: Sep
+                            start-date: '1'
+                            start-year: '2027'
+                            infinite:
+                              - null
+                    - name: BGP_KEY_CHAIN2
+                      tcp:
+                        - null
+                      key:
+                        - id: 20
+                          key-string:
+                            type: 0
+                            secret: cisco
+                          cryptographic-algorithm: hmac-sha-1
+                          send-id: 20
+                          recv-id: 21
+                          accept-lifetime:
+                            local:
+                              start-time: 01:00:00
+                              start-month: Jan
+                              start-date: '1'
+                              start-year: '2025'
+                              stop-time: 01:00:01
+                              stop-month: Feb
+                              stop-date: '2'
+                              stop-year: '2026'
+                          send-lifetime:
+                            local:
+                              start-time: 01:00:00
+                              start-month: Mar
+                              start-date: '1'
+                              start-year: '2025'
+                              stop-time: 01:00:01
+                              stop-month: May
+                              stop-date: '2'
+                              stop-year: '2026'
+                        - id: 21
+                          key-string:
+                            type: 0
+                            secret: cisco
+                          cryptographic-algorithm: hmac-sha-256
+                          send-id: 21
+                          recv-id: 22
+                          accept-lifetime:
+                            local:
+                              start-time: 01:00:00
+                              start-month: Jan
+                              start-date: '1'
+                              start-year: '2025'
+                              duration: 364
+                          send-lifetime:
+                            local:
+                              start-time: 01:00:00
+                              start-month: Mar
+                              start-date: '1'
+                              start-year: '2025'
+                              duration: 365
+                        - id: 22
+                          key-string:
+                            type: 0
+                            secret: cisco
+                          cryptographic-algorithm: hmac-sha-256
+                          send-id: 22
+                          recv-id: 23
+                          accept-lifetime:
+                            local:
+                              start-time: 02:00:00
+                              start-month: May
+                              start-date: '1'
+                              start-year: '2026'
+                              infinite:
+                                - null
+                          send-lifetime:
+                            local:
+                              start-time: 02:00:01
+                              start-month: Sep
+                              start-date: '1'
+                              start-year: '2027'
+                              infinite:
+                                - null
+
         assertions:
           - "ntp_1 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
           - "ntp_2 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
           - "ntp_3 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
           - "ntp_4 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
           - "ntp_5 in oc_result.json['mdd:openconfig']['openconfig-system:system']['ntp']['servers']['server']"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['name'] == 'BGP_KEY_CHAIN1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['type'] == 'TCP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['id'] == 10"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['cryptographic-algorithm-tcp'] == 'aes-128-cmac'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['accept-lifetime']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['accept-lifetime']['start-month'] == 'Jan'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['accept-lifetime']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['accept-lifetime']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['accept-lifetime']['stop-time'] == '01:00:01'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['accept-lifetime']['stop-month'] == 'Feb'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['accept-lifetime']['stop-date'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['accept-lifetime']['stop-year'] == 2026"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['send-lifetime']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['send-lifetime']['start-month'] == 'Mar'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['send-lifetime']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['send-lifetime']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['send-lifetime']['stop-time'] == '01:00:01'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['send-lifetime']['stop-month'] == 'May'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['send-lifetime']['stop-date'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][0]['config']['send-lifetime']['stop-year'] == 2026"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][1]['id'] == 11"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][1]['config']['cryptographic-algorithm-tcp'] == 'aes-128-cmac'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][1]['config']['accept-lifetime']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][1]['config']['accept-lifetime']['start-month'] == 'Jan'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][1]['config']['accept-lifetime']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][1]['config']['accept-lifetime']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][1]['config']['accept-lifetime']['duration'] == 364"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][1]['config']['send-lifetime']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][1]['config']['send-lifetime']['start-month'] == 'Mar'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][1]['config']['send-lifetime']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][1]['config']['send-lifetime']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][1]['config']['send-lifetime']['duration'] == 365"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][2]['id'] == 12"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][2]['config']['cryptographic-algorithm-tcp'] == 'aes-128-cmac'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][2]['config']['accept-lifetime']['start-time'] == '02:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][2]['config']['accept-lifetime']['start-month'] == 'May'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][2]['config']['accept-lifetime']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][2]['config']['accept-lifetime']['start-year'] == 2026"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][2]['config']['accept-lifetime']['infinite'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][2]['config']['send-lifetime']['start-time'] == '02:00:01'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][2]['config']['send-lifetime']['start-month'] == 'Sep'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][2]['config']['send-lifetime']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][0]['keys'][2]['config']['send-lifetime']['start-year'] == 2027"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['name'] == 'BGP_KEY_CHAIN2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['type'] == 'TCP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['id'] == 20"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['cryptographic-algorithm-tcp'] == 'hmac-sha-1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['accept-lifetime']['local']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['accept-lifetime']['local']['start-month'] == 'Jan'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['accept-lifetime']['local']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['accept-lifetime']['local']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['accept-lifetime']['local']['stop-time'] == '01:00:01'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['accept-lifetime']['local']['stop-month'] == 'Feb'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['accept-lifetime']['local']['stop-date'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['accept-lifetime']['local']['stop-year'] == 2026"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['send-lifetime']['local']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['send-lifetime']['local']['start-month'] == 'Mar'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['send-lifetime']['local']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['send-lifetime']['local']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['send-lifetime']['local']['stop-time'] == '01:00:01'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['send-lifetime']['local']['stop-month'] == 'May'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['send-lifetime']['local']['stop-date'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][0]['config']['send-lifetime']['local']['stop-year'] == 2026"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][1]['id'] == 21"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][1]['config']['cryptographic-algorithm-tcp'] == 'hmac-sha-256'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][1]['config']['accept-lifetime']['local']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][1]['config']['accept-lifetime']['local']['start-month'] == 'Jan'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][1]['config']['accept-lifetime']['local']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][1]['config']['accept-lifetime']['local']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][1]['config']['accept-lifetime']['local']['duration'] == 364"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][1]['config']['send-lifetime']['local']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][1]['config']['send-lifetime']['local']['start-month'] == 'Mar'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][1]['config']['send-lifetime']['local']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][1]['config']['send-lifetime']['local']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][1]['config']['send-lifetime']['local']['duration'] == 365"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][2]['id'] == 22"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][2]['config']['cryptographic-algorithm-tcp'] == 'hmac-sha-256'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][2]['config']['accept-lifetime']['local']['start-time'] == '02:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][2]['config']['accept-lifetime']['local']['start-month'] == 'May'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][2]['config']['accept-lifetime']['local']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][2]['config']['accept-lifetime']['local']['start-year'] == 2026"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][2]['config']['accept-lifetime']['local']['infinite'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][2]['config']['send-lifetime']['local']['start-time'] == '02:00:01'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][2]['config']['send-lifetime']['local']['start-month'] == 'Sep'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][2]['config']['send-lifetime']['local']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][2]['config']['send-lifetime']['local']['start-year'] == 2027"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][1]['keys'][2]['config']['send-lifetime']['local']['infinite'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['name'] == 'OSPF_KEY_CHAIN10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['type'] == 'NOT_APPLICABLE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['id'] == 100"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['cryptographic-algorithm'] == 'hmac-sha-1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['accept-lifetime']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['accept-lifetime']['start-month'] == 'Jan'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['accept-lifetime']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['accept-lifetime']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['accept-lifetime']['stop-time'] == '01:00:01'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['accept-lifetime']['stop-month'] == 'Feb'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['accept-lifetime']['stop-date'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['accept-lifetime']['stop-year'] == 2026"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['send-lifetime']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['send-lifetime']['start-month'] == 'Mar'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['send-lifetime']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['send-lifetime']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['send-lifetime']['stop-time'] == '01:00:01'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['send-lifetime']['stop-month'] == 'May'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['send-lifetime']['stop-date'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][0]['config']['send-lifetime']['stop-year'] == 2026"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][1]['id'] == 101"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][1]['config']['cryptographic-algorithm'] == 'hmac-sha-256'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][1]['config']['accept-lifetime']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][1]['config']['accept-lifetime']['start-month'] == 'Jan'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][1]['config']['accept-lifetime']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][1]['config']['accept-lifetime']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][1]['config']['accept-lifetime']['duration'] == 364"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][1]['config']['send-lifetime']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][1]['config']['send-lifetime']['start-month'] == 'Mar'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][1]['config']['send-lifetime']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][1]['config']['send-lifetime']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][1]['config']['send-lifetime']['duration'] == 365"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][2]['id'] == 102"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][2]['config']['cryptographic-algorithm'] == 'md5'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][2]['config']['accept-lifetime']['start-time'] == '02:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][2]['config']['accept-lifetime']['start-month'] == 'May'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][2]['config']['accept-lifetime']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][2]['config']['accept-lifetime']['start-year'] == 2026"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][2]['config']['accept-lifetime']['infinite'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][2]['config']['send-lifetime']['start-time'] == '02:00:01'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][2]['config']['send-lifetime']['start-month'] == 'Sep'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][2]['config']['send-lifetime']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][2]['config']['send-lifetime']['start-year'] == 2027"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][2]['keys'][2]['config']['send-lifetime']['infinite'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['name'] == 'OSPF_KEY_CHAIN11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['type'] == 'NOT_APPLICABLE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['id'] == 200"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['cryptographic-algorithm'] == 'hmac-sha-1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['accept-lifetime']['local']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['accept-lifetime']['local']['start-month'] == 'Jan'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['accept-lifetime']['local']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['accept-lifetime']['local']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['accept-lifetime']['local']['stop-time'] == '01:00:01'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['accept-lifetime']['local']['stop-month'] == 'Feb'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['accept-lifetime']['local']['stop-date'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['accept-lifetime']['local']['stop-year'] == 2026"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['send-lifetime']['local']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['send-lifetime']['local']['start-month'] == 'Mar'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['send-lifetime']['local']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['send-lifetime']['local']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['send-lifetime']['local']['stop-time'] == '01:00:01'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['send-lifetime']['local']['stop-month'] == 'May'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['send-lifetime']['local']['stop-date'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][0]['config']['send-lifetime']['local']['stop-year'] == 2026"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][1]['id'] == 201"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][1]['config']['cryptographic-algorithm'] == 'hmac-sha-256'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][1]['config']['accept-lifetime']['local']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][1]['config']['accept-lifetime']['local']['start-month'] == 'Jan'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][1]['config']['accept-lifetime']['local']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][1]['config']['accept-lifetime']['local']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][1]['config']['accept-lifetime']['local']['duration'] == 364"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][1]['config']['send-lifetime']['local']['start-time'] == '01:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][1]['config']['send-lifetime']['local']['start-month'] == 'Mar'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][1]['config']['send-lifetime']['local']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][1]['config']['send-lifetime']['local']['start-year'] == 2025"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][1]['config']['send-lifetime']['local']['duration'] == 365"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][2]['id'] == 202"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][2]['config']['cryptographic-algorithm'] == 'hmac-sha-512'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][2]['config']['accept-lifetime']['local']['start-time'] == '02:00:00'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][2]['config']['accept-lifetime']['local']['start-month'] == 'May'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][2]['config']['accept-lifetime']['local']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][2]['config']['accept-lifetime']['local']['start-year'] == 2026"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][2]['config']['accept-lifetime']['local']['infinite'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][2]['config']['send-lifetime']['local']['start-time'] == '02:00:01'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][2]['config']['send-lifetime']['local']['start-month'] == 'Sep'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][2]['config']['send-lifetime']['local']['start-date'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][2]['config']['send-lifetime']['local']['start-year'] == 2027"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['key-chains']['key-chain'][3]['keys'][2]['config']['send-lifetime']['local']['infinite'] == true"
+

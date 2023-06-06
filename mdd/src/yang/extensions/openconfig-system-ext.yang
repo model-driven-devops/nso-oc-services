@@ -29,6 +29,11 @@ module openconfig-system-ext{
 
   description
     "Augmentation to openconfig system model.";
+
+  revision "2023-05-18" {
+    description
+      "Added key chain support";
+  }
   revision "2022-09-26" {
     description
       "organized to OC standard";
@@ -182,6 +187,87 @@ module openconfig-system-ext{
     description
       "HMAC-SHA2-512 (digest length = 512 bits, key length = 512 bits).";
   }
+
+  // Hour&minute&second type
+  typedef hhmmss-type {
+    type string {
+      pattern "([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])";
+    }
+  }
+
+  // Month type
+  typedef month-type {
+    type enumeration {
+      enum Jan;
+      enum Feb;
+      enum Mar;
+      enum Apr;
+      enum May;
+      enum Jun;
+      enum Jul;
+      enum Aug;
+      enum Sep;
+      enum Oct;
+      enum Nov;
+      enum Dec;
+    }
+  }
+
+  // Key Chain lifetime
+  grouping lifetime-grouping {
+    leaf start-time {
+      type hhmmss-type;
+      description "hh:mm;;Time to start (hh:mm)";
+    }
+    leaf start-month {
+      type month-type;
+      description "MONTH;;Month of the year to start";
+    }
+    leaf start-date {
+      type uint8 {
+        range "1..31";
+      }
+      description "<1-31>;;Day of the month to start";
+    }
+    leaf start-year {
+      type uint16 {
+        range "1993..2035";
+      }
+      description "<1993-2035>;;Year to start";
+    }
+    leaf duration {
+      type uint32 {
+        range "1..2147483646";
+      }
+      description "Set key lifetime duration in seconds. <1-2147483646>";
+    }
+    leaf infinite {
+      type boolean;
+      default false;
+      description "Never expires";
+    }
+    leaf stop-time {
+      type hhmmss-type;
+      description "hh:mm;;Time to stop (hh:mm)";
+    }
+    leaf stop-month {
+      type month-type;
+      description "MONTH;;Month of the year to stop";
+    }
+    leaf stop-date {
+      type uint8 {
+        range "1..31";
+      }
+      description "<1-31>;;Day of the month to stop";
+    }
+    leaf stop-year {
+      type uint16 {
+        range "1993..2035";
+      }
+      description "<1993-2035>;;Year to stop";
+    }
+  }
+
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-sys:system {
     container timestamps {
       description
@@ -319,6 +405,126 @@ module openconfig-system-ext{
           type boolean;
           description
             "Encrypt system passwords.";
+        }
+      }
+      container key-chains {
+        list key-chain {
+          key "name";
+          leaf name {
+            type string;
+          }
+          leaf type {
+            type enumeration {
+              enum NOT_APPLICABLE;
+              enum MACSEC;
+              enum TCP;
+            }
+           default NOT_APPLICABLE;
+          }
+          list keys {
+            key "id";
+            leaf id {
+              type leafref {
+                path "../config/id";
+              }
+            }
+            container config {
+              leaf id {
+                type uint32 {
+                  range "0 .. 2147483647";
+                }
+                description
+                  "Key identifier.";
+              }
+              leaf key-string {
+                type string;
+                description
+                  "Set key string";
+              }
+              leaf cryptographic-algorithm {
+                when "../../../type = 'NOT_APPLICABLE'" {
+                  description
+                    "Set cryptographic authentication algorithm";
+                }
+                type enumeration {
+                  enum hmac-sha-1 {
+                    description "HMAC-SHA-1 authentication algorithm";
+                  }
+                  enum hmac-sha-256 {
+                    description "HMAC-SHA-256 authentication algorithm";
+                  }
+                  enum hmac-sha-384 {
+                    description "HMAC-SHA-384 authentication algorithm";
+                  }
+                  enum hmac-sha-512 {
+                    description "HMAC-SHA-512 authentication algorithm";
+                  }
+                  enum md5 {
+                   description "MD5 authentication algorithm";
+                  }
+                }
+              }
+              leaf cryptographic-algorithm-tcp {
+                when "../../../type = 'TCP'" {
+                  description
+                    "Set cryptographic authentication algorithm for TCP key-chain";
+                }
+                type enumeration {
+                  enum aes-128-cmac {
+                    description "AES-128-CMAC authentication algorithm";
+                  }
+                  enum hmac-sha-1 {
+                    description "HMAC-SHA-1 authentication algorithm";
+                  }
+                  enum hmac-sha-256 {
+                    description "HMAC-SHA-256 authentication algorithm";
+                  }
+                }
+              }
+              leaf send-id {
+                when "../../../type = 'TCP'" {
+                  description
+                    "Configure a send id";
+                }
+                type uint8 {
+                  range "0..255";
+                }
+              }
+              leaf recv-id {
+                when "../../../type = 'TCP'" {
+                  description
+                    "Configure a receive id";
+                }
+                type uint8 {
+                  range "0..255";
+                }
+              }
+              container accept-lifetime {
+                description "Set accept lifetime of key";
+                choice accept-lifetime-choice {
+                  case global {
+                    uses lifetime-grouping;
+                  }
+                  container local {
+                    description "Specify time in local timezone";
+                    uses lifetime-grouping;
+                  }
+                }
+              }
+              container send-lifetime {
+                description "Set send lifetime of key";
+                choice send-lifetime-choice {
+                  case global {
+                    uses lifetime-grouping;
+                  }
+                  container local {
+                    description "Specify time in local timezone";
+                    uses lifetime-grouping;
+                  }
+                }
+              }
+            }
+          }
         }
       }
       container object-tracking {

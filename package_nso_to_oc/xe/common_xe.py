@@ -117,8 +117,6 @@ def append_new_to_table_connections(protocol, table_connections, dst_prot):
     return proto_config
 
 def process_protocol(proto_config, redistribute_protocol, redistribute_protocol_leftover, dst_process_num, dst_prot):
-    if dst_prot == "OSPF" and not "subnets" in redistribute_protocol:
-        raise ValueError("Required subnets keyword is non-existent.")
 
     process_src_protocol(proto_config, redistribute_protocol, redistribute_protocol_leftover, "id")
     process_src_protocol(proto_config, redistribute_protocol, redistribute_protocol_leftover, "as-no")

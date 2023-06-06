@@ -74,6 +74,9 @@ openconfig_system = {
                 "openconfig-system-ext:config": {"openconfig-system-ext:timer": {}},
                 "openconfig-system-ext:object-track": []
             },
+            "openconfig-system-ext:key-chains": {
+                "openconfig-system-ext:key-chain": []
+            },
             "openconfig-system-ext:boot-network": {
                 "openconfig-system-ext:config": {},
             },
@@ -133,6 +136,9 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
         del config_leftover["tailf-ned-cisco-ios:track"]["timer"]
     if type(config_before.get("tailf-ned-cisco-ios:track", {}).get("track-object", '')) is list:
         xe_system_object_track(config_before, config_leftover)
+    # key-chains
+    if type(config_before.get("tailf-ned-cisco-ios:key", {}).get("chain", '')) is list or type(config_before.get("tailf-ned-cisco-ios:key", {}).get("tcp", {}).get("chain", '')) is list:
+        xe_system_key_chain(config_before, config_leftover)
     # Archive Logging
     if type(config_before.get("tailf-ned-cisco-ios:archive", {}).get("log", {}).get("config", {}).get("logging", {}).get("enable", '')) is list:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:archive-logging"] = True
@@ -145,11 +151,11 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
     else:
         openconfig_system_services["openconfig-system-ext:boot-network"]["openconfig-system-ext:config"]["openconfig-system-ext:bootnetwork-enabled"] = "MANUAL_CONFIG"
     # IP bootp server
-    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("bootp", {}).get("server", True) is False:
-        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-bootp-server"] = False
+    if config_before.get("tailf-ned-cisco-ios:ip", {}).get("bootp", {}).get("server", False) is True:
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-bootp-server"] = True
         del config_leftover["tailf-ned-cisco-ios:ip"]["bootp"]["server"]
     else:
-        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-bootp-server"] = True
+        openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-bootp-server"] = False
     # IP dns server
     if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("dns", {}).get("server", '')) is dict:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-dns-server"] = True
@@ -332,8 +338,10 @@ def xe_system_object_track(config_before: dict, config_leftover: dict) -> None:
                 tmp_track_object["openconfig-system-ext:type"] = 'INTERFACE'
                 for key in v:
                     # Check if key is of type string.  This is the interface type and number
-                    if isinstance(key, str) and isinstance(v[key], str):
+                    if isinstance(key, str) and isinstance(v[key], str):  # GigabitEthernet number is str
                         tmp_track_object["openconfig-system-ext:config"]["openconfig-system-ext:track-interface"] = key + v[key]
+                    elif isinstance(key, str) and isinstance(v[key], int):  # VLAN number is int
+                        tmp_track_object["openconfig-system-ext:config"]["openconfig-system-ext:track-interface"] = key + str(v[key])
                     if type(v.get("ip", {}).get("routing", '')) is list:
                         tmp_track_object["openconfig-system-ext:config"]["openconfig-system-ext:track-parameter"] = 'IP-ROUTING'
                     elif type(v.get("line-protocol", '')) is list:
@@ -345,6 +353,178 @@ def xe_system_object_track(config_before: dict, config_leftover: dict) -> None:
         openconfig_system["openconfig-system:system"]["openconfig-system-ext:services"]["openconfig-system-ext:object-tracking"]["openconfig-system-ext:object-track"].append(tmp_track_object)
     if config_leftover["tailf-ned-cisco-ios:track"]["track-object"]:
         del config_leftover["tailf-ned-cisco-ios:track"]["track-object"]
+
+
+def xe_system_key_chain(config_before: dict, config_leftover: dict) -> None:
+    """
+    Translates NSO XE NED to MDD OpenConfig System Key Chain
+    """
+    key_chain = {
+        "openconfig-system-ext:name": "",
+        "openconfig-system-ext:type": "",
+        "openconfig-system-ext:keys": []
+    }
+    key = {
+        "openconfig-system-ext:id": None,
+        "openconfig-system-ext:config": {
+            "openconfig-system-ext:id": None,
+            "openconfig-system-ext:key-string": "",
+            "openconfig-system-ext:cryptographic-algorithm": "",
+            "openconfig-system-ext:accept-lifetime": {},
+            "openconfig-system-ext:send-lifetime": {},
+        }
+    }
+    key_tcp = {
+        "openconfig-system-ext:id": None,
+        "openconfig-system-ext:config": {
+            "openconfig-system-ext:id": None,
+            "openconfig-system-ext:key-string": "",
+            "openconfig-system-ext:cryptographic-algorithm-tcp": "",
+            "openconfig-system-ext:send-id": None,
+            "openconfig-system-ext:recv-id": None,
+            "openconfig-system-ext:accept-lifetime": {},
+            "openconfig-system-ext:send-lifetime": {},
+        }
+    }
+    # NA key chain
+    for key_chain_index, key_chain_list in enumerate(config_before.get("tailf-ned-cisco-ios:key", {}).get("chain", '')):
+        tmp_key_chain = copy.deepcopy(key_chain)
+        tmp_key_chain["openconfig-system-ext:type"] = "NOT_APPLICABLE"
+        for k, v in key_chain_list.items():
+            if "name" in k:
+                tmp_key_chain["openconfig-system-ext:name"] = v
+            elif "key" in k:
+                for keydata in v:
+                    tmp_key = copy.deepcopy(key)
+                    accept_lifetime_global = True
+                    send_lifetime_global = True
+                    for keydata_k, keydata_v in keydata.items():
+                        if keydata_k == "id":
+                            tmp_key["openconfig-system-ext:id"] = keydata_v
+                            tmp_key["openconfig-system-ext:config"]["openconfig-system-ext:id"] = keydata_v
+                        elif keydata_k == "cryptographic-algorithm":
+                            tmp_key["openconfig-system-ext:config"]["openconfig-system-ext:cryptographic-algorithm"] = str(keydata_v)
+                        elif keydata_k == "key-string":
+                            for ks_k, ks_v in keydata_v.items():
+                                if "type" in ks_k:
+                                    keystring_type = ks_v
+                                elif "secret" in ks_k:
+                                    tmp_key["openconfig-system-ext:config"]["openconfig-system-ext:key-string"] = str(ks_v)
+                        elif keydata_k == "accept-lifetime":
+                            for al_k, al_v in keydata_v.items():
+                                if "local" in al_k:
+                                    accept_lifetime_global = False
+                                    tmp_lt = xe_parse_keychain_lifetime(al_v)
+                                    tmp_key["openconfig-system-ext:config"]["openconfig-system-ext:accept-lifetime"].update({"openconfig-system-ext:local": {}})
+                                    tmp_key["openconfig-system-ext:config"]["openconfig-system-ext:accept-lifetime"]["openconfig-system-ext:local"] = tmp_lt
+                            if accept_lifetime_global == True:
+                                tmp_lt = xe_parse_keychain_lifetime(keydata_v)
+                                tmp_key["openconfig-system-ext:config"]["openconfig-system-ext:accept-lifetime"] = tmp_lt
+                        elif keydata_k == "send-lifetime":
+                            for sl_k, sl_v in keydata_v.items():
+                                if "local" in sl_k:
+                                    send_lifetime_global = False
+                                    tmp_lt = xe_parse_keychain_lifetime(sl_v)
+                                    tmp_key["openconfig-system-ext:config"]["openconfig-system-ext:send-lifetime"].update({"openconfig-system-ext:local": {}})
+                                    tmp_key["openconfig-system-ext:config"]["openconfig-system-ext:send-lifetime"]["openconfig-system-ext:local"] = tmp_lt
+                            if send_lifetime_global == True:
+                                tmp_lt = xe_parse_keychain_lifetime(keydata_v)
+                                tmp_key["openconfig-system-ext:config"]["openconfig-system-ext:send-lifetime"] = tmp_lt
+                    tmp_key_chain["openconfig-system-ext:keys"].append(tmp_key)
+
+        openconfig_system["openconfig-system:system"]["openconfig-system-ext:services"]["openconfig-system-ext:key-chains"]["openconfig-system-ext:key-chain"].append(tmp_key_chain)
+    if config_leftover.get("tailf-ned-cisco-ios:key", {}).get("chain"):
+        del config_leftover["tailf-ned-cisco-ios:key"]["chain"]
+
+    # TCP key chain
+    for key_chain_index, key_chain_list in enumerate(config_before.get("tailf-ned-cisco-ios:key", {}).get("tcp", {}).get("chain", '')):
+        tmp_key_chain = copy.deepcopy(key_chain)
+        tmp_key_chain["openconfig-system-ext:type"] = "TCP"
+        for k, v in key_chain_list.items():
+            if "name" in k:
+                tmp_key_chain["openconfig-system-ext:name"] = v
+            elif "key" in k:
+                for keydata in v:
+                    tmp_key_tcp = copy.deepcopy(key_tcp)
+                    accept_lifetime_global = True
+                    send_lifetime_global = True
+                    for keydata_k, keydata_v in keydata.items():
+                        if keydata_k == "id":
+                            tmp_key_tcp["openconfig-system-ext:id"] = keydata_v
+                            tmp_key_tcp["openconfig-system-ext:config"]["openconfig-system-ext:id"] = keydata_v
+                        elif keydata_k == "send-id":
+                            tmp_key_tcp["openconfig-system-ext:config"]["openconfig-system-ext:send-id"] = keydata_v
+                        elif keydata_k == "recv-id":
+                            tmp_key_tcp["openconfig-system-ext:config"]["openconfig-system-ext:recv-id"] = keydata_v
+                        elif "cryptographic-algorithm" in keydata_k:
+                            tmp_key_tcp["openconfig-system-ext:config"]["openconfig-system-ext:cryptographic-algorithm-tcp"] = str(keydata_v)
+                        elif keydata_k == "key-string":
+                            for ks_k, ks_v in keydata_v.items():
+                                if "type" in ks_k:
+                                    keystring_type = ks_v
+                                elif "secret" in ks_k:
+                                    tmp_key_tcp["openconfig-system-ext:config"]["openconfig-system-ext:key-string"] = str(ks_v)
+                        elif keydata_k == "accept-lifetime":
+                            for al_k, al_v in keydata_v.items():
+                                if "local" in al_k:
+                                    accept_lifetime_global = False
+                                    tmp_lt = xe_parse_keychain_lifetime(al_v)
+                                    tmp_key_tcp["openconfig-system-ext:config"]["openconfig-system-ext:accept-lifetime"].update({"openconfig-system-ext:local": {}})
+                                    tmp_key_tcp["openconfig-system-ext:config"]["openconfig-system-ext:accept-lifetime"]["openconfig-system-ext:local"] = tmp_lt
+                            if accept_lifetime_global == True:
+                                tmp_lt = xe_parse_keychain_lifetime(keydata_v)
+                                tmp_key_tcp["openconfig-system-ext:config"]["openconfig-system-ext:accept-lifetime"] = tmp_lt
+                        elif keydata_k == "send-lifetime":
+                            for sl_k, sl_v in keydata_v.items():
+                                if "local" in sl_k:
+                                    send_lifetime_global = False
+                                    tmp_lt = xe_parse_keychain_lifetime(sl_v)
+                                    tmp_key_tcp["openconfig-system-ext:config"]["openconfig-system-ext:send-lifetime"].update({"openconfig-system-ext:local": {}})
+                                    tmp_key_tcp["openconfig-system-ext:config"]["openconfig-system-ext:send-lifetime"]["openconfig-system-ext:local"] = tmp_lt
+                            if send_lifetime_global == True:
+                                tmp_lt = xe_parse_keychain_lifetime(keydata_v)
+                                tmp_key_tcp["openconfig-system-ext:config"]["openconfig-system-ext:send-lifetime"] = tmp_lt
+                    tmp_key_chain["openconfig-system-ext:keys"].append(tmp_key_tcp)
+
+        openconfig_system["openconfig-system:system"]["openconfig-system-ext:services"]["openconfig-system-ext:key-chains"]["openconfig-system-ext:key-chain"].append(tmp_key_chain)
+    if config_leftover.get("tailf-ned-cisco-ios:key", {}).get("tcp"):
+        del config_leftover["tailf-ned-cisco-ios:key"]["tcp"]
+
+def xe_parse_keychain_lifetime(lifetime_dict: dict):
+    """
+    Parse the keychain lifetime dataset.
+    Returns: lifetime dict
+    """
+    lifetime = {
+        "openconfig-system-ext:start-time": "",
+        "openconfig-system-ext:start-date": None,
+        "openconfig-system-ext:start-month": "",
+        "openconfig-system-ext:start-year": None
+    }
+
+    tmp_lifetime = copy.deepcopy(lifetime)
+    for k, v in lifetime_dict.items():
+        if "start-time" in k:
+            tmp_lifetime["openconfig-system-ext:start-time"] = str(v)
+        elif "start-date" in k:
+            tmp_lifetime["openconfig-system-ext:start-date"] = v
+        elif "start-month" in k:
+            tmp_lifetime["openconfig-system-ext:start-month"] = str(v)
+        elif "start-year" in k:
+            tmp_lifetime["openconfig-system-ext:start-year"] = v
+        elif "infinite" in k:
+            tmp_lifetime["openconfig-system-ext:infinite"] = True
+        elif "duration" in k:
+            tmp_lifetime["openconfig-system-ext:duration"] = v
+        elif "stop-time" in k:
+            tmp_lifetime["openconfig-system-ext:stop-time"] = str(v)
+        elif "stop-date" in k:
+            tmp_lifetime["openconfig-system-ext:stop-date"] = str(v)
+        elif "stop-month" in k:
+            tmp_lifetime["openconfig-system-ext:stop-month"] = str(v)
+        elif "stop-year" in k:
+            tmp_lifetime["openconfig-system-ext:stop-year"] = str(v)
+    return(tmp_lifetime)
 
 
 def xe_system_ssh_server(config_before: dict, config_leftover: dict) -> None:
@@ -431,11 +611,18 @@ def xe_add_oc_ntp_server(before_ntp_server_list: list, after_ntp_server_list: li
             del after_ntp_server_list[ntp_server_index]["key"]
         # source interface
         if ntp_server.get("source"):
-            for k, v in ntp_server.get("source").items():
-                nso_source_interface = f"{k}{v}"
-                ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-source-address"] = if_ip.get(
-                    nso_source_interface)
-                del after_ntp_server_list[ntp_server_index]["source"]
+            if ntp_server.get("source", {}).get("Port-channel-subinterface"):
+                for k, v in ntp_server.get("source").get("Port-channel-subinterface").items():
+                    nso_source_interface = f"{k}{v}"
+                    ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-source-address"] = if_ip.get(
+                        nso_source_interface)
+                    del after_ntp_server_list[ntp_server_index]["source"]
+            else:
+                for k, v in ntp_server.get("source").items():
+                    nso_source_interface = f"{k}{v}"
+                    ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-source-address"] = if_ip.get(
+                        nso_source_interface)
+                    del after_ntp_server_list[ntp_server_index]["source"]
         # vrf
         if ntp_vrf:
             ntp_server_temp["openconfig-system:config"]["openconfig-system-ext:ntp-use-vrf"] = ntp_vrf
@@ -1523,27 +1710,37 @@ def set_nat_inside(nat_inside_source, config_leftover):
     nat_inside_list = nat_inside["openconfig-system-ext:local-addresses-access-list"]
     # LIST OF NAT ACLs
     for inside_source in nat_inside_source.get("list", []):
-            overload = False # Initialize variable
-            if "overload" in inside_source:
-                overload = True
-            temp_nat_inside = {"openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}', 
-                              "openconfig-system-ext:config": {
-                                "openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}',
-                                "openconfig-system-ext:global-interface-name": f'{inside_source.get("interface")}',
-                                "openconfig-system-ext:overload": overload
-                                }}
-            nat_inside_list.append(temp_nat_inside)
+        overload = False  # Initialize variable
+        if "overload" in inside_source:
+            overload = True
+        temp_nat_inside = {"openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}',
+                           "openconfig-system-ext:config": {
+                               "openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}',
+                               "openconfig-system-ext:global-interface-name": f'{inside_source.get("interface")}',
+                               "openconfig-system-ext:overload": overload
+                           }}
+        nat_inside_list.append(temp_nat_inside)
     # LIST OF NAT ACLs WITH VRF
     for inside_source in nat_inside_source.get("list-vrf", {}).get("list", []):
-            temp_nat_inside = {"openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}', 
-                              "openconfig-system-ext:config": {
-                                "openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}',
-                                "openconfig-system-ext:global-pool-name": f'{inside_source.get("pool")}',
-                                "openconfig-system-ext:vrf": f'{inside_source.get("vrf")}'
-                            }}
-            nat_inside_list.append(temp_nat_inside)
+        overload = False  # Initialize variable
+        if "overload" in inside_source:
+            overload = True
+        temp_nat_inside = {"openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}',
+                           "openconfig-system-ext:config": {
+                               "openconfig-system-ext:local-addresses-access-list-name": f'{inside_source.get("id")}',
+                               "openconfig-system-ext:vrf": f'{inside_source.get("vrf")}',
+                               "openconfig-system-ext:overload": overload
+                           }}
+        if inside_source.get("pool"):
+            temp_nat_inside["openconfig-system-ext:config"][
+                "openconfig-system-ext:global-pool-name"] = inside_source.get("pool")
+        if inside_source.get("interface"):
+            temp_nat_inside["openconfig-system-ext:config"][
+                "openconfig-system-ext:global-interface-name"] = inside_source.get("interface")
+        nat_inside_list.append(temp_nat_inside)
     del config_leftover["tailf-ned-cisco-ios:ip"]["nat"]["inside"]
     return nat_inside
+
 
 def main(before: dict, leftover: dict, if_ip: dict, translation_notes: list = []) -> dict:
     """
