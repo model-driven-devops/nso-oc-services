@@ -23,7 +23,7 @@ export NSO_DEVICES_USERNAME=
 export NSO_DEVICES_PASSWORD=
 ```
 
-Set the appropriate NSO Device Environment Variable for testing topology (XE, XR, NX, etc), e.g.:
+Set appropriate NSO Device Environment Variable for testing topology (XE, XR, NX, etc), e.g.:
 ```
 export XE1_HOST=
 export XESWITCH1_HOST=
