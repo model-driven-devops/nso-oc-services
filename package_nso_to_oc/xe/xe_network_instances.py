@@ -191,7 +191,7 @@ def configure_network_instances(config_before, config_leftover, interfaces_by_vr
         xe_ospfv2.configure_xe_ospf_redistribution(net_inst, config_before, config_leftover, router_ospf_by_vrf)
         xe_bgp.configure_xe_bgp(net_inst, config_before, config_leftover, network_instances_notes)
         xe_bgp.configure_xe_bgp_redistribution(net_inst, config_before, config_leftover)
-        xe_mpls.configure_xe_mpls(net_inst, config_before, config_before, network_instances_notes)
+        xe_mpls.configure_xe_mpls(net_inst, config_before, config_leftover, network_instances_notes)
 
 
 def configure_network_interfaces(net_inst, interfaces_by_vrf):
