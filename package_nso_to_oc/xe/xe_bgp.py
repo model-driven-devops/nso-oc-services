@@ -615,6 +615,9 @@ def process_peer_and_neighbor_config(neighbor, peer_group_or_neighbor, index, ne
         peer_or_neighbor_config["openconfig-network-instance:auth-password"] = neighbor["password"]["text"]
         del neighbor_leftover[index]["password"]
         # delete_leftover_neighbor_prop("password", index, neighbor_leftover)
+    if neighbor.get("ao", {}).get("keychain-name"):
+        peer_or_neighbor_config["openconfig-bgp-ext:tcpao-keychain"] = neighbor["ao"]["keychain-name"]
+        del neighbor_leftover[index]["ao"]
     if is_afi_safi:
         if neighbor.get("local-as", {}).get("as-no"):
             peer_or_neighbor_config["openconfig-network-instance:local-as"] = neighbor["local-as"]["as-no"]

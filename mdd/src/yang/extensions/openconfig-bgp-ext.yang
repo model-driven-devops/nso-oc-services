@@ -12,6 +12,8 @@ module openconfig-bgp-ext{
   import mdd { prefix mdd; }
   import openconfig-network-instance { prefix "oc-netinst"; }
   import openconfig-extensions { prefix oc-ext; }
+  import openconfig-system { prefix oc-sys; }
+  import openconfig-system-ext { prefix oc-system-ext; }
 
 
   // meta
@@ -23,6 +25,10 @@ module openconfig-bgp-ext{
   description
     "Augmentation to openconfig bgp model.";
 
+  revision "2023-05-25" {
+    description
+      "Added TCP-AO Authentication";
+  }
   revision "2022-02-17" {
     description
       "Added log-neighbor-changes";
@@ -50,4 +56,22 @@ module openconfig-bgp-ext{
         "Enables logging of neighbor changes.";
     }
   }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:bgp/oc-netinst:neighbors/oc-n
+etinst:neighbor/oc-netinst:config {
+    when "../../../../oc-netinst:identifier = 'oc-pol-types:BGP'";
+    leaf tcpao-keychain {
+      // tailf:cli-remove-before-change;
+      // tailf:non-strict-leafref {
+      //   path "/ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-system-ext:services/oc-system-ext:key-chains/oc-system-ext:key-chain/oc-system-ext:name";
+      // }
+      // type string;
+      // mandatory false;
+      type leafref {
+        path "/ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-system-ext:services/oc-system-ext:key-chains/oc-system-ext:key-chain/oc-system-ext:name";
+      }
+      description
+        "Uses a TCP-AO key-chain.";
+    }
+  }
+
 }

@@ -410,8 +410,12 @@ def xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor) -> None:
     if service_bgp_neighbor.config:
         if service_bgp_neighbor.config.peer_as:
             neighbor.remote_as = service_bgp_neighbor.config.peer_as
+        if service_bgp_neighbor.config.auth_password and service_bgp_neighbor.config.tcpao_keychain:
+            raise ValueError('XE BGP neighbor supports auth_password OR tcpao-keychain')
         if service_bgp_neighbor.config.auth_password:
             neighbor.password.text = service_bgp_neighbor.config.auth_password
+        if service_bgp_neighbor.config.tcpao_keychain:
+            neighbor.ao.keychain_name = service_bgp_neighbor.config.tcpao_keychain
         if service_bgp_neighbor.config.description:
             neighbor.description = service_bgp_neighbor.config.description
         if service_bgp_neighbor.config.enabled is False:
