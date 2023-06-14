@@ -331,7 +331,7 @@ def xe_bgp_neighbors_program_service(self, nso_props, service_protocol, network_
                 neighbor = nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[asn].neighbor[
                     service_bgp_neighbor.neighbor_address]
 
-                xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor)
+                xe_bgp_configure_neighbor(nso_props, service_bgp_neighbor, neighbor)
 
                 if len(service_bgp_neighbor.afi_safis.afi_safi) > 0:
                     device_bgp_cbd = nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[asn]
@@ -378,7 +378,7 @@ def xe_bgp_neighbors_program_service(self, nso_props, service_protocol, network_
                                     family_ipv4_unicast_vrf.neighbor.create(service_bgp_neighbor.neighbor_address)
                                 neighbor_object_cdb = family_ipv4_unicast_vrf.neighbor[
                                     service_bgp_neighbor.neighbor_address]
-                                xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor_object_cdb)
+                                xe_bgp_configure_neighbor(nso_props, service_bgp_neighbor, neighbor_object_cdb)
                                 if service_bgp_neighbor.config.send_community and service_bgp_neighbor.config.send_community != 'NONE':
                                     send_community(neighbor_object_cdb, service_bgp_neighbor)
                                 activate_neighbor(afi_safi_service, neighbor_object_cdb, service_bgp_neighbor)
@@ -393,7 +393,7 @@ def xe_bgp_neighbors_program_service(self, nso_props, service_protocol, network_
                     route_reflector_client_add(neighbor, service_bgp_neighbor)
 
 
-def xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor) -> None:
+def xe_bgp_configure_neighbor(nso_props, service_bgp_neighbor, neighbor) -> None:
     if service_bgp_neighbor.apply_policy:
         if service_bgp_neighbor.apply_policy.config.export_policy:
             if len(service_bgp_neighbor.apply_policy.config.export_policy) == 1:
@@ -415,7 +415,21 @@ def xe_bgp_configure_neighbor(service_bgp_neighbor, neighbor) -> None:
         if service_bgp_neighbor.config.auth_password:
             neighbor.password.text = service_bgp_neighbor.config.auth_password
         if service_bgp_neighbor.config.tcpao_keychain:
-            neighbor.ao.keychain_name = service_bgp_neighbor.config.tcpao_keychain
+            # Check service for system key-chain
+            if len(nso_props.service.oc_sys__system.services.key_chains.key_chain) > 0:
+                found_matching_keychain = False
+                for kc in nso_props.service.oc_sys__system.services.key_chains.key_chain:
+                    if kc.name == service_bgp_neighbor.config.tcpao_keychain:
+                        found_matching_keychain = True
+                        if kc.type == "TCP":
+                            neighbor.ao.keychain_name = service_bgp_neighbor.config.tcpao_keychain
+                            break;
+                        else:
+                            raise ValueError('XE BGP neighbor TCP-AO Keychain Error: key-chain type is not TCP')
+                if found_matching_keychain == False:
+                    raise ValueError('XE BGP neighbor TCP-AO Keychain Error: key-chain does not exist')
+            else:
+                raise ValueError('XE BGP neighbor TCP-AO Keychain Error: no key-chains exists on system')
         if service_bgp_neighbor.config.description:
             neighbor.description = service_bgp_neighbor.config.description
         if service_bgp_neighbor.config.enabled is False:

@@ -56,22 +56,12 @@ module openconfig-bgp-ext{
         "Enables logging of neighbor changes.";
     }
   }
-  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:bgp/oc-netinst:neighbors/oc-n
-etinst:neighbor/oc-netinst:config {
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:bgp/oc-netinst:neighbors/oc-netinst:neighbor/oc-netinst:config {
     when "../../../../oc-netinst:identifier = 'oc-pol-types:BGP'";
     leaf tcpao-keychain {
-      // tailf:cli-remove-before-change;
-      // tailf:non-strict-leafref {
-      //   path "/ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-system-ext:services/oc-system-ext:key-chains/oc-system-ext:key-chain/oc-system-ext:name";
-      // }
-      // type string;
-      // mandatory false;
-      type leafref {
-        path "/ncs:devices/ncs:device/mdd:openconfig/oc-sys:system/oc-system-ext:services/oc-system-ext:key-chains/oc-system-ext:key-chain/oc-system-ext:name";
-      }
+      type string;
       description
         "Uses a TCP-AO key-chain.";
     }
   }
-
 }
