@@ -14,6 +14,9 @@ mpls_notes = []
 
 
 def configure_xe_mpls(net_inst, config_before, config_leftover, network_instances_notes):
+    if net_inst["openconfig-network-instance:config"]["openconfig-network-instance:name"] == "management":
+        return
+    
     mpls_before = config_before.get("tailf-ned-cisco-ios:mpls", {})
     mpls_leftover = config_leftover.get("tailf-ned-cisco-ios:mpls", {})
     process_propagate_ttl(net_inst, mpls_before, mpls_leftover)
@@ -43,15 +46,14 @@ def process_propagate_ttl(net_inst, mpls_before, mpls_leftover):
 
 
 def process_mpls_intf(net_inst, config_before, config_leftover, mpls_before, mpls_leftover):
-    if not mpls_before.get("ip"):
-        return
-    
+    if mpls_before.get("ip") == False:
+        raise ValueError("Invalid value of false for global MPLS IP")
     if mpls_leftover.get("ip") != None:
         del mpls_leftover["ip"]
-    
+
     for intf_type in config_before.get("tailf-ned-cisco-ios:interface", {}):
         for intf_num, current_intf in enumerate(config_before["tailf-ned-cisco-ios:interface"].get(intf_type, [])):
-            if (current_intf.get("mpls", {}).get("ip")):
+            if type(current_intf) == dict and current_intf.get("mpls", {}).get("ip"):
                 set_mpls_interface(net_inst, intf_type, current_intf.get("name", ""))
 
                 leftover_intf = common.get_index_or_default(
@@ -114,7 +116,7 @@ def process_router_id(net_inst_mpls_ldp, config_before, ldp_before, mpls_leftove
                 "openconfig-network-instance:lsr-id": current_ip
             }
 
-            if mpls_leftover.get("ldp", {}).get("router-id", {}) != None:
+            if mpls_leftover.get("ldp", {}).get("router-id") != None:
                 del mpls_leftover["ldp"]["router-id"]
 
             return
