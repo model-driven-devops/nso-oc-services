@@ -24,6 +24,7 @@
     #   vars:
     #     content: |
     #       mdd:openconfig:
+<<<<<<< HEAD
             # openconfig-interfaces:interfaces:
             #   openconfig-interfaces:interface:
             #     - openconfig-interfaces:name: 'GigabitEthernet6'
@@ -74,6 +75,38 @@
         # assertions: false
 
     - name: test qos_policy_maps
+=======
+    #         openconfig-interfaces:interfaces:
+    #           openconfig-interfaces:interface:
+    #             - openconfig-interfaces:name: 'GigabitEthernet6'
+    #               openconfig-interfaces:config:
+    #                 openconfig-interfaces:description: 'Physical Interface 6'
+    #                 openconfig-interfaces:enabled: true
+    #                 openconfig-interfaces:mtu: 1500
+    #                 openconfig-interfaces:name: 'GigabitEthernet6'
+    #                 openconfig-interfaces:type: 'ethernetCsmacd'
+    #               openconfig-interfaces:subinterfaces:
+    #                 openconfig-interfaces:subinterface:
+    #                   - openconfig-interfaces:index: 0
+    #                     openconfig-interfaces:config:
+    #                       openconfig-interfaces:index: 0
+    #                     openconfig-if-ip:ipv4:
+    #                       openconfig-if-ip:addresses:
+    #                         openconfig-if-ip:address:
+    #                           - openconfig-if-ip:ip: '10.6.0.1'
+    #                             openconfig-if-ip:config:
+    #                               openconfig-if-ip:ip: '10.6.0.1'
+    #                               openconfig-if-ip:prefix-length: 24
+    #                       openconfig-if-ip:config:
+    #                         openconfig-if-ip:dhcp-client: false
+
+    #     api_method: PUT
+    #     rollback: false
+    #     assertion_ignore_errors: false
+    #     assertions: false
+
+    - name: test qos_class_maps_match_all
+>>>>>>> 181edb346c4f401497e1ea3ffe92d864c499902b
       tags:
         - qos_policy_maps
       import_role:
@@ -130,6 +163,7 @@
                               openconfig-qos:config:
                                 openconfig-qos:dscp: '11'
                                 openconfig-qos:protocol: 4  # IPv4
+<<<<<<< HEAD
                           openconfig-qos:actions:
                             openconfig-qos:config:
                               openconfig-qos:target-group: 'pm-ip-dscp-11'
@@ -249,6 +283,66 @@
                   # - openconfig-qos:name: 'cm-ip-dscp-45-47'
                   #   openconfig-qos:config:
                   #     openconfig-qos:name: 'cm-ip-dscp-45-47'
+=======
+                  # - openconfig-qos:name: 'class-map-ip-dscp-41'
+                  #   openconfig-qos:config:
+                  #     openconfig-qos:name: 'class-map-ip-dscp-41'
+                  #     openconfig-qos:type: 'IPV4'
+                  #   openconfig-qos:terms:
+                  #     openconfig-qos:term:
+                  #       - openconfig-qos:id: 'term-ip-dscp-41'
+                  #         openconfig-qos:config:
+                  #           openconfig-qos:id: 'term-ip-dscp-41'
+                  #         openconfig-qos:conditions:
+                  #           openconfig-qos:ipv4:
+                  #             openconfig-qos:config:
+                  #               openconfig-qos:dscp: '41'
+                  #               openconfig-qos:protocol: 4  # IPv4
+                  # - openconfig-qos:name: 'class-map-dscp-13'
+                  #   openconfig-qos:config:
+                  #     openconfig-qos:name: 'class-map-dscp-13'
+                  #     openconfig-qos:type: 'IPV4'
+                  #   openconfig-qos:terms:
+                  #     openconfig-qos:term:
+                  #       - openconfig-qos:id: 'term-dscp-13'
+                  #         openconfig-qos:config:
+                  #           openconfig-qos:id: 'term-dscp-13'
+                  #         openconfig-qos:conditions:
+                  #           openconfig-qos:ipv4:
+                  #             openconfig-qos:config:
+                  #               openconfig-qos:dscp: '13'
+                  # - openconfig-qos:name: 'class-map-dscp-43'
+                  #   openconfig-qos:config:
+                  #     openconfig-qos:name: 'class-map-dscp-43'
+                  #     openconfig-qos:type: 'IPV4'
+                  #   openconfig-qos:terms:
+                  #     openconfig-qos:term:
+                  #       - openconfig-qos:id: 'term-dscp-43'
+                  #         openconfig-qos:config:
+                  #           openconfig-qos:id: 'term-dscp-43'
+                  #         openconfig-qos:conditions:
+                  #           openconfig-qos:ipv4:
+                  #             openconfig-qos:config:
+                  #               openconfig-qos:dscp: '43'
+                  # - openconfig-qos:name: 'class-map-ip-dscp-cs1-cs2'
+                  #   openconfig-qos:config:
+                  #     openconfig-qos:name: 'class-map-ip-dscp-cs1-cs2'
+                  #     openconfig-qos:type: 'IPV4'
+                  #   openconfig-qos:terms:
+                  #     openconfig-qos:term:
+                  #       - openconfig-qos:id: 'term-ip-dscp-cs1-cs2'
+                  #         openconfig-qos:config:
+                  #           openconfig-qos:id: 'term-ip-dscp-cs1-cs2'
+                  #         openconfig-qos:conditions:
+                  #           openconfig-qos:ipv4:
+                  #             openconfig-qos:config:
+                  #               openconfig-qos:dscp-set: '11'
+                  #               openconfig-qos:dscp-set: '12'
+                  #               openconfig-qos:protocol: 4  # IPv4
+                  # - openconfig-qos:name: 'class-map-ip-dscp-45-47'
+                  #   openconfig-qos:config:
+                  #     openconfig-qos:name: 'class-map-ip-dscp-45-47'
+>>>>>>> 181edb346c4f401497e1ea3ffe92d864c499902b
                   #     openconfig-qos:type: 'IPV4'
                   #   openconfig-qos:terms:
                   #     openconfig-qos:term:
@@ -258,6 +352,7 @@
                   #         openconfig-qos:conditions:
                   #           openconfig-qos:ipv4:
                   #             openconfig-qos:config:
+<<<<<<< HEAD
                   #               openconfig-qos:dscp-set:
                   #                 - '45'
                   #                 - '47'
@@ -268,6 +363,28 @@
                   # - openconfig-qos:name: 'cm-dscp-49-51'
                   #   openconfig-qos:config:
                   #     openconfig-qos:name: 'cm-dscp-49-51'
+=======
+                  #               openconfig-qos:dscp-set: '45'
+                  #               openconfig-qos:dscp-set: '47'
+                  #               openconfig-qos:protocol: 4  # IPv4
+                  # - openconfig-qos:name: 'class-map-dscp-cs3-cs4'
+                  #   openconfig-qos:config:
+                  #     openconfig-qos:name: 'class-map-dscp-cs3-cs4'
+                  #     openconfig-qos:type: 'IPV4'
+                  #   openconfig-qos:terms:
+                  #     openconfig-qos:term:
+                  #       - openconfig-qos:id: 'term-dscp-cs3-cs4'
+                  #         openconfig-qos:config:
+                  #           openconfig-qos:id: 'term-dscp-cs3-cs4'
+                  #         openconfig-qos:conditions:
+                  #           openconfig-qos:ipv4:
+                  #             openconfig-qos:config:
+                  #               openconfig-qos:dscp-set: '13'
+                  #               openconfig-qos:dscp-set: '14'
+                  # - openconfig-qos:name: 'class-map-dscp-49-51'
+                  #   openconfig-qos:config:
+                  #     openconfig-qos:name: 'class-map-dscp-49-51'
+>>>>>>> 181edb346c4f401497e1ea3ffe92d864c499902b
                   #     openconfig-qos:type: 'IPV4'
                   #   openconfig-qos:terms:
                   #     openconfig-qos:term:
@@ -277,6 +394,7 @@
                   #         openconfig-qos:conditions:
                   #           openconfig-qos:ipv4:
                   #             openconfig-qos:config:
+<<<<<<< HEAD
                   #               openconfig-qos:dscp-set:
                   #                 - '49'
                   #                 - '51'
@@ -458,10 +576,15 @@
                               openconfig-qos:config:
                                 openconfig-qos:drop: True
 
+=======
+                  #               openconfig-qos:dscp-set: '49'
+                  #               openconfig-qos:dscp-set: '51'
+>>>>>>> 181edb346c4f401497e1ea3ffe92d864c499902b
         api_method: PUT
         rollback: false
         assertion_ignore_errors: false
         assertions:
+<<<<<<< HEAD
           - "'+class-map match-all cm-ip-dscp-11:' in changes"
           - "'+ match ip dscp 11:' in changes"
           - "'+class-map match-all cm-ip-dscp-13:' in changes"
@@ -502,6 +625,24 @@
           - "'+   conform-action set-dscp-transmit 25:' in changes"
           - "'+   exceed-action set-dscp-transmit 27:' in changes"
           - "'+   violate-action set-dscp-transmit 29:' in changes"
+=======
+          - "'+class-map match-all class-map-ip-dscp-11:' in changes"
+          - "'+ match ip dscp af12:' in changes"
+          # - "'+class-map match-all class-map-ip-dscp-41:' in changes"
+          # - "'+ match ip dscp 41:' in changes"
+          # - "'+class-map match-all class-map-dscp-13:' in changes"
+          # - "'+ match dscp af13:' in changes"
+          # - "'+class-map match-all class-map-dscp-43:' in changes"
+          # - "'+ match dscp 43:' in changes"
+          # - "'+class-map match-all class-map-ip-dscp-cs1-cs2:' in changes"
+          # - "'+ match ip dscp cs1 cs2:' in changes"
+          # - "'+class-map match-all class-map-ip-dscp-45-47:' in changes"
+          # - "'+ match ip dscp 45 47:' in changes"
+          # - "'+class-map match-all class-map-dscp-cs3-cs4:' in changes"
+          # - "'+ match ip dscp cs3 cs4:' in changes"
+          # - "'+class-map match-all class-map-dscp-49-51:' in changes"
+          # - "'+ match ip dscp 49 51:' in changes"
+>>>>>>> 181edb346c4f401497e1ea3ffe92d864c499902b
 
 - hosts: nso
   connection: local

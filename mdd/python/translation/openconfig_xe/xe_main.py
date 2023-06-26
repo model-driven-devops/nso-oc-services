@@ -41,7 +41,8 @@ def check_xe_features(oc_self, nso_props) -> None:
     xe_system_program_service(oc_self, nso_props)
 
     # OpenConfig QoS
-    # oc_self.log.info("0*** LOGGING QoS MAIN\n\n")
+    if oc_self.service.oc_qos__qos:
+        xe_qos_program_service(oc_self)
+    # OpenConfig QoS
     if nso_props.service.oc_qos__qos:
-        # oc_self.log.info("1*** LOGGING QoS MAIN\n\n")
         xe_qos_program_service(oc_self, nso_props)
