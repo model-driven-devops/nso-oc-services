@@ -263,7 +263,9 @@
                         - rule: '30 deny tcp 192.168.1.0 0.0.0.255 10.1.1.0 0.0.0.255'
                         - rule: '40 deny tcp host 192.168.1.11 any eq www'
                         - rule: '50 deny tcp host 192.168.1.12 any gt 1024'
-                        - rule: '60 permit ip any any'
+                        - rule: '60 deny icmp host 192.168.1.12 any 222 223'
+                        - rule: '70 deny icmp host 192.168.1.12 any packet-too-big'
+                        - rule: '80 permit ip any any'
                     - name: 'service-cmd'
                       ext-access-list-rule:
                         - rule: '10 permit tcp any eq cmd any'
@@ -274,7 +276,7 @@
                         - rule: '10 permit tcp any any eq 22'
                         - rule: '20 permit tcp any any eq www'
                         - rule: '30 permit tcp any any range 1024 65535 established'
-                        - rule: '40 deny ip any any log-input'
+                        - rule: '40 deny ip any any log-input'           
           
           - name: NSO configure Numbered ACLs
             tags:
@@ -418,6 +420,12 @@
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['ipv4']['config']['destination-address'] == '0.0.0.0/0'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['transport']['config']['source-port'] == 'ANY'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['transport']['config']['destination-port'] == '1025..65535'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['sequence-id'] == 60"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['openconfig-acl-ext:icmp-v4']['config']['type'] == 222"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['openconfig-acl-ext:icmp-v4']['config']['code'] == 223"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['sequence-id'] == 70"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['openconfig-acl-ext:icmp-v4']['config']['type'] == 3"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][4]['openconfig-acl-ext:icmp-v4']['config']['code'] == 4"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['id'] == 'vty 0 4'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['egress-acl-set'] == '11'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['ingress-acl-set-name'] == '11'"
