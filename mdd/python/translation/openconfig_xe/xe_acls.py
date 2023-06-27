@@ -4,32 +4,69 @@ import re
 from translation.common import prefix_to_network_and_mask
 from translation.common import get_interface_type_and_number
 
-regex_ports = re.compile(r'(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})\.\.(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})')
+regex_ports = re.compile(
+    r'(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})\.\.(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})')
 
 
 def xe_acls_program_service(self, nso_props) -> None:
     """
     Program service for xe NED features
     """
-    protocols_oc_to_xe = {1: 'icmp',
-                          'oc-pkt-match-types:IP_ICMP': 'icmp',
-                          2: 'igmp',
-                          'oc-pkt-match-types:IP_IGMP': 'igmp',
-                          4: 'ipinip',
-                          'oc-pkt-match-types:IP_IN_IP': 'ipinip',
-                          6: 'tcp',
-                          'oc-pkt-match-types:IP_TCP': 'tcp',
-                          17: 'udp',
-                          'oc-pkt-match-types:IP_UDP': 'udp',
-                          47: 'gre',
-                          'oc-pkt-match-types:IP_GRE': 'gre',
-                          50: 'esp',
-                          'oc-pkt-match-types-ext:IP_ESP': 'esp',
-                          51: 'ahp',
-                          'oc-pkt-match-types:IP_AUTH': 'ahp',
-                          103: 'pim',
-                          'oc-pkt-match-types:IP_PIM': 'pim'}
-
+    protocols_oc_to_xe = {
+        1: 'icmp',
+        'oc-pkt-match-types:IP_ICMP': 'icmp',
+        2: 'igmp',
+        'oc-pkt-match-types:IP_IGMP': 'igmp',
+        4: 'ipinip',
+        'oc-pkt-match-types:IP_IN_IP': 'ipinip',
+        6: 'tcp',
+        'oc-pkt-match-types:IP_TCP': 'tcp',
+        17: 'udp',
+        'oc-pkt-match-types:IP_UDP': 'udp',
+        47: 'gre',
+        'oc-pkt-match-types:IP_GRE': 'gre',
+        50: 'esp',
+        'oc-pkt-match-types-ext:IP_ESP': 'esp',
+        51: 'ahp',
+        'oc-pkt-match-types:IP_AUTH': 'ahp',
+        103: 'pim',
+        'oc-pkt-match-types:IP_PIM': 'pim'}
+    icmp_types_to_names = {
+        (0, 0): "echo-reply",
+        (3, 0): "unreachable",
+        (3, 1): "host-unreachable",
+        (3, 2): "protocol-unreachable",
+        (3, 3): "port-unreachable",
+        (3, 4): "packet-too-big",
+        (3, 5): "source-route-failed",
+        (3, 6): "network-unknown",
+        (3, 7): "host-unknown",
+        (3, 9): "dod-net-prohibited",
+        (3, 10): "dod-host-prohibited",
+        (3, 11): "net-tos-unreachable",
+        (3, 12): "host-tos-unreachable",
+        (3, 13): "administratively-prohibited",
+        (4, 0): "source-quench",
+        (5, 0): "net-redirect",
+        (5, 1): "host-redirect",
+        (5, 2): "net-tos-redirect",
+        (5, 3): "host-tos-redirect",
+        (6, 0): "alternate-address",
+        (8, 0): "echo",
+        (11, 0): "time-exceeded",
+        (11, 1): "reassembly-timeout",
+        (12, 0): "parameter-problem",
+        (12, 1): "option-missing",
+        (12, 2): "no-room-for-option",
+        (13, 0): "timestamp-request",
+        (14, 0): "timestamp-reply",
+        (15, 0): "information-request",
+        (16, 0): "information-reply",
+        (17, 0): "mask-request",
+        (18, 0): "mask-reply",
+        (0, 0): "echo-reply",
+        (11, 0): "time-exceeded",
+        (12, 0): "general-parameter-problem"}
     actions_oc_to_xe = {'oc-acl:ACCEPT': 'permit',
                         'oc-acl:DROP': 'deny',
                         'oc-acl:REJECT': 'deny'}
@@ -98,6 +135,13 @@ def xe_acls_program_service(self, nso_props) -> None:
                                 ('TCP_ACK' in i.transport.config.tcp_flags) and \
                                 ('TCP_RST' in i.transport.config.tcp_flags):
                             rule += 'established '
+                if i.ipv4.config.protocol == 'oc-pkt-match-types:IP_ICMP':
+                    if isinstance(i.icmp_v4.config.type, int) and isinstance(i.icmp_v4.config.code, int):
+                        icmp_message = icmp_types_to_names.get((i.icmp_v4.config.type, i.icmp_v4.config.code))
+                        if icmp_message:
+                            rule += f'{icmp_message} '
+                        else:
+                            rule += f'{i.icmp_v4.config.type} {i.icmp_v4.config.code} '
                 if i.actions.config.log_action:
                     if i.actions.config.log_action == 'oc-acl:LOG_SYSLOG':
                         rule += 'log-input'
@@ -147,7 +191,8 @@ def xe_acls_interfaces_program_service(self, nso_props) -> None:
             interface_cdb = class_attribute[
                 f'{interface_number}.{service_acl_interface.interface_ref.config.subinterface}']
         elif interface_type == 'Port_channel':
-            interface_cdb = nso_props.root.devices.device[nso_props.device_name].config.ios__interface.Port_channel_subinterface.Port_channel[
+            interface_cdb = nso_props.root.devices.device[
+                nso_props.device_name].config.ios__interface.Port_channel_subinterface.Port_channel[
                 f'{interface_number}.{service_acl_interface.interface_ref.config.subinterface}']
 
         # Apply ACLs  TODO add other ACL types
@@ -157,24 +202,28 @@ def xe_acls_interfaces_program_service(self, nso_props) -> None:
                     if not interface_cdb.ip.access_group.exists('out'):
                         interface_cdb.ip.access_group.create('out')
                     interface_cdb.ip.access_group['out'].access_list = acl.set_name
-                    self.log.info(f'{nso_props.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} egress')
+                    self.log.info(
+                        f'{nso_props.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} egress')
                 if acl.type == 'oc-acl-ext:ACL_IPV4_STANDARD':
                     if not interface_cdb.ip.access_group.exists('out'):
                         interface_cdb.ip.access_group.create('out')
                     interface_cdb.ip.access_group['out'].access_list = acl.set_name
-                    self.log.info(f'{nso_props.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} egress')
+                    self.log.info(
+                        f'{nso_props.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} egress')
         if service_acl_interface.ingress_acl_sets:
             for acl in service_acl_interface.ingress_acl_sets.ingress_acl_set:
                 if acl.type == 'oc-acl:ACL_IPV4':
                     if not interface_cdb.ip.access_group.exists('in'):
                         interface_cdb.ip.access_group.create('in')
                     interface_cdb.ip.access_group['in'].access_list = acl.set_name
-                    self.log.info(f'{nso_props.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} ingress')
+                    self.log.info(
+                        f'{nso_props.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} ingress')
                 if acl.type == 'oc-acl-ext:ACL_IPV4_STANDARD':
                     if not interface_cdb.ip.access_group.exists('in'):
                         interface_cdb.ip.access_group.create('in')
                     interface_cdb.ip.access_group['in'].access_list = acl.set_name
-                    self.log.info(f'{nso_props.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} ingress')
+                    self.log.info(
+                        f'{nso_props.device_name} ACL {acl.set_name} added to interface {service_acl_interface.id} ingress')
 
 
 def xe_acls_lines_program_service(self, nso_props) -> None:
