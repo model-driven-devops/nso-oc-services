@@ -20,7 +20,10 @@ module openconfig-acl-ext{
 
   description
     "Augmentation to openconfig acl model.";
-
+  revision "2023-06-23" {
+    description
+      "Added support for ICMP message types and codes";
+  }
   revision "2022-09-27" {
     description
       "Added config container and fixed typo";
@@ -47,6 +50,25 @@ module openconfig-acl-ext{
         }
      }
   }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-acl:acl/oc-acl:acl-sets/oc-acl:acl-set/oc-acl:acl-entries/oc-acl:acl-entry {
+      when "./oc-acl:ipv4/oc-acl:config/oc-acl:protocol='oc-pkt-match-types:IP_ICMP'" ;
+      container icmp-v4 {
+        container config {
+          description
+            "Configuration ICMPv4 types and codes";
+          leaf type {
+            type uint8;
+            description
+              "ICMP message type.";
+          }
+          leaf code {
+            type uint8;
+            description
+              "ICMP message code.";
+          }
+        }
+      }
+    }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-acl:acl {
     container ntp {
       description

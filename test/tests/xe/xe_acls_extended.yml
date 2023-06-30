@@ -704,6 +704,80 @@
         rollback: false
         assertion_ignore_errors: false
 
+    - name: test acl_type_extended_icmp configurations
+      tags:
+        - acl_type_extended_icmp
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-acl:acl:
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
+                  - openconfig-acl:name: 'icmp'
+                    openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:config:
+                      openconfig-acl:description: 'icmp message types and codes'
+                      openconfig-acl:name: 'icmp'
+                      openconfig-acl:type: 'ACL_IPV4'
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
+                        - openconfig-acl:sequence-id: 10
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'test type and code 10'
+                            openconfig-acl:sequence-id: 10
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:protocol: 'IP_ICMP'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                          openconfig-acl-ext:icmp-v4:
+                            openconfig-acl-ext:config:
+                              openconfig-acl-ext:type: 222
+                              openconfig-acl-ext:code: 223
+                        - openconfig-acl:sequence-id: 20
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'test type and code 20'
+                            openconfig-acl:sequence-id: 20
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:protocol: 'IP_ICMP'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+                          openconfig-acl-ext:icmp-v4:
+                            openconfig-acl-ext:config:
+                              openconfig-acl-ext:type: 3
+                              openconfig-acl-ext:code: 4
+                        - openconfig-acl:sequence-id: 30
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REJECT'
+                              openconfig-acl:log-action: 'LOG_SYSLOG'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'drop log other packets'
+                            openconfig-acl:sequence-id: 30
+                          openconfig-acl:ipv4:
+                            openconfig-acl:config:
+                              openconfig-acl:destination-address: '0.0.0.0/0'
+                              openconfig-acl:source-address: '0.0.0.0/0'
+        assertions:
+          - "'+ip access-list extended icmp:' in changes"
+          - "'+ 10 permit icmp any any 222 223:' in changes"
+          - "'+ 20 permit icmp any any packet-too-big:' in changes"
+          - "'+ 30 deny   ip any any log-input:' in changes"
+        api_method: PATCH
+        rollback: false
+        assertion_ignore_errors: false
+
 - hosts: nso
   connection: local
   gather_facts: no

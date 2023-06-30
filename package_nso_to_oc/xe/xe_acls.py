@@ -44,6 +44,40 @@ protocols_oc_to_xe = {
     "esp": "IP_ESP",
     "pim": "IP_PIM"
 }
+icmp_names_to_types = {
+    'administratively-prohibited': (3, 13),
+    'alternate-address': (6, 0),
+    'dod-host-prohibited': (3, 10),
+    'dod-net-prohibited': (3, 9),
+    'echo': (8, 0),
+    'echo-reply': (0, 0),
+    'general-parameter-problem': (12, 0),
+    'host-redirect': (5, 1),
+    'host-tos-redirect': (5, 3),
+    'host-tos-unreachable': (3, 12),
+    'host-unknown': (3, 7),
+    'host-unreachable': (3, 1),
+    'information-reply': (16, 0),
+    'information-request': (15, 0),
+    'mask-reply': (18, 0),
+    'mask-request': (17, 0),
+    'net-redirect': (5, 0),
+    'net-tos-redirect': (5, 2),
+    'net-tos-unreachable': (3, 11),
+    'net-unreachable': (3, 0),
+    'network-unknown': (3, 6),
+    'no-room-for-option': (12, 2),
+    'option-missing': (12, 1),
+    'packet-too-big': (3, 4),
+    'port-unreachable': (3, 3),
+    'protocol-unreachable': (3, 2),
+    'reassembly-timeout': (11, 1),
+    'source-quench': (4, 0),
+    'source-route-failed': (3, 5),
+    'time-exceeded': (11, 0),
+    'timestamp-reply': (14, 0),
+    'timestamp-request': (13, 0),
+    'unreachable': (3, 0)}
 # OC has an additional forwarding action, "DROP", which also translates to "deny" in XE.
 actions_xe_to_oc = {
     "permit": "ACCEPT",
@@ -266,6 +300,8 @@ class BaseAcl:
 
         if rule_parts[index + 1] == "tcp" or rule_parts[index + 1] == "udp":
             current_index = self.__set_port(rule_parts, current_index, entry, is_source)
+        elif rule_parts[index + 1] == "icmp" and not is_source:
+            current_index = self.__set_icmp(rule_parts, current_index, entry)
 
         return current_index
 
@@ -285,7 +321,6 @@ class BaseAcl:
             else:
                 self.__get_ipv4_config(entry)[
                     "openconfig-acl:destination-address"] = f"{rule_parts[current_index + 1]}/32"
-
             return current_index + 2
         elif (rule_parts[0].isdigit() and len(rule_parts) == 3) \
                 or (rule_parts[0].isdigit() and len(rule_parts) == 4 and rule_parts[-1] == "log") \
@@ -323,7 +358,6 @@ class BaseAcl:
             self.__get_ipv4_config(entry)[self._src_addr_key] = f"{ip}/{prefixlen}"
         else:
             self.__get_ipv4_config(entry)["openconfig-acl:destination-address"] = f"{ip}/{prefixlen}"
-
         return current_index + 2
 
     def __set_port(self, rule_parts, current_index, entry, is_source):
@@ -386,6 +420,28 @@ class BaseAcl:
             current_index = self.__set_tcp_flags(rule_parts, current_index + 2, entry)
 
         return current_index + 2
+
+    def __set_icmp(self, rule_parts, current_index, entry):
+        if len(rule_parts) <= current_index:
+            # end of the rule or there's messages specified
+            return current_index
+        elif rule_parts[current_index] in icmp_names_to_types:
+            msg, code = icmp_names_to_types[rule_parts[current_index]]
+            entry['openconfig-acl-ext:icmp-v4'] = {'openconfig-acl-ext:config':
+                                                       {'openconfig-acl-ext:type': msg,
+                                                        'openconfig-acl-ext:code': code}}
+            return current_index + 1
+        elif rule_parts[current_index].isdigit():
+            entry['openconfig-acl-ext:icmp-v4'] = {'openconfig-acl-ext:config':
+                                                       {'openconfig-acl-ext:type': rule_parts[current_index],
+                                                        'openconfig-acl-ext:code': 0}}
+            if current_index + 1 < len(rule_parts) and rule_parts[current_index + 1].isdigit():
+                entry['openconfig-acl-ext:icmp-v4']['openconfig-acl-ext:config']['openconfig-acl-ext:code'] = rule_parts[current_index + 1]
+                return current_index + 2
+            return current_index + 1
+        else:
+            return current_index
+
 
     def __set_tcp_flags(self, rule_parts, current_index, entry):
         if len(rule_parts) <= current_index or not rule_parts[current_index] in ["ack", "rst", "established"]:
