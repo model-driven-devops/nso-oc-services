@@ -237,44 +237,27 @@
                             activate:
                               -
 
-          - name: NED key chain init
+          - name: Set up OC service config - key-chain
             tags:
-              - keychain_init
-            api_path: config/tailf-ned-cisco-ios:key
+              - oc_set_up_keychain
+            api_path: mdd:openconfig
             api_method: PATCH
             content: |
-              tailf-ned-cisco-ios:key:         
-                tcp:
-                  chain:
-                    - name: BGP-TCP_KEYCHAIN1
-                      tcp:
-                        - null
-                      key:
-                        - id: 10
-                          key-string:
-                            type: 0
-                            secret: cisco
-                          cryptographic-algorithm: aes-128-cmac
-                          send-id: 10
-                          recv-id: 11
-                          accept-lifetime:
-                            start-time: 01:00:00
-                            start-month: Jan
-                            start-date: '1'
-                            start-year: '2025'
-                            stop-time: 01:00:01
-                            stop-month: Feb
-                            stop-date: '2'
-                            stop-year: '2026'
-                          send-lifetime:
-                            start-time: 01:00:00
-                            start-month: Mar
-                            start-date: '1'
-                            start-year: '2025'
-                            stop-time: 01:00:01
-                            stop-month: May
-                            stop-date: '2'
-                            stop-year: '2026'
+              mdd:openconfig:
+                openconfig-system:system:
+                  openconfig-system-ext:services:
+                    openconfig-system-ext:key-chains:
+                      openconfig-system-ext:key-chain:
+                        - openconfig-system-ext:name: BGP-TCP_KEYCHAIN1
+                          openconfig-system-ext:type: TCP
+                          openconfig-system-ext:keys:
+                            - openconfig-system-ext:id: 10
+                              openconfig-system-ext:config:
+                                openconfig-system-ext:id: 10
+                                openconfig-system-ext:key-string: "cisco"
+                                openconfig-system-ext:cryptographic-algorithm-tcp: "hmac-sha-1"
+                                openconfig-system-ext:send-id: 99
+                                openconfig-system-ext:recv-id: 100
 
           - name: NED configure BGP TCP-AO
             tags:
