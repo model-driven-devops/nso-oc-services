@@ -18,10 +18,9 @@ def xe_qos_program_service(self, nso_props) -> None:
     Configure forwarding-groups
     """
     for fg in nso_props.service.oc_qos__qos.forwarding_groups.forwarding_group:
+        if device_cdb.ios__policy_map.exists(fg.name):
+            del device_cdb.ios__policy_map[fg.name]
         device_cdb.ios__policy_map.create(fg.name)
-    if len(nso_props.service.oc_qos__qos.forwarding_groups.forwarding_group) == 0:
-        if device_cdb.ios__policy_map:
-            device_cdb.ios__policy_map.delete()
 
     # Class-map
     """
@@ -31,41 +30,44 @@ def xe_qos_program_service(self, nso_props) -> None:
     for c_map in nso_props.service.oc_qos__qos.classifiers.classifier:
         pmap_cmap = {}
         # Configure class-map
-        device_cdb.ios__class_map.create(c_map.name)
-        for t_map in c_map.terms.term:
-            pmap_cmap[t_map.actions.config.target_group] = c_map.name
-            # Configure "match ip dscp"
-            if t_map.conditions.ipv4.config.protocol == 4:
-                # Configure multiple dscp statements
-                if t_map.conditions.ipv4.config.dscp_set:
-                    for new_ip_dscp in t_map.conditions.ipv4.config.dscp_set:
-                        new_ip_dscp = modify_dscp(new_ip_dscp)
+        if device_cdb.ios__class_map.exists(c_map.name) and c_map.name != 'class-default':
+            del device_cdb.ios__class_map[c_map.name]
+        elif c_map.name == 'class-default':
+            for t_map in c_map.terms.term:
+                pmap_cmap[t_map.actions.config.target_group] = c_map.name
+        else:
+            device_cdb.ios__class_map.create(c_map.name)
+            for t_map in c_map.terms.term:
+                pmap_cmap[t_map.actions.config.target_group] = c_map.name
+                # Configure "match ip dscp"
+                if t_map.conditions.ipv4.config.protocol == 4:
+                    # Configure multiple dscp statements
+                    if t_map.conditions.ipv4.config.dscp_set:
+                        for new_ip_dscp in t_map.conditions.ipv4.config.dscp_set:
+                            new_ip_dscp = modify_dscp(new_ip_dscp)
+                            device_cdb.ios__class_map[c_map.name].prematch = 'match-all'
+                            device_cdb.ios__class_map[c_map.name].match.ip.dscp.create(new_ip_dscp)
+                    # Configure single dscp statements
+                    elif t_map.conditions.ipv4.config.dscp:
+                        new_ip_dscp = modify_dscp(t_map.conditions.ipv4.config.dscp)
                         device_cdb.ios__class_map[c_map.name].prematch = 'match-all'
-                        device_cdb.ios__class_map[c_map.name].match.ip.dscp.create(new_ip_dscp)
-                # Configure single dscp statements
-                elif t_map.conditions.ipv4.config.dscp:
-                    new_ip_dscp = modify_dscp(t_map.conditions.ipv4.config.dscp)
-                    device_cdb.ios__class_map[c_map.name].prematch = 'match-all'
-                    device_cdb.ios__class_map[c_map.name].match.ip.dscp.create(
-                        new_ip_dscp)
-            # Configure "match dscp"
-            else:
-                # Configure multiple dscp statements
-                if t_map.conditions.ipv4.config.dscp_set:
-                    for new_dscp in t_map.conditions.ipv4.config.dscp_set:
-                        new_dscp = modify_dscp(new_dscp)
+                        device_cdb.ios__class_map[c_map.name].match.ip.dscp.create(
+                            new_ip_dscp)
+                # Configure "match dscp"
+                else:
+                    # Configure multiple dscp statements
+                    if t_map.conditions.ipv4.config.dscp_set:
+                        for new_dscp in t_map.conditions.ipv4.config.dscp_set:
+                            new_dscp = modify_dscp(new_dscp)
+                            device_cdb.ios__class_map[c_map.name].prematch = 'match-all'
+                            device_cdb.ios__class_map[c_map.name].match.dscp.create(new_dscp)
+                    # Configure single dscp statements
+                    elif t_map.conditions.ipv4.config.dscp:
+                        new_dscp = modify_dscp(t_map.conditions.ipv4.config.dscp)
                         device_cdb.ios__class_map[c_map.name].prematch = 'match-all'
-                        device_cdb.ios__class_map[c_map.name].match.dscp.create(new_dscp)
-                # Configure single dscp statements
-                elif t_map.conditions.ipv4.config.dscp:
-                    new_dscp = modify_dscp(t_map.conditions.ipv4.config.dscp)
-                    device_cdb.ios__class_map[c_map.name].prematch = 'match-all'
-                    device_cdb.ios__class_map[c_map.name].match.dscp.create(
-                        new_dscp)
+                        device_cdb.ios__class_map[c_map.name].match.dscp.create(
+                            new_dscp)
         list_cmap.append(pmap_cmap)
-    if len(nso_props.service.oc_qos__qos.classifiers.classifier) == 0:
-        if device_cdb.ios__class_map:
-            device_cdb.ios__class_map.delete()
 
     # Schedulers
     """
@@ -92,9 +94,7 @@ def xe_qos_program_service(self, nso_props) -> None:
             """
             Configure interfaces
             """
-            self.log.info(f'1*** sched_pol.name = {sched_pol.name}\n\n')
             for interface in nso_props.service.oc_qos__qos.interfaces.interface:
-                self.log.info(f'2*** interface = {interface}\n\n')
                 if interface.output.scheduler_policy.config.name == sched_pol.name:
                     conf_out_service_policy(device_cdb, interface, sequence)
                 elif interface.input.scheduler_policy.config.name == sched_pol.name:
@@ -277,5 +277,4 @@ def conf_in_service_policy(device_cdb, interface, sequence):
 def modify_dscp(dscp):
     if (dscp % 2) != 0:
         return dscp
-    if dscp in dscp_dict.keys():
-        return dscp_dict.get(dscp, 'default')
+    return dscp_dict.get(dscp, 'default')
