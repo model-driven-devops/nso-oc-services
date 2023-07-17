@@ -19,6 +19,36 @@
             api_method: PUT
             content: |
               mdd:openconfig:
+                openconfig-acl:acl:
+                  openconfig-acl:acl-sets:
+                    openconfig-acl:acl-set:
+                      - openconfig-acl:name: '25'
+                        openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                        openconfig-acl:config:
+                          openconfig-acl:name: '25'
+                          openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                        openconfig-acl:acl-entries:
+                          openconfig-acl:acl-entry:
+                            - openconfig-acl:sequence-id: 10
+                              openconfig-acl:actions:
+                                openconfig-acl:config:
+                                  openconfig-acl:forwarding-action: 'ACCEPT'
+                                  openconfig-acl:log-action: 'LOG_NONE'
+                              openconfig-acl:config:
+                                openconfig-acl:sequence-id: 10
+                              openconfig-acl-ext:ipv4:
+                                openconfig-acl-ext:config:
+                                  openconfig-acl-ext:source-address: '192.168.1.1/32'
+                            - openconfig-acl:sequence-id: 20
+                              openconfig-acl:actions:
+                                openconfig-acl:config:
+                                  openconfig-acl:forwarding-action: 'ACCEPT'
+                                  openconfig-acl:log-action: 'LOG_NONE'
+                              openconfig-acl:config:
+                                openconfig-acl:sequence-id: 20
+                              openconfig-acl-ext:ipv4:
+                                openconfig-acl-ext:config:
+                                  openconfig-acl-ext:source-address: '192.168.1.2/32'
                 openconfig-interfaces:interfaces:
                   openconfig-interfaces:interface:
                     - openconfig-interfaces:name: 'GigabitEthernet2'
@@ -90,12 +120,14 @@
                         mode: 'sparse-mode'
                         query-interval: '22'
                         dr-priority: '222'
+                        neighbor-filter: '25'
                   - name: '3'
                     ip:
                       pim:
                         mode: 'sparse-dense-mode'
                         query-interval: '33'
                         dr-priority: '333'
+                        neighbor-filter: '25'
           - name: NED init multicast
             tags:
               - init_multicast
@@ -113,5 +145,7 @@
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['pim']['interfaces']['interface'][0]['config']['mode'] == 'openconfig-pim-types:PIM_MODE_SPARSE'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['pim']['interfaces']['interface'][0]['config']['hello-interval'] == 22"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['pim']['interfaces']['interface'][0]['config']['dr-priority'] == 222"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['pim']['interfaces']['interface'][0]['config']['openconfig-pim-ext:neighbor-filter'] == '25'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['pim']['interfaces']['interface'][1]['config']['mode'] == 'openconfig-pim-types:PIM_MODE_DENSE'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['pim']['interfaces']['interface'][1]['config']['hello-interval'] == 33"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][1]['pim']['interfaces']['interface'][1]['config']['openconfig-pim-ext:neighbor-filter'] == '25'"

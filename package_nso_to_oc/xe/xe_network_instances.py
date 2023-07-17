@@ -249,7 +249,8 @@ def configure_pim_network_instance(config_before, config_leftover):
             "openconfig-network-instance:interface-id": "",
             "openconfig-network-instance:mode": "",
             "openconfig-network-instance:dr-priority": 0,
-            "openconfig-network-instance:hello-interval": 0
+            "openconfig-network-instance:hello-interval": 0,
+            "openconfig-pim-ext:neighbor-filter": ""
         },
         "openconfig-network-instance:interface-ref": {
             "openconfig-network-instance:config": {
@@ -279,6 +280,8 @@ def configure_pim_network_instance(config_before, config_leftover):
                         tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:dr-priority"] = pim_value
                     if "query-interval" in pim_key:
                         tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:hello-interval"] = pim_value
+                    if "neighbor-filter" in pim_key:
+                        tmp_pim_interface["openconfig-network-instance:config"]["openconfig-pim-ext:neighbor-filter"] = str(pim_value)
                     if "mode" in pim_key:
                         if "sparse-dense-mode" in pim_value:
                             tmp_pim_interface["openconfig-network-instance:config"]["openconfig-network-instance:mode"] = "openconfig-pim-types:PIM_MODE_DENSE"
