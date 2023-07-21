@@ -11,7 +11,7 @@ export ANSIBLE_CONFIG=ansible_xe.cfg
 ```
 Follow the lab deploying topology instructions from https://github.com/model-driven-devops/mdd/blob/main/exercises/deploy-topology.md
 
-Set NSO Environment variables for testing playbooks:
+Set NSO Environment variables for testing the playbooks:
 ```
 export NSO_HOST=
 export NSO_URL=
