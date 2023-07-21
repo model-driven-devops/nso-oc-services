@@ -20,6 +20,10 @@ module openconfig-acl-ext{
 
   description
     "Augmentation to openconfig acl model.";
+  revision "2023-07-21" {
+    description
+      "Added support for forwarding-type of remark to support ACL remarks";
+  }
   revision "2023-06-23" {
     description
       "Added support for ICMP message types and codes";
@@ -31,6 +35,11 @@ module openconfig-acl-ext{
   revision "2021-10-26" {
     description
       "Initial revision";
+  }
+  identity REMARK {
+    base oc-acl:FORWARDING_ACTION;
+    description
+      "Access-list entry is a remark only";
   }
   identity ACL_IPV4_STANDARD {
     base oc-acl:ACL_TYPE;

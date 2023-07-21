@@ -19,8 +19,11 @@ TEST - True or False. True enables sending the OpenConfig to the NSO server afte
 import sys
 from importlib.util import find_spec
 from ipaddress import IPv4Network
+import os
 import socket
 import re
+
+ACL_USE_EXISTING_SEQ = os.environ.get("ACL_USE_EXISTING_SEQ", "False")
 
 acls_notes = []
 openconfig_acls = {
@@ -82,6 +85,7 @@ icmp_names_to_types = {
 actions_xe_to_oc = {
     "permit": "ACCEPT",
     "deny": "REJECT",
+    "remark": "REMARK"
 }
 port_operators = ["range", "eq", "lt", "gt", "neq"]
 ACL_STD_TYPE = "ACL_IPV4_STANDARD"
@@ -212,8 +216,13 @@ class BaseAcl:
             return
 
         success = True
-        if rule_parts[0].isdigit():  # if isdigit, then has sequence number
+        if rule_parts[0].isdigit() and ACL_USE_EXISTING_SEQ == 'True':  # if isdigit, then has sequence number
+            print('under True')
             seq_id = int(rule_parts[0])
+            starting_index = 1
+        elif rule_parts[0].isdigit() and ACL_USE_EXISTING_SEQ == 'False':  # if isdigit, then has sequence number
+            seq_id = self.ace_seq_begin
+            self.ace_seq_begin += 10
             starting_index = 1
         else:
             seq_id = self.ace_seq_begin
@@ -222,11 +231,24 @@ class BaseAcl:
         if rule_parts[starting_index] == "remark":
             acls_note_add(f"""
                 Access-list {self._xe_acl_set.get("id")} sequence number {seq_id} is a remark.
-                ACL remarks are not supported in Openconfig
-                If you want to keep the below remark, you should add it to your source of truth:
+                ACL remarks are only supported in MDD OpenConfig using the forwarding action of "REMARK"
+                You may want to consider how you want to handle your ACL remarks.:
                 "{seq_id} {access_rule["rule"]}"
             """)
+            entry = {
+                "openconfig-acl:sequence-id": seq_id,
+                "openconfig-acl:config": {
+                    "openconfig-acl:sequence-id": seq_id,
+                    "openconfig-acl:description": " ".join(rule_parts[starting_index + 1:])
+                },
+                "openconfig-acl:actions": {
+                    "openconfig-acl:config": {
+                        "openconfig-acl:forwarding-action": "REMARK"}
+                }
+            }
+            acl_set["openconfig-acl:acl-entries"]["openconfig-acl:acl-entry"].append(entry)
             return success
+
         entry = {
             "openconfig-acl:sequence-id": seq_id,
             "openconfig-acl:config": {"openconfig-acl:sequence-id": seq_id},

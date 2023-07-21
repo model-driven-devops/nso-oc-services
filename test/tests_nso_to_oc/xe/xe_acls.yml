@@ -222,18 +222,18 @@
                                       openconfig-if-ip:prefix-length: 24
                               openconfig-if-ip:config:
                                 openconfig-if-ip:dhcp-client: false
-                          - openconfig-interfaces:index: 10
-                            openconfig-interfaces:config:
-                              openconfig-interfaces:index: 10
-                            openconfig-if-ip:ipv4:
-                              openconfig-if-ip:addresses:
-                                openconfig-if-ip:address:
-                                  - openconfig-if-ip:ip: '10.8.10.2'
-                                    openconfig-if-ip:config:
-                                      openconfig-if-ip:ip: '10.8.10.2'
-                                      openconfig-if-ip:prefix-length: 24
-                              openconfig-if-ip:config:
-                                openconfig-if-ip:dhcp-client: false
+#                          - openconfig-interfaces:index: 10
+#                            openconfig-interfaces:config:
+#                              openconfig-interfaces:index: 10
+#                            openconfig-if-ip:ipv4:
+#                              openconfig-if-ip:addresses:
+#                                openconfig-if-ip:address:
+#                                  - openconfig-if-ip:ip: '10.8.10.2'
+#                                    openconfig-if-ip:config:
+#                                      openconfig-if-ip:ip: '10.8.10.2'
+#                                      openconfig-if-ip:prefix-length: 24
+#                              openconfig-if-ip:config:
+#                                openconfig-if-ip:dhcp-client: false
           
           - name: NSO configure ACLs
             tags:
@@ -266,6 +266,7 @@
                         - rule: '60 deny icmp host 192.168.1.12 any 222 223'
                         - rule: '70 deny icmp host 192.168.1.12 any packet-too-big'
                         - rule: '80 permit ip any any'
+                        - rule: '90 remark the end'
                     - name: 'service-cmd'
                       ext-access-list-rule:
                         - rule: '10 permit tcp any eq cmd any'
@@ -426,6 +427,9 @@
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][6]['sequence-id'] == 70"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][6]['openconfig-acl-ext:icmp-v4']['config']['type'] == 3"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][6]['openconfig-acl-ext:icmp-v4']['config']['code'] == 4"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][8]['sequence-id'] == 90"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][8]['actions']['config']['forwarding-action'] == 'openconfig-acl-ext:REMARK'"
+          - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['acl-sets']['acl-set'][2]['acl-entries']['acl-entry'][8]['config']['description'] == 'the end'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['id'] == 'vty 0 4'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['egress-acl-set'] == '11'"
           - "oc_result.json['mdd:openconfig']['openconfig-acl:acl']['openconfig-acl-ext:lines']['line'][0]['ingress-acl-sets']['ingress-acl-set'][0]['config']['ingress-acl-set-name'] == '11'"

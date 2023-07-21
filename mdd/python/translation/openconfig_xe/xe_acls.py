@@ -69,7 +69,8 @@ def xe_acls_program_service(self, nso_props) -> None:
         (12, 0): "general-parameter-problem"}
     actions_oc_to_xe = {'oc-acl:ACCEPT': 'permit',
                         'oc-acl:DROP': 'deny',
-                        'oc-acl:REJECT': 'deny'}
+                        'oc-acl:REJECT': 'deny',
+                        'oc-acl-ext:REMARK': 'remark'}
     device = nso_props.root.devices.device[nso_props.device_name].config
     for service_acl in nso_props.service.oc_acl__acl.acl_sets.acl_set:
         if service_acl.type == 'oc-acl:ACL_IPV4':
@@ -81,6 +82,11 @@ def xe_acls_program_service(self, nso_props) -> None:
             rules_oc_config = list()  # {'10 permit tcp any 1.1.1.1 0.0.0.0 eq 80'}
 
             for i in service_acl.acl_entries.acl_entry:
+                if actions_oc_to_xe[i.actions.config.forwarding_action] == 'remark':
+                    rule = str(i.sequence_id) + ' remark ' + i.config.description
+                    rule = rule.strip()
+                    rules_oc_config.append(rule)
+                    continue
                 rule = str(i.sequence_id) + ' ' + actions_oc_to_xe[i.actions.config.forwarding_action] + ' '
                 if i.ipv4.config.protocol:
                     rule += protocols_oc_to_xe[i.ipv4.config.protocol] + ' '
@@ -158,6 +164,11 @@ def xe_acls_program_service(self, nso_props) -> None:
             acl = device.ios__ip.access_list.standard.std_named_acl[service_acl.name]
             rules_oc_config = list()  # {'10 permit any'}
             for i in service_acl.acl_entries.acl_entry:
+                if actions_oc_to_xe[i.actions.config.forwarding_action] == 'remark':
+                    rule = str(i.sequence_id) + ' remark ' + i.config.description
+                    rule = rule.strip()
+                    rules_oc_config.append(rule)
+                    continue
                 rule = str(i.sequence_id) + ' ' + actions_oc_to_xe[i.actions.config.forwarding_action] + ' '
                 if i.oc_acl_ext__ipv4.config.source_address == '0.0.0.0/0':
                     rule += 'any '

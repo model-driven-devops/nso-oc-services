@@ -12,6 +12,7 @@ This python package will read in a json configuration for a device and translate
    export NSO_DEVICE=router1
    export DEVICE_OS=xe
    export TEST=False   <- if True, the generated OC configuration is sent back to NSO
+   export ACL_USE_EXISTING_SEQ=False   <- if True, existing ACL sequence numbers will be used. Could cause remark errors
    ```
    - For a file (to be used if you've previously pulled the NSO configuration)
    ```
