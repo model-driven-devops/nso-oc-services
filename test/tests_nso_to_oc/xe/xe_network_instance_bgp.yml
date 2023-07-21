@@ -218,6 +218,7 @@
                                     local-as:
                                       as-no: 100
                                     password:
+                                      enctype: 7
                                       text: super_secret
                                     send-community:
                                       send-community-where: standard
@@ -289,7 +290,7 @@
                             stop-date: '2'
                             stop-year: '2026'
 
-          - name: NED configure BGP TCP-AO
+          - name: NED configure BGP TCP-AO and neighbor password encryption
             tags:
               - bgp_global_config_tcp_ao
             api_path: config/tailf-ned-cisco-ios:router/bgp
@@ -310,6 +311,16 @@
                       remote-as: '2'
                       ao:
                         keychain-name: BGP_KEY_CHAIN1
+                    - id: 172.29.100.2
+                      remote-as: '2'
+                      password:
+                        enctype: 0
+                        text: 'not_so_secret1'
+                    - id: 172.29.100.6
+                      remote-as: '2'
+                      password:
+                        enctype: 7
+                        text: '00071A1507545A545C'
 
         assertions:
           # Default
@@ -372,6 +383,7 @@
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][0]['afi-safis']['afi-safi'][0]['config']['afi-safi-name'] == 'openconfig-bgp-types:IPV4_UNICAST'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][0]['afi-safis']['afi-safi'][0]['config']['enabled'] == false"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['peer-group-name'] == 'foo'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['openconfig-bgp-ext:password-encryption'] == 'ENCRYPTED'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['auth-password'] == 'super_secret'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['description'] == 'my_description'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['local-as'] == 100"
@@ -385,3 +397,8 @@
           # BGP TCP-AO Auth
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][0]['config']['openconfig-bgp-ext:tcpao-keychain'] == 'BGP_KEY_CHAIN1'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][1]['config']['openconfig-bgp-ext:tcpao-keychain'] == 'BGP_KEY_CHAIN1'"
+          # Neighbor password encryption
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][4]['config']['openconfig-bgp-ext:password-encryption'] == 'CLEARTEXT'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][4]['config']['auth-password']== 'not_so_secret1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][5]['config']['openconfig-bgp-ext:password-encryption'] == 'ENCRYPTED'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][5]['config']['auth-password']== '00071A1507545A545C'"

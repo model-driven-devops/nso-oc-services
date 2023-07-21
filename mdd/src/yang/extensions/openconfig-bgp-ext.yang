@@ -25,6 +25,10 @@ module openconfig-bgp-ext{
   description
     "Augmentation to openconfig bgp model.";
 
+  revision "2023-07-19" {
+    description
+      "Added auth-password encryption";
+  }
   revision "2023-05-25" {
     description
       "Added TCP-AO Authentication";
@@ -62,6 +66,28 @@ module openconfig-bgp-ext{
       type string;
       description
         "Uses a TCP-AO key-chain.";
+    }
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:bgp/oc-netinst:neighbors/oc-netinst:neighbor/oc-netinst:config {
+    when "../../../../oc-netinst:identifier = 'oc-pol-types:BGP'";
+    leaf password-encryption {
+      type enumeration {
+        enum CLEARTEXT;
+        enum ENCRYPTED;
+      }
+      description
+        "Enables neighbor auth-password encryption.";
+    }
+  }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:bgp/oc-netinst:peer-groups/oc-netinst:peer-group/oc-netinst:config {
+    when "../../../../oc-netinst:identifier = 'oc-pol-types:BGP'";
+    leaf password-encryption {
+      type enumeration {
+        enum CLEARTEXT;
+        enum ENCRYPTED;
+      }
+      description
+        "Enables peer-group auth-password encryption.";
     }
   }
 }

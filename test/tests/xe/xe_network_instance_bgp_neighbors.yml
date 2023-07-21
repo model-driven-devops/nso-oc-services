@@ -120,12 +120,22 @@
                                 openconfig-network-instance:config:
                                   openconfig-network-instance:neighbor-address: '10.11.11.2'
                                   openconfig-network-instance:peer-as: 2
-                                  openconfig-network-instance:auth-password: 'super_secret'
+                                  openconfig-network-instance:auth-password: 'not_so_secret'
+                                  openconfig-bgp-ext:password-encryption: 'CLEARTEXT'
+                              - openconfig-network-instance:neighbor-address: '10.11.11.3'
+                                openconfig-network-instance:config:
+                                  openconfig-network-instance:neighbor-address: '10.11.11.3'
+                                  openconfig-network-instance:peer-as: 2
+                                  openconfig-network-instance:auth-password: '00071A1507545A545C'
+                                  openconfig-bgp-ext:password-encryption: 'ENCRYPTED'
+
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor 10.11.11.2 password super_secret:' in changes"
+          - "'+ neighbor 10.11.11.2 password not_so_secret:' in changes"
+          - "'+ neighbor 10.11.11.3 password 7 00071A1507545A545C:' in changes"
+
 
     - name: test neighbor_remote_tcpao-keychain
       tags:

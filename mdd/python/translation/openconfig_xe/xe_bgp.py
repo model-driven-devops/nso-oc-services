@@ -414,6 +414,10 @@ def xe_bgp_configure_neighbor(nso_props, service_bgp_neighbor, neighbor) -> None
             raise ValueError('XE BGP neighbor supports auth_password OR tcpao-keychain')
         if service_bgp_neighbor.config.auth_password:
             neighbor.password.text = service_bgp_neighbor.config.auth_password
+        if service_bgp_neighbor.config.password_encryption == "CLEARTEXT":
+            neighbor.password.enctype = 0
+        elif service_bgp_neighbor.config.password_encryption == "ENCRYPTED":
+            neighbor.password.enctype = 7
         if service_bgp_neighbor.config.tcpao_keychain:
             # Check service for system key-chain
             if len(nso_props.service.oc_sys__system.services.key_chains.key_chain) > 0:
@@ -479,7 +483,7 @@ def xe_bgp_peer_groups_program_service(self, nso_props, service_protocol, networ
                     service_bgp_peergroup.peer_group_name]
             if not peer_group.peer_group.exists():
                 peer_group.peer_group.create()
-            xe_bgp_configure_peer_group(service_bgp_peergroup, peer_group)
+            xe_bgp_configure_peer_group(nso_props, service_bgp_peergroup, peer_group)
 
     # If not afi then do below, else create the peer-groups in the appropriate afis
     self.log.info(f'{nso_props.device_name} BGP peer-groups')
@@ -547,7 +551,7 @@ def xe_bgp_peer_groups_program_service(self, nso_props, service_protocol, networ
                                 neighbor_object_cdb.peer_group.create()
                             activate_peer_group(afi_safi_service, neighbor_object_cdb, service_bgp_peergroup,
                                                 service_dynamic_neighbors)
-                            xe_bgp_configure_peer_group(service_bgp_peergroup, neighbor_object_cdb)
+                            xe_bgp_configure_peer_group(nso_props, service_bgp_peergroup, neighbor_object_cdb)
                             apply_policy(neighbor_object_cdb, afi_safi_service)
                             if service_bgp_peergroup.config.send_community and service_bgp_peergroup.config.send_community != 'NONE':
                                 send_community(neighbor_object_cdb, service_bgp_peergroup)
@@ -575,7 +579,7 @@ def xe_bgp_peer_groups_program_service(self, nso_props, service_protocol, networ
                 configure_global_peer_group()
 
 
-def xe_bgp_configure_peer_group(service_bgp_peer_group, peer_group) -> None:
+def xe_bgp_configure_peer_group(nso_props, service_bgp_peer_group, peer_group) -> None:
     if service_bgp_peer_group.apply_policy:
         if service_bgp_peer_group.apply_policy.config.export_policy:
             if len(service_bgp_peer_group.apply_policy.config.export_policy) == 1:
@@ -592,8 +596,30 @@ def xe_bgp_configure_peer_group(service_bgp_peer_group, peer_group) -> None:
     if service_bgp_peer_group.config:
         if service_bgp_peer_group.config.peer_as:
             peer_group.remote_as = service_bgp_peer_group.config.peer_as
+        if service_bgp_peer_group.config.auth_password and service_bgp_peer_group.config.tcpao_keychain:
+            raise ValueError('XE BGP peer groups support auth_password OR tcpao-keychain')
         if service_bgp_peer_group.config.auth_password:
             peer_group.password.text = service_bgp_peer_group.config.auth_password
+        if service_bgp_peer_group.config.password_encryption == "CLEARTEXT":
+            peer_group.password.enctype = 0
+        elif service_bgp_peer_group.config.password_encryption == "ENCRYPTED":
+            peer_group.password.enctype = 7
+        if service_bgp_peer_group.config.tcpao_keychain:
+            # Check service for system key-chain
+            if len(nso_props.service.oc_sys__system.services.key_chains.key_chain) > 0:
+                found_matching_keychain = False
+                for kc in nso_props.service.oc_sys__system.services.key_chains.key_chain:
+                    if kc.name == service_bgp_peer_group.config.tcpao_keychain:
+                        found_matching_keychain = True
+                        if kc.type == "TCP":
+                            peer_group.ao.keychain_name = service_bgp_peer_group.config.tcpao_keychain
+                            break;
+                        else:
+                            raise ValueError('XE BGP peer group TCP-AO Keychain Error: key-chain type is not TCP')
+                if found_matching_keychain == False:
+                    raise ValueError('XE BGP peer group TCP-AO Keychain Error: key-chain does not exist')
+            else:
+                raise ValueError('XE BGP peer group TCP-AO Keychain Error: no key-chains exists on system')
         if service_bgp_peer_group.config.description:
             peer_group.description = service_bgp_peer_group.config.description
         if service_bgp_peer_group.config.local_as:
