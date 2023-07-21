@@ -68,6 +68,14 @@ module openconfig-bgp-ext{
         "Uses a TCP-AO key-chain.";
     }
   }
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:bgp/oc-netinst:peer-groups/oc-netinst:peer-group/oc-netinst:config {
+    when "../../../../oc-netinst:identifier = 'oc-pol-types:BGP'";
+    leaf tcpao-keychain {
+      type string;
+      description
+        "Uses a TCP-AO key-chain.";
+    }
+  }
   augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:bgp/oc-netinst:neighbors/oc-netinst:neighbor/oc-netinst:config {
     when "../../../../oc-netinst:identifier = 'oc-pol-types:BGP'";
     leaf password-encryption {
