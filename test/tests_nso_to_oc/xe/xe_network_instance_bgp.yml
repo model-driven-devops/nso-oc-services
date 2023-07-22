@@ -219,7 +219,7 @@
                                       as-no: 100
                                     password:
                                       enctype: 7
-                                      text: super_secret
+                                      text: '00071A1507545A545C'
                                     send-community:
                                       send-community-where: standard
                                     as-override: {}
@@ -384,7 +384,7 @@
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][0]['afi-safis']['afi-safi'][0]['config']['enabled'] == false"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['peer-group-name'] == 'foo'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['openconfig-bgp-ext:password-encryption'] == 'ENCRYPTED'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['auth-password'] == 'super_secret'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['auth-password'] == '00071A1507545A545C'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['description'] == 'my_description'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['local-as'] == 100"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['send-community'] == 'STANDARD'"
