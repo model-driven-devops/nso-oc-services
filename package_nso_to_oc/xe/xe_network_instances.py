@@ -680,8 +680,11 @@ def cleanup_null_bgp_leftovers(config_before, config_leftover):
     clean_up_vrf_neighbors_and_peers(bgp_before.get("address-family", {}).get("with-vrf", {}),
                                      bgp_leftover.get("address-family", {}).get("with-vrf", {}).get("ipv4", []))
 
-    if bgp_leftover != None and len(bgp_leftover["bgp"]) == 0:
+    if bgp_leftover != None and bgp_leftover.get("bgp") != None:
         del bgp_leftover["bgp"]
+
+    # if bgp_leftover != None and len(bgp_leftover["bgp"]) == 0:
+    #     del bgp_leftover["bgp"]
     # if bgp_leftover.get("address-family", {}).get("ipv4") != None:
     #     check_delete_protocol_leftovers(bgp_leftover, "ipv4")
     # if bgp_leftover.get("address-family") != None:

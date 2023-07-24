@@ -613,8 +613,12 @@ def process_peer_and_neighbor_config(neighbor, peer_group_or_neighbor, index, ne
         delete_leftover_neighbor_prop("description", index, neighbor_leftover)
     if neighbor.get("password", {}).get("text"):
         peer_or_neighbor_config["openconfig-network-instance:auth-password"] = neighbor["password"]["text"]
+    if neighbor.get("password", {}).get("enctype") == 7:
+        peer_or_neighbor_config["openconfig-bgp-ext:password-encryption"] = 'ENCRYPTED'
+    elif neighbor.get("password", {}).get("enctype") == 0:
+        peer_or_neighbor_config["openconfig-bgp-ext:password-encryption"] = 'CLEARTEXT'
+    if neighbor.get("password", {}):
         del neighbor_leftover[index]["password"]
-        # delete_leftover_neighbor_prop("password", index, neighbor_leftover)
     if neighbor.get("ao", {}).get("keychain-name"):
         peer_or_neighbor_config["openconfig-bgp-ext:tcpao-keychain"] = neighbor["ao"]["keychain-name"]
         del neighbor_leftover[index]["ao"]
