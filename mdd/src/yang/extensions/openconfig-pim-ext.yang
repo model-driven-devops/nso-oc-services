@@ -1,0 +1,43 @@
+module openconfig-pim-ext{
+
+  yang-version "1.1";
+
+  // namespace
+  namespace "http://cisco.com/openconfig-pim-ext";
+
+  prefix "oc-pim-ext";
+
+  import tailf-ncs { prefix ncs; }
+  import tailf-common { prefix tailf; }
+  import mdd { prefix mdd; }
+  import openconfig-network-instance { prefix "oc-netinst"; }
+  import openconfig-extensions { prefix oc-ext; }
+  import openconfig-system { prefix oc-sys; }
+  import openconfig-system-ext { prefix oc-system-ext; }
+
+
+  // meta
+  organization "Cisco";
+
+  contact
+    "www.cisco.com";
+
+  description
+    "Augmentation to openconfig multicast (PIM) model.";
+
+  revision "2023-06-22" {
+    description
+      "Initial revision";
+  }
+
+  augment /ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:protocols/oc-netinst:protocol/oc-netinst:pim/oc-netinst:interfaces/oc-netinst:interface/oc-netinst:config {
+    when "../../../../oc-netinst:identifier = 'oc-pol-types:PIM'";
+    leaf neighbor-filter {
+      type leafref {
+        path "/ncs:devices/ncs:device/mdd:openconfig/oc-acl:acl/oc-acl:acl-sets/oc-acl:acl-set/oc-acl:name";
+      }
+      description
+        "PIM peering filter.";
+    }
+  }
+}
