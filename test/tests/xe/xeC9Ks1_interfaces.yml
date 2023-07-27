@@ -26,11 +26,11 @@
           mdd:openconfig:
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
-                - openconfig-interfaces:name: 'GigabitEthernet1/0/2'
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                   openconfig-interfaces:config:
-                    openconfig-interfaces:description: 'Physical Interface 1/0/2'
+                    openconfig-interfaces:description: 'Physical Interface 1/0/1'
                     openconfig-interfaces:enabled: true
-                    openconfig-interfaces:name: 'GigabitEthernet1/0/2'
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/1'
                     openconfig-interfaces:type: 'ethernetCsmacd'
                   openconfig-if-ethernet:ethernet:
                     openconfig-if-ethernet-mdd-ext:storm-control:
@@ -49,13 +49,50 @@
         rollback: false
         assertion_ignore_errors: false
         assertions:
-          - "' interface GigabitEthernet1/0/2:' in changes"
+          - "' interface GigabitEthernet1/0/1:' in changes"
           - "'+ storm-control broadcast level bps 11111:' in changes"
           - "'+ storm-control unicast level pps 22222:' in changes"
 
     - name: test storm control k
       tags:
         -  storm-control2
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/2'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 1/0/2'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/2'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-if-ethernet:ethernet:
+                    openconfig-if-ethernet-mdd-ext:storm-control:
+                      openconfig-if-ethernet-mdd-ext:broadcast:
+                        openconfig-if-ethernet-mdd-ext:level:
+                          openconfig-if-ethernet-mdd-ext:config:
+                            openconfig-if-ethernet-mdd-ext:suppression-type: BPS
+                            openconfig-if-ethernet-mdd-ext:bps: 25000
+                      openconfig-if-ethernet-mdd-ext:unicast:
+                        openconfig-if-ethernet-mdd-ext:level:
+                          openconfig-if-ethernet-mdd-ext:config:
+                            openconfig-if-ethernet-mdd-ext:suppression-type: PPS
+                            openconfig-if-ethernet-mdd-ext:pps: 26000
+
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet1/0/2:' in changes"
+          - "'+ storm-control broadcast level bps 25k:' in changes"
+          - "'+ storm-control unicast level pps 26k:' in changes"
+
+    - name: test storm control m
+      tags:
+        -  storm-control3
       import_role:
         name: nso-openconfig-test
       vars:
@@ -75,43 +112,6 @@
                         openconfig-if-ethernet-mdd-ext:level:
                           openconfig-if-ethernet-mdd-ext:config:
                             openconfig-if-ethernet-mdd-ext:suppression-type: BPS
-                            openconfig-if-ethernet-mdd-ext:bps: 25000
-                      openconfig-if-ethernet-mdd-ext:unicast:
-                        openconfig-if-ethernet-mdd-ext:level:
-                          openconfig-if-ethernet-mdd-ext:config:
-                            openconfig-if-ethernet-mdd-ext:suppression-type: PPS
-                            openconfig-if-ethernet-mdd-ext:pps: 26000
-
-        api_method: PUT
-        rollback: false
-        assertion_ignore_errors: false
-        assertions:
-          - "' interface GigabitEthernet1/0/3:' in changes"
-          - "'+ storm-control broadcast level bps 25k:' in changes"
-          - "'+ storm-control unicast level pps 26k:' in changes"
-
-    - name: test storm control m
-      tags:
-        -  storm-control3
-      import_role:
-        name: nso-openconfig-test
-      vars:
-        content: |
-          mdd:openconfig:
-            openconfig-interfaces:interfaces:
-              openconfig-interfaces:interface:
-                - openconfig-interfaces:name: 'GigabitEthernet1/0/4'
-                  openconfig-interfaces:config:
-                    openconfig-interfaces:description: 'Physical Interface 1/0/4'
-                    openconfig-interfaces:enabled: true
-                    openconfig-interfaces:name: 'GigabitEthernet1/0/4'
-                    openconfig-interfaces:type: 'ethernetCsmacd'
-                  openconfig-if-ethernet:ethernet:
-                    openconfig-if-ethernet-mdd-ext:storm-control:
-                      openconfig-if-ethernet-mdd-ext:broadcast:
-                        openconfig-if-ethernet-mdd-ext:level:
-                          openconfig-if-ethernet-mdd-ext:config:
-                            openconfig-if-ethernet-mdd-ext:suppression-type: BPS
                             openconfig-if-ethernet-mdd-ext:bps: 27000000
                       openconfig-if-ethernet-mdd-ext:unicast:
                         openconfig-if-ethernet-mdd-ext:level:
@@ -123,9 +123,75 @@
         rollback: false
         assertion_ignore_errors: false
         assertions:
-          - "' interface GigabitEthernet1/0/4:' in changes"
+          - "' interface GigabitEthernet1/0/3:' in changes"
           - "'+ storm-control broadcast level bps 27m:' in changes"
           - "'+ storm-control unicast level pps 28m:' in changes"
+
+    - name: test access_port IP Source Guard
+      tags:
+        - access_port_ip_source_guard
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/4'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Access Port - IP Source Guard'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/4'
+                    openconfig-interfaces:type: 'l2vlan'
+                  openconfig-if-ethernet:ethernet:
+                    openconfig-vlan:switched-vlan:
+                      openconfig-vlan:config:
+                        openconfig-vlan:access-vlan: 100
+                        openconfig-vlan:interface-mode: 'ACCESS'
+                    openconfig-if-ethernet-mdd-ext:ip-source-guard:
+                      openconfig-if-ethernet-mdd-ext:config:
+                        openconfig-if-ethernet-mdd-ext:ip-source-guard: 'ENABLED'
+
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet1/0/4:' in changes"
+          - "'+ ip verify source:' in changes"
+
+    - name: test access_port unknown block unicast/multicast
+      tags:
+        - access_port_unknown_block
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet1/0/5'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Access Port Example'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet1/0/5'
+                    openconfig-interfaces:type: 'l2vlan'
+                  openconfig-if-ethernet:ethernet:
+                    openconfig-vlan:switched-vlan:
+                      openconfig-vlan:config:
+                        openconfig-vlan:access-vlan: 100
+                        openconfig-vlan:interface-mode: 'ACCESS'
+                    openconfig-if-ethernet-mdd-ext:unknown-flood-blocking:
+                      openconfig-if-ethernet-mdd-ext:config:
+                        openconfig-if-ethernet-mdd-ext:unicast: 'ENABLED'
+                        openconfig-if-ethernet-mdd-ext:multicast: 'ENABLED'
+
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet1/0/5:' in changes"
+          - "'+ switchport block unicast:' in changes"
+          - "'+ switchport block multicast:' in changes"
 
 - hosts: nso
   connection: local
