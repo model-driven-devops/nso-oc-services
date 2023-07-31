@@ -148,7 +148,7 @@
                       mode:
                         access: {}
                       access:
-                        vlan: 201
+                        vlan: 200
                     ip:
                       verify:
                         source: {}
@@ -177,7 +177,7 @@
                       mode:
                         access: {}
                       access:
-                        vlan: 200
+                        vlan: 201
                       block:
                         unicast:
                           - null

@@ -159,9 +159,9 @@
           - "' interface GigabitEthernet1/0/4:' in changes"
           - "'+ ip verify source:' in changes"
 
-    - name: test access_port unknown block unicast/multicast
+    - name: test access_port unknown flood blocking unicast/multicast
       tags:
-        - access_port_unknown_block
+        - access_port_unknown_flood_blocking
       import_role:
         name: nso-openconfig-test
       vars:

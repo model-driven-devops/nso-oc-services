@@ -127,6 +127,8 @@ def xe_process_interfaces(self, nso_props) -> None:
             xe_interface_ethernet(self, nso_props, interface, l2_interface)
             xe_interface_storm_control(interface, l2_interface)
             xe_interface_unknown_flood_blocking(interface, l2_interface)
+            xe_interface_ip_source_guard(interface, l2_interface)
+
 
         # Port channels
         elif interface.config.type == 'ianaift:ieee8023adLag':
@@ -186,6 +188,7 @@ def xe_process_interfaces(self, nso_props) -> None:
             xe_interface_hold_time(interface, physical_interface)
             xe_interface_storm_control(interface, physical_interface)
             xe_interface_unknown_flood_blocking(interface, physical_interface)
+            xe_interface_ip_source_guard(interface, physical_interface)
             if interface.ethernet.switched_vlan.config.interface_mode:
                 raise ValueError(
                     f"Interface {interface_type}{interface_number} is configured a type \
@@ -739,3 +742,12 @@ def xe_interface_unknown_flood_blocking(interface_service: ncs.maagic.ListElemen
         if not interface_cdb.switchport.exists():
             raise ValueError('Unknown Flood Blocking Error: interface is not mode switchport')
         interface_cdb.switchport.block.multicast.create()
+
+
+def xe_interface_ip_source_guard(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
+    if interface_service.oc_eth__ethernet.ip_source_guard.config.ip_source_guard == "DISABLED":
+        if interface_cdb.ip.verify.source.exists():
+            interface_cdb.ip.verify.source.delete()
+    elif interface_service.oc_eth__ethernet.ip_source_guard.config.ip_source_guard == "ENABLED":
+        interface_cdb.ip.verify.source.create()
+

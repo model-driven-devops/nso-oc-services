@@ -24,10 +24,6 @@ module openconfig-if-ethernet-mdd-ext {
   description
     "Augmentation to openconfig of ethernet model.";
 
-  revision "2023-07-11" {
-    description
-      "Implement PAE";
-  }
   revision "2023-06-30" {
     description
       "Implement IP Source Guard";
@@ -47,7 +43,6 @@ module openconfig-if-ethernet-mdd-ext {
     container storm-control {
       description
         "Enclosing container for storm-control handled by this interface";
-
       container broadcast {
         description
           "Enclosing container for broadcast address storm control";
@@ -140,19 +135,19 @@ module openconfig-if-ethernet-mdd-ext {
           type enumeration {
             enum ENABLED;
             enum DISABLED;
-           }
-           default DISABLED;
-           description
-             "Select Unknown Unicast Flood Blocking.";
+          }
+          default DISABLED;
+          description
+            "Select Unknown Unicast Flood Blocking.";
         }
         leaf multicast {
           type enumeration {
             enum ENABLED;
             enum DISABLED;
-           }
-           default DISABLED;
-           description
-             "Select Unknown Multicast Flood Blocking.";
+          }
+          default DISABLED;
+          description
+           "Select Unknown Multicast Flood Blocking.";
         }
       }
     }
@@ -171,64 +166,23 @@ module openconfig-if-ethernet-mdd-ext {
           type enumeration {
             enum ENABLED;
             enum DISABLED;
-           }
-           default DISABLED;
-           description
-             "Select IP Source Guard.";
+          }
+          default DISABLED;
+          description
+            "Select IP Source Guard.";
         }
       }
     }
   }
 
-  grouping port-access-entity-extensions {
-    description
-      "Enclosing container for port-access-entity (PAE) on this interface";
-    leaf port-access-entity {
-      type enumeration {
-        enum AUTHENTICATOR;
-        enum SUPPLICANT;
-        enum BOTH;
-        enum DISABLED;
-       }
-       default DISABLED;
-       description
-         "Select Port Access Entity settings.";
-    }
-  }
-
-  grouping port-control-extensions {
-    description
-      "Enclosing container for port control on this interface";
-    leaf port-control {
-      type enumeration {
-        enum AUTO;
-        enum FORCE-AUTHORIZED;
-        enum FORCE-UNAUTHORIZED;
-        enum DISABLED;
-       }
-       default DISABLED;
-       description
-         "Select port control settings.";
-    }
-  }
-
-
   // augment statements
 
   augment "/ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-eth:ethernet" {
-      description
-        "MDD extensions to ethernet interfaces";
+    description
+      "MDD extensions to ethernet interfaces";
 
-      uses storm-control-extensions;
-      uses unknown-flood-blocking-extension;
-      uses ip-source-guard-extensions;
-  }
-
-  augment "/ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-eth:ethernet/oc-1x:dot1x/oc-1x:config" {
-      description
-        "MDD extensions to ethernet/dot1x interfaces";
-
-      uses port-access-entity-extensions;
-      uses port-control-extensions;
+    uses storm-control-extensions;
+    uses unknown-flood-blocking-extension;
+    uses ip-source-guard-extensions;
   }
 }
