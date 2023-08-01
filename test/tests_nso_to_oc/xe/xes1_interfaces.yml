@@ -47,6 +47,8 @@
                 vlan-list:
                   - id: 1
                     name: default
+                  - id: 10
+                    name: VLAN10
                   - id: 99
                     name: VLAN99
                   - id: 100
