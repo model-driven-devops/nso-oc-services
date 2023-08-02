@@ -185,7 +185,7 @@ def create_interface_dict(config_before: dict) -> dict:
 
 
 def configure_switched_vlan(nso_before_interface: dict, nso_leftover_interface: dict,
-                            openconfig_interface: dict, interface_name: str) -> None:
+                            openconfig_interface: dict, interface_name: str, vlans_vlan_database: list) -> None:
     """Configure L2 interfaces: TRUNK and ACCESS"""
     openconfig_interface.update(
         {"openconfig-vlan:switched-vlan": {"openconfig-vlan:config": {}}})
@@ -209,9 +209,10 @@ def configure_switched_vlan(nso_before_interface: dict, nso_leftover_interface: 
                 nso_before_interface["switchport"]["trunk"].get("native", {}).get("vlan")
             del nso_leftover_interface["switchport"]["trunk"]["native"]
         if nso_before_interface["switchport"].get("trunk", {}).get("allowed", {}).get("vlan", {}).get("vlans"):
+            vlans_candidate = nso_before_interface["switchport"].get("trunk", {}).get("allowed", {}).get("vlan", {}).get("vlans")
+            vlans_allowed = [v for v in vlans_candidate if v in vlans_vlan_database]
             openconfig_interface["openconfig-vlan:switched-vlan"][
-                "openconfig-vlan:config"]["openconfig-vlan:trunk-vlans"] = \
-                nso_before_interface["switchport"].get("trunk", {}).get("allowed", {}).get("vlan", {}).get("vlans")
+                "openconfig-vlan:config"]["openconfig-vlan:trunk-vlans"] = vlans_allowed
             del nso_leftover_interface["switchport"]["trunk"]["allowed"]
     # Mode dynamic: desirable or dynamic: auto will be a converted to TRUNK in OC
     elif nso_before_interface["switchport"].get("mode", {}).get("dynamic"):
@@ -224,9 +225,10 @@ def configure_switched_vlan(nso_before_interface: dict, nso_leftover_interface: 
                 nso_before_interface["switchport"]["trunk"].get("native", {}).get("vlan")
             del nso_leftover_interface["switchport"]["trunk"]["native"]
         if nso_before_interface["switchport"].get("trunk", {}).get("allowed", {}).get("vlan", {}).get("vlans"):
+            vlans_candidate = nso_before_interface["switchport"].get("trunk", {}).get("allowed", {}).get("vlan", {}).get("vlans")
+            vlans_allowed = [v for v in vlans_candidate if v in vlans_vlan_database]
             openconfig_interface["openconfig-vlan:switched-vlan"][
-                "openconfig-vlan:config"]["openconfig-vlan:trunk-vlans"] = \
-                nso_before_interface["switchport"].get("trunk", {}).get("allowed", {}).get("vlan", {}).get("vlans")
+                "openconfig-vlan:config"]["openconfig-vlan:trunk-vlans"] = vlans_allowed
             del nso_leftover_interface["switchport"]["trunk"]["allowed"]
         interfaces_notes_add(f"""
             Interface {interface_name} was set to trunking dynamic {nso_before_interface["switchport"].get("mode", {}).get("dynamic")}.
@@ -513,6 +515,7 @@ def configure_software_l3ipvlan(config_before: dict, config_leftover: dict, inte
 
 def configure_port_channel(config_before: dict, config_leftover: dict, interface_data: dict) -> None:
     """Configure LACP port-channel"""
+    vlans_db = vlan_get_db(config_before)
     for interface_directory in interface_data.values():
         # Configure port-channel interface
         if interface_directory["nso_interface_type"] == "Port-channel":
@@ -535,7 +538,7 @@ def configure_port_channel(config_before: dict, config_leftover: dict, interface
             openconfig_interface_agg = return_nested_dict(openconfig_interfaces, path_oc_agg)
             if nso_before_interface.get("switchport"):
                 configure_switched_vlan(nso_before_interface, nso_leftover_interface, openconfig_interface_agg,
-                                        interface_name)
+                                        interface_name, vlans_db)
             xe_configure_ipv4_interface(nso_before_interface, nso_leftover_interface, openconfig_interface_agg)
         # Configure port-channel sub-interfaces
         if interface_directory["nso_interface_type"] == "Port-channel-subinterface":
@@ -869,12 +872,17 @@ def xe_configure_hsrp_interfaces(nso_before_interface: dict, nso_leftover_interf
     return (service_hsrp, hsrp_leftover)
 
 
+def vlan_get_db(c):
+    return [v.get("id") for v in c.get("tailf-ned-cisco-ios:vlan", {}).get("vlan-list", [])]
+
+
 def configure_csmacd(config_before: dict, config_leftover: dict, interface_data: dict) -> None:
     """
     Iterate through interface_data
     Call up the config_before["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]]
     Add need OC config to openconfig_interfaces["openconfig-interfaces:interfaces"]["openconfig-interfaces:interface"][v["oc_interface_index"]]
     """
+    vlans_db = vlan_get_db(config_before)
     for interface_directory in interface_data.values():
         path_oc = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
                    interface_directory["oc_interface_index"], "openconfig-interfaces:subinterfaces",
@@ -942,7 +950,7 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
             path_oc = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
                        interface_directory["oc_interface_index"], "openconfig-if-ethernet:ethernet"]
             openconfig_interface = return_nested_dict(openconfig_interfaces, path_oc)
-            configure_switched_vlan(nso_before_interface, nso_leftover_interface, openconfig_interface, interface_name)
+            configure_switched_vlan(nso_before_interface, nso_leftover_interface, openconfig_interface, interface_name, vlans_db)
         else:
             path_oc = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
                        interface_directory["oc_interface_index"], "openconfig-interfaces:subinterfaces",
