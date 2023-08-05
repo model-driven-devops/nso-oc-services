@@ -80,10 +80,21 @@ openconfig_system = {
             "openconfig-system-ext:boot-network": {
                 "openconfig-system-ext:config": {},
             },
+            "openconfig-system-ext:udld": {
+                "openconfig-system-ext:config": {},
+            },
+            "openconfig-system-ext:dhcp-snooping": {
+                "openconfig-system-ext:global-config": {
+                    "openconfig-system-ext:config": {},
+                },
+                "openconfig-system-ext:vlans": []
+            },
+            "openconfig-system-ext:dynamic-arp-inspection": {
+                "openconfig-system-ext:vlans": []
+            },
             "openconfig-system-ext:nat": {
                 "openconfig-system-ext:pools": {"openconfig-system-ext:pool": []},
-                "openconfig-system-ext:inside": {"openconfig-system-ext:source": {}
-                }
+                "openconfig-system-ext:inside": {"openconfig-system-ext:source": {}}
             }
         },
         "openconfig-system-ext:timestamps": {
@@ -168,6 +179,37 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
         del config_leftover["tailf-ned-cisco-ios:ip"]["identd"]
     else:
         openconfig_system_services["openconfig-system-ext:config"]["openconfig-system-ext:ip-identd"] = False
+    # UDLD
+    if type(config_before.get("tailf-ned-cisco-ios:udld", {}).get("enable", '')) is list:
+        openconfig_system_services["openconfig-system-ext:udld"]["openconfig-system-ext:config"]["openconfig-system-ext:udld"] = "ENABLED"
+        del config_leftover["tailf-ned-cisco-ios:udld"]["enable"]
+    elif type(config_before.get("tailf-ned-cisco-ios:udld", {}).get("aggressive", '')) is list:
+        openconfig_system_services["openconfig-system-ext:udld"]["openconfig-system-ext:config"]["openconfig-system-ext:udld"] = "AGGRESSIVE"
+        del config_leftover["tailf-ned-cisco-ios:udld"]["aggressive"]
+    else:
+        openconfig_system_services["openconfig-system-ext:udld"]["openconfig-system-ext:config"]["openconfig-system-ext:udld"] = "DISABLED"
+    if config_before.get("tailf-ned-cisco-ios:udld", {}).get("message", {}).get("time"):
+        openconfig_system_services["openconfig-system-ext:udld"]["openconfig-system-ext:config"]["openconfig-system-ext:message-time"] = config_before.get("tailf-ned-cisco-ios:udld", {}).get("message", {}).get("time")
+        del config_leftover["tailf-ned-cisco-ios:udld"]["message"]
+    if type(config_before.get("tailf-ned-cisco-ios:udld", {}).get("recovery", '')) is list:
+        openconfig_system_services["openconfig-system-ext:udld"]["openconfig-system-ext:config"]["openconfig-system-ext:recovery"] = "ENABLED"
+        del config_leftover["tailf-ned-cisco-ios:udld"]["recovery"]
+    else:
+        openconfig_system_services["openconfig-system-ext:udld"]["openconfig-system-ext:config"]["openconfig-system-ext:recovery"] = "DISABLED"
+    if config_before.get("tailf-ned-cisco-ios:udld", {}).get("recovery-conf", {}).get("recovery", {}).get("interval"):
+        openconfig_system_services["openconfig-system-ext:udld"]["openconfig-system-ext:config"]["openconfig-system-ext:recovery-interval"] = config_before.get("tailf-ned-cisco-ios:udld", {}).get("recovery-conf", {}).get("recovery", {}).get("interval")
+        del config_leftover["tailf-ned-cisco-ios:udld"]["recovery-conf"]
+    # DHCP Snooping
+    if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("dhcp", {}).get("snooping-conf", {}).get("snooping", '')) is list:
+        openconfig_system_services["openconfig-system-ext:dhcp-snooping"]["openconfig-system-ext:global-config"]["openconfig-system-ext:config"]["openconfig-system-ext:enable"] = "ENABLED"
+        del config_leftover["tailf-ned-cisco-ios:ip"]["dhcp"]["snooping-conf"]["snooping"]
+    else:
+        openconfig_system_services["openconfig-system-ext:dhcp-snooping"]["openconfig-system-ext:global-config"]["openconfig-system-ext:config"]["openconfig-system-ext:enable"] = "DISABLED"
+    if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("dhcp", {}).get("snooping", {}).get("vlan", '')) is list:
+        xe_system_dhcp_snooping(config_before, config_leftover)
+    # DAI
+    if type(config_before.get("tailf-ned-cisco-ios:ip", {}).get("arp", {}).get("inspection", {}).get("vlan", '')) is list:
+        xe_system_dynamic_arp_inspection(config_before, config_leftover)
     # IP http server
     if config_before.get("tailf-ned-cisco-ios:ip", {}).get("http", {}).get("server", True) is False:
         openconfig_system_services["openconfig-system-ext:http"]["openconfig-system-ext:config"]["openconfig-system-ext:http-enabled"] = False
@@ -353,6 +395,48 @@ def xe_system_object_track(config_before: dict, config_leftover: dict) -> None:
         openconfig_system["openconfig-system:system"]["openconfig-system-ext:services"]["openconfig-system-ext:object-tracking"]["openconfig-system-ext:object-track"].append(tmp_track_object)
     if config_leftover["tailf-ned-cisco-ios:track"]["track-object"]:
         del config_leftover["tailf-ned-cisco-ios:track"]["track-object"]
+
+
+def xe_system_dhcp_snooping(config_before: dict, config_leftover: dict) -> None:
+    """
+    Translates NSO XE NED to MDD OpenConfig System DHCP Snooping
+    """
+    dhcp_snooping_vlanlist = {
+        "openconfig-system-ext:vlan-id": "",
+        "openconfig-system-ext:config": {
+            "openconfig-system-ext:vlan-id": "",
+            "openconfig-system-ext:enable": ""
+        }
+    }
+    for dhcpsnooping_index, dhcpsnooping_vlanid in enumerate(config_before.get("tailf-ned-cisco-ios:ip", {}).get("dhcp", {}).get("snooping", {}).get("vlan", '')):
+        tmp_dhcp_snooping_vlanlist = copy.deepcopy(dhcp_snooping_vlanlist)
+        tmp_dhcp_snooping_vlanlist["openconfig-system-ext:vlan-id"] = str(dhcpsnooping_vlanid)
+        tmp_dhcp_snooping_vlanlist["openconfig-system-ext:config"]["openconfig-system-ext:vlan-id"] = str(dhcpsnooping_vlanid)
+        tmp_dhcp_snooping_vlanlist["openconfig-system-ext:config"]["openconfig-system-ext:enable"] = "ENABLED"
+        openconfig_system["openconfig-system:system"]["openconfig-system-ext:services"]["openconfig-system-ext:dhcp-snooping"]["openconfig-system-ext:vlans"].append(tmp_dhcp_snooping_vlanlist)
+    if config_leftover["tailf-ned-cisco-ios:ip"]["dhcp"]["snooping"]:
+        del config_leftover["tailf-ned-cisco-ios:ip"]["dhcp"]["snooping"]
+
+
+def xe_system_dynamic_arp_inspection(config_before: dict, config_leftover: dict) -> None:
+    """
+    Translates NSO XE NED to MDD OpenConfig System dynamic ARP inspection
+    """
+    dai_vlanlist = {
+        "openconfig-system-ext:vlan-id": "",
+        "openconfig-system-ext:config": {
+            "openconfig-system-ext:vlan-id": "",
+            "openconfig-system-ext:enable": ""
+        }
+    }
+    for dai_index, dai_vlanid in enumerate(config_before.get("tailf-ned-cisco-ios:ip", {}).get("arp", {}).get("inspection", {}).get("vlan", '')):
+        tmp_dai_vlanlist = copy.deepcopy(dai_vlanlist)
+        tmp_dai_vlanlist["openconfig-system-ext:vlan-id"] = str(dai_vlanid)
+        tmp_dai_vlanlist["openconfig-system-ext:config"]["openconfig-system-ext:vlan-id"] = str(dai_vlanid)
+        tmp_dai_vlanlist["openconfig-system-ext:config"]["openconfig-system-ext:enable"] = "ENABLED"
+        openconfig_system["openconfig-system:system"]["openconfig-system-ext:services"]["openconfig-system-ext:dynamic-arp-inspection"]["openconfig-system-ext:vlans"].append(tmp_dai_vlanlist)
+    if config_leftover["tailf-ned-cisco-ios:ip"]["arp"]["inspection"]:
+        del config_leftover["tailf-ned-cisco-ios:ip"]["arp"]["inspection"]
 
 
 def xe_system_key_chain(config_before: dict, config_leftover: dict) -> None:

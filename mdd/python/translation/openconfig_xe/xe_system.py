@@ -199,6 +199,53 @@ def xe_system_program_service(self, nso_props) -> None:
     elif nso_props.service.oc_sys__system.services.config.service_password_encryption is False:
         if device_cdb.ios__service.password_encryption.exists():
             device_cdb.ios__service.password_encryption.delete()
+    # UDLD
+    if nso_props.service.oc_sys__system.services.udld.config.udld == "ENABLED":
+        device_cdb.ios__udld.enable.create()
+    elif nso_props.service.oc_sys__system.services.udld.config.udld == "AGGRESSIVE":
+        device_cdb.ios__udld.aggressive.create()
+    elif nso_props.service.oc_sys__system.services.udld.config.udld == "DISABLED":
+        if device_cdb.ios__udld.enable.exists():
+            device_cdb.ios__udld.enable.delete()
+        elif device_cdb.ios__udld.aggressive.exists():
+            device_cdb.ios__udld.aggressive.delete()
+    if nso_props.service.oc_sys__system.services.udld.config.message_time:
+        device_cdb.ios__udld.message.time = nso_props.service.oc_sys__system.services.udld.config.message_time
+    if nso_props.service.oc_sys__system.services.udld.config.recovery == "ENABLED":
+        device_cdb.ios__udld.recovery.create()
+    elif nso_props.service.oc_sys__system.services.udld.config.udld == "DISABLED":
+        if device_cdb.ios__udld.recovery.exists():
+            device_cdb.ios__udld.recovery.delete()
+    if nso_props.service.oc_sys__system.services.udld.config.recovery_interval:
+        device_cdb.ios__udld.recovery_conf.recovery.interval = nso_props.service.oc_sys__system.services.udld.config.recovery_interval
+    # DHCP Snooping
+    if nso_props.service.oc_sys__system.services.dhcp_snooping.global_config.config.enable == "ENABLED":
+        if not device_cdb.ios__ip.dhcp.snooping_conf.snooping.exists():
+            device_cdb.ios__ip.dhcp.snooping_conf.snooping.create()
+    elif nso_props.service.oc_sys__system.services.dhcp_snooping.global_config.config.enable == "DISABLED":
+        if device_cdb.ios__ip.dhcp.snooping_conf.snooping.exists():
+            device_cdb.ios__ip.dhcp.snooping_conf.snooping.delete()
+    if len(nso_props.service.oc_sys__system.services.dhcp_snooping.vlans) > 0:
+        for vlan in nso_props.service.oc_sys__system.services.dhcp_snooping.vlans:
+            vlan_id = vlan.vlan_id
+            vlan_status = vlan.config.enable
+            if vlan_status == 'ENABLED':
+                if vlan_id not in device_cdb.ios__ip.dhcp.snooping.vlan.as_list():
+                    device_cdb.ios__ip.dhcp.snooping.vlan.create(vlan_id)
+            elif vlan_status == 'DISABLED':
+                if vlan_id in device_cdb.ios__ip.dhcp.snooping.vlan.as_list():
+                    device_cdb.ios__ip.dhcp.snooping.vlan.remove(vlan_id)
+    # DAI
+    if len(nso_props.service.oc_sys__system.services.dynamic_arp_inspection.vlans) > 0:
+        for vlan in nso_props.service.oc_sys__system.services.dynamic_arp_inspection.vlans:
+            vlan_id = vlan.vlan_id
+            vlan_status = vlan.config.enable
+            if vlan_status == 'ENABLED':
+                if vlan_id not in device_cdb.ios__ip.arp.inspection.vlan.as_list():
+                    device_cdb.ios__ip.arp.inspection.vlan.create(vlan_id)
+            elif vlan_status == 'DISABLED':
+                if vlan_id in device_cdb.ios__ip.arp.inspection.vlan.as_list():
+                    device_cdb.ios__ip.arp.inspection.vlan.remove(vlan_id)
     # service http
     if nso_props.service.oc_sys__system.services.http.config.http_enabled:
         device_cdb.ios__ip.http.server = True
