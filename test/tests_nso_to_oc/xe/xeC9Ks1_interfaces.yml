@@ -11,7 +11,7 @@
         name: ned-to-oc-test
       vars:
         will_load_rollback: False
-        will_save_rollback: False
+        will_save_rollback: True
         script_path: ../../../package_nso_to_oc/xe/xe_vlans.py
         api_test_data:
           - name: Set up OC
@@ -160,6 +160,7 @@
       include_role:
         name: ned-to-oc-test
       vars:
+        will_load_rollback: True
         will_save_rollback: False
         script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
         api_test_data:
