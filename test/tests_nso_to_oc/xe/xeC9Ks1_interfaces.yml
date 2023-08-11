@@ -6,13 +6,13 @@
   vars:
     device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xeswitch1', True) }}"
   tasks:
-    - name: Run xes1 set up VLANs
+    - name: Create OC Service
       include_role:
         name: ned-to-oc-test
       vars:
         will_load_rollback: False
         will_save_rollback: True
-        script_path: ../../../package_nso_to_oc/xe/xe_vlans.py
+        script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
         api_test_data:
           - name: Set up OC
             tags:
