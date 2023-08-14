@@ -14,7 +14,6 @@ module openconfig-if-ethernet-mdd-ext {
   import openconfig-if-ethernet { prefix oc-eth; }
   import openconfig-inet-types { prefix oc-inet; }
   import openconfig-if-tunnel { prefix oc-tun; }
-  import openconfig-if-8021x {prefix oc-1x; }
   // meta
   organization "Cisco";
 
