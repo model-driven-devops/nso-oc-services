@@ -194,8 +194,6 @@ def xe_system_services(config_before: dict, config_leftover: dict) -> None:
     if type(config_before.get("tailf-ned-cisco-ios:udld", {}).get("recovery", '')) is list:
         openconfig_system_services["openconfig-system-ext:udld"]["openconfig-system-ext:config"]["openconfig-system-ext:recovery"] = "ENABLED"
         del config_leftover["tailf-ned-cisco-ios:udld"]["recovery"]
-    else:
-        openconfig_system_services["openconfig-system-ext:udld"]["openconfig-system-ext:config"]["openconfig-system-ext:recovery"] = "DISABLED"
     if config_before.get("tailf-ned-cisco-ios:udld", {}).get("recovery-conf", {}).get("recovery", {}).get("interval"):
         openconfig_system_services["openconfig-system-ext:udld"]["openconfig-system-ext:config"]["openconfig-system-ext:recovery-interval"] = config_before.get("tailf-ned-cisco-ios:udld", {}).get("recovery-conf", {}).get("recovery", {}).get("interval")
         del config_leftover["tailf-ned-cisco-ios:udld"]["recovery-conf"]
