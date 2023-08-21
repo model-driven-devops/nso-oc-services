@@ -17,6 +17,7 @@ module openconfig-system-ext{
   import openconfig-inet-types { prefix oc-inet; }
   import openconfig-system-logging { prefix oc-log; }
   import openconfig-aaa-types { prefix oc-aaa-types; }
+  import openconfig-vlan-types { prefix oc-vlan-types; }
 
   // Include NAT submodule.
   include system-ext-sub-nat;
