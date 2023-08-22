@@ -698,58 +698,66 @@ def xe_interface_hold_time(config_before: dict, config_leftover: dict, v: dict) 
             "carrier-delay"]["msec"]
 
 
+def configure_unknown_flood_blocking(openconfig_interface: dict, nso_before_interface: dict, config_leftover: dict, v: dict) -> None:
+    """Configure Unknown Flood Blocking"""
+
+    if (nso_before_interface.get("switchport", {}).get("block", {}).get("unicast")):
+        openconfig_interface["openconfig-if-ethernet-mdd-ext:unknown-flood-blocking"][
+                "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:unicast"] = 'ENABLED'
+    if (nso_before_interface.get("switchport", {}).get("block", {}).get("multicast")):
+        openconfig_interface["openconfig-if-ethernet-mdd-ext:unknown-flood-blocking"][
+                "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:multicast"] = 'ENABLED'
+    if config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]]["switchport"]["block"]:
+        del config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]]["switchport"]["block"]
+
+
+def configure_ip_source_guard(openconfig_interface: dict, nso_before_interface: dict, config_leftover: dict, v: dict) -> None:
+    """Configure IP Source Guard"""
+
+    if type(nso_before_interface.get("ip", {}).get("verify", {}).get("source")) is dict:
+        openconfig_interface["openconfig-if-ethernet-mdd-ext:ip-source-guard"][
+            "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:ip-source-guard"] = 'ENABLED'
+    if config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]]["ip"]["verify"]:
+        del config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]]["ip"]["verify"]
+
+
 def xe_interface_storm_control(openconfig_interface: dict, nso_before_interface: dict, config_leftover: dict, v: dict) -> None:
     """Configure physical interface storm control"""
 
-    openconfig_interface.update({"openconfig-if-ethernet:ethernet": {
-        "openconfig-if-ethernet:config": {},
-        "openconfig-if-ethernet-mdd-ext:storm-control": {
-            "openconfig-if-ethernet-mdd-ext:broadcast": {
-                "openconfig-if-ethernet-mdd-ext:level": {
-                    "openconfig-if-ethernet-mdd-ext:config": {}
-                }
-            },
-            "openconfig-if-ethernet-mdd-ext:unicast": {
-                "openconfig-if-ethernet-mdd-ext:level": {
-                    "openconfig-if-ethernet-mdd-ext:config": {}
-                }
-            }
-        }
-    }})
     # broadcast
     if nso_before_interface.get("storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get("bps"):
-        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+        openconfig_interface["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:broadcast"]["openconfig-if-ethernet-mdd-ext:level"][
             "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:suppression-type"] = 'BPS'
-        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+        openconfig_interface["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:broadcast"]["openconfig-if-ethernet-mdd-ext:level"][
             "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:bps"] = nso_before_interface.get("storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get("bps")
         del config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]][
                 "storm-control"]["broadcast"]["level-bps-pps"]["level"]["bps"]
     elif nso_before_interface.get("storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get("pps"):
-        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+        openconfig_interface["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:broadcast"]["openconfig-if-ethernet-mdd-ext:level"][
             "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:suppression-type"] = 'PPS'
-        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+        openconfig_interface["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:broadcast"]["openconfig-if-ethernet-mdd-ext:level"][
             "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:pps"] = nso_before_interface.get("storm-control", {}).get("broadcast", {}).get("level-bps-pps", {}).get("level", {}).get("pps")
         del config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]][
                 "storm-control"]["broadcast"]["level-bps-pps"]["level"]["pps"]
     # unicast
     if nso_before_interface.get("storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get("bps"):
-        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+        openconfig_interface["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:unicast"]["openconfig-if-ethernet-mdd-ext:level"][
             "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:suppression-type"] = 'BPS'
-        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+        openconfig_interface["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:unicast"]["openconfig-if-ethernet-mdd-ext:level"][
             "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:bps"] = nso_before_interface.get("storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get("bps")
         del config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]][
                 "storm-control"]["unicast"]["level-bps-pps"]["level"]["bps"]
     elif nso_before_interface.get("storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get("pps"):
-        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+        openconfig_interface["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:unicast"]["openconfig-if-ethernet-mdd-ext:level"][
             "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:suppression-type"] = 'PPS'
-        openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet-mdd-ext:storm-control"][
+        openconfig_interface["openconfig-if-ethernet-mdd-ext:storm-control"][
             "openconfig-if-ethernet-mdd-ext:unicast"]["openconfig-if-ethernet-mdd-ext:level"][
             "openconfig-if-ethernet-mdd-ext:config"]["openconfig-if-ethernet-mdd-ext:pps"] = nso_before_interface.get("storm-control", {}).get("unicast", {}).get("level-bps-pps", {}).get("level", {}).get("pps")
         del config_leftover["tailf-ned-cisco-ios:interface"][v["nso_interface_type"]][v["nso_interface_index"]][
@@ -911,10 +919,28 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
         xe_interface_hold_time(config_before, config_leftover, interface_directory)
 
         # Configure ethernet settings
-        if nso_before_interface.get("storm-control"):
-            xe_interface_storm_control(openconfig_interface, nso_before_interface, config_leftover, interface_directory)
-        else:
-            openconfig_interface.update({"openconfig-if-ethernet:ethernet": {"openconfig-if-ethernet:config": {}}})
+        openconfig_interface.update({"openconfig-if-ethernet:ethernet": {
+            "openconfig-if-ethernet:config": {},
+            "openconfig-if-ethernet-mdd-ext:storm-control": {
+                "openconfig-if-ethernet-mdd-ext:broadcast": {
+                    "openconfig-if-ethernet-mdd-ext:level": {
+                        "openconfig-if-ethernet-mdd-ext:config": {}
+                    }
+                },
+                "openconfig-if-ethernet-mdd-ext:unicast": {
+                    "openconfig-if-ethernet-mdd-ext:level": {
+                        "openconfig-if-ethernet-mdd-ext:config": {}
+                    }
+                }
+            },
+            "openconfig-if-ethernet-mdd-ext:ip-source-guard": {
+                "openconfig-if-ethernet-mdd-ext:config": {}
+            },
+            "openconfig-if-ethernet-mdd-ext:unknown-flood-blocking": {
+                "openconfig-if-ethernet-mdd-ext:config": {}
+            }
+        }})
+
         if nso_before_interface.get("negotiation", {}).get("auto"):
             openconfig_interface["openconfig-if-ethernet:ethernet"]["openconfig-if-ethernet:config"][
                 "openconfig-if-ethernet:auto-negotiate"] = True
@@ -966,6 +992,17 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
                 "openconfig-if-ethernet:config"][
                 "openconfig-if-aggregate:aggregate-id"] = f'Port-channel{str(nso_before_interface.get("channel-group", {}).get("number"))}'
             del nso_leftover_interface["channel-group"]
+
+        # Check ethernet features
+        path_oc = ["openconfig-interfaces:interfaces", "openconfig-interfaces:interface",
+                   interface_directory["oc_interface_index"], "openconfig-if-ethernet:ethernet"]
+        openconfig_interface = return_nested_dict(openconfig_interfaces, path_oc)
+        if nso_before_interface.get("storm-control"):
+            xe_interface_storm_control(openconfig_interface, nso_before_interface, config_leftover, interface_directory)
+        if nso_before_interface.get("switchport", {}).get("block"):
+            configure_unknown_flood_blocking(openconfig_interface, nso_before_interface, config_leftover, interface_directory)
+        if type(nso_before_interface.get("ip", {}).get("verify", {}).get("source")) is dict:
+            configure_ip_source_guard(openconfig_interface, nso_before_interface, config_leftover, interface_directory)
 
 
 def xe_interfaces(config_before: dict, config_leftover: dict, interfaces: dict, if_ip: dict) -> None:

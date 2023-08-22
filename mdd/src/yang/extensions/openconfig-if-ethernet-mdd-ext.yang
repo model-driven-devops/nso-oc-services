@@ -21,8 +21,16 @@ module openconfig-if-ethernet-mdd-ext {
     "www.cisco.com";
 
   description
-    "Augmentation to openconfig if ethernet model.";
+    "Augmentation to openconfig of ethernet model.";
 
+  revision "2023-06-30" {
+    description
+      "Implement IP Source Guard";
+  }
+  revision "2023-06-28" {
+    description
+      "Implement unknown flood blocking";
+  }
   revision "2023-01-17" {
     description
       "Initial revision";
@@ -31,23 +39,18 @@ module openconfig-if-ethernet-mdd-ext {
   grouping storm-control-extensions {
     description
       "Top-level grouping for Storm Control";
-
     container storm-control {
       description
         "Enclosing container for storm-control handled by this interface";
-
       container broadcast {
         description
           "Enclosing container for broadcast address storm control";
-
         container level {
           description
             "Enclosing container - set storm suppression level on this interface";
-
           container config {
             description
               "Configuration data for storm-control";
-
             leaf suppression-type {
               type enumeration {
                 enum NONE;
@@ -78,15 +81,12 @@ module openconfig-if-ethernet-mdd-ext {
       container unicast {
         description
           "Enclosing container for unicast address storm control";
-
         container level {
           description
             "Enclosing container - set storm suppression level on this interface";
-
           container config {
             description
               "Configuration data for storm-control";
-
             leaf suppression-type {
               type enumeration {
                 enum NONE;
@@ -121,12 +121,67 @@ module openconfig-if-ethernet-mdd-ext {
     }
   }
 
+  grouping unknown-flood-blocking-extension {
+    description
+      "Top-level grouping for Unknown Flood Blocking (Unicast and Multicast)";
+    container unknown-flood-blocking {
+      description
+        "Enclosing container for unknown flood blocking handled by this interface";
+      container config {
+        description
+          "Configuration data for unknown flood blocking";
+        leaf unicast {
+          type enumeration {
+            enum ENABLED;
+            enum DISABLED;
+          }
+          default DISABLED;
+          description
+            "Select Unknown Unicast Flood Blocking.";
+        }
+        leaf multicast {
+          type enumeration {
+            enum ENABLED;
+            enum DISABLED;
+          }
+          default DISABLED;
+          description
+           "Select Unknown Multicast Flood Blocking.";
+        }
+      }
+    }
+  }
+
+  grouping ip-source-guard-extensions {
+    description
+      "Top-level grouping for IP Source Guard";
+    container ip-source-guard {
+      description
+        "Enclosing container for IP Source Guard handled by this interface";
+      container config {
+        description
+          "Configuration data for IP Source Guard";
+        leaf ip-source-guard {
+          type enumeration {
+            enum ENABLED;
+            enum DISABLED;
+          }
+          default DISABLED;
+          description
+            "Select IP Source Guard.";
+        }
+      }
+    }
+  }
+
   // augment statements
 
   augment "/ncs:devices/ncs:device/mdd:openconfig/oc-if:interfaces/oc-if:interface/oc-eth:ethernet" {
-      description
-        "storm control extensions to ethernet interfaces";
+    description
+      "MDD extensions to ethernet interfaces";
 
-      uses storm-control-extensions;
+    uses storm-control-extensions;
+    uses unknown-flood-blocking-extension;
+    uses ip-source-guard-extensions;
   }
 }
