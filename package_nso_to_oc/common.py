@@ -113,7 +113,7 @@ def print_and_test_configs(device_name, config_before_dict, config_leftover_dict
     project_path = os.environ.get("NSO_OC_SERVICES_PATH", os.getcwd()) 
     output_data_dir = f"{project_path}{path_os.sep}output_data{path_os.sep}"
     Path(output_data_dir).mkdir(parents=True, exist_ok=True)
-
+    oc = prune_configs(oc)
     print(json.dumps(oc, indent=4))
     with open(f"{output_data_dir}{nso_device}{config_name}.json", "w") as b:
         b.write(json.dumps(config_before_dict, indent=4))
@@ -170,3 +170,17 @@ def is_valid_ip(ip_str):
         return True
     except ValueError:
         return False
+
+
+def prune_configs(dict_config: dict):
+    if not isinstance(dict_config, (dict, list)):
+        return dict_config
+    if isinstance(dict_config, dict):
+        pruned = {k: prune_configs(v) for k, v in dict_config.items()}
+        return {k: v for k, v in pruned.items() if v is not None and v != {} and v != []}
+    if isinstance(dict_config, list):
+        pruned = [prune_configs(v) for v in dict_config]
+        return [v for v in pruned if v is not None and v != {} and v != []]
+
+    return None
+
