@@ -409,6 +409,17 @@ class BaseAcl:
         if rule_parts[current_index] == "range":
             end_port = rule_parts[current_index + 2]
 
+            try:
+                end_port = end_port if end_port.isdigit() else socket.getservbyname(end_port)
+            except OSError as os_err:
+                try:
+                    end_port = common.port_name_number_mapping[end_port]
+                except Exception as err:
+                    self.__add_acl_entry_note(" ".join(rule_parts),
+                                              f"Unable to convert service {end_port} to a port number")
+                    self.acl_success = False
+                    raise Exception(str(os_err))
+
             if is_source:
                 self.__get_transport_config(entry)["openconfig-acl:source-port"] = f"{current_port}..{end_port}"
             else:
