@@ -21,16 +21,9 @@
             api_method: PUT
             content: |
               mdd:openconfig:
-                openconfig-network-instance:network-instances:
-                  network-instance:
-                    - name: 'default'
-                      config:
-                        name: 'default'
-                        type: 'DEFAULT_INSTANCE'
-                        enabled: true
                 openconfig-system:system:
-                  config:
-                    hostname: 'test'
+                  openconfig-system:config:
+                    openconfig-system:hostname: 'test'
 
           - name: NED init VLANs
             tags:
