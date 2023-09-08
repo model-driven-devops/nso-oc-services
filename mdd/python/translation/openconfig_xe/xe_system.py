@@ -217,6 +217,19 @@ def xe_system_program_service(self, nso_props) -> None:
         device_cdb.ios__ip.http.timeout_policy.idle = nso_props.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.connection
         device_cdb.ios__ip.http.timeout_policy.life = nso_props.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.life
         device_cdb.ios__ip.http.timeout_policy.requests = nso_props.service.oc_sys__system.services.http.ip_http_timeout_policy.idle.config.requests
+    # service NetFlow
+    if len(nso_props.service.oc_sys__system.services.netflow.flow_exporters.flow_exporter) > 0:
+        for exporter in nso_props.service.oc_sys__system.services.netflow.flow_exporters.flow_exporter:
+            name = exporter.name
+            if device_cdb.ios__flow.exporter.exists(name):
+                del device_cdb.ios__flow.exporter[name]
+            flow_exporter = device_cdb.ios__flow.exporter.create(name)
+            if exporter.config.description:
+                flow_exporter.description = exporter.config.description
+            if exporter.config.collector_address:
+                flow_exporter.destination.address = exporter.config.collector_address
+                if exporter.config.collector_vrf:
+                    flow_exporter.destination.vrf = exporter.config.collector_vrf
     # object tracking
     if len(nso_props.service.oc_sys__system.services.object_tracking.object_track) > 0:
         for object_track in nso_props.service.oc_sys__system.services.object_tracking.object_track:

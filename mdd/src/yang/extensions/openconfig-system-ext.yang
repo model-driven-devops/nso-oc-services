@@ -30,6 +30,10 @@ module openconfig-system-ext{
   description
     "Augmentation to openconfig system model.";
 
+  revision "2023-09-07" {
+    description
+      "Added netflow collector service";
+  }
   revision "2023-05-18" {
     description
       "Added key chain support";
@@ -682,6 +686,53 @@ module openconfig-system-ext{
                 }
                 description
                   "Specifies that a maximum limit is set on the number of requests processed on a persistent connection before it is closed.";
+              }
+            }
+          }
+        }
+      }
+      container netflow {
+        description
+          "NetFlow configurations";
+
+        container flow-exporters {
+          description
+            "Enclosing container the list of NetFlow exporters";
+
+          list flow-exporter {
+            key "name";
+            description
+              "List of flow-exporters";
+
+            leaf name {
+              type leafref {
+                path "../config/name";
+              }
+              description
+                "Reference to exporter name";
+            }
+            container config {
+              leaf name {
+                  type string;
+                  description
+                    "Name of flow-exporter.";
+              }
+              leaf description {
+                  type string;
+                  description
+                    "Description of flow-exporter.";
+              }
+              leaf collector-address {
+                type oc-inet:ip-address;
+                description
+                  "Address to NetFlow collector";
+              }
+              leaf collector-vrf {
+                type leafref {
+                  path "/ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:name";
+                }
+                description
+                  "VRF to reach oollector.";
               }
             }
           }
