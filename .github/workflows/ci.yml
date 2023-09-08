@@ -24,6 +24,8 @@ jobs:
         run: sudo apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -207,6 +209,8 @@ jobs:
         run: sudo apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -282,6 +286,8 @@ jobs:
         run: sudo apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -320,6 +326,8 @@ jobs:
         run: sudo apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -403,6 +411,8 @@ jobs:
         run: sudo apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -530,6 +540,8 @@ jobs:
         run: sudo apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -601,6 +613,8 @@ jobs:
         run: sudo apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -639,6 +653,8 @@ jobs:
         run: sudo apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -718,6 +734,8 @@ jobs:
         run: sudo apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -842,6 +860,8 @@ jobs:
         run: sudo apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -913,6 +933,8 @@ jobs:
         run: sudo apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+      - name: Upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -951,6 +973,8 @@ jobs:
 #        run: sudo apt-get install git -y
 #      - name: clone mdd
 #        run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
+#      - name: Upgrade pip
+#        run: pip install --upgrade pip
 #      - name: Install PIP requirements
 #        run: pip install -r ./mdd_repo/requirements.txt
 #      - name: Install PIP virl2_client
