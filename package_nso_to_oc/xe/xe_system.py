@@ -1408,9 +1408,9 @@ def set_logging_host(logging, config_leftover, oc_system_logging, if_ip, intf_ip
     hosts = {"openconfig-system:remote-server": []}
     hosts_list = hosts["openconfig-system:remote-server"]
     # LOGGING HOST IP, PORT, VRF, SOURCE ADDRESS
-    host_ipv4 = logging.get("host", {}).get('ipv4')
-    host_ipv4_vrf = logging.get("host", {}).get('ipv4-vrf')
-    source_intf = logging.get("source-interface")
+    host_ipv4 = logging.get("host", {}).get('ipv4', [])
+    host_ipv4_vrf = logging.get("host", {}).get('ipv4-vrf', [])
+    source_intf = logging.get("source-interface", [])
     vrf_source_intf_list = vrf_source_ip_list = []
     severity = "INFORMATIONAL" # Default Severity
 
