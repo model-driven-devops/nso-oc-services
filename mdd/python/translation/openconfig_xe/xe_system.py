@@ -222,8 +222,10 @@ def xe_system_program_service(self, nso_props) -> None:
         for exporter in nso_props.service.oc_sys__system.services.netflow.flow_exporters.flow_exporter:
             name = exporter.name
             if device_cdb.ios__flow.exporter.exists(name):
-                del device_cdb.ios__flow.exporter[name]
-            flow_exporter = device_cdb.ios__flow.exporter.create(name)
+                # del device_cdb.ios__flow.exporter[name]
+                flow_exporter = device_cdb.ios__flow.exporter[name]
+            else:
+                flow_exporter = device_cdb.ios__flow.exporter.create(name)
             if exporter.config.description:
                 flow_exporter.description = exporter.config.description
             if exporter.config.collector_address:
