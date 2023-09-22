@@ -732,7 +732,7 @@ module openconfig-system-ext{
                   path "/ncs:devices/ncs:device/mdd:openconfig/oc-netinst:network-instances/oc-netinst:network-instance/oc-netinst:name";
                 }
                 description
-                  "VRF to reach oollector.";
+                  "VRF to reach collector.";
               }
             }
           }
