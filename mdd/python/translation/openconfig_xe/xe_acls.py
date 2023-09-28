@@ -92,11 +92,11 @@ def xe_acls_program_service(self, nso_props) -> None:
 
             for i in service_acl.acl_entries.acl_entry:
                 if actions_oc_to_xe[i.actions.config.forwarding_action] == 'remark':
-                    rule = str(i.sequence_id) + ' remark ' + i.config.description
+                    rule = 'remark ' + i.config.description
                     rule = rule.strip()
                     rules_oc_config.append(rule)
                     continue
-                rule = str(i.sequence_id) + ' ' + actions_oc_to_xe[i.actions.config.forwarding_action] + ' '
+                rule = actions_oc_to_xe[i.actions.config.forwarding_action] + ' '
                 if i.ipv4.config.protocol:
                     rule += protocols_oc_to_xe[i.ipv4.config.protocol] + ' '
                 else:
@@ -173,11 +173,11 @@ def xe_acls_program_service(self, nso_props) -> None:
             rules_oc_config = list()  # {'10 permit any'}
             for i in service_acl.acl_entries.acl_entry:
                 if actions_oc_to_xe[i.actions.config.forwarding_action] == 'remark':
-                    rule = str(i.sequence_id) + ' remark ' + i.config.description
+                    rule = 'remark ' + i.config.description
                     rule = rule.strip()
                     rules_oc_config.append(rule)
                     continue
-                rule = str(i.sequence_id) + ' ' + actions_oc_to_xe[i.actions.config.forwarding_action] + ' '
+                rule = actions_oc_to_xe[i.actions.config.forwarding_action] + ' '
                 if i.oc_acl_ext__ipv4.config.source_address == '0.0.0.0/0':
                     rule += 'any '
                 elif "/32" in i.oc_acl_ext__ipv4.config.source_address:
