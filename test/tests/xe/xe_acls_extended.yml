@@ -781,7 +781,7 @@
           - "'+ 10 permit icmp any any 222 223:' in changes"
           - "'+ 20 permit icmp any any packet-too-big:' in changes"
           - "'+ 30 deny   ip any any log-input:' in changes"
-          - "'+ 40 remark the end:' in changes"
+          - "'+ remark the end:' in changes"
         api_method: PATCH
         rollback: false
         assertion_ignore_errors: false
