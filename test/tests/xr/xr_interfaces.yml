@@ -103,6 +103,10 @@
                                 openconfig-if-ip:config:
                                   openconfig-if-ip:ip: '10.6.5.1'
                                   openconfig-if-ip:prefix-length: '24'
+                              - openconfig-if-ip:ip: '10.6.5.2'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.5.2'
+                                  openconfig-if-ip:prefix-length: '24'
                           openconfig-if-ip:config:
                             openconfig-if-ip:dhcp-client: false
                             openconfig-if-ip:enabled: true
@@ -137,6 +141,7 @@
           - "'+ description Sub interface 5:' in changes"
           - "'+ encapsulation dot1q 5:' in changes"
           - "'+ ipv4 address 10.6.5.1 255.255.255.0:' in changes"
+          - "'+ ipv4 address 10.6.5.2 255.255.255.0 secondary:' in changes"
           - "'+interface GigabitEthernet0/0/0/6.6:' in changes"
           - "'+ description Sub interface 6:' in changes"
           - "'+ encapsulation dot1q 6:' in changes"
