@@ -639,13 +639,13 @@ def xe_configure_switched_vlan(self, nso_props,
     if service_switched_vlan.config.interface_mode == 'TRUNK':
         if not interface_cdb.switchport.exists():
             interface_cdb.switchport.create()
-        if len(nso_props.root.devices.device[nso_props.device_name].config.ios__switch.list) > 0:
-            if 'c9k' in nso_props.root.devices.device[nso_props.device_name].config.ios__switch.list[1].provision:
-                pass
-            else:
-                interface_cdb.switchport.trunk.encapsulation = 'dot1q'
-        else:
-            interface_cdb.switchport.trunk.encapsulation = 'dot1q'
+        # if len(nso_props.root.devices.device[nso_props.device_name].config.ios__switch.list) > 0:
+        #     if 'c9k' in nso_props.root.devices.device[nso_props.device_name].config.ios__switch.list[1].provision:
+        #         pass
+        #     else:
+        #         interface_cdb.switchport.trunk.encapsulation = 'dot1q'
+        # else:
+        #     interface_cdb.switchport.trunk.encapsulation = 'dot1q'
         if not interface_cdb.switchport.mode.trunk.exists():
             interface_cdb.switchport.mode.trunk.create()
         if service_switched_vlan.config.native_vlan:

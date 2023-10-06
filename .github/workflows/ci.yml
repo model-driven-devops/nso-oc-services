@@ -6,6 +6,8 @@ on:
 jobs:
   build-lab-xe:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     steps:
       - run: echo "The name of your repository is ${{ github.repository }}."
@@ -195,6 +197,8 @@ jobs:
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
   test-oc-xe:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: build-lab-xe
     steps:
@@ -272,6 +276,8 @@ jobs:
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
   remove-mdd-logic-xe:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: test-oc-xe
     steps:
@@ -312,6 +318,8 @@ jobs:
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
   test-xe-oc:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: remove-mdd-logic-xe
     steps:
@@ -390,6 +398,8 @@ jobs:
           TEST: "True"
   build-lab-xr:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     steps:
       - name: Sleep 10 seconds to stagger downloads
@@ -526,6 +536,8 @@ jobs:
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
   test-oc-xr:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: build-lab-xr
     steps:
@@ -599,6 +611,8 @@ jobs:
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
   remove-mdd-logic-xr:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: test-oc-xr
     steps:
@@ -639,6 +653,8 @@ jobs:
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
   test-xr-oc:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: remove-mdd-logic-xr
     steps:
@@ -713,6 +729,8 @@ jobs:
           TEST: "True"
   build-lab-nx:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     steps:
       - name: Sleep 20 seconds to stagger downloads
@@ -846,6 +864,8 @@ jobs:
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
   test-oc-nx:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: build-lab-nx
     steps:
@@ -919,6 +939,8 @@ jobs:
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
   remove-mdd-logic-nx:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: test-oc-nx
     steps:
@@ -959,6 +981,8 @@ jobs:
           ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
 #  test-nx-oc:
 #    runs-on: self-hosted
+#    container:
+#      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
 #    if: github.event.review.state == 'approved'
 #    needs: remove-mdd-logic-nx
 #    steps:
