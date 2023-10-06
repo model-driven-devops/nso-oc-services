@@ -13,6 +13,8 @@ jobs:
       - run: echo "The name of your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v2
+      - name: what pwd
+        run: pwd
       - name: what dirs
         run: ls
       - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
