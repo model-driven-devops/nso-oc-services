@@ -13,10 +13,6 @@ jobs:
       - run: echo "The name of your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v2
-      - name: what pwd
-        run: pwd
-      - name: what dirs
-        run: ls
       - run: echo "The ${{ github.repository }} repository has been cloned to the runner."
       - run: echo "The workflow is now ready to test your code on the runner."
       - name: Create Archive of the mdd directory
@@ -49,9 +45,9 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Build CML
-        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=${{ github.workspace }}/test/arch/test_lab_xe.yaml
+        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=/__w/nso-oc-services/nso-oc-services/test/arch/test_lab_xe.yaml
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
@@ -59,7 +55,7 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Build NSO
         run: ansible-playbook ciscops.mdd.nso_install
         env:
@@ -73,7 +69,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Install NSO MDD package
         run: ansible-playbook ./test/install-nso-oc-services.yml
         env:
@@ -87,7 +83,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: NSO add default auth group
         run: ansible-playbook ciscops.mdd.nso_init
         env:
@@ -101,7 +97,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
@@ -111,7 +107,7 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: NSO add devices from inventory
         run: ansible-playbook ciscops.mdd.nso_update_devices
         env:
@@ -125,7 +121,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: NSO Re-sync configuration from the devices
         run: ansible-playbook ciscops.mdd.nso_sync_from
         env:
@@ -139,7 +135,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
@@ -149,10 +145,10 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Write contents of xeswitch1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xeswitch1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/xeswitch1_host.txt >> $GITHUB_ENV
       - name: PIP Install paramiko
         run: pip install paramiko
       - name: Reload XESWITCH1
@@ -170,7 +166,7 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: NSO add devices from inventory
         run: ansible-playbook ciscops.mdd.nso_update_devices
         env:
@@ -184,7 +180,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: NSO Re-sync configuration from the devices
         run: ansible-playbook ciscops.mdd.nso_sync_from
         env:
@@ -198,7 +194,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
   test-oc-xe:
     runs-on: self-hosted
     container:
@@ -236,7 +232,7 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
@@ -246,19 +242,19 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Write contents of nso URL file to envars
         run: |
-          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_url.txt >> $GITHUB_ENV
       - name: Write contents of nso IP file to envars
         run: |
-          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_host.txt >> $GITHUB_ENV
       - name: Write contents of xe1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xe1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/xe1_host.txt >> $GITHUB_ENV
       - name: Write contents of xeswitch1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xeswitch1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/xeswitch1_host.txt >> $GITHUB_ENV
       - name: Run NSO Services XE Tests
         run: |
           cd ./test/tests/xe
@@ -273,7 +269,7 @@ jobs:
           NSO_HOST: ${{ env.NSO_HOST }}
           XE1_HOST: ${{ env.XE1_HOST }}
           XESWITCH1_HOST: ${{ env.XESWITCH1_HOST }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_dev_xe.cfg
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
@@ -319,7 +315,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
   test-xe-oc:
     runs-on: self-hosted
     container:
@@ -357,7 +353,7 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
@@ -367,19 +363,19 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Write contents of nso URL file to envars
         run: |
-          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_url.txt >> $GITHUB_ENV
       - name: Write contents of nso IP file to envars
         run: |
-          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_host.txt >> $GITHUB_ENV
       - name: Write contents of xe1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xe1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/xe1_host.txt >> $GITHUB_ENV
       - name: Write contents of xeswitch1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xeswitch1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/xeswitch1_host.txt >> $GITHUB_ENV
       - name: Run NSO Device NED configuration to Openconfig configuration Tests
         run: |
           cd ./test/tests_nso_to_oc/xe
@@ -394,7 +390,7 @@ jobs:
           NSO_HOST: ${{ env.NSO_HOST }}
           XE1_HOST: ${{ env.XE1_HOST }}
           XESWITCH1_HOST: ${{ env.XESWITCH1_HOST }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_dev_xe.cfg
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
@@ -444,9 +440,9 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Build CML
-        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=${{ github.workspace }}/test/arch/test_lab_xr.yaml
+        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=/__w/nso-oc-services/nso-oc-services/test/arch/test_lab_xr.yaml
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
@@ -454,7 +450,7 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Build NSO
         run: ansible-playbook ciscops.mdd.nso_install
         env:
@@ -468,7 +464,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Install NSO MDD package
         run: ansible-playbook ./test/install-nso-oc-services.yml
         env:
@@ -482,7 +478,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: NSO add default auth group
         run: ansible-playbook ciscops.mdd.nso_init
         env:
@@ -496,7 +492,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
@@ -506,7 +502,7 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Sleep while XR1 loads for 6 minutes
         run: sleep 6m
         shell: bash
@@ -523,7 +519,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: NSO Re-sync configuration from the devices
         run: ansible-playbook ciscops.mdd.nso_sync_from
         env:
@@ -537,7 +533,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
   test-oc-xr:
     runs-on: self-hosted
     container:
@@ -575,7 +571,7 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
@@ -585,16 +581,16 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Write contents of nso URL file to envars
         run: |
-          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_url.txt >> $GITHUB_ENV
       - name: Write contents of nso IP file to envars
         run: |
-          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_host.txt >> $GITHUB_ENV
       - name: Write contents of xr1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xr1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/xr1_host.txt >> $GITHUB_ENV
       - name: Run NSO Services XR Tests
         run: |
           cd ./test/tests/xr
@@ -608,7 +604,7 @@ jobs:
           NSO_URL: ${{ env.NSO_URL }}
           NSO_HOST: ${{ env.NSO_HOST }}
           XR1_HOST: ${{ env.XR1_HOST }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_dev_xr.cfg
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
@@ -654,7 +650,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
   test-xr-oc:
     runs-on: self-hosted
     container:
@@ -692,7 +688,7 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
@@ -702,16 +698,16 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Write contents of nso URL file to envars
         run: |
-          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_url.txt >> $GITHUB_ENV
       - name: Write contents of nso IP file to envars
         run: |
-          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_host.txt >> $GITHUB_ENV
       - name: Write contents of xr1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xr1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/xr1_host.txt >> $GITHUB_ENV
       - name: Run NSO Device NED configuration to Openconfig configuration Tests
         run: |
           cd ./test/tests_nso_to_oc/xr
@@ -725,7 +721,7 @@ jobs:
           NSO_URL: ${{ env.NSO_URL }}
           NSO_HOST: ${{ env.NSO_HOST }}
           XR1_HOST: ${{ env.XR1_HOST }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_dev_xr.cfg
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
@@ -775,9 +771,9 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: Build CML
-        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=${{ github.workspace }}/test/arch/test_lab_nx.yaml
+        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=/__w/nso-oc-services/nso-oc-services/test/arch/test_lab_nx.yaml
         env:
           ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
           CML_HOST: ${{ secrets.CML_HOST }}
@@ -785,7 +781,7 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: Build NSO
         run: ansible-playbook ciscops.mdd.nso_install
         env:
@@ -799,7 +795,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: Install NSO MDD package
         run: ansible-playbook ./test/install-nso-oc-services.yml
         env:
@@ -813,7 +809,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: NSO add default auth group
         run: ansible-playbook ciscops.mdd.nso_init
         env:
@@ -827,7 +823,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
@@ -837,7 +833,7 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: NSO add devices from inventory
         run: ansible-playbook ciscops.mdd.nso_update_devices
         env:
@@ -851,7 +847,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: NSO Re-sync configuration from the devices
         run: ansible-playbook ciscops.mdd.nso_sync_from
         env:
@@ -865,7 +861,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
   test-oc-nx:
     runs-on: self-hosted
     container:
@@ -903,7 +899,7 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
@@ -913,16 +909,16 @@ jobs:
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: Write contents of nso URL file to envars
         run: |
-          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_url.txt >> $GITHUB_ENV
       - name: Write contents of nso IP file to envars
         run: |
-          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_host.txt >> $GITHUB_ENV
       - name: Write contents of nx1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/nx1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nx1_host.txt >> $GITHUB_ENV
       - name: Run NSO Services NX Tests
         run: |
           cd ./test/tests/nx
@@ -936,7 +932,7 @@ jobs:
           NSO_URL: ${{ env.NSO_URL }}
           NSO_HOST: ${{ env.NSO_HOST }}
           NX1_HOST: ${{ env.NX1_HOST }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_dev_nx.cfg
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
@@ -982,7 +978,7 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
 #  test-nx-oc:
 #    runs-on: self-hosted
 #    container:
@@ -1020,7 +1016,7 @@ jobs:
 #          CML_USERNAME: ${{ secrets.CML_USERNAME }}
 #          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
 #          CML_VERIFY_CERT: "false"
-#          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+#          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
 #      - name: Save host IPs
 #        run: ansible-playbook ./test/save_cml_node_ips.yml
 #        env:
@@ -1030,16 +1026,16 @@ jobs:
 #          CML_USERNAME: ${{ secrets.CML_USERNAME }}
 #          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
 #          CML_VERIFY_CERT: "false"
-#          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+#          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
 #      - name: Write contents of nso URL file to envars
 #        run: |
-#          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
+#          cat /__w/nso-oc-services/nso-oc-services/nso_url.txt >> $GITHUB_ENV
 #      - name: Write contents of nso IP file to envars
 #        run: |
-#          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+#          cat /__w/nso-oc-services/nso-oc-services/nso_host.txt >> $GITHUB_ENV
 #      - name: Write contents of nx1 IP file to envars
 #        run: |
-#          cat ${{ github.workspace }}/nx1_host.txt >> $GITHUB_ENV
+#          cat /__w/nso-oc-services/nso-oc-services/nx1_host.txt >> $GITHUB_ENV
 #      - name: Run NSO Device NED configuration to Openconfig configuration Tests
 #        run: |
 #          cd ./test/tests_nso_to_oc/nx
@@ -1053,7 +1049,7 @@ jobs:
 #          NSO_URL: ${{ env.NSO_URL }}
 #          NSO_HOST: ${{ env.NSO_HOST }}
 #          NX1_HOST: ${{ env.NX1_HOST }}
-#          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev_nx.cfg
+#          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_dev_nx.cfg
 #          NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
 #          NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
 #          NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
