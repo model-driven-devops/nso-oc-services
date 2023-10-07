@@ -39,7 +39,7 @@ jobs:
       - name: Delete CML
         run: ansible-playbook cisco.cml.clean
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -49,7 +49,7 @@ jobs:
       - name: Build CML
         run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=/__w/nso-oc-services/nso-oc-services/test/arch/test_lab_xe.yaml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -59,7 +59,7 @@ jobs:
       - name: Build NSO
         run: ansible-playbook ciscops.mdd.nso_install
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -73,7 +73,7 @@ jobs:
       - name: Install NSO MDD package
         run: ansible-playbook ./test/install-nso-oc-services.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -87,7 +87,7 @@ jobs:
       - name: NSO add default auth group
         run: ansible-playbook ciscops.mdd.nso_init
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -101,7 +101,7 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -111,7 +111,7 @@ jobs:
       - name: NSO add devices from inventory
         run: ansible-playbook ciscops.mdd.nso_update_devices
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -125,7 +125,7 @@ jobs:
       - name: NSO Re-sync configuration from the devices
         run: ansible-playbook ciscops.mdd.nso_sync_from
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -139,7 +139,7 @@ jobs:
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -160,7 +160,7 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -170,7 +170,7 @@ jobs:
       - name: NSO add devices from inventory
         run: ansible-playbook ciscops.mdd.nso_update_devices
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -184,7 +184,7 @@ jobs:
       - name: NSO Re-sync configuration from the devices
         run: ansible-playbook ciscops.mdd.nso_sync_from
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -226,7 +226,7 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -236,7 +236,7 @@ jobs:
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -305,7 +305,7 @@ jobs:
       - name: NSO MDD remove logic for NSO to OC testing
         run: ansible-playbook ./test/remove_mdd_logic.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -347,7 +347,7 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -357,7 +357,7 @@ jobs:
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -434,7 +434,7 @@ jobs:
       - name: Delete CML
         run: ansible-playbook cisco.cml.clean
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -444,7 +444,7 @@ jobs:
       - name: Build CML
         run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=/__w/nso-oc-services/nso-oc-services/test/arch/test_lab_xr.yaml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -454,7 +454,7 @@ jobs:
       - name: Build NSO
         run: ansible-playbook ciscops.mdd.nso_install
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -468,7 +468,7 @@ jobs:
       - name: Install NSO MDD package
         run: ansible-playbook ./test/install-nso-oc-services.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -482,7 +482,7 @@ jobs:
       - name: NSO add default auth group
         run: ansible-playbook ciscops.mdd.nso_init
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -496,7 +496,7 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -509,7 +509,7 @@ jobs:
       - name: NSO add devices from inventory
         run: ansible-playbook ciscops.mdd.nso_update_devices
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -523,7 +523,7 @@ jobs:
       - name: NSO Re-sync configuration from the devices
         run: ansible-playbook ciscops.mdd.nso_sync_from
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -565,7 +565,7 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -575,7 +575,7 @@ jobs:
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -640,7 +640,7 @@ jobs:
       - name: NSO MDD remove logic for NSO to OC testing
         run: ansible-playbook ./test/remove_mdd_logic.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -682,7 +682,7 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -692,7 +692,7 @@ jobs:
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -765,7 +765,7 @@ jobs:
       - name: Delete CML
         run: ansible-playbook cisco.cml.clean
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -775,7 +775,7 @@ jobs:
       - name: Build CML
         run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=/__w/nso-oc-services/nso-oc-services/test/arch/test_lab_nx.yaml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -785,7 +785,7 @@ jobs:
       - name: Build NSO
         run: ansible-playbook ciscops.mdd.nso_install
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -799,7 +799,7 @@ jobs:
       - name: Install NSO MDD package
         run: ansible-playbook ./test/install-nso-oc-services.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -813,7 +813,7 @@ jobs:
       - name: NSO add default auth group
         run: ansible-playbook ciscops.mdd.nso_init
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -827,7 +827,7 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -837,7 +837,7 @@ jobs:
       - name: NSO add devices from inventory
         run: ansible-playbook ciscops.mdd.nso_update_devices
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -851,7 +851,7 @@ jobs:
       - name: NSO Re-sync configuration from the devices
         run: ansible-playbook ciscops.mdd.nso_sync_from
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -893,7 +893,7 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -903,7 +903,7 @@ jobs:
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -968,7 +968,7 @@ jobs:
       - name: NSO MDD remove logic for NSO to OC testing
         run: ansible-playbook ./test/remove_mdd_logic.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -1010,7 +1010,7 @@ jobs:
 #      - name: Inventory CML
 #        run: ansible-playbook cisco.cml.inventory
 #        env:
-#          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+#          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
 #          CML_HOST: ${{ secrets.CML_HOST }}
 #          CML_LAB: ${{ github.ref_name }}_NX
 #          CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -1020,7 +1020,7 @@ jobs:
 #      - name: Save host IPs
 #        run: ansible-playbook ./test/save_cml_node_ips.yml
 #        env:
-#          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+#          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
 #          CML_HOST: ${{ secrets.CML_HOST }}
 #          CML_LAB: ${{ github.ref_name }}_NX
 #          CML_USERNAME: ${{ secrets.CML_USERNAME }}
