@@ -209,6 +209,11 @@
                     address:
                       ip: 10.6.5.1
                       mask: 255.255.255.0
+                    address-secondary-list:
+                      address:
+                        - ip: 10.6.5.2
+                          secondary: secondary
+                          mask: 255.255.255.0
                 - id: '0/0/0/6.6'
                   description: "Sub interface 6"
                   encapsulation:
@@ -298,6 +303,8 @@
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][1]['config']['enabled'] == True"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][1]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.6.5.1'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][1]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['prefix-length'] == 24"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][1]['openconfig-if-ip:ipv4']['addresses']['address'][1]['config']['ip'] == '10.6.5.2'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][1]['openconfig-if-ip:ipv4']['addresses']['address'][1]['config']['prefix-length'] == 24"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][2]['config']['description'] == 'Sub interface 6'"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][2]['config']['enabled'] == True"
           - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][6]['subinterfaces']['subinterface'][2]['openconfig-if-ip:ipv4']['addresses']['address'][0]['config']['ip'] == '10.6.6.1'"

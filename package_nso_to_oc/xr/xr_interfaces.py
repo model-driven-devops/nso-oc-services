@@ -234,6 +234,19 @@ def xr_configure_ipv4_interface(nso_before_interface: dict, nso_leftover_interfa
         if len(ipv4_address_structure) > 0:
             openconfig_interface["openconfig-if-ip:ipv4"]["openconfig-if-ip:addresses"][
                 "openconfig-if-ip:address"].append(ipv4_address_structure)
+        if len(nso_before_interface["ipv4"].get("address-secondary-list", {}).get("address", [])) > 0:
+            for address in nso_before_interface["ipv4"].get("address-secondary-list", {}).get("address", []):
+                ipv4_address_structure = {}
+                prefix = ipaddress.IPv4Network(
+                    f'{address.get("ip")}/{address.get("mask")}', strict=False)
+                mask = prefix.prefixlen
+                ip = address.get("ip")
+                ipv4_address_structure.update({"openconfig-if-ip:ip": ip,
+                                               "openconfig-if-ip:config": {"openconfig-if-ip:ip": ip,
+                                                                           "openconfig-if-ip:prefix-length": mask}})
+                if len(ipv4_address_structure) > 0:
+                    openconfig_interface["openconfig-if-ip:ipv4"]["openconfig-if-ip:addresses"][
+                        "openconfig-if-ip:address"].append(ipv4_address_structure)
         if type(nso_before_interface["ipv4"].get(
                 "address-dhcp", {}).get("address", {}).get("dhcp", "")) is list:
             openconfig_interface["openconfig-if-ip:ipv4"]["openconfig-if-ip:config"][

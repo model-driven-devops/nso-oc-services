@@ -6,6 +6,8 @@ on:
 jobs:
   build-lab-xe:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     steps:
       - run: echo "The name of your repository is ${{ github.repository }}."
@@ -17,15 +19,15 @@ jobs:
         run: |
           tar -czvf mdd.tgz mdd
       - name: update ubuntu
-        run: sudo apt-get update
+        run: apt-get update
       - name: install sshpass
-        run: sudo apt-get install sshpass -y
+        run: apt-get install sshpass -y
       - name: install git
-        run: sudo apt-get install git -y
+        run: apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
       - name: Upgrade pip
-        run: sudo pip install --upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -37,27 +39,27 @@ jobs:
       - name: Delete CML
         run: ansible-playbook cisco.cml.clean
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Build CML
-        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=${{ github.workspace }}/test/arch/test_lab_xe.yaml
+        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=/__w/nso-oc-services/nso-oc-services/test/arch/test_lab_xe.yaml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Build NSO
         run: ansible-playbook ciscops.mdd.nso_install
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -67,11 +69,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Install NSO MDD package
         run: ansible-playbook ./test/install-nso-oc-services.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -81,11 +83,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: NSO add default auth group
         run: ansible-playbook ciscops.mdd.nso_init
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -95,21 +97,21 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: NSO add devices from inventory
         run: ansible-playbook ciscops.mdd.nso_update_devices
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -119,11 +121,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: NSO Re-sync configuration from the devices
         run: ansible-playbook ciscops.mdd.nso_sync_from
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -133,20 +135,20 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Write contents of xeswitch1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xeswitch1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/xeswitch1_host.txt >> $GITHUB_ENV
       - name: PIP Install paramiko
         run: pip install paramiko
       - name: Reload XESWITCH1
@@ -158,17 +160,17 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: NSO add devices from inventory
         run: ansible-playbook ciscops.mdd.nso_update_devices
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -178,11 +180,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: NSO Re-sync configuration from the devices
         run: ansible-playbook ciscops.mdd.nso_sync_from
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -192,9 +194,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
   test-oc-xe:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: build-lab-xe
     steps:
@@ -202,15 +206,15 @@ jobs:
         uses: actions/checkout@v2
       - run: echo "The workflow is now ready to test your code on the runner."
       - name: update ubuntu
-        run: sudo apt-get update
+        run: apt-get update
       - name: install sshpass
-        run: sudo apt-get install sshpass -y
+        run: apt-get install sshpass -y
       - name: install git
-        run: sudo apt-get install git -y
+        run: apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
       - name: Upgrade pip
-        run: sudo pip install --upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -222,35 +226,35 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Write contents of nso URL file to envars
         run: |
-          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_url.txt >> $GITHUB_ENV
       - name: Write contents of nso IP file to envars
         run: |
-          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_host.txt >> $GITHUB_ENV
       - name: Write contents of xe1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xe1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/xe1_host.txt >> $GITHUB_ENV
       - name: Write contents of xeswitch1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xeswitch1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/xeswitch1_host.txt >> $GITHUB_ENV
       - name: Run NSO Services XE Tests
         run: |
           cd ./test/tests/xe
@@ -265,13 +269,15 @@ jobs:
           NSO_HOST: ${{ env.NSO_HOST }}
           XE1_HOST: ${{ env.XE1_HOST }}
           XESWITCH1_HOST: ${{ env.XESWITCH1_HOST }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_dev_xe.cfg
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
   remove-mdd-logic-xe:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: test-oc-xe
     steps:
@@ -279,15 +285,15 @@ jobs:
         uses: actions/checkout@v2
       - run: echo "The workflow is now ready to test your code on the runner."
       - name: update ubuntu
-        run: sudo apt-get update
+        run: apt-get update
       - name: install sshpass
-        run: sudo apt-get install sshpass -y
+        run: apt-get install sshpass -y
       - name: install git
-        run: sudo apt-get install git -y
+        run: apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
       - name: Upgrade pip
-        run: sudo pip install --upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -299,7 +305,7 @@ jobs:
       - name: NSO MDD remove logic for NSO to OC testing
         run: ansible-playbook ./test/remove_mdd_logic.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -309,9 +315,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
   test-xe-oc:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: remove-mdd-logic-xe
     steps:
@@ -319,15 +327,15 @@ jobs:
         uses: actions/checkout@v2
       - run: echo "The workflow is now ready to test your code on the runner."
       - name: update ubuntu
-        run: sudo apt-get update
+        run: apt-get update
       - name: install sshpass
-        run: sudo apt-get install sshpass -y
+        run: apt-get install sshpass -y
       - name: install git
-        run: sudo apt-get install git -y
+        run: apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
       - name: Upgrade pip
-        run: sudo pip install --upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -339,35 +347,35 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XE
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xe.cfg
       - name: Write contents of nso URL file to envars
         run: |
-          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_url.txt >> $GITHUB_ENV
       - name: Write contents of nso IP file to envars
         run: |
-          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_host.txt >> $GITHUB_ENV
       - name: Write contents of xe1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xe1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/xe1_host.txt >> $GITHUB_ENV
       - name: Write contents of xeswitch1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xeswitch1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/xeswitch1_host.txt >> $GITHUB_ENV
       - name: Run NSO Device NED configuration to Openconfig configuration Tests
         run: |
           cd ./test/tests_nso_to_oc/xe
@@ -382,7 +390,7 @@ jobs:
           NSO_HOST: ${{ env.NSO_HOST }}
           XE1_HOST: ${{ env.XE1_HOST }}
           XESWITCH1_HOST: ${{ env.XESWITCH1_HOST }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev_xe.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_dev_xe.cfg
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
@@ -390,6 +398,8 @@ jobs:
           TEST: "True"
   build-lab-xr:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     steps:
       - name: Sleep 10 seconds to stagger downloads
@@ -404,15 +414,15 @@ jobs:
         run: |
           tar -czvf mdd.tgz mdd
       - name: update ubuntu
-        run: sudo apt-get update
+        run: apt-get update
       - name: install sshpass
-        run: sudo apt-get install sshpass -y
+        run: apt-get install sshpass -y
       - name: install git
-        run: sudo apt-get install git -y
+        run: apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
       - name: Upgrade pip
-        run: sudo pip install --upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -424,27 +434,27 @@ jobs:
       - name: Delete CML
         run: ansible-playbook cisco.cml.clean
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Build CML
-        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=${{ github.workspace }}/test/arch/test_lab_xr.yaml
+        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=/__w/nso-oc-services/nso-oc-services/test/arch/test_lab_xr.yaml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Build NSO
         run: ansible-playbook ciscops.mdd.nso_install
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -454,11 +464,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Install NSO MDD package
         run: ansible-playbook ./test/install-nso-oc-services.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -468,11 +478,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: NSO add default auth group
         run: ansible-playbook ciscops.mdd.nso_init
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -482,24 +492,24 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Sleep while XR1 loads for 6 minutes
         run: sleep 6m
         shell: bash
       - name: NSO add devices from inventory
         run: ansible-playbook ciscops.mdd.nso_update_devices
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -509,11 +519,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: NSO Re-sync configuration from the devices
         run: ansible-playbook ciscops.mdd.nso_sync_from
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -523,9 +533,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
   test-oc-xr:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: build-lab-xr
     steps:
@@ -533,15 +545,15 @@ jobs:
         uses: actions/checkout@v2
       - run: echo "The workflow is now ready to test your code on the runner."
       - name: update ubuntu
-        run: sudo apt-get update
+        run: apt-get update
       - name: install sshpass
-        run: sudo apt-get install sshpass -y
+        run: apt-get install sshpass -y
       - name: install git
-        run: sudo apt-get install git -y
+        run: apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
       - name: Upgrade pip
-        run: sudo pip install --upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -553,32 +565,32 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Write contents of nso URL file to envars
         run: |
-          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_url.txt >> $GITHUB_ENV
       - name: Write contents of nso IP file to envars
         run: |
-          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_host.txt >> $GITHUB_ENV
       - name: Write contents of xr1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xr1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/xr1_host.txt >> $GITHUB_ENV
       - name: Run NSO Services XR Tests
         run: |
           cd ./test/tests/xr
@@ -592,13 +604,15 @@ jobs:
           NSO_URL: ${{ env.NSO_URL }}
           NSO_HOST: ${{ env.NSO_HOST }}
           XR1_HOST: ${{ env.XR1_HOST }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_dev_xr.cfg
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
   remove-mdd-logic-xr:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: test-oc-xr
     steps:
@@ -606,15 +620,15 @@ jobs:
         uses: actions/checkout@v2
       - run: echo "The workflow is now ready to test your code on the runner."
       - name: update ubuntu
-        run: sudo apt-get update
+        run: apt-get update
       - name: install sshpass
-        run: sudo apt-get install sshpass -y
+        run: apt-get install sshpass -y
       - name: install git
-        run: sudo apt-get install git -y
+        run: apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
       - name: Upgrade pip
-        run: sudo pip install --upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -626,7 +640,7 @@ jobs:
       - name: NSO MDD remove logic for NSO to OC testing
         run: ansible-playbook ./test/remove_mdd_logic.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -636,9 +650,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
   test-xr-oc:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: remove-mdd-logic-xr
     steps:
@@ -646,15 +662,15 @@ jobs:
         uses: actions/checkout@v2
       - run: echo "The workflow is now ready to test your code on the runner."
       - name: update ubuntu
-        run: sudo apt-get update
+        run: apt-get update
       - name: install sshpass
-        run: sudo apt-get install sshpass -y
+        run: apt-get install sshpass -y
       - name: install git
-        run: sudo apt-get install git -y
+        run: apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
       - name: Upgrade pip
-        run: sudo pip install --upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -666,32 +682,32 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_XR
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_xr.cfg
       - name: Write contents of nso URL file to envars
         run: |
-          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_url.txt >> $GITHUB_ENV
       - name: Write contents of nso IP file to envars
         run: |
-          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_host.txt >> $GITHUB_ENV
       - name: Write contents of xr1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/xr1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/xr1_host.txt >> $GITHUB_ENV
       - name: Run NSO Device NED configuration to Openconfig configuration Tests
         run: |
           cd ./test/tests_nso_to_oc/xr
@@ -705,7 +721,7 @@ jobs:
           NSO_URL: ${{ env.NSO_URL }}
           NSO_HOST: ${{ env.NSO_HOST }}
           XR1_HOST: ${{ env.XR1_HOST }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev_xr.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_dev_xr.cfg
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
@@ -713,6 +729,8 @@ jobs:
           TEST: "True"
   build-lab-nx:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     steps:
       - name: Sleep 20 seconds to stagger downloads
@@ -727,15 +745,15 @@ jobs:
         run: |
           tar -czvf mdd.tgz mdd
       - name: update ubuntu
-        run: sudo apt-get update
+        run: apt-get update
       - name: install sshpass
-        run: sudo apt-get install sshpass -y
+        run: apt-get install sshpass -y
       - name: install git
-        run: sudo apt-get install git -y
+        run: apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
       - name: Upgrade pip
-        run: sudo pip install --upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -747,27 +765,27 @@ jobs:
       - name: Delete CML
         run: ansible-playbook cisco.cml.clean
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: Build CML
-        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=${{ github.workspace }}/test/arch/test_lab_nx.yaml
+        run: ansible-playbook cisco.cml.build -e startup='host' -e wait='yes' -e cml_lab_file=/__w/nso-oc-services/nso-oc-services/test/arch/test_lab_nx.yaml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: Build NSO
         run: ansible-playbook ciscops.mdd.nso_install
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -777,11 +795,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: Install NSO MDD package
         run: ansible-playbook ./test/install-nso-oc-services.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -791,11 +809,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: NSO add default auth group
         run: ansible-playbook ciscops.mdd.nso_init
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -805,21 +823,21 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: NSO add devices from inventory
         run: ansible-playbook ciscops.mdd.nso_update_devices
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -829,11 +847,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: NSO Re-sync configuration from the devices
         run: ansible-playbook ciscops.mdd.nso_sync_from
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -843,9 +861,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
   test-oc-nx:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: build-lab-nx
     steps:
@@ -853,15 +873,15 @@ jobs:
         uses: actions/checkout@v2
       - run: echo "The workflow is now ready to test your code on the runner."
       - name: update ubuntu
-        run: sudo apt-get update
+        run: apt-get update
       - name: install sshpass
-        run: sudo apt-get install sshpass -y
+        run: apt-get install sshpass -y
       - name: install git
-        run: sudo apt-get install git -y
+        run: apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
       - name: Upgrade pip
-        run: sudo pip install --upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -873,32 +893,32 @@ jobs:
       - name: Inventory CML
         run: ansible-playbook cisco.cml.inventory
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: Save host IPs
         run: ansible-playbook ./test/save_cml_node_ips.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
           CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
           CML_VERIFY_CERT: "false"
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
       - name: Write contents of nso URL file to envars
         run: |
-          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_url.txt >> $GITHUB_ENV
       - name: Write contents of nso IP file to envars
         run: |
-          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nso_host.txt >> $GITHUB_ENV
       - name: Write contents of nx1 IP file to envars
         run: |
-          cat ${{ github.workspace }}/nx1_host.txt >> $GITHUB_ENV
+          cat /__w/nso-oc-services/nso-oc-services/nx1_host.txt >> $GITHUB_ENV
       - name: Run NSO Services NX Tests
         run: |
           cd ./test/tests/nx
@@ -912,13 +932,15 @@ jobs:
           NSO_URL: ${{ env.NSO_URL }}
           NSO_HOST: ${{ env.NSO_HOST }}
           NX1_HOST: ${{ env.NX1_HOST }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_dev_nx.cfg
           NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
   remove-mdd-logic-nx:
     runs-on: self-hosted
+    container:
+      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
     if: github.event.review.state == 'approved'
     needs: test-oc-nx
     steps:
@@ -926,15 +948,15 @@ jobs:
         uses: actions/checkout@v2
       - run: echo "The workflow is now ready to test your code on the runner."
       - name: update ubuntu
-        run: sudo apt-get update
+        run: apt-get update
       - name: install sshpass
-        run: sudo apt-get install sshpass -y
+        run: apt-get install sshpass -y
       - name: install git
-        run: sudo apt-get install git -y
+        run: apt-get install git -y
       - name: clone mdd
         run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
       - name: Upgrade pip
-        run: sudo pip install --upgrade pip
+        run: pip install --upgrade pip
       - name: Install PIP requirements
         run: pip install -r ./mdd_repo/requirements.txt
       - name: Install PIP virl2_client
@@ -946,7 +968,7 @@ jobs:
       - name: NSO MDD remove logic for NSO to OC testing
         run: ansible-playbook ./test/remove_mdd_logic.yml
         env:
-          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
           CML_HOST: ${{ secrets.CML_HOST }}
           CML_LAB: ${{ github.ref_name }}_NX
           CML_USERNAME: ${{ secrets.CML_USERNAME }}
@@ -956,9 +978,11 @@ jobs:
           NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
           NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
           NSO_DEVICES_PASSWORD: ${{ secrets.NSO_DEVICES_PASSWORD }}
-          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
 #  test-nx-oc:
 #    runs-on: self-hosted
+#    container:
+#      image: ghcr.io/model-driven-devops/ansible-mdd/mdd:1.2.10
 #    if: github.event.review.state == 'approved'
 #    needs: remove-mdd-logic-nx
 #    steps:
@@ -966,15 +990,15 @@ jobs:
 #        uses: actions/checkout@v2
 #      - run: echo "The workflow is now ready to test your code on the runner."
 #      - name: update ubuntu
-#        run: sudo apt-get update
+#        run: apt-get update
 #      - name: install sshpass
-#        run: sudo apt-get install sshpass -y
+#        run: apt-get install sshpass -y
 #      - name: install git
-#        run: sudo apt-get install git -y
+#        run: apt-get install git -y
 #      - name: clone mdd
 #        run: git clone https://github.com/model-driven-devops/mdd.git mdd_repo
 #      - name: Upgrade pip
-#        run: sudo pip install --upgrade pip
+#        run: pip install --upgrade pip
 #      - name: Install PIP requirements
 #        run: pip install -r ./mdd_repo/requirements.txt
 #      - name: Install PIP virl2_client
@@ -986,32 +1010,32 @@ jobs:
 #      - name: Inventory CML
 #        run: ansible-playbook cisco.cml.inventory
 #        env:
-#          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+#          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
 #          CML_HOST: ${{ secrets.CML_HOST }}
 #          CML_LAB: ${{ github.ref_name }}_NX
 #          CML_USERNAME: ${{ secrets.CML_USERNAME }}
 #          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
 #          CML_VERIFY_CERT: "false"
-#          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+#          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
 #      - name: Save host IPs
 #        run: ansible-playbook ./test/save_cml_node_ips.yml
 #        env:
-#          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python"
+#          ANSIBLE_PYTHON_INTERPRETER: "${VIRTUAL_ENV}/bin/python3"
 #          CML_HOST: ${{ secrets.CML_HOST }}
 #          CML_LAB: ${{ github.ref_name }}_NX
 #          CML_USERNAME: ${{ secrets.CML_USERNAME }}
 #          CML_PASSWORD: ${{ secrets.CML_PASSWORD }}
 #          CML_VERIFY_CERT: "false"
-#          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_nx.cfg
+#          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_nx.cfg
 #      - name: Write contents of nso URL file to envars
 #        run: |
-#          cat ${{ github.workspace }}/nso_url.txt >> $GITHUB_ENV
+#          cat /__w/nso-oc-services/nso-oc-services/nso_url.txt >> $GITHUB_ENV
 #      - name: Write contents of nso IP file to envars
 #        run: |
-#          cat ${{ github.workspace }}/nso_host.txt >> $GITHUB_ENV
+#          cat /__w/nso-oc-services/nso-oc-services/nso_host.txt >> $GITHUB_ENV
 #      - name: Write contents of nx1 IP file to envars
 #        run: |
-#          cat ${{ github.workspace }}/nx1_host.txt >> $GITHUB_ENV
+#          cat /__w/nso-oc-services/nso-oc-services/nx1_host.txt >> $GITHUB_ENV
 #      - name: Run NSO Device NED configuration to Openconfig configuration Tests
 #        run: |
 #          cd ./test/tests_nso_to_oc/nx
@@ -1025,7 +1049,7 @@ jobs:
 #          NSO_URL: ${{ env.NSO_URL }}
 #          NSO_HOST: ${{ env.NSO_HOST }}
 #          NX1_HOST: ${{ env.NX1_HOST }}
-#          ANSIBLE_CONFIG: ${{ github.workspace }}/test/ansible_dev_nx.cfg
+#          ANSIBLE_CONFIG: /__w/nso-oc-services/nso-oc-services/test/ansible_dev_nx.cfg
 #          NSO_USERNAME: ${{ secrets.NSO_USERNAME }}
 #          NSO_PASSWORD: ${{ secrets.NSO_PASSWORD }}
 #          NSO_DEVICES_USERNAME: ${{ secrets.NSO_DEVICES_USERNAME }}
