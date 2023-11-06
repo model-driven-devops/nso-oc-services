@@ -24,6 +24,36 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-acl:acl:
+              openconfig-acl:acl-sets:
+                openconfig-acl:acl-set:
+                  - openconfig-acl:name: '50'
+                    openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    openconfig-acl:config:
+                      openconfig-acl:name: '50'
+                      openconfig-acl:type: 'openconfig-acl-ext:ACL_IPV4_STANDARD'
+                    openconfig-acl:acl-entries:
+                      openconfig-acl:acl-entry:
+                        - openconfig-acl:sequence-id: 10
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:sequence-id: 10
+                          openconfig-acl-ext:ipv4:
+                            openconfig-acl-ext:config:
+                              openconfig-acl-ext:source-address: '192.168.1.1/32'
+                        - openconfig-acl:sequence-id: 20
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'ACCEPT'
+                              openconfig-acl:log-action: 'LOG_NONE'
+                          openconfig-acl:config:
+                            openconfig-acl:sequence-id: 20
+                          openconfig-acl-ext:ipv4:
+                            openconfig-acl-ext:config:
+                              openconfig-acl-ext:source-address: '192.168.1.2/32'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'GigabitEthernet2'
@@ -80,8 +110,6 @@
                           openconfig-interfaces:description: 'int G4.1 - PIM enabled'
                           openconfig-interfaces:enabled: true
             openconfig-network-instance:network-instances:
-            openconfig-network-instance:network-instances:
-            openconfig-network-instance:network-instances:
               openconfig-network-instance:network-instance:
                 - openconfig-network-instance:name: 'default'
                   openconfig-network-instance:config:
@@ -106,6 +134,7 @@
                                   openconfig-network-instance:mode: 'PIM_MODE_DENSE'
                                   openconfig-network-instance:dr-priority: 2
                                   openconfig-network-instance:hello-interval: 2
+                                  openconfig-pim-ext:neighbor-filter: '50'
                                 openconfig-network-instance:interface-ref:
                                   openconfig-network-instance:config:
                                     openconfig-network-instance:interface: 'GigabitEthernet2'
@@ -117,6 +146,7 @@
                                   openconfig-network-instance:mode: 'PIM_MODE_SPARSE'
                                   openconfig-network-instance:dr-priority: 3
                                   openconfig-network-instance:hello-interval: 3
+                                  openconfig-pim-ext:neighbor-filter: '50'
                                 openconfig-network-instance:interface-ref:
                                   openconfig-network-instance:config:
                                     openconfig-network-instance:interface: 'GigabitEthernet3'
@@ -128,6 +158,7 @@
                                   openconfig-network-instance:mode: 'PIM_MODE_SPARSE'
                                   openconfig-network-instance:dr-priority: 4
                                   openconfig-network-instance:hello-interval: 4
+                                  openconfig-pim-ext:neighbor-filter: '50'
                                 openconfig-network-instance:interface-ref:
                                   openconfig-network-instance:config:
                                     openconfig-network-instance:interface: 'GigabitEthernet4'
@@ -142,14 +173,17 @@
           - "'+ ip pim sparse-dense-mode:' in changes"
           - "'+ ip pim dr-priority 2:' in changes"
           - "'+ ip pim query-interval 2:' in changes"
+          - "'+ ip pim neighbor-filter 50:' in changes"
           - "' interface GigabitEthernet3:' in changes"
           - "'+ ip pim sparse-mode:' in changes"
           - "'+ ip pim dr-priority 3:' in changes"
           - "'+ ip pim query-interval 3:' in changes"
+          - "'+ ip pim neighbor-filter 50:' in changes"
           - "'+interface GigabitEthernet4.1:' in changes"
           - "'+ ip pim sparse-mode:' in changes"
           - "'+ ip pim dr-priority 4:' in changes"
           - "'+ ip pim query-interval 4:' in changes"
+          - "'+ ip pim neighbor-filter 50:' in changes"
 
 - hosts: nso
   connection: local

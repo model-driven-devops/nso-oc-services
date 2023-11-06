@@ -120,12 +120,88 @@
                                 openconfig-network-instance:config:
                                   openconfig-network-instance:neighbor-address: '10.11.11.2'
                                   openconfig-network-instance:peer-as: 2
-                                  openconfig-network-instance:auth-password: 'super_secret'
+                                  openconfig-network-instance:auth-password: 'not_so_secret'
+                                  openconfig-bgp-ext:password-encryption: 'CLEARTEXT'
+                              - openconfig-network-instance:neighbor-address: '10.11.11.3'
+                                openconfig-network-instance:config:
+                                  openconfig-network-instance:neighbor-address: '10.11.11.3'
+                                  openconfig-network-instance:peer-as: 2
+                                  openconfig-network-instance:auth-password: '00071A1507545A545C'
+                                  openconfig-bgp-ext:password-encryption: 'ENCRYPTED'
+
         api_method: PUT
         rollback: true
         assertion_ignore_errors: false
         assertions:
-          - "'+ neighbor 10.11.11.2 password super_secret:' in changes"
+          - "'+ neighbor 10.11.11.2 password not_so_secret:' in changes"
+          - "'+ neighbor 10.11.11.3 password 7 00071A1507545A545C:' in changes"
+
+
+    - name: test neighbor_remote_tcpao-keychain
+      tags:
+        - neighbor_remote_tcpao-keychain
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:key-chains:
+                  openconfig-system-ext:key-chain:
+                    - openconfig-system-ext:name: BGP-TCP_KEYCHAIN1
+                      openconfig-system-ext:type: TCP
+                      openconfig-system-ext:keys:
+                        - openconfig-system-ext:id: 10
+                          openconfig-system-ext:config:
+                            openconfig-system-ext:id: 10
+                            openconfig-system-ext:key-string: "cisco"
+                            openconfig-system-ext:cryptographic-algorithm-tcp: "hmac-sha-1"
+                            openconfig-system-ext:send-id: 99
+                            openconfig-system-ext:recv-id: 100
+                            openconfig-system-ext:accept-lifetime:
+                              openconfig-system-ext:start-time: "00:00:00"
+                              openconfig-system-ext:start-month: "Jan"
+                              openconfig-system-ext:start-date: 1
+                              openconfig-system-ext:start-year: 2023
+                              openconfig-system-ext:duration: 364
+                            openconfig-system-ext:send-lifetime:
+                              openconfig-system-ext:start-time: "00:00:01"
+                              openconfig-system-ext:start-month: "Feb"
+                              openconfig-system-ext:start-date: 2
+                              openconfig-system-ext:start-year: 2024
+                              openconfig-system-ext:duration: 365
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'BGP'
+                        openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: 'BGP'
+                          openconfig-network-instance:name: 'BGP'
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                          openconfig-network-instance:neighbors:
+                            openconfig-network-instance:neighbor:
+                              - openconfig-network-instance:neighbor-address: '10.11.11.6'
+                                openconfig-network-instance:config:
+                                  openconfig-network-instance:neighbor-address: '10.11.11.6'
+                                  openconfig-network-instance:peer-as: 2
+                                  openconfig-bgp-ext:tcpao-keychain: 'BGP-TCP_KEYCHAIN1'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ neighbor 10.11.11.6 ao BGP-TCP_KEYCHAIN1:' in changes"
 
     - name: test neighbor_description
       tags:

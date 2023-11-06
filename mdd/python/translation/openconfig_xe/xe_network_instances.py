@@ -529,6 +529,7 @@ def xe_configure_pim(nso_props, network_instance) -> None:
                             interface_cdb.ip.pim.mode = 'sparse-dense-mode'
                         interface_cdb.ip.pim.dr_priority = iid.config.dr_priority
                         interface_cdb.ip.pim.query_interval = iid.config.hello_interval
+                        interface_cdb.ip.pim.neighbor_filter = iid.config.neighbor_filter
                     elif iid.config.enabled == False:
                         interface_cdb.ip.pim.delete()
 

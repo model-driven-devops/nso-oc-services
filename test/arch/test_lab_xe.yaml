@@ -286,7 +286,7 @@ nodes:
       interface GigabitEthernet1/0/18
       no switchport
       !
-      interface GigabitEthernet1/0/18
+      interface GigabitEthernet1/0/19
       no switchport
       !
       interface GigabitEthernet1/0/20

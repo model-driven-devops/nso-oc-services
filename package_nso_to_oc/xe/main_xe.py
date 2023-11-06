@@ -33,3 +33,6 @@ def build_xe_to_oc(config_before_dict: dict, configs_leftover: dict, oc: dict, t
     oc['mdd:openconfig'].update(openconfig_interfaces)
     oc['mdd:openconfig'].update(openconfig_acls)
     oc['mdd:openconfig'].update(openconfig_routing_policy)
+
+    # return added for direct calls from ansible-mdd
+    return common.prune_configs(oc)

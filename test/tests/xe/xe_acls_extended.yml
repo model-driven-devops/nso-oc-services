@@ -769,11 +769,19 @@
                             openconfig-acl:config:
                               openconfig-acl:destination-address: '0.0.0.0/0'
                               openconfig-acl:source-address: '0.0.0.0/0'
+                        - openconfig-acl:sequence-id: 40
+                          openconfig-acl:actions:
+                            openconfig-acl:config:
+                              openconfig-acl:forwarding-action: 'REMARK'
+                          openconfig-acl:config:
+                            openconfig-acl:description: 'the end'
+                            openconfig-acl:sequence-id: 40
         assertions:
           - "'+ip access-list extended icmp:' in changes"
           - "'+ 10 permit icmp any any 222 223:' in changes"
           - "'+ 20 permit icmp any any packet-too-big:' in changes"
           - "'+ 30 deny   ip any any log-input:' in changes"
+          - "'+ remark the end:' in changes"
         api_method: PATCH
         rollback: false
         assertion_ignore_errors: false

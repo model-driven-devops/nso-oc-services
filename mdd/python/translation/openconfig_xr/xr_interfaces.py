@@ -17,48 +17,9 @@ speeds_oc_to_xr = {
 
 def xr_interfaces_program_service(self, nso_props) -> None:
     """
-    Program service for xr NED features too complex for XML template.
+    Program service for xr NED features.
     """
-    xr_update_vlan_db(self, nso_props)
     xr_process_interfaces(self, nso_props)
-
-
-def xr_update_vlan_db(self, nso_props) -> None:
-    """
-    Ensure vlan is available for incoming configuration
-    """
-
-    # Get VLANs from device VLAN DB
-    vlans_device_db = list()
-    for v in nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vlan.vlan_list:
-        vlans_device_db.append(v.id)
-    self.log.info(f'{nso_props.device_name} VLANs in device DB: {vlans_device_db}')
-
-    # Get VLANs from incoming config
-    vlans_in_model_configs = list()
-    for interface in nso_props.service.oc_if__interfaces.interface:
-        if interface.aggregation.switched_vlan.config.access_vlan:
-            vlans_in_model_configs.append(interface.aggregation.switched_vlan.config.access_vlan)
-        for x in interface.aggregation.switched_vlan.config.trunk_vlans:
-            if x:
-                vlans_in_model_configs.append(x)
-        for x in interface.ethernet.switched_vlan.config.trunk_vlans:
-            if x:
-                vlans_in_model_configs.append(x)
-        if interface.ethernet.switched_vlan.config.native_vlan:
-            vlans_in_model_configs.append(interface.ethernet.switched_vlan.config.native_vlan)
-        if interface.routed_vlan.config.vlan:
-            vlans_in_model_configs.append(interface.routed_vlan.config.vlan)
-    self.log.info(f'{nso_props.device_name} VLANs from configs: {vlans_in_model_configs}')
-
-    # Find VLANs to create in device VLAN DB
-    vlans_to_create_in_db = [v for v in vlans_in_model_configs if v not in set(vlans_device_db)]
-    self.log.info(f'{nso_props.device_name} vlans_to_create_in_db: {vlans_to_create_in_db}')
-
-    # Create VLANs in device VLAN DB
-    for v in vlans_to_create_in_db:
-        nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vlan.vlan_list.create(v)
-        vlan = nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vlan.vlan_list[v]
 
 
 def check_for_ipv6(nso_props):
@@ -85,45 +46,15 @@ def xr_process_interfaces(self, nso_props) -> None:
     routing_ipv6 = check_for_ipv6(nso_props)
     if routing_ipv6:
         nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__ipv6.unicast_routing.create()
+
     for interface in nso_props.service.oc_if__interfaces.interface:
         # Layer 3 VLAN interfaces
         if interface.config.type == 'ianaift:l3ipvlan':
-            if not nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__interface.Vlan.exists(
-                    interface.routed_vlan.config.vlan):
-                nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__interface.Vlan.create(
-                    interface.routed_vlan.config.vlan)
-
-            vlan = nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__interface.Vlan[
-                interface.routed_vlan.config.vlan]
-            if interface.config.description:
-                vlan.description = interface.config.description
-            if interface.config.enabled:
-                if vlan.shutdown.exists():
-                    vlan.shutdown.delete()
-            else:
-                if not vlan.shutdown.exists():
-                    vlan.shutdown.create()
-            if interface.config.mtu:
-                vlan.mtu = interface.config.mtu
-            xr_configure_ipv4(self, vlan, interface.routed_vlan.ipv4)
-            xr_configure_hsrp_v1(self, nso_props, vlan, interface.routed_vlan.ipv4, interface)
-            xr_configure_ipv6(self, vlan, interface.routed_vlan.ipv6)
-            if routing_ipv6:
-                xr_configure_vrrp_v3(self, nso_props, vlan, interface.routed_vlan.ipv4, interface, 'ipv4')
-                xr_configure_vrrp_v3(self, nso_props, vlan, interface.routed_vlan.ipv6, interface, 'ipv6')
-            else:
-                xr_configure_vrrp_v2_legacy(self, nso_props, vlan, interface.routed_vlan.ipv4, interface)
+            raise ValueError('Routed VLAN interfaces are not supported in IOS XR')
 
         # Layer 2 interfaces
-        elif interface.config.type == 'ianaift:l2vlan' or (
-                interface.config.type == 'ianaift:ethernetCsmacd' and interface.ethernet.config.aggregate_id):
-            interface_type, interface_number = get_interface_type_and_number(interface.config.name)
-            class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__interface,
-                                      interface_type)
-            l2_interface = class_attribute[interface_number]
-            xr_interface_config(interface, l2_interface)
-            xr_interface_hold_time(interface, l2_interface)
-            xr_interface_ethernet(self, interface, l2_interface)
+        elif interface.config.type == 'ianaift:l2vlan':
+            raise ValueError('L2 VLAN interfaces are not supported in IOS XR')
 
         # Bundle-Ether
         elif interface.config.type == 'ianaift:ieee8023adLag':
@@ -221,9 +152,6 @@ def xr_process_interfaces(self, nso_props) -> None:
                     else:
                         xr_configure_vrrp_v2_legacy(self, nso_props, subinterface_cdb, subinterface_service.ipv4, interface)
                 else:  # IPv4 for main interface
-                    # Remove switchport
-                    if physical_interface.switchport:
-                        physical_interface.switchport.delete()
                     xr_configure_ipv4(self, physical_interface, subinterface_service.ipv4)
                     xr_configure_hsrp_v1(self, nso_props, physical_interface, subinterface_service.ipv4, interface)
                     xr_configure_ipv6(self, physical_interface, subinterface_service.ipv6)
@@ -248,7 +176,7 @@ def xr_process_interfaces(self, nso_props) -> None:
 
         # VASI interfaces
         elif interface.config.type == 'iftext:vasi':
-            raise ValueError('NSO XR CLI NED cisco-iosxr-cli-7.41 does not support VASI interfaces')
+            raise ValueError('VASI interfaces are not supported in IOS XR')
 
         # GRE Tunnel interface
         elif interface.config.type == 'ianaift:tunnel':
@@ -343,10 +271,8 @@ def xr_interface_ethernet(self, interface_service: ncs.maagic.ListElement, inter
 
     # switched-vlan interface-mode
     if interface_service.ethernet.switched_vlan.config.interface_mode:
-        xr_configure_switched_vlan(self, interface_cdb, interface_service.ethernet.switched_vlan)
-    else:
-        if interface_cdb.switchport:
-            interface_cdb.switchport.delete()
+        raise ValueError('switched interfaces are not supported in IOS XR')
+
     if interface_service.ethernet.config.aggregate_id:
         interface_cdb.channel_protocol.number = xr_get_bundle_number(
             interface_service.ethernet.config.aggregate_id)
@@ -359,10 +285,7 @@ def xr_interface_aggregation(self, nso_props, interface_service: ncs.maagic.List
         interface_cdb.bundle.minimum_active.links = int(interface_service.aggregation.config.min_links)
 
     if interface_service.aggregation.switched_vlan.config.interface_mode:
-        xr_configure_switched_vlan(self, interface_cdb, interface_service.aggregation.switched_vlan)
-    else:
-        if interface_cdb.switchport:
-            interface_cdb.switchport.delete()
+        raise ValueError('switched interfaces are not supported in IOS XR')
     if interface_service.aggregation.ipv4.addresses.address:
         xr_configure_ipv4(self, interface_cdb, interface_service.aggregation.ipv4)
         xr_configure_hsrp_v1(self, nso_props, interface_cdb, interface_service.aggregation.ipv4, interface_service)
@@ -381,7 +304,7 @@ def xr_configure_ipv4(self, interface_cdb: ncs.maagic.ListElement, service_ipv4:
     # Get current cdb addresses
     ips_and_masks_cdb = list()
     for x in interface_cdb.ipv4.address_secondary_list.address:
-        ips_and_masks_cdb.append((x.address, x.mask))
+        ips_and_masks_cdb.append((x.ip, x.mask))
 
     # Create service config address mask list
     ips_and_masks = list()
@@ -405,9 +328,10 @@ def xr_configure_ipv4(self, interface_cdb: ncs.maagic.ListElement, service_ipv4:
             if counter == 0:
                 interface_cdb.ipv4.address.ip = ip_mask[0]
                 interface_cdb.ipv4.address.mask = ip_mask[1]
-            # elif counter > 0: TODO
-            #     if not interface_cdb.ip.address.secondary.exists(ip_mask):
-            #         interface_cdb.ip.address.secondary.create(ip_mask)
+            elif counter > 0:
+                if not interface_cdb.ipv4.address_secondary_list.address.exists((ip_mask[0], 'secondary')):
+                    secondary_ip = interface_cdb.ipv4.address_secondary_list.address.create((ip_mask[0], 'secondary'))
+                    secondary_ip.mask = ip_mask[1]
     else:
         if service_ipv4.config.dhcp_client:
             interface_cdb.ipv4.address_dhcp.address.dhcp.create()
@@ -636,40 +560,6 @@ def xr_configure_hsrp_v1(self, nso_props, interface_cdb: ncs.maagic.ListElement,
                         hsrpv1_group.timers.hold_seconds = v.config.timers.holdtime
 
 
-def xr_configure_switched_vlan(self,
-                               interface_cdb: ncs.maagic.ListElement,
-                               service_switched_vlan: ncs.maagic.Container) -> None:
-    """
-    Configures openconfig-vlan vlan-switched-top
-    """
-
-    if service_switched_vlan.config.interface_mode == 'TRUNK':
-        if not interface_cdb.switchport.mode.trunk.exists():
-            interface_cdb.switchport.mode.trunk.create()
-        if service_switched_vlan.config.native_vlan:
-            interface_cdb.switchport.trunk.native.vlan = int(
-                service_switched_vlan.config.native_vlan)
-        elif service_switched_vlan.config.native_vlan == '':
-            interface_cdb.switchport.trunk.native.vlan = None
-        # Reconcile trunked VLANs
-        allowed_vlans_cdb = [v for v in interface_cdb.switchport.trunk.allowed.vlan.vlans]
-        allowed_vlans_config = [int(v) for v in service_switched_vlan.config.trunk_vlans]
-        # Remove unspecified VLANs
-        for v in allowed_vlans_cdb:
-            if v not in allowed_vlans_config:
-                interface_cdb.switchport.trunk.allowed.vlan.vlans.remove(v)
-        # Added specified VLANs
-        for v in allowed_vlans_config:
-            if v not in allowed_vlans_cdb:
-                interface_cdb.switchport.trunk.allowed.vlan.vlans.create(v)
-    elif service_switched_vlan.config.interface_mode == 'ACCESS':
-        if not interface_cdb.switchport.mode.access.exists():
-            interface_cdb.switchport.mode.access.create()
-        if service_switched_vlan.config.access_vlan:
-            interface_cdb.switchport.access.vlan = int(
-                service_switched_vlan.config.access_vlan)
-
-
 def xr_interface_config(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
     # description
     if interface_service.config.description:
@@ -695,6 +585,19 @@ def xr_interface_hold_time(interface_service: ncs.maagic.ListElement, interface_
     if interface_service.hold_time.config.up:
         interface_cdb.carrier_delay.up = int(interface_service.hold_time.config.up)
 
+def xr_interface_storm_control(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
+    if interface_service.oc_eth__ethernet.storm_control.broadcast.level.config.suppression_type:
+        raise ValueError('STP storm control is not supported in IOS XR')
+
+
+def xr_interface_unknown_flood_blocking(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
+    if interface_service.oc_eth__ethernet.unknown_flood_blocking.config.unicast:
+        raise ValueError('Unknown flood blocking is not supported in IOS XR')
+
+
+def xr_interface_ip_source_guard(interface_service: ncs.maagic.ListElement, interface_cdb: ncs.maagic.ListElement) -> None:
+    if interface_service.oc_eth__ethernet.ip_source_guard.config.ip_source_guard:
+        raise ValueError('IP source guard is not supported in IOS XR')
 
 def xr_get_bundle_number(interface: str) -> int:
     bundle = re.search(r'\d+', interface)

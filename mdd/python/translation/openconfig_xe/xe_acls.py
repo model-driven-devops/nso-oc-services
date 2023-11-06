@@ -8,6 +8,16 @@ regex_ports = re.compile(
     r'(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})\.\.(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})')
 
 
+def acl_remove(device, service_acl):
+    # remove any instances of ACL
+    if device.ios__ip.access_list.extended.ext_named_acl.exists(service_acl.name):
+        del device.ios__ip.access_list.extended.ext_named_acl[service_acl.name]
+    if device.ios__ip.access_list.standard.std_named_acl.exists(service_acl.name):
+        del device.ios__ip.access_list.standard.std_named_acl[service_acl.name]
+    if service_acl.name.isdigit() and device.ios__access_list.access_list.exists(int(service_acl.name)):
+        del device.ios__access_list.access_list[int(service_acl.name)]
+
+
 def xe_acls_program_service(self, nso_props) -> None:
     """
     Program service for xe NED features
@@ -69,19 +79,24 @@ def xe_acls_program_service(self, nso_props) -> None:
         (12, 0): "general-parameter-problem"}
     actions_oc_to_xe = {'oc-acl:ACCEPT': 'permit',
                         'oc-acl:DROP': 'deny',
-                        'oc-acl:REJECT': 'deny'}
+                        'oc-acl:REJECT': 'deny',
+                        'oc-acl-ext:REMARK': 'remark'}
     device = nso_props.root.devices.device[nso_props.device_name].config
     for service_acl in nso_props.service.oc_acl__acl.acl_sets.acl_set:
         if service_acl.type == 'oc-acl:ACL_IPV4':
-            if device.ios__ip.access_list.extended.ext_named_acl.exists(service_acl.name):
-                del device.ios__ip.access_list.extended.ext_named_acl[service_acl.name]
+            acl_remove(device, service_acl)
             device.ios__ip.access_list.extended.ext_named_acl.create(service_acl.name)
 
             acl = device.ios__ip.access_list.extended.ext_named_acl[service_acl.name]
             rules_oc_config = list()  # {'10 permit tcp any 1.1.1.1 0.0.0.0 eq 80'}
 
             for i in service_acl.acl_entries.acl_entry:
-                rule = str(i.sequence_id) + ' ' + actions_oc_to_xe[i.actions.config.forwarding_action] + ' '
+                if actions_oc_to_xe[i.actions.config.forwarding_action] == 'remark':
+                    rule = 'remark ' + i.config.description
+                    rule = rule.strip()
+                    rules_oc_config.append(rule)
+                    continue
+                rule = actions_oc_to_xe[i.actions.config.forwarding_action] + ' '
                 if i.ipv4.config.protocol:
                     rule += protocols_oc_to_xe[i.ipv4.config.protocol] + ' '
                 else:
@@ -152,13 +167,17 @@ def xe_acls_program_service(self, nso_props) -> None:
                 acl.ext_access_list_rule.create(i)
 
         if service_acl.type == 'oc-acl-ext:ACL_IPV4_STANDARD':
-            if device.ios__ip.access_list.standard.std_named_acl.exists(service_acl.name):
-                del device.ios__ip.access_list.standard.std_named_acl[service_acl.name]
+            acl_remove(device, service_acl)
             device.ios__ip.access_list.standard.std_named_acl.create(service_acl.name)
             acl = device.ios__ip.access_list.standard.std_named_acl[service_acl.name]
             rules_oc_config = list()  # {'10 permit any'}
             for i in service_acl.acl_entries.acl_entry:
-                rule = str(i.sequence_id) + ' ' + actions_oc_to_xe[i.actions.config.forwarding_action] + ' '
+                if actions_oc_to_xe[i.actions.config.forwarding_action] == 'remark':
+                    rule = 'remark ' + i.config.description
+                    rule = rule.strip()
+                    rules_oc_config.append(rule)
+                    continue
+                rule = actions_oc_to_xe[i.actions.config.forwarding_action] + ' '
                 if i.oc_acl_ext__ipv4.config.source_address == '0.0.0.0/0':
                     rule += 'any '
                 elif "/32" in i.oc_acl_ext__ipv4.config.source_address:

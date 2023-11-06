@@ -6,12 +6,13 @@
   vars:
     device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xeswitch1', True) }}"
   tasks:
-    - name: Run xes1 set up VLANs
+    - name: Create OC Service
       include_role:
         name: ned-to-oc-test
       vars:
         will_load_rollback: False
-        script_path: ../../../package_nso_to_oc/xe/xe_vlans.py
+        will_save_rollback: True
+        script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
         api_test_data:
           - name: Set up OC
             tags:
@@ -41,23 +42,22 @@
                 vlan-list:
                   - id: 1
                     name: default
-                  - id: 99
-                    name: VLAN99
                   - id: 100
                     name: VLAN100
                   - id: 101
                     name: VLAN101
-                    shutdown:
-                      - null
-                  - id: 105
-                    name: VLAN105
-                  - id: 106
-                    name: VLAN106
+                  - id: 102
+                    name: VLAN102
+                  - id: 200
+                    name: VLAN200
+                  - id: 201
+                    name: VLAN201
 
     - name: Run xes1 interfaces tests 1
       include_role:
         name: ned-to-oc-test
       vars:
+        will_load_rollback: False
         will_save_rollback: False
         script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
         api_test_data:
@@ -69,23 +69,7 @@
             content: |
               interface:
                 GigabitEthernet:
-                  - name: '1/0/6'
-                    description: 'access port with storm-control'
-                    switchport:
-                      mode:
-                        access: {}
-                      access:
-                        vlan: 99
-                    storm-control:
-                      broadcast:
-                        level-bps-pps:
-                          level:
-                            bps: 1234
-                      unicast:
-                        level-bps-pps:
-                          level:
-                            pps: 6789
-                  - name: '1/0/7'
+                  - name: '1/0/1'
                     description: 'access port with storm-control'
                     switchport:
                       mode:
@@ -96,18 +80,34 @@
                       broadcast:
                         level-bps-pps:
                           level:
-                            bps: 31000
+                            bps: 1234
                       unicast:
                         level-bps-pps:
                           level:
-                            pps: 32000
-                  - name: '1/0/8'
+                            pps: 6789
+                  - name: '1/0/2'
                     description: 'access port with storm-control'
                     switchport:
                       mode:
                         access: {}
                       access:
                         vlan: 101
+                    storm-control:
+                      broadcast:
+                        level-bps-pps:
+                          level:
+                            bps: 31000
+                      unicast:
+                        level-bps-pps:
+                          level:
+                            pps: 32000
+                  - name: '1/0/3'
+                    description: 'access port with storm-control'
+                    switchport:
+                      mode:
+                        access: {}
+                      access:
+                        vlan: 102
                     storm-control:
                       broadcast:
                         level-bps-pps:
@@ -119,9 +119,72 @@
                             pps: 42000000
 
         assertions:
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][21]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['broadcast']['level']['config']['bps'] == '1234'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][21]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps'] == '6789'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][22]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['broadcast']['level']['config']['bps'] == '31000'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][22]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps'] == '32000'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][23]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['broadcast']['level']['config']['bps'] == '41000000'"
-          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][23]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps'] == '42000000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][1]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['broadcast']['level']['config']['bps'] == '1234'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][1]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps'] == '6789'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['broadcast']['level']['config']['bps'] == '31000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][12]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps'] == '32000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][18]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['broadcast']['level']['config']['bps'] == '41000000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][18]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:storm-control']['unicast']['level']['config']['pps'] == '42000000'"
+
+    - name: Run xeswitch1 interfaces tests 2
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_load_rollback: False
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
+        api_test_data:
+          - name: NED init interfaces - IP Source Guard
+            tags:
+              - init_interfaces_ip_source_guard
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                GigabitEthernet:
+                  - name: '1/0/4'
+                    description: 'access port with IP Source Guard'
+                    switchport:
+                      mode:
+                        access: {}
+                      access:
+                        vlan: 200
+                    ip:
+                      verify:
+                        source: {}
+
+        assertions:
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][19]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:ip-source-guard']['config']['ip-source-guard'] == 'ENABLED'"
+
+    - name: Run xeswitch1 interfaces tests 3
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_load_rollback: True
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_interfaces.py
+        api_test_data:
+          - name: NED init interfaces - Unknown Flood Blocking
+            tags:
+              - init_interfaces_unknown_flood_blocking
+            api_path: config/tailf-ned-cisco-ios:interface
+            api_method: PATCH
+            content: |
+              interface:
+                GigabitEthernet:
+                  - name: '1/0/5'
+                    description: 'access port with Unknown Flood Blocking'
+                    switchport:
+                      mode:
+                        access: {}
+                      access:
+                        vlan: 201
+                      block:
+                        unicast:
+                          - null
+                        multicast:
+                          - null
+
+        assertions:
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][20]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:unknown-flood-blocking']['config']['unicast'] == 'ENABLED'"
+          - "oc_result.json['mdd:openconfig']['openconfig-interfaces:interfaces']['interface'][20]['openconfig-if-ethernet:ethernet']['openconfig-if-ethernet-mdd-ext:unknown-flood-blocking']['config']['multicast'] == 'ENABLED'"

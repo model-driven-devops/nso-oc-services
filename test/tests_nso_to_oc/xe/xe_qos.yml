@@ -320,7 +320,6 @@
                               openconfig-vlan:config:
                                 openconfig-vlan:vlan-id: 105
 
-
           - name: NED init IP Class-map
             tags:
               - init_ip_class_map
@@ -333,13 +332,15 @@
                   description: 'class-map ip dscp 11'
                   match:
                     ip:
-                      dscp: '11'
+                      dscp: 
+                        - 11
                 - name: 'cm-ip-dscp-af11'
                   prematch: 'match-all'
                   description: 'class-map ip dscp af11'
                   match:
                     ip:
-                      dscp: 'af11'
+                      dscp: 
+                        - 'af11'
           - name: NED init Class-map
             tags:
               - init_class_map
@@ -351,39 +352,46 @@
                   prematch: 'match-all'
                   description: 'class-map dscp 13 15'
                   match:
-                    dscp: '13'
-                    dscp: '15'
+                    dscp: 
+                      - 13
+                      - 15
                 - name: 'cm-dscp-af12-af13'
                   prematch: 'match-all'
                   description: 'class-map dscp af12 af13'
                   match:
-                    dscp: 'af12'
-                    dscp: 'af13'
+                    dscp: 
+                      - 'af12'
+                      - 'af13'
                 - name: 'cm-dscp-19'
                   prematch: 'match-all'
                   description: 'class-map dscp 19'
                   match:
-                    dscp: '19'
+                    dscp:
+                      - 19
                 - name: 'cm-dscp-21'
                   prematch: 'match-all'
                   description: 'class-map dscp 21'
                   match:
-                    dscp: '21'
+                    dscp:
+                      - 21
                 - name: 'cm-dscp-23'
                   prematch: 'match-all'
                   description: 'class-map dscp 23'
                   match:
-                    dscp: '23'
+                    dscp:
+                      - 23
                 - name: 'cm-dscp-25'
                   prematch: 'match-all'
                   description: 'class-map dscp 25'
                   match:
-                    dscp: '25'
+                    dscp:
+                      - 25
                 - name: 'cm-dscp-af41'
                   prematch: 'match-all'
                   description: 'class-map dscp af41'
                   match:
-                    dscp: 'af41'
+                    dscp:
+                      - 'af41'
           - name: NED init Policy-map
             tags:
               - init_policy_map
@@ -393,65 +401,64 @@
               policy-map:
                 - name: 'pm-class-default-01'
                   class-default:
-                    - class:
-                      name: 'class-default'
-                      priority:
-                        percent: '20'
+                    class:
+                      - name: 'class-default'
+                        priority:   # priority.create()
+                          percent: 20
                 - name: 'pm-class-default-02'
                   class-default:
-                    - class:
-                      name: 'class-default'
-                      priority:
-                        percent: '30'
-
+                    class:
+                      - name: 'class-default'
+                        priority:   # priority.create()
+                          percent: 30
                 - name: 'pm-ip-dscp-11'
                   class:
                     - name: 'cm-ip-dscp-11'
-                      priority:
-                        percent: '10'
-                  class:
+                      priority:     # priority.create()
+                        percent: 10
                     - name: 'cm-ip-dscp-af11'
-                      priority:
-                        kilo-bits: '100'
-                        burst: '500'
+                      priority:     # priority.create()
+                        kilo-bits: 100
+                        burst: 500
                 - name: 'pm-ip-dscp-af11'
                   class-default:
-                    priority:
-                      kilo-bits: '200'
-                      burst: '1500'
+                    class:
+                      - name: 'class-default'
+                        priority:   # priority.create()
+                          kilo-bits: 200
+                          burst: 1500
                   class:
                     - name: 'cm-ip-dscp-af11'
-                      priority:
-                        kilo-bits: '200'
-                        burst: '1000'
-                - name: 'pm-ip-dscp-13-15'
+                      priority:     # priority.create()
+                        kilo-bits: 200
+                        burst: 1000
+                - name: 'pm-dscp-13-15'
                   class:
                     - name: 'cm-dscp-13-15'
                       bandwidth:
-                        percent: '20'
+                        percent: 20
                 - name: 'pm-dscp-af12-af13'
                   class:
                     - name: 'cm-dscp-af12-af13'
                       bandwidth:
-                        bits: '200000'
-                  class:
+                        bits: 200000
                     - name: 'cm-dscp-13-15'
                       bandwidth:
-                        bits: '300000'
+                        bits: 300000
                 - name: 'pm-dscp-19'
                   class:
                     - name: 'cm-dscp-19'
                       police-policy-map:
                         police:
-                          cir: '100000'
-                          bc: '10000'
+                          cir: 100000
+                          bc: 10000
                           actions:
                             conform-set-dscp-transmit:
                               conform-action:
-                                set-dscp-transmit: '21'
+                                set-dscp-transmit: 21
                             exceed-set-dscp-transmit:
                               exceed-action:
-                                set-dscp-transmit: '21'
+                                set-dscp-transmit: 21
                 - name: 'pm-dscp-21'
                   class:
                     - name: 'cm-dscp-21'
@@ -459,14 +466,14 @@
                         police:
                           cir:
                             percent:
-                              percentage: '50'
-                              bc: '1000'
+                              percentage: 50
+                              bc: 1000
                               bc-ms:
                                 ms: {}
                               actions:
                                 conform-set-dscp-transmit:
                                   conform-action:
-                                    set-dscp-transmit: '23'
+                                    set-dscp-transmit: 23
                                 exceed-drop:
                                   exceed-action:
                                     drop: {}
@@ -475,18 +482,21 @@
                     - name: 'cm-dscp-23'
                       police-policy-map:
                         police:
-                          cir: '100000'
-                          bc: '1000'
-                          pir: '200000'
+                          cir: 100000
+                          bc: 1000
+                          pir: 200000
                           pir-be:
-                            be: '1000'
+                            be: 1000
                           actions:
                             conform-set-dscp-transmit:
                               conform-action:
-                                set-dscp-transmit: '25'
+                                set-dscp-transmit: 25
                             exceed-set-dscp-transmit:
                               exceed-action:
-                                set-dscp-transmit: '27'
+                                set-dscp-transmit: 27
+                            violate-set-dscp-transmit:
+                              violate-action:
+                                set-dscp-transmit: 29
                 - name: 'pm-dscp-25'
                   class:
                     - name: 'cm-dscp-25'
@@ -494,23 +504,23 @@
                         police:
                           cir:
                             percent:
-                              percentage: '20'
-                              bc: '100'
+                              percentage: 20
+                              bc: 100
                               bc-ms:
                                 ms: {}
                               pir:
-                                percent: '30'
+                                percent: 30
                               pir-be:
-                                be: '200'
+                                be: 200
                               pir-be-ms:
                                 ms: {}
                               actions:
                                 conform-set-dscp-transmit:
                                   conform-action:
-                                    set-dscp-transmit: '27'
+                                    set-dscp-transmit: 27
                                 exceed-set-dscp-transmit:
                                   exceed-action:
-                                    set-dscp-transmit: '29'
+                                    set-dscp-transmit: 29
                                 violate-drop:
                                   violate-action:
                                     drop: {}
@@ -519,8 +529,8 @@
                     - name: 'cm-dscp-31'
                       police-policy-map:
                         police:
-                          cir: '200000'
-                          bc: '20000'
+                          cir: 200000
+                          bc: 20000
                           actions:
                             conform-set-dscp-transmit:
                               conform-action:
@@ -584,33 +594,256 @@
                     service-policy:
                       output: 'pm-ip-dscp-af11'
         assertions:
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][0]['interfaces']['interface'][0]['config']['id'] == 'Loopback10'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][0]['interfaces']['interface'][0]['config']['passive'] == false"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][1]['openconfig-ospfv2-ext:stub-options']['totally-stubby']['config']['enabled'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['id'] == 'GigabitEthernet7'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['passive'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['metric'] == 10"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['network-type'] == 'openconfig-ospf-types:NON_BROADCAST_NETWORK'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['openconfig-ospfv2-ext:stub-options']['nssa']['config']['no-summary'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][3]['virtual-links']['virtual-link'][0]['config']['remote-router-id'] == '10.200.200.200'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['config']['passive'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['neighbors']['neighbor'][0]['router-id'] == '10.10.10.10'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['neighbors']['neighbor'][0]['config']['metric'] == 100"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['mpls']['config']['traffic-engineering-enabled'] == true"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['authentication-type'] == 'MD5'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][3]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['authentication-type'] == 'NULL'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['ospfv2']['areas']['area'][0]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['authentication-type'] == 'KEY-CHAIN'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['ospfv2']['areas']['area'][0]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['config']['key-chain'] == 'OSPF_KEYCHAIN1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][0]['config']['key-id'] == 1"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][0]['config']['key'] == 'pass1'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][1]['config']['key-id'] == 2"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['areas']['area'][2]['interfaces']['interface'][0]['openconfig-ospfv2-ext:authentication']['md5-authentication-keys']['md5-authentication-key'][1]['config']['key'] == '140713181F56'"
-          # This is testing for globals, but areas are required, so we test that portion of globals here.
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['src-area'] == 0"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['dst-area'] == 4"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['config']['src-area'] == 0"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['config']['dst-area'] == 4"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['ospfv2']['global']['inter-area-propagation-policies']['inter-area-propagation-policy'][0]['config']['import-policy'][0] == 'test'"
-          # OSPF Redistribute
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['table-connections']['table-connection'][0]['config']['src-protocol'] == 'openconfig-policy-types:BGP'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['table-connections']['table-connection'][0]['config']['openconfig-network-instance-ext:src-protocol-process-number'] == 1"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][0]['name'] == 'cm-ip-dscp-11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][0]['config']['name'] == 'cm-ip-dscp-11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][0]['config']['type'] == 'IPV4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][0]['terms']['term'][0]['id'] == 'term-ip-dscp-11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][0]['terms']['term'][0]['config']['id'] == 'term-ip-dscp-11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][0]['terms']['term'][0]['conditions']['ipv4']['config']['dscp'] == '11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][0]['terms']['term'][0]['conditions']['ipv4']['config']['protocol'] == '4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][1]['name'] == 'cm-ip-dscp-af11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][1]['config']['name'] == 'cm-ip-dscp-af11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][1]['config']['type'] == 'IPV4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][1]['terms']['term'][0]['id'] == 'term-ip-dscp-af11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][1]['terms']['term'][0]['config']['id'] == 'term-ip-dscp-af11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][1]['terms']['term'][0]['conditions']['ipv4']['config']['dscp'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][1]['terms']['term'][0]['conditions']['ipv4']['config']['protocol'] == '4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][2]['name'] == 'cm-dscp-13-15'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][2]['config']['name'] == 'cm-dscp-13-15'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][2]['config']['type'] == 'IPV4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][2]['terms']['term'][0]['id'] == 'term-dscp-13-15'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][2]['terms']['term'][0]['config']['id'] == 'term-dscp-13-15'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][2]['terms']['term'][0]['conditions']['ipv4']['config']['dscp-set'][0] == '13'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][2]['terms']['term'][0]['conditions']['ipv4']['config']['dscp-set'][1] == '15'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][3]['name'] == 'cm-dscp-af12-af13'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][3]['config']['name'] == 'cm-dscp-af12-af13'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][3]['config']['type'] == 'IPV4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][3]['terms']['term'][0]['id'] == 'term-dscp-af12-af13'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][3]['terms']['term'][0]['config']['id'] == 'term-dscp-af12-af13'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][3]['terms']['term'][0]['conditions']['ipv4']['config']['dscp-set'][0] == '12'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][3]['terms']['term'][0]['conditions']['ipv4']['config']['dscp-set'][1] == '14'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][4]['name'] == 'cm-dscp-19'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][4]['config']['name'] == 'cm-dscp-19'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][4]['config']['type'] == 'IPV4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][4]['terms']['term'][0]['id'] == 'term-dscp-19'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][4]['terms']['term'][0]['config']['id'] == 'term-dscp-19'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][4]['terms']['term'][0]['conditions']['ipv4']['config']['dscp'] == '19'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][5]['name'] == 'cm-dscp-21'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][5]['config']['name'] == 'cm-dscp-21'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][5]['config']['type'] == 'IPV4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][5]['terms']['term'][0]['id'] == 'term-dscp-21'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][5]['terms']['term'][0]['config']['id'] == 'term-dscp-21'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][5]['terms']['term'][0]['conditions']['ipv4']['config']['dscp'] == '21'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][6]['name'] == 'cm-dscp-23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][6]['config']['name'] == 'cm-dscp-23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][6]['config']['type'] == 'IPV4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][6]['terms']['term'][0]['id'] == 'term-dscp-23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][6]['terms']['term'][0]['config']['id'] == 'term-dscp-23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][6]['terms']['term'][0]['conditions']['ipv4']['config']['dscp'] == '23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][7]['name'] == 'cm-dscp-25'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][7]['config']['name'] == 'cm-dscp-25'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][7]['config']['type'] == 'IPV4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][7]['terms']['term'][0]['id'] == 'term-dscp-25'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][7]['terms']['term'][0]['config']['id'] == 'term-dscp-25'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][7]['terms']['term'][0]['conditions']['ipv4']['config']['dscp'] == '25'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][8]['name'] == 'cm-dscp-af41'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][8]['config']['name'] == 'cm-dscp-af41'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][8]['config']['type'] == 'IPV4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][8]['terms']['term'][0]['id'] == 'term-dscp-af41'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][8]['terms']['term'][0]['config']['id'] == 'term-dscp-af41'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['classifiers']['classifier'][8]['terms']['term'][0]['conditions']['ipv4']['config']['dscp'] == '34'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][0]['name'] == 'sched-01-class-default'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][0]['config']['name'] == 'sched-01-class-default'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][0]['schedulers']['scheduler'][0]['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][0]['schedulers']['scheduler'][0]['config']['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][0]['schedulers']['scheduler'][0]['config']['priority'] == 'STRICT'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][0]['schedulers']['scheduler'][0]['config']['type'] == 'ONE_RATE_TWO_COLOR'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][0]['schedulers']['scheduler'][0]['output']['config']['output-type'] == 'FWD_GROUP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][0]['schedulers']['scheduler'][0]['output']['config']['output-fwd-group'] == 'pm-class-default-01'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][0]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['cir-pct'] == '20'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][0]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['queuing-behavior'] == 'SHAPE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][1]['name'] == 'sched-02-class-default'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][1]['config']['name'] == 'sched-02-class-default'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][1]['schedulers']['scheduler'][0]['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][1]['schedulers']['scheduler'][0]['config']['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][1]['schedulers']['scheduler'][0]['config']['priority'] == 'STRICT'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][1]['schedulers']['scheduler'][0]['config']['type'] == 'ONE_RATE_TWO_COLOR'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][1]['schedulers']['scheduler'][0]['output']['config']['output-type'] == 'FWD_GROUP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][1]['schedulers']['scheduler'][0]['output']['config']['output-fwd-group'] == 'pm-class-default-02'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][1]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['cir-pct'] == '30'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][1]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['queuing-behavior'] == 'SHAPE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][2]['name'] == 'sched-01-cm-ip-dscp-11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][2]['config']['name'] == 'sched-01-cm-ip-dscp-11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][2]['schedulers']['scheduler'][0]['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][2]['schedulers']['scheduler'][0]['config']['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][2]['schedulers']['scheduler'][0]['config']['priority'] == 'STRICT'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][2]['schedulers']['scheduler'][0]['config']['type'] == 'ONE_RATE_TWO_COLOR'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][2]['schedulers']['scheduler'][0]['output']['config']['output-type'] == 'FWD_GROUP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][2]['schedulers']['scheduler'][0]['output']['config']['output-fwd-group'] == 'pm-ip-dscp-11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][2]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['cir-pct'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][2]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['queuing-behavior'] == 'SHAPE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][3]['name'] == 'sched-02-cm-ip-dscp-af11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][3]['config']['name'] == 'sched-02-cm-ip-dscp-af11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][3]['schedulers']['scheduler'][0]['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][3]['schedulers']['scheduler'][0]['config']['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][3]['schedulers']['scheduler'][0]['config']['priority'] == 'STRICT'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][3]['schedulers']['scheduler'][0]['config']['type'] == 'ONE_RATE_TWO_COLOR'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][3]['schedulers']['scheduler'][0]['output']['config']['output-type'] == 'FWD_GROUP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][3]['schedulers']['scheduler'][0]['output']['config']['output-fwd-group'] == 'pm-ip-dscp-11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][3]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['cir'] == '100000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][3]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['bc'] == '500'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][3]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['queuing-behavior'] == 'SHAPE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][4]['name'] == 'sched-03-class-default'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][4]['config']['name'] == 'sched-03-class-default'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][4]['schedulers']['scheduler'][0]['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][4]['schedulers']['scheduler'][0]['config']['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][4]['schedulers']['scheduler'][0]['config']['priority'] == 'STRICT'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][4]['schedulers']['scheduler'][0]['config']['type'] == 'ONE_RATE_TWO_COLOR'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][4]['schedulers']['scheduler'][0]['output']['config']['output-type'] == 'FWD_GROUP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][4]['schedulers']['scheduler'][0]['output']['config']['output-fwd-group'] == 'pm-ip-dscp-af11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][4]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['cir'] == '200000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][4]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['bc'] == '1500'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][4]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['queuing-behavior'] == 'SHAPE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][5]['name'] == 'sched-01-cm-ip-dscp-af11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][5]['config']['name'] == 'sched-01-cm-ip-dscp-af11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][5]['schedulers']['scheduler'][0]['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][5]['schedulers']['scheduler'][0]['config']['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][5]['schedulers']['scheduler'][0]['config']['priority'] == 'STRICT'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][5]['schedulers']['scheduler'][0]['config']['type'] == 'ONE_RATE_TWO_COLOR'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][5]['schedulers']['scheduler'][0]['output']['config']['output-type'] == 'FWD_GROUP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][5]['schedulers']['scheduler'][0]['output']['config']['output-fwd-group'] == 'pm-ip-dscp-af11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][5]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['cir'] == '200000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][5]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['bc'] == '1000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][5]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['queuing-behavior'] == 'SHAPE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][6]['name'] == 'sched-01-cm-dscp-13-15'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][6]['config']['name'] == 'sched-01-cm-dscp-13-15'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][6]['schedulers']['scheduler'][0]['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][6]['schedulers']['scheduler'][0]['config']['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][6]['schedulers']['scheduler'][0]['config']['type'] == 'ONE_RATE_TWO_COLOR'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][6]['schedulers']['scheduler'][0]['output']['config']['output-type'] == 'FWD_GROUP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][6]['schedulers']['scheduler'][0]['output']['config']['output-fwd-group'] == 'pm-dscp-13-15'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][6]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['cir-pct'] == '20'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][6]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['queuing-behavior'] == 'SHAPE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][7]['name'] == 'sched-01-cm-dscp-af12-af13'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][7]['config']['name'] == 'sched-01-cm-dscp-af12-af13'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][7]['schedulers']['scheduler'][0]['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][7]['schedulers']['scheduler'][0]['config']['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][7]['schedulers']['scheduler'][0]['config']['type'] == 'ONE_RATE_TWO_COLOR'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][7]['schedulers']['scheduler'][0]['output']['config']['output-type'] == 'FWD_GROUP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][7]['schedulers']['scheduler'][0]['output']['config']['output-fwd-group'] == 'pm-dscp-af12-af13'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][7]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['cir'] == '200000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][7]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['queuing-behavior'] == 'SHAPE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][8]['name'] == 'sched-02-cm-dscp-13-15'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][8]['config']['name'] == 'sched-02-cm-dscp-13-15'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][8]['schedulers']['scheduler'][0]['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][8]['schedulers']['scheduler'][0]['config']['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][8]['schedulers']['scheduler'][0]['config']['type'] == 'ONE_RATE_TWO_COLOR'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][8]['schedulers']['scheduler'][0]['output']['config']['output-type'] == 'FWD_GROUP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][8]['schedulers']['scheduler'][0]['output']['config']['output-fwd-group'] == 'pm-dscp-af12-af13'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][8]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['cir'] == '300000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][8]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['queuing-behavior'] == 'SHAPE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][9]['name'] == 'sched-01-cm-dscp-19'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][9]['config']['name'] == 'sched-01-cm-dscp-19'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][9]['schedulers']['scheduler'][0]['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][9]['schedulers']['scheduler'][0]['config']['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][9]['schedulers']['scheduler'][0]['config']['type'] == 'ONE_RATE_TWO_COLOR'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][9]['schedulers']['scheduler'][0]['output']['config']['output-type'] == 'FWD_GROUP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][9]['schedulers']['scheduler'][0]['output']['config']['output-fwd-group'] == 'pm-dscp-19'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][9]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['cir'] == '100000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][9]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['bc'] == '10000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][9]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['queuing-behavior'] == 'POLICE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][9]['schedulers']['scheduler'][0]['one-rate-two-color']['conform-action']['config']['set-dscp'] == '21'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][9]['schedulers']['scheduler'][0]['one-rate-two-color']['exceed-action']['config']['set-dscp'] == '21'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][10]['name'] == 'sched-01-cm-dscp-21'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][10]['config']['name'] == 'sched-01-cm-dscp-21'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][10]['schedulers']['scheduler'][0]['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][10]['schedulers']['scheduler'][0]['config']['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][10]['schedulers']['scheduler'][0]['config']['type'] == 'ONE_RATE_TWO_COLOR'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][10]['schedulers']['scheduler'][0]['output']['config']['output-type'] == 'FWD_GROUP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][10]['schedulers']['scheduler'][0]['output']['config']['output-fwd-group'] == 'pm-dscp-21'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][10]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['cir-pct'] == '50'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][10]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['bc'] == '1000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][10]['schedulers']['scheduler'][0]['one-rate-two-color']['config']['queuing-behavior'] == 'POLICE'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][10]['schedulers']['scheduler'][0]['one-rate-two-color']['conform-action']['config']['set-dscp'] == '23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][10]['schedulers']['scheduler'][0]['one-rate-two-color']['exceed-action']['config']['drop'] == 'True'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][11]['name'] == 'sched-01-cm-dscp-23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][11]['config']['name'] == 'sched-01-cm-dscp-23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][11]['schedulers']['scheduler'][0]['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][11]['schedulers']['scheduler'][0]['config']['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][11]['schedulers']['scheduler'][0]['config']['type'] == 'TWO_RATE_THREE_COLOR'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][11]['schedulers']['scheduler'][0]['output']['config']['output-type'] == 'FWD_GROUP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][11]['schedulers']['scheduler'][0]['output']['config']['output-fwd-group'] == 'pm-dscp-23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][11]['schedulers']['scheduler'][0]['two-rate-three-color']['config']['cir'] == '100000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][11]['schedulers']['scheduler'][0]['two-rate-three-color']['config']['bc'] == '1000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][11]['schedulers']['scheduler'][0]['two-rate-three-color']['config']['pir'] == '200000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][11]['schedulers']['scheduler'][0]['two-rate-three-color']['config']['be'] == '1000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][11]['schedulers']['scheduler'][0]['two-rate-three-color']['conform-action']['config']['set-dscp'] == '25'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][11]['schedulers']['scheduler'][0]['two-rate-three-color']['exceed-action']['config']['set-dscp'] == '27'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][11]['schedulers']['scheduler'][0]['two-rate-three-color']['violate-action']['config']['set-dscp'] == '29'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][12]['name'] == 'sched-01-cm-dscp-25'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][12]['config']['name'] == 'sched-01-cm-dscp-25'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][12]['schedulers']['scheduler'][0]['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][12]['schedulers']['scheduler'][0]['config']['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][12]['schedulers']['scheduler'][0]['config']['type'] == 'TWO_RATE_THREE_COLOR'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][12]['schedulers']['scheduler'][0]['output']['config']['output-type'] == 'FWD_GROUP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][12]['schedulers']['scheduler'][0]['output']['config']['output-fwd-group'] == 'pm-dscp-25'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][12]['schedulers']['scheduler'][0]['two-rate-three-color']['config']['cir-pct'] == '20'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][12]['schedulers']['scheduler'][0]['two-rate-three-color']['config']['bc'] == '100'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][12]['schedulers']['scheduler'][0]['two-rate-three-color']['config']['pir-pct'] == '30'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][12]['schedulers']['scheduler'][0]['two-rate-three-color']['config']['be'] == '200'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][12]['schedulers']['scheduler'][0]['two-rate-three-color']['conform-action']['config']['set-dscp'] == '27'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][12]['schedulers']['scheduler'][0]['two-rate-three-color']['exceed-action']['config']['set-dscp'] == '29'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][12]['schedulers']['scheduler'][0]['two-rate-three-color']['violate-action']['config']['drop'] == 'True'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][13]['name'] == 'sched-01-cm-dscp-31'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][13]['config']['name'] == 'sched-01-cm-dscp-31'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][13]['schedulers']['scheduler'][0]['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][13]['schedulers']['scheduler'][0]['config']['sequence'] == '10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][13]['schedulers']['scheduler'][0]['config']['type'] == 'TWO_RATE_THREE_COLOR'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][13]['schedulers']['scheduler'][0]['output']['config']['output-type'] == 'FWD_GROUP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][13]['schedulers']['scheduler'][0]['output']['config']['output-fwd-group'] == 'pm-dscp-31'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][13]['schedulers']['scheduler'][0]['two-rate-three-color']['config']['cir'] == '200000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][13]['schedulers']['scheduler'][0]['two-rate-three-color']['config']['bc'] == '20000'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][13]['schedulers']['scheduler'][0]['two-rate-three-color']['conform-action']['config']['set-dscp'] == '46'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][13]['schedulers']['scheduler'][0]['two-rate-three-color']['exceed-action']['config']['set-dscp'] == '36'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['scheduler-policies']['scheduler-policy'][13]['schedulers']['scheduler'][0]['two-rate-three-color']['violate-action']['config']['set-dscp'] == '38'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][0]['interface-id'] == 'GigabitEthernet6'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][0]['config']['interface-id'] == 'GigabitEthernet6'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][0]['input']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-19'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][0]['output']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-21'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][1]['interface-id'] == 'GigabitEthernet7'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][1]['config']['interface-id'] == 'GigabitEthernet7'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][1]['input']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][1]['output']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-25'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][2]['interface-id'] == 'GigabitEthernet8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][2]['config']['interface-id'] == 'GigabitEthernet8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][2]['output']['scheduler-policy']['config']['name'] == 'sched-01-cm-ip-dscp-af11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][3]['interface-id'] == 'Loopback100'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][3]['config']['interface-id'] == 'Loopback100'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][3]['input']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-19'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][3]['output']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-21'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][4]['interface-id'] == 'Loopback101'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][4]['config']['interface-id'] == 'Loopback101'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][4]['input']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][4]['output']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-25'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][5]['interface-id'] == 'Port-channel10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][5]['config']['interface-id'] == 'Port-channel10'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][5]['input']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-19'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][5]['output']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-21'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][6]['interface-id'] == 'Port-channel11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][6]['config']['interface-id'] == 'Port-channel11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][6]['input']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][6]['output']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-25'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][7]['interface-id'] == 'Port-channel12'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][7]['config']['interface-id'] == 'Port-channel12'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][7]['input']['scheduler-policy']['config']['name'] == 'sched-01-cm-ip-dscp-11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][7]['output']['scheduler-policy']['config']['name'] == 'sched-01-cm-ip-dscp-af11'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][8]['interface-id'] == 'Tunnel100'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][8]['config']['interface-id'] == 'Tunnel100'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][8]['input']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-19'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][9]['interface-id'] == 'Tunnel101'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][9]['config']['interface-id'] == 'Tunnel101'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][9]['input']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-23'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][9]['output']['scheduler-policy']['config']['name'] == 'sched-01-cm-dscp-31'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][10]['interface-id'] == 'Tunnel102'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][10]['config']['interface-id'] == 'Tunnel102'"
+          - "oc_result.json['mdd:openconfig']['openconfig-qos:qos']['interfaces']['interfaces'][10]['output']['scheduler-policy']['config']['name'] == 'sched-01-cm-ip-dscp-af11'"

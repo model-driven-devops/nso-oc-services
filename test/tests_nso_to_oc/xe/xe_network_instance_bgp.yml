@@ -6,7 +6,7 @@
   vars:
     device: "{{ lookup('env', 'TEST_DEVICE_XEROUTER') | default('xe1', True) }}"
   tasks:
-    - name: Run XE network instance OSPF global and static routes tests
+    - name: Run XE network instance BGP global and static routes tests
       include_role:
         name: ned-to-oc-test
       vars:
@@ -59,6 +59,21 @@
                               openconfig-routing-policy:actions:
                                 openconfig-routing-policy:config:
                                   openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+                openconfig-system:system:
+                  openconfig-system-ext:services:
+                    openconfig-system-ext:key-chains:
+                      openconfig-system-ext:key-chain:
+                        - openconfig-system-ext:name: BGP_KEY_CHAIN1
+                          openconfig-system-ext:type: TCP
+                          openconfig-system-ext:keys:
+                            - openconfig-system-ext:id: 10
+                              openconfig-system-ext:config:
+                                openconfig-system-ext:id: 10
+                                openconfig-system-ext:key-string: "cisco"
+                                openconfig-system-ext:cryptographic-algorithm-tcp: "hmac-sha-1"
+                                openconfig-system-ext:send-id: 99
+                                openconfig-system-ext:recv-id: 100
+
           - name: NED init VRF
             tags:
               - init_vrf
@@ -117,7 +132,7 @@
                   operation: permit
           - name: NED configure global config
             tags:
-              - ospf_global_config
+              - bgp_global_config
             api_path: config/tailf-ned-cisco-ios:router/bgp
             api_method: PATCH
             content: |
@@ -203,7 +218,8 @@
                                     local-as:
                                       as-no: 100
                                     password:
-                                      text: super_secret
+                                      enctype: 7
+                                      text: '00071A1507545A545C'
                                     send-community:
                                       send-community-where: standard
                                     as-override: {}
@@ -234,6 +250,78 @@
                           - id: 10.11.11.5
                             activate:
                               -
+
+          - name: NED key chain init
+            tags:
+              - ned_keychain_init
+            api_path: config/tailf-ned-cisco-ios:key
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:key:
+                tcp:
+                  chain:
+                    - name: BGP_KEY_CHAIN1
+                      tcp:
+                        - null
+                      key:
+                        - id: 10
+                          key-string:
+                            type: 0
+                            secret: cisco
+                          cryptographic-algorithm: aes-128-cmac
+                          send-id: 99
+                          recv-id: 100
+                          accept-lifetime:
+                            start-time: 01:00:00
+                            start-month: Jan
+                            start-date: '1'
+                            start-year: '2025'
+                            stop-time: 01:00:01
+                            stop-month: Feb
+                            stop-date: '2'
+                            stop-year: '2026'
+                          send-lifetime:
+                            start-time: 01:00:00
+                            start-month: Mar
+                            start-date: '1'
+                            start-year: '2025'
+                            stop-time: 01:00:01
+                            stop-month: May
+                            stop-date: '2'
+                            stop-year: '2026'
+
+          - name: NED configure BGP TCP-AO and neighbor password encryption
+            tags:
+              - bgp_global_config_tcp_ao
+            api_path: config/tailf-ned-cisco-ios:router/bgp
+            api_method: PATCH
+            content: |
+              bgp:
+                - as-no: 1
+                  bgp:
+                    router-id: 1.1.1.1
+                    default:
+                      ipv4-unicast: false
+                  neighbor:
+                    - id: 10.11.11.1
+                      remote-as: '2'
+                      ao:
+                        keychain-name: BGP_KEY_CHAIN1
+                    - id: 10.11.11.2
+                      remote-as: '2'
+                      ao:
+                        keychain-name: BGP_KEY_CHAIN1
+                    - id: 172.29.100.2
+                      remote-as: '2'
+                      password:
+                        enctype: 0
+                        text: 'not_so_secret1'
+                    - id: 172.29.100.6
+                      remote-as: '2'
+                      password:
+                        enctype: 7
+                        text: '00071A1507545A545C'
+
         assertions:
           # Default
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['config']['name'] == 'default'"
@@ -295,7 +383,8 @@
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][0]['afi-safis']['afi-safi'][0]['config']['afi-safi-name'] == 'openconfig-bgp-types:IPV4_UNICAST'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][0]['afi-safis']['afi-safi'][0]['config']['enabled'] == false"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['peer-group-name'] == 'foo'"
-          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['auth-password'] == 'super_secret'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['openconfig-bgp-ext:password-encryption'] == 'ENCRYPTED'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['auth-password'] == '00071A1507545A545C'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['description'] == 'my_description'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['local-as'] == 100"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['bgp']['peer-groups']['peer-group'][1]['config']['send-community'] == 'STANDARD'"
@@ -305,4 +394,11 @@
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['table-connections']['table-connection'][0]['config']['address-family'] == 'openconfig-types:IPV4'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['table-connections']['table-connection'][0]['config']['dst-protocol'] == 'openconfig-policy-types:BGP'"
           - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['table-connections']['table-connection'][0]['config']['src-protocol'] == 'openconfig-policy-types:STATIC'"
-          
+          # BGP TCP-AO Auth
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][0]['config']['openconfig-bgp-ext:tcpao-keychain'] == 'BGP_KEY_CHAIN1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][1]['config']['openconfig-bgp-ext:tcpao-keychain'] == 'BGP_KEY_CHAIN1'"
+          # Neighbor password encryption
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][4]['config']['openconfig-bgp-ext:password-encryption'] == 'CLEARTEXT'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][4]['config']['auth-password']== 'not_so_secret1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][5]['config']['openconfig-bgp-ext:password-encryption'] == 'ENCRYPTED'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['bgp']['neighbors']['neighbor'][5]['config']['auth-password']== '00071A1507545A545C'"
