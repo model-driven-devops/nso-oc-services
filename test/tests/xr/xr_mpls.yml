@@ -1,0 +1,182 @@
+---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- name: test interfaces_switch
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
+    ansible_network_os: 'cisco.iosxr.iosxr'
+  tasks:
+    - name: test mpls
+      tags:
+        -  mpls
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'Loopback0'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Loopback 0'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'Loopback0'
+                    openconfig-interfaces:type: 'softwareLoopback'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.255.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.255.0.1'
+                                  openconfig-if-ip:prefix-length: '32'
+                - openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 5'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.5.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.5.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                - openconfig-interfaces:name: 'GigabitEthernet0/0/0/6'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 6'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:mtu: 1500
+                    openconfig-interfaces:name: 'GigabitEthernet0/0/0/6'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.6.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.6.0.1'
+                                  openconfig-if-ip:prefix-length: 24
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet0/0/0/5'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet0/0/0/5'
+                          openconfig-network-instance:interface: 'GigabitEthernet0/0/0/5'
+                          openconfig-network-instance:subinterface: 0
+                      - openconfig-network-instance:id: 'GigabitEthernet0/0/0/6'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet0/0/0/6'
+                          openconfig-network-instance:interface: 'GigabitEthernet0/0/0/6'
+                          openconfig-network-instance:subinterface: 0
+                  openconfig-network-instance:mpls:
+                    openconfig-network-instance:global:
+                      openconfig-network-instance:config:
+                        openconfig-network-instance:ttl-propagation: true
+                      openconfig-network-instance:interface-attributes:
+                        openconfig-network-instance:interface:
+                          - openconfig-network-instance:interface-id: 'GigabitEthernet0/0/0/5'
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:interface-id: 'GigabitEthernet0/0/0/5'
+                              openconfig-network-instance:mpls-enabled: true
+                            openconfig-network-instance:interface-ref:
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:interface: 'GigabitEthernet0/0/0/5'
+                                openconfig-network-instance:subinterface: 0
+                          - openconfig-network-instance:interface-id: 'GigabitEthernet0/0/0/6'
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:interface-id: 'GigabitEthernet0/0/0/6'
+                              openconfig-network-instance:mpls-enabled: true
+                            openconfig-network-instance:interface-ref:
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:interface: 'GigabitEthernet0/0/0/6'
+                                openconfig-network-instance:subinterface: 0
+                    openconfig-network-instance:signaling-protocols:
+                      openconfig-network-instance:ldp:
+                        openconfig-network-instance:global:
+                          openconfig-network-instance:config:
+                            openconfig-network-instance:lsr-id: '10.255.0.1'  # mpls ldp router-id Loopback0
+                          openconfig-network-instance:graceful-restart:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:enabled: true  # if true, mpls ldp graceful-restart
+                        openconfig-network-instance:interface-attributes:
+                          openconfig-network-instance:config:
+                            openconfig-network-instance:hello-holdtime: 30  # mpls ldp discovery hello holdtime seconds
+                            openconfig-network-instance:hello-interval: 10 # mpls ldp discovery hello interval seconds
+
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+interface Loopback0:' in changes"
+          - "'+ description Loopback 0:' in changes"
+          - "'+ ipv4 address 10.255.0.1 255.255.255.255:' in changes"
+          - "'-mpls ip-ttl-propagate disable:' in changes"
+          - "'+mpls ldp:' in changes"
+          - "'+ graceful-restart:' in changes"
+          - "'+ discovery:' in changes"
+          - "'+  hello holdtime 30:' in changes"
+          - "'+  hello interval 10:' in changes"
+          - "'+ router-id 10.255.0.1:' in changes"
+
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-load
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"

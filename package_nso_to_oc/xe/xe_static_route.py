@@ -21,6 +21,34 @@ ospf_network_types = {
 }
 xe_routes_notes = []
 
+
+def configure_ip_default_gateway(net_inst, config_before, config_leftover):
+    net_protocols = net_inst["openconfig-network-instance:protocols"]["openconfig-network-instance:protocol"]
+    static_route = get_static_protocol(net_protocols)["openconfig-network-instance:static-routes"][
+        "openconfig-network-instance:static"]
+
+    default_gateway = config_before.get("tailf-ned-cisco-ios:ip", {"default-gateway": {}}).get(
+        "default-gateway", {})
+    static_route.append({
+                "openconfig-network-instance:prefix": "0.0.0.0/0",
+                "openconfig-network-instance:config": {
+                    "openconfig-network-instance:prefix": "0.0.0.0/0"
+                },
+                "openconfig-network-instance:next-hops": {
+                    "openconfig-network-instance:next-hop": [
+                        {
+                            "openconfig-network-instance:index": default_gateway,
+                            "openconfig-network-instance:config": {
+                                "openconfig-network-instance:index": default_gateway,
+                                "openconfig-network-instance:next-hop": default_gateway
+                            }
+                        }
+                    ]
+                }
+            })
+    config_leftover.get("tailf-ned-cisco-ios:ip", {}).pop("default-gateway")
+
+
 def configure_xe_static_routes(net_inst, vrf_forwarding_list, config_leftover, network_instances_notes):
     instance_name = net_inst["openconfig-network-instance:name"]
     net_protocols = net_inst["openconfig-network-instance:protocols"]["openconfig-network-instance:protocol"]
@@ -46,7 +74,7 @@ def configure_xe_static_routes(net_inst, vrf_forwarding_list, config_leftover, n
         process_static_routes(route_forwarding, static_route, intf_list_leftover, index)
     for index, route_forwarding in enumerate(vrf_forwarding_list[common_xe.IP_INTF_FORWARDING_LIST]):
         process_static_routes(route_forwarding, static_route, ip_intf_forwarding_list_leftover, index)
-    
+
     network_instances_notes += xe_routes_notes
 
 def process_static_routes(route_forwarding, static_route, forwarding_list_leftover, index):

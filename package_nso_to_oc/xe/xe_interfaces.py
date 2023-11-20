@@ -985,8 +985,9 @@ def configure_csmacd(config_before: dict, config_leftover: dict, interface_data:
             xe_configure_ipv4_interface(nso_before_interface, nso_leftover_interface, openconfig_interface)
 
         # Is interface an LACP member?
-        if (nso_before_interface.get("channel-group", {}).get("number")) and (
-                nso_before_interface.get("channel-group", {}).get("mode", "") == "active"):
+        if (nso_before_interface.get("channel-group", {}).get("number")) and ((
+                nso_before_interface.get("channel-group", {}).get("mode", "") == "active") or (
+                nso_before_interface.get("channel-group", {}).get("mode", "") == "passive")):
             openconfig_interfaces["openconfig-interfaces:interfaces"]["openconfig-interfaces:interface"][
                 interface_directory["oc_interface_index"]]["openconfig-if-ethernet:ethernet"][
                 "openconfig-if-ethernet:config"][

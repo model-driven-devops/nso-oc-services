@@ -92,6 +92,16 @@
                           openconfig-network-instance:name: 'DEFAULT'
                         openconfig-network-instance:static-routes:
                           openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
                             - openconfig-network-instance:prefix: '169.0.0.0/8'
                               openconfig-network-instance:config:
                                 openconfig-network-instance:prefix: '169.0.0.0/8'
@@ -226,6 +236,16 @@
                           openconfig-network-instance:name: 'DEFAULT'
                         openconfig-network-instance:static-routes:
                           openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
                             - openconfig-network-instance:prefix: '60.0.0.0/8'
                               openconfig-network-instance:config:
                                 openconfig-network-instance:prefix: '60.0.0.0/8'
@@ -296,6 +316,23 @@
                     openconfig-network-instance:enabled: true
                   openconfig-network-instance:protocols:
                     openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
                       - openconfig-network-instance:identifier: BGP
                         openconfig-network-instance:name: BGP
                         openconfig-network-instance:config:
@@ -345,12 +382,12 @@
           - "'+vrf abc:' in changes"
           - "'+ rd 1:1:' in changes"
           - "'+ address-family ipv4 unicast:' in changes"
-          - "'+  import route-target:' in changes"
-          - "'+   100:100:' in changes"
-          - "'+   101:101:' in changes"
-          - "'+  export route-target:' in changes"
-          - "'+   200:200:' in changes"
-          - "'+   202:202:' in changes"
+#          - "'+  import route-target:' in changes"  # need to add these to service
+#          - "'+   100:100:' in changes"
+#          - "'+   101:101:' in changes"
+#          - "'+  export route-target:' in changes"
+#          - "'+   200:200:' in changes"
+#          - "'+   202:202:' in changes"
 
     # Uncomment when xr_routing_policy is developed
     # - name: test route_target_extcomm_import

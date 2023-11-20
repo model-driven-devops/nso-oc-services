@@ -122,10 +122,7 @@ def prefix_sets_configure(nso_props) -> None:
     device = nso_props.root.devices.device[nso_props.device_name].config
     for service_prefix_set in nso_props.service.oc_rpol__routing_policy.defined_sets.prefix_sets.prefix_set:
         if service_prefix_set.config.mode == 'IPV4':
-            if not device.ios__ip.prefix_list.prefixes.exists(service_prefix_set.config.name):
-                device.ios__ip.prefix_list.prefixes.create(service_prefix_set.config.name)
-
-            prefix_list_cdb = device.ios__ip.prefix_list.prefixes[service_prefix_set.config.name]
+            prefix_list_cdb = device.ios__ip.prefix_list.prefixes.create(service_prefix_set.config.name)
 
             for service_prefix in service_prefix_set.prefixes.prefix:
                 if service_prefix.config.masklength_range.lower() == 'exact':
@@ -154,10 +151,7 @@ def prefix_sets_configure(nso_props) -> None:
 def as_path_sets_configure(nso_props) -> None:
     device = nso_props.root.devices.device[nso_props.device_name].config
     for service_as_path_set in nso_props.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.as_path_sets.as_path_set:
-        if not device.ios__ip.as_path.access_list.exists(service_as_path_set.config.as_path_set_name):
-            device.ios__ip.as_path.access_list.create(service_as_path_set.config.as_path_set_name)
-
-        as_path_list_cdb = device.ios__ip.as_path.access_list[service_as_path_set.config.as_path_set_name]
+        as_path_list_cdb = device.ios__ip.as_path.access_list.create(service_as_path_set.config.as_path_set_name)
 
         for as_path_member in service_as_path_set.config.as_path_set_member:
             as_path_list_cdb.as_path_rule.create(('permit', as_path_member))
@@ -192,16 +186,12 @@ def community_sets_configure(nso_props) -> None:
 
     for request in requested_community_lists:
         if request['list_type'] == 'standard':
-            if not device.ios__ip.community_list.standard.exists(request['name']):
-                device.ios__ip.community_list.standard.create(request['name'])
-            community_list_cdb = device.ios__ip.community_list.standard[request['name']]
+            community_list_cdb = device.ios__ip.community_list.standard.create(request['name'])
             for community_member in request['communities']:
                 community_list_cdb.entry.create(f'permit {community_member}')
 
         elif request['list_type'] == 'expanded':
-            if not device.ios__ip.community_list.expanded.exists(request['name']):
-                device.ios__ip.community_list.expanded.create(request['name'])
-            community_list_cdb = device.ios__ip.community_list.expanded[request['name']]
+            community_list_cdb = device.ios__ip.community_list.expanded.create(request['name'])
             for community_member in request['communities']:
                 community_list_cdb.entry.create(f'permit {community_member}')
 
@@ -217,9 +207,7 @@ def ext_community_sets_configure(nso_props) -> None:
         for community in service_ext_community_set.config.ext_community_member:
             ext_community_list.append(community)
 
-        if not device.ios__ip.extcommunity_list.standard.no_mode_list.exists(service_ext_community_set.config.ext_community_set_name):
-            device.ios__ip.extcommunity_list.standard.no_mode_list.create(service_ext_community_set.config.ext_community_set_name)
-        ext_community_list_cdb = device.ios__ip.extcommunity_list.standard.no_mode_list[service_ext_community_set.config.ext_community_set_name]
+        ext_community_list_cdb = device.ios__ip.extcommunity_list.standard.no_mode_list.create(service_ext_community_set.config.ext_community_set_name)
 
         command = 'permit '
         for cm in ext_community_list:

@@ -35,6 +35,7 @@ def get_interface_type_and_number(interface: str) -> Tuple[str, str]:
     interface_name = rt.group(0)
     rn = re.search(r'[0-9]+(\/[0-9]+)*', interface)
     interface_number = rn.group(0)
+    interface_number = interface_number.replace("{", "").replace("}", "")
     interface_name = interface_name.replace('-', '_')
     
     return interface_name, interface_number
@@ -49,7 +50,7 @@ def get_interface_type_number_and_subinterface(interface: str) -> Tuple[str, str
     interface_name = rt.group(0)
     rn = re.search(r'[0-9]+(\/[0-9]+)*(\.[0-9]+)*', interface)
     interface_number = rn.group(0)
-
+    interface_number = interface_number.replace("{", "").replace("}", "")
     return interface_name, interface_number
 
 def prefix_to_network_and_mask(prefix: str) -> str:

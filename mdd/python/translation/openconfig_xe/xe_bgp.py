@@ -10,12 +10,8 @@ def xe_bgp_global_program_service(self, nso_props, service_protocol, network_ins
     service_bgp_global = service_protocol.bgp.oc_netinst__global
 
     if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE':
-        if not nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp.exists(
-                service_bgp_global.config.oc_netinst__as):
-            nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp.create(
+        device_bgp_cbd = nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp.create(
                 service_bgp_global.config.oc_netinst__as)
-        device_bgp_cbd = nso_props.root.devices.device[nso_props.device_name].config.ios__router.bgp[
-            service_bgp_global.config.oc_netinst__as]
         if service_bgp_global.config.router_id:
             device_bgp_cbd.bgp.router_id = service_bgp_global.config.router_id
         if service_bgp_global.config.log_neighbor_changes:

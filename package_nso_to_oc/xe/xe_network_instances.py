@@ -187,7 +187,11 @@ def configure_network_instances(config_before, config_leftover, interfaces_by_vr
             vrf_forwarding_list = route_forwarding_list_by_vrf.get(net_inst["openconfig-network-instance:name"])
             xe_static_route.configure_xe_static_routes(net_inst, vrf_forwarding_list, config_leftover,
                                                        network_instances_notes)
-        
+            # process ip default-gateway
+            if (net_inst["openconfig-network-instance:name"] == "default"
+                    and config_before.get("tailf-ned-cisco-ios:ip", {
+                        "default-gateway": {}}).get("default-gateway", {})):
+                xe_static_route.configure_ip_default_gateway(net_inst, config_before, config_leftover)
         xe_ospfv2.configure_xe_ospf_redistribution(net_inst, config_before, config_leftover, router_ospf_by_vrf)
         xe_bgp.configure_xe_bgp(net_inst, config_before, config_leftover, network_instances_notes)
         xe_bgp.configure_xe_bgp_redistribution(net_inst, config_before, config_leftover)

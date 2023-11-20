@@ -25,7 +25,7 @@ def xr_network_instances_program_service(self, nso_props) -> None:
 
     for network_instance in nso_props.service.oc_netinst__network_instances.network_instance:
         xr_configure_vrfs(self, nso_props, network_instance)
-        xr_configure_vlan_db(nso_props, network_instance)  # will raise error
+        xr_configure_vlan_db(nso_props, network_instance)  # will raises error
         xr_reconcile_vrf_interfaces(self, nso_props, network_instance)
         xr_configure_mpls(self, nso_props, network_instance)
         # xr_configure_pim(nso_props, network_instance)
@@ -81,75 +81,75 @@ def xr_configure_vrfs(self, nso_props, network_instance) -> None:
             nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vrf.vrf_list[
                 network_instance.name].rd = network_instance.config.route_distinguisher
 
-        # Add route targets and inter-instance-policies
-        # Configure inter-instance-policies
-        import_rts_policy = set()
-        if network_instance.inter_instance_policies.apply_policy.config.import_policy:
-            if len(network_instance.inter_instance_policies.apply_policy.config.import_policy) == 1:
-                import_policy = \
-                network_instance.inter_instance_policies.apply_policy.config.import_policy.as_list()[0]
-                nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vrf.vrf_list[
-                    network_instance.name].address_family.ipv4.unicast.cisco_ios_xr__import.ipv4.route_policy = import_policy
+        # # Add route targets and inter-instance-policies
+        # # Configure inter-instance-policies
+        # import_rts_policy = set()
+        # if network_instance.inter_instance_policies.apply_policy.config.import_policy:
+        #     if len(network_instance.inter_instance_policies.apply_policy.config.import_policy) == 1:
+        #         import_policy = \
+        #         network_instance.inter_instance_policies.apply_policy.config.import_policy.as_list()[0]
+        #         nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vrf.vrf_list[
+        #             network_instance.name].address_family.ipv4.unicast.cisco_ios_xr__import.ipv4.route_policy = import_policy
+        #
+        #         # collect the route-targets to be used in 'route-target import X' statements
+        #         import_policy_service = nso_props.service.oc_rpol__routing_policy.policy_definitions.policy_definition[import_policy]
+        #         extcommunity_lists = list()
+        #         for service_statement in import_policy_service.statements.statement:
+        #             if service_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set:
+        #                 extcommunity_lists.append(service_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set)
+        #         for ext_community_list_name in extcommunity_lists:
+        #             ext_list = nso_props.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set[ext_community_list_name]
+        #             for community in ext_list.config.ext_community_member:
+        #                 import_rts_policy.add(community)
+        #     else:
+        #         raise ValueError('XR supports one route-map for VRF import policy.')
+        # export_rts_policy = set()
+        # if network_instance.inter_instance_policies.apply_policy.config.export_policy:
+        #     if len(network_instance.inter_instance_policies.apply_policy.config.export_policy) == 1:
+        #         export_policy = \
+        #         network_instance.inter_instance_policies.apply_policy.config.export_policy.as_list()[0]
+        #         nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vrf.vrf_list[
+        #             network_instance.name].address_family.ipv4.unicast.export.route_policy = export_policy
+        #
+        #         # collect the route-targets to be used in 'route-target import X' statements
+        #         export_policy_service = nso_props.service.oc_rpol__routing_policy.policy_definitions.policy_definition[export_policy]
+        #         extcommunity_lists = list()
+        #         for service_statement in export_policy_service.statements.statement:
+        #             if service_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set:
+        #                 extcommunity_lists.append(service_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set)
+        #         for ext_community_list_name in extcommunity_lists:
+        #             ext_list = nso_props.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set[ext_community_list_name]
+        #             for community in ext_list.config.ext_community_member:
+        #                 export_rts_policy.add(community)
+        #     else:
+        #         raise ValueError('XR supports one route-map for VRF export policy.')
 
-                # collect the route-targets to be used in 'route-target import X' statements
-                import_policy_service = nso_props.service.oc_rpol__routing_policy.policy_definitions.policy_definition[import_policy]
-                extcommunity_lists = list()
-                for service_statement in import_policy_service.statements.statement:
-                    if service_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set:
-                        extcommunity_lists.append(service_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set)
-                for ext_community_list_name in extcommunity_lists:
-                    ext_list = nso_props.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set[ext_community_list_name]
-                    for community in ext_list.config.ext_community_member:
-                        import_rts_policy.add(community)
-            else:
-                raise ValueError('XR supports one route-map for VRF import policy.')
-        export_rts_policy = set()
-        if network_instance.inter_instance_policies.apply_policy.config.export_policy:
-            if len(network_instance.inter_instance_policies.apply_policy.config.export_policy) == 1:
-                export_policy = \
-                network_instance.inter_instance_policies.apply_policy.config.export_policy.as_list()[0]
-                nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vrf.vrf_list[
-                    network_instance.name].address_family.ipv4.unicast.export.route_policy = export_policy
-
-                # collect the route-targets to be used in 'route-target import X' statements
-                export_policy_service = nso_props.service.oc_rpol__routing_policy.policy_definitions.policy_definition[export_policy]
-                extcommunity_lists = list()
-                for service_statement in export_policy_service.statements.statement:
-                    if service_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set:
-                        extcommunity_lists.append(service_statement.conditions.oc_bgp_pol__bgp_conditions.config.ext_community_set)
-                for ext_community_list_name in extcommunity_lists:
-                    ext_list = nso_props.service.oc_rpol__routing_policy.defined_sets.oc_bgp_pol__bgp_defined_sets.ext_community_sets.ext_community_set[ext_community_list_name]
-                    for community in ext_list.config.ext_community_member:
-                        export_rts_policy.add(community)
-            else:
-                raise ValueError('XR supports one route-map for VRF export policy.')
-
-        # Get import route-targets from configuration route-target import and import policy
-        rt_import_config = set([rt for rt in network_instance.config.route_targets_import])
-        rt_import_config.update(import_rts_policy)
-        # Get export route-targets from configuration route-target export and export policy
-        rt_export_config = set([rt for rt in network_instance.config.route_targets_export])
-        rt_export_config.update(export_rts_policy)
-
-        # Get import route-targets from the CDB
-        rt_import_cdb = set([rt for rt in nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vrf.vrf_list[
-            network_instance.name].address_family.ipv4.unicast.cisco_ios_xr__import.route_target.
-            address_list])
-        # Get export route-targets from the CDB
-        rt_export_cdb = set([rt for rt in nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vrf.vrf_list[
-            network_instance.name].address_family.ipv4.unicast.export.route_target.address_list])
-
-        # Find route targets to create in CDB
-        rt_import_to_cdb = rt_import_config.difference(rt_import_cdb)
-        rt_export_to_cdb = rt_export_config.difference(rt_export_cdb)
-
-        # Add Route Targets to CDB
-        for rt in rt_import_to_cdb:
-            nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vrf.vrf_list[
-                network_instance.name].address_family.ipv4.unicast.cisco_ios_xr__import.route_target.address_list.create(rt)
-        for rt in rt_export_to_cdb:
-            nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vrf.vrf_list[
-                network_instance.name].address_family.ipv4.unicast.export.route_target.address_list.create(rt)
+        # # Get import route-targets from configuration route-target import and import policy
+        # rt_import_config = set([rt for rt in network_instance.config.route_targets_import])
+        # rt_import_config.update(import_rts_policy)
+        # # Get export route-targets from configuration route-target export and export policy
+        # rt_export_config = set([rt for rt in network_instance.config.route_targets_export])
+        # rt_export_config.update(export_rts_policy)
+        #
+        # # Get import route-targets from the CDB
+        # rt_import_cdb = set([rt for rt in nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vrf.vrf_list[
+        #     network_instance.name].address_family.ipv4.unicast.cisco_ios_xr__import.route_target.
+        #     address_list])
+        # # Get export route-targets from the CDB
+        # rt_export_cdb = set([rt for rt in nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vrf.vrf_list[
+        #     network_instance.name].address_family.ipv4.unicast.export.route_target.address_list])
+        #
+        # # Find route targets to create in CDB
+        # rt_import_to_cdb = rt_import_config.difference(rt_import_cdb)
+        # rt_export_to_cdb = rt_export_config.difference(rt_export_cdb)
+        #
+        # # Add Route Targets to CDB
+        # for rt in rt_import_to_cdb:
+        #     nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vrf.vrf_list[
+        #         network_instance.name].address_family.ipv4.unicast.cisco_ios_xr__import.route_target.address_list.create(rt)
+        # for rt in rt_export_to_cdb:
+        #     nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__vrf.vrf_list[
+        #         network_instance.name].address_family.ipv4.unicast.export.route_target.address_list.create(rt)
 
 
 def xr_configure_vlan_db(nso_props, network_instance) -> None:
@@ -197,62 +197,35 @@ def xr_reconcile_vrf_interfaces(self, nso_props, network_instance) -> None:
             if i[0] in vrf_interfaces_in_model_configs:
                 config_vrf = vrf_interfaces_in_model_configs[i[0]]
                 self.log.info(
-                    f'{nso_props.device_name} Configuring vrf.forwarding: {config_vrf}  {interface_type, interface_number}')
-                interface.vrf.forwarding = config_vrf
+                    f'{nso_props.device_name} Configuring VRF: {config_vrf}  {interface_type, interface_number}')
+                interface.vrf = config_vrf
         except Exception as e:
             self.log.error(
                 f'{nso_props.device_name} Failed to ensure VRF configs for interface {interface_type, interface_number}')
             self.log.info(f'{nso_props.device_name} interface vrf failure traceback: {e}')
 
+
 def xr_configure_mpls(self, nso_props, network_instance) -> None:
     """
     Configures the mpls section of openconfig-network-instance
     """
-    #  TODO Fix this...
-    
-    # BELOW FROM XE
     if network_instance.mpls.oc_netinst__global.config:
         if network_instance.mpls.oc_netinst__global.config.ttl_propagation is False:
             nso_props.root.devices.device[
-                nso_props.device_name].config.ios__mpls.mpls_ip_conf.ip.propagate_ttl_conf.propagate_ttl = 'false'
-        elif network_instance.mpls.oc_netinst__global.config.ttl_propagation:
-            nso_props.root.devices.device[
-                nso_props.device_name].config.ios__mpls.mpls_ip_conf.ip.propagate_ttl_conf.propagate_ttl = 'true'
-    # BELOW FROM JUAN
-    if network_instance.mpls.oc_netinst__global.config:
-        nso_props.root.devices.device[
                 nso_props.device_name].config.cisco_ios_xr__mpls.ip_ttl_propagate.disable.create()
-        if network_instance.mpls.oc_netinst__global.config.ttl_propagation is 'Local':
-            nso_props.root.devices.device[
-                nso_props.device_name].config.cisco_ios_xr__mpls.ip_ttl_propagate.disable.disable_type = 'local'
-        elif network_instance.mpls.oc_netinst__global.config.ttl_propagation is 'Forwarded':
-            nso_props.root.devices.device[
-                nso_props.device_name].config.cisco_ios_xr__mpls.ip_ttl_propagate.disable.disable_type = 'forwarded'
+        elif network_instance.mpls.oc_netinst__global.config.ttl_propagation:
+            if nso_props.root.devices.device[
+                nso_props.device_name].config.cisco_ios_xr__mpls.ip_ttl_propagate.disable.exists():
+                del nso_props.root.devices.device[
+                    nso_props.device_name].config.cisco_ios_xr__mpls.ip_ttl_propagate.disable
     
     if network_instance.mpls.oc_netinst__global.interface_attributes.interface:
-        # self.root.devices.device[self.device_name].config.ios__mpls.ip = 'true'
         for interface in network_instance.mpls.oc_netinst__global.interface_attributes.interface:
             if interface.config.mpls_enabled:
-                interface_type, interface_number = get_interface_type_and_number(
-                    interface.interface_ref.config.interface)
-                class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__interface,
-                                            interface_type)
-                if interface.interface_ref.config.subinterface == 0:
-                    interface_cdb = class_attribute[interface_number]
-                else:
-                    interface_cdb = class_attribute[
-                        f'{interface_number}.{interface.interface_ref.config.subinterface}']
-                if not interface_cdb.mpls.ip.exists():
-                    interface_cdb.mpls.ip.create()
+                # MPLS is enabled on XR interfaces
+                pass
             elif interface.config.mpls_enabled is False:
-                interface_type, interface_number = get_interface_type_and_number(
-                    interface.interface_ref.config.interface)
-                class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__interface,
-                                            interface_type)
-                if interface.interface_ref.config.subinterface == 0:
-                    interface_cdb = class_attribute[interface_number]
-                if interface_cdb.mpls.ip.exists():
-                    interface_cdb.mpls.ip.delete()
+                raise ValueError('XR does not support disabling MPLS forwarding on interfaces.')
     if network_instance.mpls.signaling_protocols:
         if network_instance.mpls.signaling_protocols.ldp:
             xr_configure_mpls_signaling_protocols_ldp(self, nso_props, network_instance)
@@ -262,13 +235,9 @@ def xr_configure_mpls_signaling_protocols_ldp(self, nso_props, service_network_i
     """
     Configures LDP
     """
-    # TODO Something is wrong with this...
     if service_network_instance.mpls.signaling_protocols.ldp.oc_netinst__global.config.lsr_id:
-        ip_name_dict = xr_system_get_interface_ip_address(self)
         nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__mpls.ldp.create()
-        nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__mpls.ldp.router_id = ip_name_dict.get(
-            service_network_instance.mpls.signaling_protocols.ldp.oc_netinst__global.config.lsr_id)
-        # nso_props.root.devices.device[nso_props.device_name].config.ios__mpls.ldp.router_id.force.create()
+        nso_props.root.devices.device[nso_props.device_name].config.cisco_ios_xr__mpls.ldp.router_id = service_network_instance.mpls.signaling_protocols.ldp.oc_netinst__global.config.lsr_id
     if service_network_instance.mpls.signaling_protocols.ldp.oc_netinst__global.graceful_restart.config.enabled:
         nso_props.root.devices.device[
             nso_props.device_name].config.cisco_ios_xr__mpls.ldp.graceful_restart.create()
@@ -278,6 +247,7 @@ def xr_configure_mpls_signaling_protocols_ldp(self, nso_props, service_network_i
     if service_network_instance.mpls.signaling_protocols.ldp.interface_attributes.config.hello_interval:
         nso_props.root.devices.device[
             nso_props.device_name].config.cisco_ios_xr__mpls.ldp.discovery.hello.interval = service_network_instance.mpls.signaling_protocols.ldp.interface_attributes.config.hello_interval
+    # TODO - add interfaces to OC LDP with individual hello and holdtimes, send to XR
 
 
 def xr_get_table_connections(network_instance, service_table_connection_dict) -> None:
@@ -335,6 +305,7 @@ def xr_get_table_connections(network_instance, service_table_connection_dict) ->
         if network_instance_table_connections:
             service_table_connection_dict.update(copy.deepcopy(network_instance_table_connections))
 
+
 def configure_bgp_list(self, nso_props, network_instance, instance_bgp_list):
     if network_instance.protocols.protocol:
         for p in network_instance.protocols.protocol:
@@ -363,6 +334,7 @@ def configure_bgp_list(self, nso_props, network_instance, instance_bgp_list):
             # Collect needed BGP instance information below
             if p.identifier == 'oc-pol-types:BGP':
                 instance_bgp_list.append((p, network_instance.config.type, network_instance.config.name))
+
 
 def xr_configure_protocols(self, nso_props, table_connections: dict, instance_bgp_list: list) -> None:
     """
@@ -396,10 +368,12 @@ def xr_get_all_interfaces(nso_props) -> list:
             class_method = getattr(device_config.cisco_ios_xr__interface, a)
             for c in class_method:
                 try:
-                    interfaces.append((str(c) + str(c.name), c.vrf.forwarding))
+                    p = c._keystr.replace("{", "").replace("}", "")
+                    interfaces.append((str(c) + p, c.vrf))
                 except:
                     pass
     return interfaces
+
 
 def create_route_nh_interface(cdb_device_ip_route, service_static_route_object, service_next_hop_object,
                               cdb_route_next_hop) -> None:
@@ -456,6 +430,7 @@ def create_route_nh_interface_and_ip(cdb_device_ip_route, service_static_route_o
         route.description = service_static_route_object.config.description
     if service_static_route_object.config.set_tag:
         route.tag = service_static_route_object.config.set_tag
+
 
 def create_route_nh_ip(cdb_device_ip_route, service_static_route_object, service_next_hop_object) -> None:
     """

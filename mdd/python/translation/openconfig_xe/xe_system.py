@@ -633,9 +633,8 @@ def xe_system_program_service(self, nso_props) -> None:
                 device_cdb.ios__ip.name_server.name_server_list.create(service_dns_server.address)
             elif nso_props.service.oc_netinst__network_instances.network_instance[
                 service_dns_server.config.use_vrf].config.type == 'oc-ni-types:L3VRF':
-                if not device_cdb.ios__ip.name_server.vrf.exists(service_dns_server.config.use_vrf):
-                    device_cdb.ios__ip.name_server.vrf.create(service_dns_server.config.use_vrf)
-                device_cdb.ios__ip.name_server.vrf[service_dns_server.config.use_vrf].name_server_list.create(service_dns_server.address)
+                name_server_vrf = device_cdb.ios__ip.name_server.vrf.create(service_dns_server.config.use_vrf)
+                name_server_vrf.name_server_list.create(service_dns_server.address)
     # SSH server
     if nso_props.service.oc_sys__system.ssh_server.config.enable:
         for service_line_vty in device_cdb.ios__line.vty:
@@ -670,7 +669,6 @@ def xe_system_program_service(self, nso_props) -> None:
             nso_props.service.oc_sys__system.ssh_server.config.ssh_source_interface)
         device_cdb.ios__ip.ssh.source_interface[interface_type] = interface_number
     if nso_props.service.oc_sys__system.ssh_server.algorithm.config.encryption:
-        device_cdb.ios__ip.ssh.server.algorithm.encryption.delete()
         for enc in nso_props.service.oc_sys__system.ssh_server.algorithm.config.encryption:
             if enc == 'triple-des-cbc':
                 device_cdb.ios__ip.ssh.server.algorithm.encryption.create(enc.replace('triple-des-cbc', '3des-cbc'))
@@ -713,10 +711,7 @@ def xe_system_program_service(self, nso_props) -> None:
                     if nso_props.service.oc_netinst__network_instances.network_instance[
                         service_ntp_server.config.ntp_use_vrf].config.type == 'oc-ni-types:L3VRF':
                         if service_ntp_server.config.association_type == 'SERVER':
-                            if not device_cdb.ios__ntp.server.vrf.exists(service_ntp_server.config.ntp_use_vrf):
-                                device_cdb.ios__ntp.server.vrf.create(service_ntp_server.config.ntp_use_vrf)
-                            device_cdb_server_vrf = device_cdb.ios__ntp.server.vrf[
-                                service_ntp_server.config.ntp_use_vrf]
+                            device_cdb_server_vrf = device_cdb.ios__ntp.server.vrf.create(service_ntp_server.config.ntp_use_vrf)
                             if not device_cdb_server_vrf.peer_list.exists(service_ntp_server.config.address):
                                 device_cdb_server_vrf.peer_list.create(service_ntp_server.config.address)
                             if service_ntp_server.config.ntp_source_address:
@@ -724,9 +719,7 @@ def xe_system_program_service(self, nso_props) -> None:
                             peer_cdb = device_cdb_server_vrf.peer_list[service_ntp_server.config.address]
                             xe_configure_ntp_server(service_ntp_server, peer_cdb)
                         elif service_ntp_server.config.association_type == 'PEER':
-                            if not device_cdb.ios__ntp.peer.vrf.exists(service_ntp_server.config.ntp_use_vrf):
-                                device_cdb.ios__ntp.peer.vrf.create(service_ntp_server.config.ntp_use_vrf)
-                            device_cdb_peer_vrf = device_cdb.ios__ntp.peer.vrf[service_ntp_server.config.ntp_use_vrf]
+                            device_cdb_peer_vrf = device_cdb.ios__ntp.peer.vrf.create(service_ntp_server.config.ntp_use_vrf)
                             if not device_cdb_peer_vrf.peer_list.exists(service_ntp_server.config.address):
                                 device_cdb_peer_vrf.peer_list.create(service_ntp_server.config.address)
                             if service_ntp_server.config.ntp_source_address:
@@ -738,16 +731,12 @@ def xe_system_program_service(self, nso_props) -> None:
                     elif nso_props.service.oc_netinst__network_instances.network_instance[
                         service_ntp_server.config.ntp_use_vrf].config.type == 'oc-ni-types:DEFAULT_INSTANCE':
                         if service_ntp_server.config.association_type == 'SERVER':
-                            if not device_cdb.ios__ntp.server.peer_list.exists(service_ntp_server.config.address):
-                                device_cdb.ios__ntp.server.peer_list.create(service_ntp_server.config.address)
-                            peer_cdb = device_cdb.ios__ntp.server.peer_list[service_ntp_server.config.address]
+                            peer_cdb = device_cdb.ios__ntp.server.peer_list.create(service_ntp_server.config.address)
                             if service_ntp_server.config.ntp_source_address:
                                 xe_configure_ntp_server_source_address(self, nso_props, service_ntp_server, peer_cdb)
                             xe_configure_ntp_server(service_ntp_server, peer_cdb)
                         elif service_ntp_server.config.association_type == 'PEER':
-                            if not device_cdb.ios__ntp.peer.peer_list.exists(service_ntp_server.config.address):
-                                device_cdb.ios__ntp.peer.peer_list.create(service_ntp_server.config.address)
-                            peer_cdb = device_cdb.ios__ntp.peer.peer_list[service_ntp_server.config.address]
+                            peer_cdb = device_cdb.ios__ntp.peer.peer_list.create(service_ntp_server.config.address)
                             if service_ntp_server.config.ntp_source_address:
                                 xe_configure_ntp_server_source_address(self, nso_props, service_ntp_server, peer_cdb)
                             xe_configure_ntp_server(service_ntp_server, peer_cdb)
@@ -758,9 +747,7 @@ def xe_system_program_service(self, nso_props) -> None:
                             'XE supports ntp association association in network instances oc-ni-types:DEFAULT_INSTANCE and oc-ni-types:L3VRF')
                 else:
                     if service_ntp_server.config.association_type == 'SERVER':
-                        if not device_cdb.ios__ntp.server.peer_list.exists(service_ntp_server.config.address):
-                            device_cdb.ios__ntp.server.peer_list.create(service_ntp_server.config.address)
-                        peer_cdb = device_cdb.ios__ntp.server.peer_list[service_ntp_server.config.address]
+                        peer_cdb = device_cdb.ios__ntp.server.peer_list.create(service_ntp_server.config.address)
                         if service_ntp_server.config.ntp_source_address:
                             xe_configure_ntp_server_source_address(self, nso_props, service_ntp_server, peer_cdb)
                         xe_configure_ntp_server(service_ntp_server, peer_cdb)

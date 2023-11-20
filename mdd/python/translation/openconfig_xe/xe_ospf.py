@@ -14,10 +14,7 @@ def xe_ospf_program_service(self, nso_props, service_protocol, network_instance_
     """
     self.log.info(f'{nso_props.device_name} OSPF')
     # Process
-    if not nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf.exists(service_protocol.name):
-        nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf.create(service_protocol.name)
-    device_ospf_cbd = nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf[
-        service_protocol.name]
+    device_ospf_cbd = nso_props.root.devices.device[nso_props.device_name].config.ios__router.ospf.create(service_protocol.name)
     # Process VRF
     if network_instance_type == 'oc-ni-types:L3VRF':
         device_ospf_cbd.vrf = vrf_name
@@ -111,6 +108,7 @@ def xe_ospf_program_service(self, nso_props, service_protocol, network_instance_
             raise ValueError('XE OSPF throttle timers spf needs values for spf-start, spf-hold, and spf-max-wait')
     # area
     if len(service_protocol.ospfv2.areas.area) > 0:
+        device_ospf_cbd.network.delete()
         for service_area in service_protocol.ospfv2.areas.area:
             if len(service_area.interfaces.interface) > 0:
                 for service_interface in service_area.interfaces.interface:
@@ -126,7 +124,6 @@ def xe_ospf_program_service(self, nso_props, service_protocol, network_instance_
                         class_attribute = getattr(nso_props.root.devices.device[nso_props.device_name].config.ios__interface,
                                                   interface_type)
                     interface_cdb = class_attribute[interface_number]
-                    # router ospf network statement
                     create_area_network_statement(nso_props, service_interface, device_ospf_cbd, service_area)
                     # interface ospf network type
                     if service_interface.config.network_type:
@@ -180,10 +177,12 @@ def xe_ospf_program_service(self, nso_props, service_protocol, network_instance_
                                 del interface_cdb.ip.ospf.authentication
                             interface_cdb.ip.ospf.authentication.create()
                             interface_cdb.ip.ospf.authentication.message_digest.create()
-                            for authentication_key in service_interface.oc_ospfv2_ext__authentication.md5_authentication_keys.md5_authentication_key:
-                                interface_cdb.ip.ospf.message_digest_key.create(authentication_key.config.key_id)
-                                interface_cdb.ip.ospf.message_digest_key[
-                                    authentication_key.config.key_id].md5.secret = authentication_key.config.key
+                            if len(service_interface.oc_ospfv2_ext__authentication.md5_authentication_keys.md5_authentication_key) > 0:
+                                interface_cdb.ip.ospf.message_digest_key.delete()
+                                for authentication_key in service_interface.oc_ospfv2_ext__authentication.md5_authentication_keys.md5_authentication_key:
+                                    interface_cdb.ip.ospf.message_digest_key.create(authentication_key.config.key_id)
+                                    interface_cdb.ip.ospf.message_digest_key[
+                                        authentication_key.config.key_id].md5.secret = authentication_key.config.key
                         else:
                             raise ValueError("OSPF MD5 authentication must have at least one key configured.")
                     elif service_interface.oc_ospfv2_ext__authentication.config.authentication_type == "SIMPLE":
