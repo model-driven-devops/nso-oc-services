@@ -1,0 +1,90 @@
+---
+- hosts: localhost
+  gather_facts: no
+  environment:
+    NSO_DEVICE: xr1
+    DEVICE_OS: xr
+  vars:
+    nso_api_url: "{{ lookup('env', 'NSO_URL') }}"
+    nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
+    nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
+    device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
+  tasks:
+    - name: test xr MPLS
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        script_path: ../../../package_nso_to_oc/xr/xr_network_instances.py
+        api_test_data:
+          - name: Set up OC service config
+            tags:
+              - oc_set_up
+            api_path: mdd:openconfig
+            api_method: PUT
+            content: |
+              mdd:openconfig:
+                openconfig-interfaces:interfaces:
+                  openconfig-interfaces:interface:
+                    - openconfig-interfaces:name: 'Loopback0'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:name: 'Loopback0'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:type: 'softwareLoopback'
+                        openconfig-interfaces:description: 'Test loopback'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '10.255.10.1'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '10.255.10.1'
+                                      openconfig-if-ip:prefix-length: 24
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+          - name: NED create Loopback0
+            tags:
+              - loopback0
+            api_path: config/tailf-ned-cisco-ios-xr:interface/Loopback
+            api_method: PATCH
+            content: |
+              Loopback:
+                - id: '0'
+                  description: "Loopback 0"
+                  ipv4:
+                    address:
+                      ip: 10.255.0.1
+                      mask: 255.255.255.255
+          - name: LDP
+            tags:
+              - ldp
+            api_path: config/tailf-ned-cisco-ios-xr:mpls
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios-xr:mpls:
+                ldp:
+                  graceful-restart:
+                    - null
+                  discovery:
+                    hello:
+                      holdtime: 30
+                      interval: 10
+                  router-id: 10.255.0.1
+          - name: ttl-propagate
+            tags:
+              - ttl
+            api_path: config/tailf-ned-cisco-ios-xr:mpls/ip-ttl-propagate
+            api_method: PATCH
+            content: |
+              ip-ttl-propagate:
+                disable: {}
+
+        assertions:
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['mpls']['global']['config']['ttl-propagation'] == false"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['mpls']['signaling-protocols']['ldp']['global']['config']['lsr-id'] == '10.255.0.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['mpls']['signaling-protocols']['ldp']['global']['graceful-restart']['config']['enabled'] == true"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['mpls']['signaling-protocols']['ldp']['interface-attributes']['config']['hello-holdtime'] == 30"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['mpls']['signaling-protocols']['ldp']['interface-attributes']['config']['hello-interval'] == 10"

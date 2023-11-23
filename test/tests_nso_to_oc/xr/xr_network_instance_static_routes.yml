@@ -1,0 +1,177 @@
+---
+- hosts: localhost
+  gather_facts: no
+  environment:
+    NSO_DEVICE: xr1
+    DEVICE_OS: xr
+  vars:
+    nso_api_url: "{{ lookup('env', 'NSO_URL') }}"
+    nso_username: "{{ lookup('env', 'NSO_USERNAME') }}"
+    nso_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
+    device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
+  tasks:
+    - name: Run XR network instance for static routes tests
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        script_path: ../../../package_nso_to_oc/xr/xr_network_instances.py
+        api_test_data:
+          - name: Set up OC service config
+            tags:
+              - oc_set_up
+            api_path: mdd:openconfig
+            api_method: PUT
+            content: |
+              mdd:openconfig:
+                openconfig-interfaces:interfaces:
+                  openconfig-interfaces:interface:
+                    - openconfig-interfaces:name: 'GigabitEthernet0/0/0/3'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:description: 'Physical Interface 3'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:name: 'GigabitEthernet0/0/0/3'
+                        openconfig-interfaces:type: 'ethernetCsmacd'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 0
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:enabled: true
+                              openconfig-interfaces:index: 0
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '99.10.0.100'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '99.10.0.100'
+                                      openconfig-if-ip:prefix-length: '24'
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                                openconfig-if-ip:enabled: true
+                    - openconfig-interfaces:name: 'GigabitEthernet0/0/0/4'
+                      openconfig-interfaces:config:
+                        openconfig-interfaces:description: 'Physical Interface 4 802.1q'
+                        openconfig-interfaces:enabled: true
+                        openconfig-interfaces:name: 'GigabitEthernet0/0/0/4'
+                        openconfig-interfaces:type: 'ethernetCsmacd'
+                      openconfig-interfaces:subinterfaces:
+                        openconfig-interfaces:subinterface:
+                          - openconfig-interfaces:index: 10
+                            openconfig-interfaces:config:
+                              openconfig-interfaces:description: 'Sub interface 10'
+                              openconfig-interfaces:enabled: true
+                              openconfig-interfaces:index: 10
+                            openconfig-if-ip:ipv4:
+                              openconfig-if-ip:addresses:
+                                openconfig-if-ip:address:
+                                  - openconfig-if-ip:ip: '199.10.0.100'
+                                    openconfig-if-ip:config:
+                                      openconfig-if-ip:ip: '199.10.0.100'
+                                      openconfig-if-ip:prefix-length: '24'
+                              openconfig-if-ip:config:
+                                openconfig-if-ip:dhcp-client: false
+                                openconfig-if-ip:enabled: true
+                            openconfig-vlan:vlan:
+                              openconfig-vlan:config:
+                                openconfig-vlan:vlan-id: 10
+          - name: NED create VRF
+            tags:
+              - vrf
+            api_path: config/tailf-ned-cisco-ios-xr:vrf/vrf-list
+            api_method: PATCH
+            content: |
+              vrf-list:
+                - name: abc
+                  rd: "1:1"
+                  address-family:
+                    ipv4:
+                      unicast: {}
+          - name: Add routes
+            tags:
+              - routes
+            api_path: config/tailf-ned-cisco-ios-xr:router/static
+            api_method: PATCH
+            content: |
+              static:
+                address-family:
+                  ipv4:
+                    unicast:
+                      routes-ip:
+                        - net: 169.0.0.0/8
+                          address: 10.21.21.21
+                          metric: 200
+                      routes-if:
+                        - net: 60.0.0.0/8
+                          interface: Null0
+                          metric: 200
+                        - net: 80.0.0.0/8
+                          interface: Null0
+                          metric: 200
+                          tag: 179
+                          description: to_bgp
+                vrf:
+                  - name: abc
+                    address-family:
+                      ipv4:
+                        unicast:
+                          routes:
+                            - net: 102.0.0.0/8
+                              interface: GigabitEthernet0/0/0/3
+                              address: 199.10.0.1
+                            - net: 103.0.0.0/8
+                              interface: GigabitEthernet0/0/0/4.10
+                              address: 99.10.0.1
+                          routes-ip:
+                            - net: 101.0.0.0/8
+                              address: 1.1.1.1
+                          routes-if:
+                            - net: 70.0.0.0/8
+                              interface: Null0
+                              metric: 200
+                            - net: 90.0.0.0/8
+                              interface: Null0
+                              metric: 200
+                              tag: 179
+                              description: vrf_abc_to_bgp"
+
+        assertions:
+          # These are testing for network instances
+          - "'default' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
+          - "'abc' in oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'] | map(attribute='name') | list"
+
+          # Testing RDs and RTs
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['route-distinguisher'] == '1:1'"
+#          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['openconfig-network-instance-ext:route-targets-import'][0] == '100:100'"
+#          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['openconfig-network-instance-ext:route-targets-export'][1] == '202:202'"
+
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['config']['name'] == 'abc'"
+
+          # Testing static routes
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][0]['config']['prefix'] == '101.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][0]['next-hops']['next-hop'][0]['config']['next-hop'] == '1.1.1.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][1]['config']['prefix'] == '102.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][1]['next-hops']['next-hop'][0]['config']['next-hop'] == '199.10.0.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][1]['next-hops']['next-hop'][0]['interface-ref']['config']['interface'] == 'GigabitEthernet0/0/0/3'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][1]['next-hops']['next-hop'][0]['interface-ref']['config']['subinterface'] == 0"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][2]['config']['prefix'] == '103.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][2]['next-hops']['next-hop'][0]['config']['next-hop'] == '99.10.0.1'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][2]['next-hops']['next-hop'][0]['interface-ref']['config']['interface'] == 'GigabitEthernet0/0/0/4'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][2]['next-hops']['next-hop'][0]['interface-ref']['config']['subinterface'] == 10"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][3]['config']['prefix'] == '70.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][3]['next-hops']['next-hop'][0]['config']['next-hop'] == 'openconfig-local-routing:DROP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][3]['next-hops']['next-hop'][0]['config']['metric'] == 200"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][4]['config']['prefix'] == '90.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][4]['config']['set-tag'] == 179"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][4]['next-hops']['next-hop'][0]['config']['next-hop'] == 'openconfig-local-routing:DROP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][0]['protocols']['protocol'][0]['static-routes']['static'][4]['next-hops']['next-hop'][0]['config']['metric'] == 200"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['static-routes']['static'][1]['config']['prefix'] == '169.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['static-routes']['static'][1]['next-hops']['next-hop'][0]['config']['next-hop'] == '10.21.21.21'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['static-routes']['static'][1]['next-hops']['next-hop'][0]['config']['metric'] == 200"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['static-routes']['static'][2]['config']['prefix'] == '60.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['static-routes']['static'][2]['next-hops']['next-hop'][0]['config']['next-hop'] == 'openconfig-local-routing:DROP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['static-routes']['static'][2]['next-hops']['next-hop'][0]['config']['metric'] == 200"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['static-routes']['static'][3]['config']['prefix'] == '80.0.0.0/8'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['static-routes']['static'][3]['config']['set-tag'] == 179"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['static-routes']['static'][3]['next-hops']['next-hop'][0]['config']['next-hop'] == 'openconfig-local-routing:DROP'"
+          - "oc_result.json['mdd:openconfig']['openconfig-network-instance:network-instances']['network-instance'][1]['protocols']['protocol'][0]['static-routes']['static'][3]['next-hops']['next-hop'][0]['config']['metric'] == 200"
+    - debug:
+        var: oc_result
