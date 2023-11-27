@@ -129,7 +129,7 @@ def process_prefix_sets(config_before, config_after):
 
     openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:defined-sets"].update(prefix_sets)
 
-
+# TODO: Add support for as-path-lists
 def process_as_path_sets(config_before, config_after):
     as_path_sets = {"openconfig-bgp-policy:as-path-sets": {"openconfig-bgp-policy:as-path-set": []}}
     access_list = config_before.get("tailf-ned-cisco-ios-xr:ip", {}).get("as-path", {}).get("access-list", [])
