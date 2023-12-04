@@ -197,9 +197,6 @@ def process_community_members(community_sets, type, community_list, community_li
     all_processed = True
     updated_community_list = []
     name_or_num_key = "no" if type == "number" else "name"
-    print(f'community_list: {community_list}')
-    print(f'community_list_after: {community_list_after}')
-    print(f'community_sets: {community_sets}')
     for community_index, community in enumerate(community_list):
         new_community_set = {
             "openconfig-bgp-policy:community-set-name": community.get(name_or_num_key),
@@ -209,9 +206,9 @@ def process_community_members(community_sets, type, community_list, community_li
                 "openconfig-bgp-policy:community-member": []
             }
         }
+        
         members = new_community_set["openconfig-bgp-policy:config"]["openconfig-bgp-policy:community-member"]
         entry_after = common.get_index_or_default(community_list_after, community_index, {})
-        print(entry_after)
         for entry_index, entry in enumerate(community.get("set", [])):
             if not "value" in entry:
                 continue
@@ -236,6 +233,7 @@ This entry contains a deny operation, which is not supported in OpenConfig. Tran
         if all_processed:
             community_sets["openconfig-bgp-policy:community-sets"]["openconfig-bgp-policy:community-set"].append(new_community_set)
             common.get_index_or_default(community_list_after, community_index, {})[name_or_num_key] = None
+            common.get_index_or_default(community_list_after, community_index, {})["set"] = None
     
     for community_list_item in community_list_after:
         if name_or_num_key in community_list_item and community_list_item[name_or_num_key]:
@@ -309,106 +307,343 @@ This ext entry contains a deny operation, which is not supported in OpenConfig. 
 
 # TODO: route-policies
 def process_policy_definitions(config_before, config_after):
-    prev_policy_name = ""
-    updated_route_map = []
-
-    for route_map_index, route_map in enumerate(config_before.get("tailf-ned-cisco-ios-xr:route-map", [])):
-        if (prev_policy_name != route_map.get("name")):
-            prev_policy_name = route_map.get("name")
-            policy_def = {
-                "openconfig-routing-policy:name": route_map.get("name"),
-                "openconfig-routing-policy:config": {"openconfig-routing-policy:name": route_map.get("name")},
-                "openconfig-routing-policy:statements": {"openconfig-routing-policy:statement": []}
+     
+    policy = {
+            "openconfig-routing-policy:policy-definitions": {
+                "openconfig-routing-policy:policy-definition": []
             }
-            openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:policy-definitions"][
-                "openconfig-routing-policy:policy-definition"].append(policy_def)
+        }   
 
-        statement = {
-            "openconfig-routing-policy:name": route_map["sequence"],
-            "openconfig-routing-policy:config": {"openconfig-routing-policy:name": route_map["sequence"]},
-            "openconfig-routing-policy:actions": {
-                "openconfig-routing-policy:config": {"openconfig-routing-policy:policy-result": policy_results[route_map["operation"]]},
-                "openconfig-bgp-policy:bgp-actions":{
-                    "openconfig-bgp-policy:config": {},
-                    "openconfig-bgp-policy:set-community": {},
-                    "openconfig-bgp-policy:set-ext-community": {}
+    for route_policy_index, route_policy in enumerate(config_before.get("tailf-ned-cisco-ios-xr:route-policy", [])):
+        
+        current_route_policy = format_route_policy(route_policy.get("value"))
+        print(f"processing {route_policy.get('name')}\n   {current_route_policy}")
+        if current_route_policy is None:
+            continue
+        if current_route_policy.get("match") and current_route_policy.get("action"):
+            statement = {
+                    "openconfig-routing-policy:name": route_policy.get('name'),
+                    "openconfig-routing-policy:config": {
+                        "openconfig-routing-policy:name": route_policy.get('name')
+                    },
+                    "openconfig-routing-policy:statements": {
+                        "openconfig-routing-policy:statement": [
+                        {
+                            "openconfig-routing-policy:name": current_route_policy.get("match"),
+                            "openconfig-routing-policy:config": {
+                                "openconfig-routing-policy:name": current_route_policy.get("match")
+                            },
+                            "openconfig-routing-policy:actions": {
+                                "openconfig-routing-policy:config": {
+                                    "openconfig-routing-policy:policy-result": current_route_policy.get("action")
+                                }
+                            }
+                        }
+                    ]
                 }
-            },
-            "openconfig-routing-policy:conditions": {
-                "openconfig-bgp-policy:bgp-conditions": {"openconfig-bgp-policy:config": {}}
             }
+        
+            policy["openconfig-routing-policy:policy-definitions"]["openconfig-routing-policy:policy-definition"].append(statement)
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["name"] = None
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["value"] = None
+        
+        elif current_route_policy.get("match") and current_route_policy.get("set") == "local-preference":
+            statement = {
+                "openconfig-routing-policy:name": route_policy.get('name'),
+                    "openconfig-routing-policy:config": {
+                        "openconfig-routing-policy:name": route_policy.get('name')
+                    },
+                    "openconfig-routing-policy:statements": {
+                        "openconfig-routing-policy:statement": [
+                        {
+                            "openconfig-routing-policy:name": current_route_policy.get("match"),
+                            "openconfig-routing-policy:config": {
+                                "openconfig-routing-policy:name": current_route_policy.get("match")
+                            },
+                            "openconfig-routing-policy:actions": {
+                                "openconfig-routing-policy:config": {
+                                    "openconfig-routing-policy:policy-result": "ACCEPT_ROUTE"
+                                },
+                                "openconfig-bgp-policy:bgp-actions": {
+                                    "openconfig-bgp-policy:config": {
+                                        "openconfig-bgp-policy:set-local-pref": current_route_policy.get("set_value")
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+            policy["openconfig-routing-policy:policy-definitions"]["openconfig-routing-policy:policy-definition"].append(statement)
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["name"] = None
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["value"] = None
+
+        elif current_route_policy.get("match") and current_route_policy.get("set") == "community":
+            statement = {
+                "openconfig-routing-policy:name": route_policy.get('name'),
+                    "openconfig-routing-policy:config": {
+                        "openconfig-routing-policy:name": route_policy.get('name')
+                    },
+                    "openconfig-routing-policy:statements": {
+                        "openconfig-routing-policy:statement": [
+                        {
+                            "openconfig-routing-policy:name": current_route_policy.get("match"),
+                            "openconfig-routing-policy:config": {
+                                "openconfig-routing-policy:name": current_route_policy.get("match")
+                            },
+                            "openconfig-routing-policy:actions": {
+                                "openconfig-routing-policy:config": {
+                                    "openconfig-routing-policy:policy-result": "ACCEPT_ROUTE"
+                                },
+                                "openconfig-bgp-policy:bgp-actions": {
+                                    "openconfig-bgp-policy:config": {
+                                        "openconfig-bgp-policy:set-community": {
+                                            "openconfig-bgp-policy:config": {
+                                                "openconfig-bgp-policy:method": "INLINE",
+                                                "openconfig-bgp-policy:options": "REPLACE"
+                                            },
+                                            "openconfig-bgp-policy:inline": {
+                                                "openconfig-bgp-policy:config": {
+                                                    "openconfig-bgp-policy:communities": current_route_policy.get("set_value")
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+            policy["openconfig-routing-policy:policy-definitions"]["openconfig-routing-policy:policy-definition"].append(statement)
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["name"] = None
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["value"] = None
+
+        elif current_route_policy.get("match") and current_route_policy.get("set") == "med":
+            statement = {
+                "openconfig-routing-policy:name": route_policy.get('name'),
+                    "openconfig-routing-policy:config": {
+                        "openconfig-routing-policy:name": route_policy.get('name')
+                    },
+                    "openconfig-routing-policy:statements": {
+                        "openconfig-routing-policy:statement": [
+                        {
+                            "openconfig-routing-policy:name": current_route_policy.get("match"),
+                            "openconfig-routing-policy:config": {
+                                "openconfig-routing-policy:name": current_route_policy.get("match")
+                            },
+                            "openconfig-routing-policy:actions": {
+                                "openconfig-routing-policy:config": {
+                                    "openconfig-routing-policy:policy-result": "ACCEPT_ROUTE"
+                                },
+                                "openconfig-bgp-policy:bgp-actions": {
+                                    "openconfig-bgp-policy:config": {
+                                        "openconfig-bgp-policy:set-med": current_route_policy.get("set_value")
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+            policy["openconfig-routing-policy:policy-definitions"]["openconfig-routing-policy:policy-definition"].append(statement)
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["name"] = None
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["value"] = None
+
+        if not current_route_policy.get("match") and current_route_policy.get("set") == "local-preference":
+            statement = {
+                "openconfig-routing-policy:name": route_policy.get('name'),
+                    "openconfig-routing-policy:config": {
+                        "openconfig-routing-policy:name": route_policy.get('name')
+                    },
+                    "openconfig-routing-policy:statements": {
+                        "openconfig-routing-policy:statement": [
+                        {
+                            "openconfig-bgp-policy:bgp-actions": {
+                                "openconfig-bgp-policy:config": {
+                                    "openconfig-bgp-policy:set-local-pref": current_route_policy.get("set_value")
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+            policy["openconfig-routing-policy:policy-definitions"]["openconfig-routing-policy:policy-definition"].append(statement)
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["name"] = None
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["value"] = None
+
+        elif not current_route_policy.get("match") and current_route_policy.get("set") == "community":
+            statement = {
+                "openconfig-routing-policy:name": route_policy.get('name'),
+                    "openconfig-routing-policy:config": {
+                        "openconfig-routing-policy:name": route_policy.get('name')
+                    },
+                    "openconfig-routing-policy:statements": {
+                        "openconfig-routing-policy:statement": [
+                        {
+                            "openconfig-bgp-policy:bgp-actions": {
+                                "openconfig-bgp-policy:config": {
+                                    "openconfig-bgp-policy:set-community": {
+                                        "openconfig-bgp-policy:config": {
+                                            "openconfig-bgp-policy:method": "INLINE",
+                                            "openconfig-bgp-policy:options": "REPLACE"
+                                        },
+                                        "openconfig-bgp-policy:inline": {
+                                            "openconfig-bgp-policy:config": {
+                                                "openconfig-bgp-policy:communities": current_route_policy.get("set_value")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+            policy["openconfig-routing-policy:policy-definitions"]["openconfig-routing-policy:policy-definition"].append(statement)
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["name"] = None
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["value"] = None
+
+        elif not current_route_policy.get("match") and current_route_policy.get("set") == "med":
+            statement = {
+                "openconfig-routing-policy:name": route_policy.get('name'),
+                    "openconfig-routing-policy:config": {
+                        "openconfig-routing-policy:name": route_policy.get('name')
+                    },
+                    "openconfig-routing-policy:statements": {
+                        "openconfig-routing-policy:statement": [
+                        {
+                            "openconfig-bgp-policy:bgp-actions": {
+                                "openconfig-bgp-policy:config": {
+                                    "openconfig-bgp-policy:set-med": current_route_policy.get("set_value")
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+            policy["openconfig-routing-policy:policy-definitions"]["openconfig-routing-policy:policy-definition"].append(statement)
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["name"] = None
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["value"] = None
+
+        elif not current_route_policy.get("match") and current_route_policy.get("prepend"):
+            statement = {
+                "openconfig-routing-policy:name": route_policy.get('name'),
+                    "openconfig-routing-policy:config": {
+                        "openconfig-routing-policy:name": route_policy.get('name')
+                    },
+                    "openconfig-routing-policy:statements": {
+                        "openconfig-routing-policy:statement": [
+                        {
+                            "openconfig-bgp-policy:bgp-actions": {
+                                "openconfig-bgp-policy:config": {
+                                    "openconfig-bgp-policy:set-as-path-prepend": {
+                                        "openconfig-bgp-policy:config": {
+                                            "openconfig-bgp-policy:asn": current_route_policy.get("prepend")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+            policy["openconfig-routing-policy:policy-definitions"]["openconfig-routing-policy:policy-definition"].append(statement)
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["name"] = None
+            config_after["tailf-ned-cisco-ios-xr:route-policy"][route_policy_index]["value"] = None
+        
+    openconfig_routing_policies.update(policy)
+
+
+def format_route_policy(old_route_policy):
+
+    # Define the regular expressions to match the required sections
+    specific_prefix_regex = re.compile(r'\((\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d+)\)')
+    match_prefix_list_regex = re.compile(r'^  if destination in ([^ ]+)')
+    action_regex = re.compile(r'then\r\r\n    ([^ ]+)')
+    starts_with_set_regex = re.compile(r'^  set\s([^ ]+)\s([^ ]+)')
+    starts_with_prepend_regex = re.compile(r'^  prepend as-path ((?:\d+ *)+)')
+    action_set_regex = re.compile(r'    set\s([^ ]+)\s([^ ]+)')
+    action_prepend_regex = re.compile(r'    prepend as-path ((?:\d+ *)+)')
+
+    # Find the matches
+    specific_prefix = specific_prefix_regex.search(old_route_policy)
+    match_prefix_list = match_prefix_list_regex.search(old_route_policy)
+    action = action_regex.search(old_route_policy)
+    starts_with_set_commands = starts_with_set_regex.search(old_route_policy)
+    starts_with_prepend = starts_with_prepend_regex.search(old_route_policy)
+    action_set_commands = action_set_regex.search(old_route_policy)
+    action_prepend = action_prepend_regex.search(old_route_policy)    
+
+    # Check unsupported actions
+    # Check if the route policy contains a specific prefix
+    if specific_prefix or "elseif" in old_route_policy:
+        print(f"""found: {old_route_policy}
+              this prefix is unsupported at this time.
+              Skipping...""")
+        return None
+    
+    # Check if the route policy contains a match and action
+    if match_prefix_list and action.group(1):
+        # Extract the matched values
+        prefix_list = match_prefix_list.group(1) if match_prefix_list else None
+        action = "ACCEPT_ROUTE" if action.group(1) == "pass" else action.group(1)
+        # Construct the new dictionary
+        result = {
+            'match': prefix_list,
+            'action': "ACCEPT_ROUTE"
         }
-        policy_def["openconfig-routing-policy:statements"]["openconfig-routing-policy:statement"].append(statement)
-
-        if "match" in route_map:
-            process_match(route_map["match"], statement["openconfig-routing-policy:conditions"])
-        if "set" in route_map:
-            process_set(route_map["set"], statement["openconfig-routing-policy:actions"])
-        if common.get_index_or_default(config_after.get("tailf-ned-cisco-ios-xr:route-map", []), route_map_index, None):
-            config_after["tailf-ned-cisco-ios-xr:route-map"][route_map_index] = None
+        return result
     
-    for route_map_item in config_after.get("tailf-ned-cisco-ios-xr:route-map", []):
-        if route_map_item:
-            updated_route_map.append(route_map_item)
-    
-    if len(updated_route_map) > 0:
-        config_after["tailf-ned-cisco-ios-xr:route-map"] = updated_route_map
-    elif "tailf-ned-cisco-ios-xr:route-map" in config_after:
-        del config_after["tailf-ned-cisco-ios-xr:route-map"]
+    if match_prefix_list and action_set_commands: 
+        # Extract the matched values
+        prefix_list = match_prefix_list.group(1) if match_prefix_list else None
+        set_commands = action_set_commands.group(1) if action_set_commands else None
+        set_value = action_set_commands.group(2) if action_set_commands else None
 
-# TODO:
-def process_match(route_map_match, conditions):
-    if len(route_map_match.get("ip", {}).get("address", {}).get("prefix-list", [])) > 0:
-        conditions.update({
-            "openconfig-routing-policy:match-prefix-set": {
-                "openconfig-routing-policy:config": {
-                    "openconfig-routing-policy:prefix-set": route_map_match["ip"]["address"]["prefix-list"][0],
-                    "openconfig-routing-policy:match-set-options": "ANY"
-                }
-            }
-        })
-    if len(route_map_match.get("tag", [])) == 1:
-        conditions.update({
-            "openconfig-routing-policy:match-tag-set": {
-                "openconfig-routing-policy:config": {
-                    "openconfig-routing-policy:tag-set": str(route_map_match["tag"][0]),
-                    "openconfig-routing-policy:match-set-options": "ANY"
-                }
-            }
-        })
-        openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:defined-sets"][
-            "openconfig-routing-policy:tag-sets"]["openconfig-routing-policy:tag-set"].append({
-                "openconfig-routing-policy:name": str(route_map_match["tag"][0]),
-                "openconfig-routing-policy:config": {
-                    "openconfig-routing-policy:name": str(route_map_match["tag"][0]),
-                    "openconfig-routing-policy:tag-value": [route_map_match["tag"][0]]
-                }
-            })
-    if "as-path" in route_map_match:
-        conditions["openconfig-bgp-policy:bgp-conditions"].update({
-            "openconfig-bgp-policy:match-as-path-set": {
-                "openconfig-bgp-policy:config": {
-                    "openconfig-bgp-policy:as-path-set": route_map_match["as-path"][0],
-                    "openconfig-bgp-policy:match-set-options": "ANY"
-                }
-            }
-        })
-    if "community" in route_map_match:
-        conditions["openconfig-bgp-policy:bgp-conditions"]["openconfig-bgp-policy:config"].update({
-            "openconfig-bgp-policy:community-set": route_map_match["community"][0]
-        })
-    if "extcommunity" in route_map_match:
-        conditions["openconfig-bgp-policy:bgp-conditions"]["openconfig-bgp-policy:config"].update({
-            "openconfig-bgp-policy:ext-community-set": route_map_match["extcommunity"][0]
-        })
-    if len(route_map_match.get("ip", {}).get("address", {}).get("access-list", [])) > 0:
-        conditions.update({
-            "openconfig-routing-policy-ext:match-acl-ipv4-set": {
-                "openconfig-routing-policy-ext:config": {
-                    "openconfig-routing-policy-ext:acl-set": route_map_match["ip"]["address"]["access-list"][0]
-                }
-            }
-        })
+        # Construct the new dictionary
+        result = {
+            'match': prefix_list,
+            'set': set_commands,
+            'set_value': set_value
+        }
+        return result
+    
+    elif match_prefix_list and action_prepend:
+        # Extract the matched values
+        prefix_list = match_prefix_list.group(1) if match_prefix_list else None
+        prepend = action_prepend.group(2) if action_prepend else None
+
+        # Construct the new dictionary
+        result = {
+            'match': prefix_list,
+            'prepend': prepend
+        }
+        return result
+    
+    elif starts_with_set_commands:
+        # Extract the matched values
+        set_commands = starts_with_set_commands.group(1) if starts_with_set_commands else None
+        set_value = starts_with_set_commands.group(2) if starts_with_set_commands else None
+
+        # Construct the new dictionary
+        result = {
+            'set': set_commands.strip("\r\r\n"),
+            'set_value': set_value.strip("\r\r\n")
+        }
+        return result
+    elif starts_with_prepend:
+        # Extract the matched values
+        prepend = starts_with_prepend.group(1)
+
+        # Construct the new dictionary
+        result = {
+            'prepend': prepend
+        }
+        return result
+    
+
+    
 
 # TODO:
 def format_well_known_communities(community_number):
