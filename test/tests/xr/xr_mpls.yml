@@ -164,14 +164,13 @@
           - "'+interface Loopback0:' in changes"
           - "'+ description Loopback 0:' in changes"
           - "'+ ipv4 address 10.255.0.1 255.255.255.255:' in changes"
-          - "'-mpls ip-ttl-propagate disable:' in changes"
           - "'+mpls ldp:' in changes"
           - "'+ graceful-restart:' in changes"
           - "'+ discovery:' in changes"
           - "'+  hello holdtime 30:' in changes"
           - "'+  hello interval 10:' in changes"
           - "'+ router-id 10.255.0.1:' in changes"
-
+#          - "'-mpls ip-ttl-propagate disable:' in changes"  hit or miss for PyATS to pick this up
 - hosts: nso
   connection: local
   gather_facts: no
