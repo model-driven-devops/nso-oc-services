@@ -14,7 +14,7 @@
       include_role:
         name: ned-to-oc-test
       vars:
-        script_path: ../../../package_nso_to_oc/xr/xr_network_instances.py
+        script_path: ../../../package_nso_to_oc/main.py
         api_test_data:
           - name: Set up OC service config
             tags:
