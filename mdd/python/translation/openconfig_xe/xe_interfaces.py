@@ -595,6 +595,7 @@ def xe_configure_hsrp_v1(self, interface_cdb: ncs.maagic.ListElement, service_ip
     """
     Configures ipv4 hsrp
     """
+    interface_cdb.standby.standby_list.delete()
     for a in service_ipv4.addresses.address:
         if hasattr(a, 'hsrp'):
             if a.hsrp.hsrp_group:

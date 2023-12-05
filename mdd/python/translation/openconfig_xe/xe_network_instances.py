@@ -129,22 +129,27 @@ def xe_configure_vrfs(self, nso_props, network_instance) -> None:
         rt_export_config = set([rt for rt in network_instance.config.route_targets_export])
         rt_export_config.update(export_rts_policy)
 
-        # Get import route-targets from the CDB
-        rt_import_cdb = set([rt for rt in nso_props.root.devices.device[nso_props.device_name].config.ios__vrf.definition[
-            network_instance.name].route_target.ios__import])
-        # Get export route-targets from the CDB
-        rt_export_cdb = set([rt for rt in nso_props.root.devices.device[nso_props.device_name].config.ios__vrf.definition[
-            network_instance.name].route_target.export])
+        # # Get import route-targets from the CDB
+        # rt_import_cdb = set([rt for rt in nso_props.root.devices.device[nso_props.device_name].config.ios__vrf.definition[
+        #     network_instance.name].route_target.ios__import])
+        # # Get export route-targets from the CDB
+        # rt_export_cdb = set([rt for rt in nso_props.root.devices.device[nso_props.device_name].config.ios__vrf.definition[
+        #     network_instance.name].route_target.export])
 
-        # Find route targets to create in CDB
-        rt_import_to_cdb = rt_import_config.difference(rt_import_cdb)
-        rt_export_to_cdb = rt_export_config.difference(rt_export_cdb)
+        # # Find route targets to create in CDB
+        # rt_import_to_cdb = rt_import_config.difference(rt_import_cdb)
+        # rt_export_to_cdb = rt_export_config.difference(rt_export_cdb)
 
         # Add Route Targets to CDB
-        for rt in rt_import_to_cdb:
+        nso_props.root.devices.device[nso_props.device_name].config.ios__vrf.definition[
+            network_instance.name].route_target.ios__import.delete()
+        for rt in rt_import_config:
             nso_props.root.devices.device[nso_props.device_name].config.ios__vrf.definition[
                 network_instance.name].route_target.ios__import.create(rt)
-        for rt in rt_export_to_cdb:
+
+        nso_props.root.devices.device[nso_props.device_name].config.ios__vrf.definition[
+            network_instance.name].route_target.export.delete()
+        for rt in rt_export_config:
             nso_props.root.devices.device[nso_props.device_name].config.ios__vrf.definition[
                 network_instance.name].route_target.export.create(rt)
 

@@ -107,6 +107,7 @@ nodes:
     id: n2
     label: nso1
     node_definition: ubuntu
+    image_definition: 'ubuntu-20-04-20210927'
     ram: 8192
     tags:
       - nso

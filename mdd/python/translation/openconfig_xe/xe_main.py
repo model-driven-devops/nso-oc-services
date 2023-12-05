@@ -39,3 +39,40 @@ def check_xe_features(oc_self, nso_props) -> None:
 
     # OpenConfig System
     xe_system_program_service(oc_self, nso_props)
+
+
+def clean_xe_cdb(nso_props) -> None:
+    """
+    Remove CDB lists to be repopulated with OC configs.
+    """
+    device = nso_props.root.devices.device[nso_props.device_name].config
+
+    device.ios__access_list.access_list.delete()
+    device.ios__ip.access_list.extended.ext_named_acl.delete()
+    device.ios__ip.access_list.standard.std_named_acl.delete()
+    device.ios__ip.as_path.access_list.delete()
+    device.ios__ip.community_list.expanded.delete()
+    device.ios__ip.community_list.standard.delete()
+    device.ios__ip.extcommunity_list.standard.no_mode_list.delete()
+    device.ios__ip.http.secure_ciphersuite.delete()
+    device.ios__ip.name_server.vrf.delete()
+    device.ios__ip.name_server.name_server_list.delete()
+    device.ios__ip.nat.inside.source.list_vrf.list.delete()
+    device.ios__ip.nat.inside.source.list.delete()
+    device.ios__ip.nat.pool.delete()
+    device.ios__ip.prefix_list.prefixes.delete()
+    device.ios__ip.route.ip_route_forwarding_list.delete()
+    device.ios__ip.route.ip_route_interface_list.delete()
+    device.ios__ip.route.vrf.delete()
+    device.ios__ip.ssh.server.algorithm.encryption.delete()
+    device.ios__logging.host.ipv4_vrf.delete()
+    device.ios__logging.host.ipv4.delete()
+    device.ios__logging.source_interface.delete()
+    device.ios__ntp.peer.peer_list.delete()
+    device.ios__ntp.server.peer_list.delete()
+    device.ios__ntp.server.vrf.delete()
+    device.ios__ntp.peer.vrf.delete()
+    device.ios__ntp.authentication_key.delete()
+    device.ios__ntp.trusted_key.delete()
+    device.ios__router.bgp.delete()
+    device.ios__router.ospf.delete()

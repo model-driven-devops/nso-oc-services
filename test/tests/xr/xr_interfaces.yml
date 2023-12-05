@@ -24,6 +24,32 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
@@ -81,6 +107,32 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'GigabitEthernet0/0/0/6'
@@ -155,6 +207,32 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'Loopback0'
@@ -185,6 +263,83 @@
           - "'+ description Loopback 0:' in changes"
           - "'+ ipv4 address 10.255.0.1 255.255.255.255:' in changes"
 
+    - name: test vasi interfaces
+      tags:
+        - vasi
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet0/0/0/7'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 7'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet0/0/0/7'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.7.0.2'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.7.0.2'
+                                  openconfig-if-ip:prefix-length: '30'
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
+                - openconfig-network-instance:name: 'abc'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'abc'
+                    openconfig-network-instance:type: 'L3VRF'
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:enabled-address-families:
+                      - 'IPV4'
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet0/0/0/7'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet0/0/0/7'
+                          openconfig-network-instance:interface: 'GigabitEthernet0/0/0/7'
+                          openconfig-network-instance:subinterface: 0
+        api_method: PUT
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "' interface GigabitEthernet0/0/0/7:' in changes"
+          - "'+ description Physical Interface 7:' in changes"
+          - "'+ ipv4 address 10.7.0.2 255.255.255.252:' in changes"
+          - "'+ vrf abc:' in changes"
+
     - name: test proxyarp
       tags:
         - proxyarp
@@ -193,6 +348,32 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
@@ -234,6 +415,32 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
@@ -275,6 +482,32 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
@@ -314,6 +547,32 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
@@ -353,6 +612,32 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
@@ -390,6 +675,32 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
@@ -427,6 +738,32 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'Loopback10'
@@ -496,6 +833,32 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
@@ -572,6 +935,32 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'
@@ -614,6 +1003,32 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'Port-channel10'
@@ -682,6 +1097,32 @@
       vars:
         content: |
           mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
             openconfig-interfaces:interfaces:
               openconfig-interfaces:interface:
                 - openconfig-interfaces:name: 'GigabitEthernet0/0/0/5'

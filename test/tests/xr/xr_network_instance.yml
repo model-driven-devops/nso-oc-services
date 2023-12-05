@@ -1,0 +1,592 @@
+---
+- name: test network instance
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XRROUTER') | default('xr1', True) }}"
+    ansible_network_os: 'cisco.iosxr.iosxr'
+  tasks:
+    - name: test static_routes
+      tags:
+        - static_routes
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-interfaces:interfaces:
+              openconfig-interfaces:interface:
+                - openconfig-interfaces:name: 'GigabitEthernet0/0/0/2'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: G0/0/0/2'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet0/0/0/2'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+                - openconfig-interfaces:name: 'GigabitEthernet0/0/0/3'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: G0/0/0/3'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet0/0/0/3'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 0
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:index: 0
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.3.0.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.3.0.1'
+                                  openconfig-if-ip:prefix-length: '24'
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:dhcp-client: false
+                - openconfig-interfaces:name: 'GigabitEthernet0/0/0/4'
+                  openconfig-interfaces:config:
+                    openconfig-interfaces:description: 'Physical Interface 4 802.1q'
+                    openconfig-interfaces:enabled: true
+                    openconfig-interfaces:name: 'GigabitEthernet0/0/0/4'
+                    openconfig-interfaces:type: 'ethernetCsmacd'
+                  openconfig-interfaces:subinterfaces:
+                    openconfig-interfaces:subinterface:
+                      - openconfig-interfaces:index: 10
+                        openconfig-interfaces:config:
+                          openconfig-interfaces:description: 'Sub interface 10'
+                          openconfig-interfaces:enabled: true
+                          openconfig-interfaces:index: 10
+                        openconfig-if-ip:ipv4:
+                          openconfig-if-ip:addresses:
+                            openconfig-if-ip:address:
+                              - openconfig-if-ip:ip: '10.4.10.1'
+                                openconfig-if-ip:config:
+                                  openconfig-if-ip:ip: '10.4.10.1'
+                                  openconfig-if-ip:prefix-length: '24'
+                          openconfig-if-ip:config:
+                            openconfig-if-ip:enabled: true
+                        openconfig-vlan:vlan:
+                          openconfig-vlan:config:
+                            openconfig-vlan:vlan-id: 10
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
+                            - openconfig-network-instance:prefix: '169.0.0.0/8'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '169.0.0.0/8'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '10.21.21.21'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '10.21.21.21'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '10.21.21.21'
+                            - openconfig-network-instance:prefix: '60.0.0.0/8'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '60.0.0.0/8'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: 'DROP'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: 'DROP'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: 'DROP'
+                - openconfig-network-instance:name: 'abc'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'abc'
+                    openconfig-network-instance:type: 'L3VRF'
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:enabled-address-families:
+                      - 'IPV4'
+                  openconfig-network-instance:interfaces:
+                    openconfig-network-instance:interface:
+                      - openconfig-network-instance:id: 'GigabitEthernet0/0/0/3'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet0/0/0/3'
+                          openconfig-network-instance:interface: 'GigabitEthernet0/0/0/3'
+                          openconfig-network-instance:subinterface: 0
+                      - openconfig-network-instance:id: 'GigabitEthernet0/0/0/4'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:id: 'GigabitEthernet0/0/0/4'
+                          openconfig-network-instance:interface: 'GigabitEthernet0/0/0/4'
+                          openconfig-network-instance:subinterface: 10
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '70.0.0.0/8'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '70.0.0.0/8'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: 'DROP'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: 'DROP'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: 'DROP'
+                            - openconfig-network-instance:prefix: '101.0.0.0/8'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '101.0.0.0/8'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '1.1.1.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '1.1.1.1'
+                                      openconfig-network-instance:next-hop: '1.1.1.1'
+                            - openconfig-network-instance:prefix: '102.0.0.0/8'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '102.0.0.0/8'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: 'GigabitEthernet0/0/0/3'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: 'GigabitEthernet0/0/0/3'
+                                      openconfig-network-instance:next-hop: '199.10.0.1'
+                                    openconfig-network-instance:interface-ref:
+                                      openconfig-network-instance:config:
+                                        openconfig-network-instance:interface: 'GigabitEthernet0/0/0/3'
+                                        openconfig-network-instance:subinterface: 0
+                            - openconfig-network-instance:prefix: '103.0.0.0/8'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '103.0.0.0/8'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: 'GigabitEthernet0/0/0/4'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: 'GigabitEthernet0/0/0/4'
+                                      openconfig-network-instance:next-hop: '99.10.0.1'
+                                    openconfig-network-instance:interface-ref:
+                                      openconfig-network-instance:config:
+                                        openconfig-network-instance:interface: 'GigabitEthernet0/0/0/4'
+                                        openconfig-network-instance:subinterface: 10
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+vrf abc:' in changes"
+          - "'+ address-family ipv4 unicast:' in changes"
+          - "' router static:' in changes"
+          - "'  address-family ipv4 unicast:' in changes"
+          - "'+  169.0.0.0/8 10.21.21.21 200:' in changes"
+          - "'+  60.0.0.0/8 Null0 200:' in changes"
+          - "'+ vrf abc:' in changes"
+          - "'+  address-family ipv4 unicast:' in changes"
+          - "'+   70.0.0.0/8 Null0 200:' in changes"
+          - "'+   101.0.0.0/8 1.1.1.1:' in changes"
+          - "'+   102.0.0.0/8 GigabitEthernet0/0/0/3 199.10.0.1:' in changes"
+          - "'+   103.0.0.0/8 GigabitEthernet0/0/0/4.10 99.10.0.1:' in changes"
+  
+    - name: test static_routes_name_tag
+      tags:
+        - static_routes_name_tag
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
+                            - openconfig-network-instance:prefix: '60.0.0.0/8'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '60.0.0.0/8'
+                                openconfig-network-instance:description: 'to_bgp'
+                                openconfig-network-instance:set-tag: '179'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: 'DROP'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: 'DROP'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: 'DROP'
+                - openconfig-network-instance:name: 'abc'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'abc'
+                    openconfig-network-instance:type: 'L3VRF'
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:enabled-address-families:
+                      - 'IPV4'
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '70.0.0.0/8'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '70.0.0.0/8'
+                                openconfig-network-instance:description: 'vrf_abc_to_bgp'
+                                openconfig-network-instance:set-tag: '179'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: 'DROP'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: 'DROP'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: 'DROP'
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+vrf abc:' in changes"
+          - "'+ address-family ipv4 unicast:' in changes"
+          - "' router static:' in changes"
+          - "'  address-family ipv4 unicast:' in changes"
+          - "'+  60.0.0.0/8 Null0 200 tag 179 description to_bgp:' in changes"
+          - "'+ vrf abc:' in changes"
+          - "'+  address-family ipv4 unicast:' in changes"
+          - "'+   70.0.0.0/8 Null0 200 tag 179 description vrf_abc_to_bgp:' in changes"
+
+    - name: test route_target
+      tags:
+        - route_target
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-network-instance:network-instances:
+              openconfig-network-instance:network-instance:
+                - openconfig-network-instance:name: 'default'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'default'
+                    openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+                    openconfig-network-instance:enabled: true
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: 'STATIC'
+                        openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:identifier: 'STATIC'
+                          openconfig-network-instance:name: 'DEFAULT'
+                        openconfig-network-instance:static-routes:
+                          openconfig-network-instance:static:
+                            - openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:config:
+                                openconfig-network-instance:prefix: '0.0.0.0/0'
+                              openconfig-network-instance:next-hops:
+                                openconfig-network-instance:next-hop:
+                                  - openconfig-network-instance:index: '192.133.184.1'
+                                    openconfig-network-instance:config:
+                                      openconfig-network-instance:index: '192.133.184.1'
+                                      openconfig-network-instance:metric: 200
+                                      openconfig-network-instance:next-hop: '192.133.184.1'
+                      - openconfig-network-instance:identifier: BGP
+                        openconfig-network-instance:name: BGP
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: BGP
+                          openconfig-network-instance:name: BGP
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                - openconfig-network-instance:name: 'abc'
+                  openconfig-network-instance:config:
+                    openconfig-network-instance:name: 'abc'
+                    openconfig-network-instance:type: 'L3VRF'
+                    openconfig-network-instance:enabled: true
+                    openconfig-network-instance:enabled-address-families:
+                      - 'IPV4'
+                    openconfig-network-instance:route-distinguisher: '1:1'
+                    openconfig-network-instance-ext:route-targets-import:
+                      - '100:100'
+                      - '101:101'
+                    openconfig-network-instance-ext:route-targets-export:
+                      - '200:200'
+                      - '202:202'
+                  openconfig-network-instance:protocols:
+                    openconfig-network-instance:protocol:
+                      - openconfig-network-instance:identifier: BGP
+                        openconfig-network-instance:name: BGP
+                        openconfig-network-instance:config:
+                          openconfig-network-instance:enabled: True
+                          openconfig-network-instance:identifier: BGP
+                          openconfig-network-instance:name: BGP
+                        openconfig-network-instance:bgp:
+                          openconfig-network-instance:global:
+                            openconfig-network-instance:config:
+                              openconfig-network-instance:as: 1
+                            openconfig-network-instance:afi-safis:
+                              openconfig-network-instance:afi-safi:
+                                - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                  openconfig-network-instance:config:
+                                    openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+                                    openconfig-network-instance:enabled: true
+        api_method: PUT
+        rollback: true
+        assertion_ignore_errors: false
+        assertions:
+          - "'+vrf abc:' in changes"
+          - "'+ rd 1:1:' in changes"
+          - "'+ address-family ipv4 unicast:' in changes"
+#          - "'+  import route-target:' in changes"  # need to add these to service
+#          - "'+   100:100:' in changes"
+#          - "'+   101:101:' in changes"
+#          - "'+  export route-target:' in changes"
+#          - "'+   200:200:' in changes"
+#          - "'+   202:202:' in changes"
+
+    # Uncomment when xr_routing_policy is developed
+    # - name: test route_target_extcomm_import
+    #   tags:
+    #     - route_target_extcomm_import
+    #   import_role:
+    #     name: nso-openconfig-test
+    #   vars:
+    #     content: |
+    #       mdd:openconfig:
+    #         openconfig-routing-policy:routing-policy:
+    #           openconfig-routing-policy:defined-sets:
+    #             openconfig-bgp-policy:bgp-defined-sets:
+    #               openconfig-bgp-policy:ext-community-sets:
+    #                 openconfig-bgp-policy:ext-community-set:
+    #                   - openconfig-bgp-policy:ext-community-set-name: test_ext_match
+    #                     openconfig-bgp-policy:config:
+    #                       openconfig-bgp-policy:ext-community-set-name: test_ext_match
+    #                       openconfig-bgp-policy:match-set-options: ANY
+    #                       openconfig-bgp-policy:ext-community-member:
+    #                         - "1:1"
+    #                         - "2:2"
+    #                         - "3:3"
+    #           openconfig-routing-policy:policy-definitions:
+    #             openconfig-routing-policy:policy-definition:
+    #               - openconfig-routing-policy:name: 'test-match'
+    #                 openconfig-routing-policy:config:
+    #                   openconfig-routing-policy:name: 'test-match'
+    #                 openconfig-routing-policy:statements:
+    #                   openconfig-routing-policy:statement:
+    #                     - openconfig-routing-policy:name: '10'
+    #                       openconfig-routing-policy:config:
+    #                         openconfig-routing-policy:name: '10'
+    #                       openconfig-routing-policy:conditions:
+    #                         openconfig-bgp-policy:bgp-conditions:
+    #                           openconfig-bgp-policy:config:
+    #                             openconfig-bgp-policy:ext-community-set: 'test_ext_match'
+    #                       openconfig-routing-policy:actions:
+    #                         openconfig-routing-policy:config:
+    #                           openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+    #         openconfig-network-instance:network-instances:
+    #           openconfig-network-instance:network-instance:
+    #             - openconfig-network-instance:name: 'default'
+    #               openconfig-network-instance:config:
+    #                 openconfig-network-instance:name: 'default'
+    #                 openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+    #                 openconfig-network-instance:enabled: true
+    #               openconfig-network-instance:protocols:
+    #                 openconfig-network-instance:protocol:
+    #                   - openconfig-network-instance:identifier: BGP
+    #                     openconfig-network-instance:name: BGP
+    #                     openconfig-network-instance:config:
+    #                       openconfig-network-instance:enabled: True
+    #                       openconfig-network-instance:identifier: BGP
+    #                       openconfig-network-instance:name: BGP
+    #                     openconfig-network-instance:bgp:
+    #                       openconfig-network-instance:global:
+    #                         openconfig-network-instance:config:
+    #                           openconfig-network-instance:as: 1
+    #             - openconfig-network-instance:name: 'abc'
+    #               openconfig-network-instance:config:
+    #                 openconfig-network-instance:name: 'abc'
+    #                 openconfig-network-instance:type: 'L3VRF'
+    #                 openconfig-network-instance:enabled: true
+    #                 openconfig-network-instance:enabled-address-families:
+    #                   - 'IPV4'
+    #                 openconfig-network-instance:route-distinguisher: '1:1'
+    #               openconfig-network-instance:inter-instance-policies:
+    #                 openconfig-network-instance:apply-policy:
+    #                   openconfig-network-instance:config:
+    #                     openconfig-network-instance:import-policy:
+    #                     - 'test-match'
+    #               openconfig-network-instance:protocols:
+    #                 openconfig-network-instance:protocol:
+    #                   - openconfig-network-instance:identifier: BGP
+    #                     openconfig-network-instance:name: BGP
+    #                     openconfig-network-instance:config:
+    #                       openconfig-network-instance:enabled: True
+    #                       openconfig-network-instance:identifier: BGP
+    #                       openconfig-network-instance:name: BGP
+    #                     openconfig-network-instance:bgp:
+    #                       openconfig-network-instance:global:
+    #                         openconfig-network-instance:config:
+    #                           openconfig-network-instance:as: 1
+    #                         openconfig-network-instance:afi-safis:
+    #                           openconfig-network-instance:afi-safi:
+    #                             - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+    #                               openconfig-network-instance:config:
+    #                                 openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+    #                                 openconfig-network-instance:enabled: true
+    #     api_method: PUT
+    #     rollback: true
+    #     assertion_ignore_errors: false
+    #     assertions:
+    #       # Update for xr
+    #       - "'+ip extcommunity-list standard test_ext_match permit rt 1:1 rt 2:2 rt 3:3:' in changes"
+    #       - "'+route-map test-match permit 10:' in changes"
+    #       - "'+ match extcommunity test_ext_match:' in changes"
+    #       - "'+ route-target import 1:1:' in changes"
+    #       - "'+ route-target import 2:2:' in changes"
+    #       - "'+ route-target import 3:3:' in changes"
+
+    # Uncomment when xr_routing_policy is developed
+    # - name: test route_target_extcomm_export
+    #   tags:
+    #     - route_target_extcomm_export
+    #   import_role:
+    #     name: nso-openconfig-test
+    #   vars:
+    #     content: |
+    #       mdd:openconfig:
+    #         openconfig-routing-policy:routing-policy:
+    #           openconfig-routing-policy:defined-sets:
+    #             openconfig-bgp-policy:bgp-defined-sets:
+    #               openconfig-bgp-policy:ext-community-sets:
+    #                 openconfig-bgp-policy:ext-community-set:
+    #                   - openconfig-bgp-policy:ext-community-set-name: test_ext_match
+    #                     openconfig-bgp-policy:config:
+    #                       openconfig-bgp-policy:ext-community-set-name: test_ext_match
+    #                       openconfig-bgp-policy:match-set-options: ANY
+    #                       openconfig-bgp-policy:ext-community-member:
+    #                         - "1:1"
+    #                         - "2:2"
+    #                         - "3:3"
+    #           openconfig-routing-policy:policy-definitions:
+    #             openconfig-routing-policy:policy-definition:
+    #               - openconfig-routing-policy:name: 'test-match'
+    #                 openconfig-routing-policy:config:
+    #                   openconfig-routing-policy:name: 'test-match'
+    #                 openconfig-routing-policy:statements:
+    #                   openconfig-routing-policy:statement:
+    #                     - openconfig-routing-policy:name: '10'
+    #                       openconfig-routing-policy:config:
+    #                         openconfig-routing-policy:name: '10'
+    #                       openconfig-routing-policy:conditions:
+    #                         openconfig-bgp-policy:bgp-conditions:
+    #                           openconfig-bgp-policy:config:
+    #                             openconfig-bgp-policy:ext-community-set: 'test_ext_match'
+    #                       openconfig-routing-policy:actions:
+    #                         openconfig-routing-policy:config:
+    #                           openconfig-routing-policy:policy-result: 'ACCEPT_ROUTE'  # or REJECT_ROUTE
+    #         openconfig-network-instance:network-instances:
+    #           openconfig-network-instance:network-instance:
+    #             - openconfig-network-instance:name: 'default'
+    #               openconfig-network-instance:config:
+    #                 openconfig-network-instance:name: 'default'
+    #                 openconfig-network-instance:type: 'DEFAULT_INSTANCE'
+    #                 openconfig-network-instance:enabled: true
+    #               openconfig-network-instance:protocols:
+    #                 openconfig-network-instance:protocol:
+    #                   - openconfig-network-instance:identifier: BGP
+    #                     openconfig-network-instance:name: BGP
+    #                     openconfig-network-instance:config:
+    #                       openconfig-network-instance:enabled: True
+    #                       openconfig-network-instance:identifier: BGP
+    #                       openconfig-network-instance:name: BGP
+    #                     openconfig-network-instance:bgp:
+    #                       openconfig-network-instance:global:
+    #                         openconfig-network-instance:config:
+    #                           openconfig-network-instance:as: 1
+    #             - openconfig-network-instance:name: 'abc'
+    #               openconfig-network-instance:config:
+    #                 openconfig-network-instance:name: 'abc'
+    #                 openconfig-network-instance:type: 'L3VRF'
+    #                 openconfig-network-instance:enabled: true
+    #                 openconfig-network-instance:enabled-address-families:
+    #                   - 'IPV4'
+    #                 openconfig-network-instance:route-distinguisher: '1:1'
+    #               openconfig-network-instance:inter-instance-policies:
+    #                 openconfig-network-instance:apply-policy:
+    #                   openconfig-network-instance:config:
+    #                     openconfig-network-instance:export-policy:
+    #                     - 'test-match'
+    #               openconfig-network-instance:protocols:
+    #                 openconfig-network-instance:protocol:
+    #                   - openconfig-network-instance:identifier: BGP
+    #                     openconfig-network-instance:name: BGP
+    #                     openconfig-network-instance:config:
+    #                       openconfig-network-instance:enabled: True
+    #                       openconfig-network-instance:identifier: BGP
+    #                       openconfig-network-instance:name: BGP
+    #                     openconfig-network-instance:bgp:
+    #                       openconfig-network-instance:global:
+    #                         openconfig-network-instance:config:
+    #                           openconfig-network-instance:as: 1
+    #                         openconfig-network-instance:afi-safis:
+    #                           openconfig-network-instance:afi-safi:
+    #                             - openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+    #                               openconfig-network-instance:config:
+    #                                 openconfig-network-instance:afi-safi-name: 'IPV4_UNICAST'
+    #                                 openconfig-network-instance:enabled: true
+    #     api_method: PUT
+    #     rollback: true
+    #     assertion_ignore_errors: false
+    #     assertions:
+    #       # Update for xr
+    #       - "'+ip extcommunity-list standard test_ext_match permit rt 1:1 rt 2:2 rt 3:3:' in changes"
+    #       - "'+route-map test-match permit 10:' in changes"
+    #       - "'+ match extcommunity test_ext_match:' in changes"
+    #       - "'+ route-target export 1:1:' in changes"
+    #       - "'+ route-target export 2:2:' in changes"
+    #       - "'+ route-target export 3:3:' in changes"

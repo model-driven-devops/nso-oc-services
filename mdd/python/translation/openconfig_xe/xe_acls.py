@@ -8,16 +8,6 @@ regex_ports = re.compile(
     r'(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})\.\.(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[0-5][0-9]{4}|[0-9]{1,4})')
 
 
-def acl_remove(device, service_acl):
-    # remove any instances of ACL
-    if device.ios__ip.access_list.extended.ext_named_acl.exists(service_acl.name):
-        del device.ios__ip.access_list.extended.ext_named_acl[service_acl.name]
-    if device.ios__ip.access_list.standard.std_named_acl.exists(service_acl.name):
-        del device.ios__ip.access_list.standard.std_named_acl[service_acl.name]
-    if service_acl.name.isdigit() and device.ios__access_list.access_list.exists(int(service_acl.name)):
-        del device.ios__access_list.access_list[int(service_acl.name)]
-
-
 def xe_acls_program_service(self, nso_props) -> None:
     """
     Program service for xe NED features
@@ -84,7 +74,6 @@ def xe_acls_program_service(self, nso_props) -> None:
     device = nso_props.root.devices.device[nso_props.device_name].config
     for service_acl in nso_props.service.oc_acl__acl.acl_sets.acl_set:
         if service_acl.type == 'oc-acl:ACL_IPV4':
-            acl_remove(device, service_acl)
             device.ios__ip.access_list.extended.ext_named_acl.create(service_acl.name)
 
             acl = device.ios__ip.access_list.extended.ext_named_acl[service_acl.name]
@@ -167,7 +156,6 @@ def xe_acls_program_service(self, nso_props) -> None:
                 acl.ext_access_list_rule.create(i)
 
         if service_acl.type == 'oc-acl-ext:ACL_IPV4_STANDARD':
-            acl_remove(device, service_acl)
             device.ios__ip.access_list.standard.std_named_acl.create(service_acl.name)
             acl = device.ios__ip.access_list.standard.std_named_acl[service_acl.name]
             rules_oc_config = list()  # {'10 permit any'}

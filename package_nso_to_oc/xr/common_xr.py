@@ -13,7 +13,13 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 import common
 
-def init_xr_configs(device_name = "xr1"):
+# XR static route keys
+IP_FORWARDING_LIST = "routes-ip"
+INTF_LIST = "routes-if"
+IP_INTF_FORWARDING_LIST = "routes"
+
+
+def init_xr_configs(device_name="xr1"):
     (nso_api_url, nso_username, nso_password) = common.get_nso_creds()
     nso_device = os.environ.get("NSO_DEVICE", device_name)
     config_before_dict = common.nso_get_device_config(nso_api_url, nso_username, nso_password, nso_device)
