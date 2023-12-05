@@ -63,6 +63,17 @@ def xr_routing_policy(config_before, config_after):
     process_policy_definitions(config_before, config_after)
 
 def process_prefix_sets(config_before, config_after):
+    """
+    This function takes the prefix sets from the NSO device configuration and converts them to OpenConfig prefix sets.
+    The OpenConfig prefix sets are then added to the openconfig_routing_policies dictionary.
+
+    :param config_before: The NSO device configuration before the translation
+    :param config_after: The NSO device configuration after the translation
+    :return: None
+
+    """
+
+
     prefix_sets = {"openconfig-routing-policy:prefix-sets": {"openconfig-routing-policy:prefix-set": []}}
     xr_prefixes = config_before.get("tailf-ned-cisco-ios-xr:prefix-set", {})
     xr_prefixes_after = config_after.get("tailf-ned-cisco-ios-xr:prefix-set", {})
@@ -131,9 +142,10 @@ def process_prefix_sets(config_before, config_after):
 
 # TODO: Add support for as-path-lists
 def process_as_path_sets(config_before, config_after):
-    as_path_sets = {"openconfig-bgp-policy:as-path-sets": {"openconfig-bgp-policy:as-path-set": []}}
-    access_list = config_before.get("tailf-ned-cisco-ios-xr:ip", {}).get("as-path", {}).get("access-list", [])
-    access_list_after = config_after.get("tailf-ned-cisco-ios-xr:ip", {}).get("as-path", {}).get("access-list", [])
+    oc_as_path_set = {"openconfig-bgp-policy:as-path-sets": {"openconfig-bgp-policy:as-path-set": []}}
+    xr_as_path_set_after = config_after.get("tailf-ned-cisco-ios-xr:as-path-set", {})
+    xr_as_path_set = config_before.get("tailf-ned-cisco-ios-xr:as-path-set", {})
+    xr_as_path_set_after = config_after.get("tailf-ned-cisco-ios-xr:as-path-set", {})
     all_processed = True
     updated_access_list = []
 
@@ -184,6 +196,17 @@ This rule contains a deny operation, which is not supported in OpenConfig. Trans
 
 
 def process_community_sets(config_before, config_after):
+    """
+    This function takes the community sets from the NSO device configuration and converts them to OpenConfig community
+    sets. The OpenConfig community sets are then added to the openconfig_routing_policies dictionary. It uses the
+    process_community_members function to process the members of the community sets.
+
+    :param config_before: The NSO device configuration before the translation
+    :param config_after: The NSO device configuration after the translation
+    :return: None
+
+    """
+
     community_sets = {"openconfig-bgp-policy:community-sets": {"openconfig-bgp-policy:community-set": []}}
     community_list = config_before.get("tailf-ned-cisco-ios-xr:community-set", {})
     community_list_after = config_after.get("tailf-ned-cisco-ios-xr:community-set", {})
@@ -194,6 +217,18 @@ def process_community_sets(config_before, config_after):
 
 
 def process_community_members(community_sets, type, community_list, community_list_after):
+    """
+    This function takes the community members from the NSO device configuration and converts them to OpenConfig
+    community members. The OpenConfig community members are then added to the community_set dictionary.
+
+    :param community_sets: The OpenConfig community sets dictionary
+    :param type: The type of community set
+    :param community_list: The community list from the NSO device configuration
+    :param community_list_after: The community list from the NSO device configuration after the translation
+    :return: None
+
+    """
+
     all_processed = True
     updated_community_list = []
     name_or_num_key = "no" if type == "number" else "name"
@@ -246,6 +281,18 @@ This entry contains a deny operation, which is not supported in OpenConfig. Tran
 
 
 def process_ext_community_sets(config_before, config_after):
+    """
+    This function takes the extended community sets from the NSO device configuration and converts them to OpenConfig
+    extended community sets. The OpenConfig extended community sets are then added to the openconfig_routing_policies
+    dictionary. It uses the process_ext_community_members function to process the members of the extended community
+    sets.
+
+    :param config_before: The NSO device configuration before the translation
+    :param config_after: The NSO device configuration after the translation
+    :return: None
+
+    """
+    
     ext_community_sets = {"openconfig-bgp-policy:ext-community-sets": {"openconfig-bgp-policy:ext-community-set": []}}
     ext_community_list = config_before.get("tailf-ned-cisco-ios-xr:extcommunity-set", {}).get("opaque", [])
     ext_community_list_after = config_after.get("tailf-ned-cisco-ios-xr:extcommunity-set", {}).get("opaque", [])
@@ -254,6 +301,23 @@ def process_ext_community_sets(config_before, config_after):
 
 
 def process_ext_community_members(ext_community_sets, type, ext_community_list, ext_community_list_after):
+    """
+    This function takes the extended community members from the NSO device configuration and converts them to OpenConfig
+    extended community members. The OpenConfig extended community members are then added to the ext_community_set
+    dictionary.
+
+    :param ext_community_sets: The OpenConfig extended community sets dictionary
+    :param type: The type of extended community set
+    :param ext_community_list: The extended community list from the NSO device configuration
+    :param ext_community_list_after: The extended community list from the NSO device configuration after the translation
+    :return: None
+
+    type is not used in this function like in the process_community_members function because the only extended community
+    sets that are supported at this time are type "opaque" in the NSO device configuration. This function is written to
+    support other types of extended community sets in the future.
+
+    """
+    
     all_processed = True
     updated_community_list = []
 
@@ -307,7 +371,17 @@ This entry contains a deny operation, which is not supported in OpenConfig. Tran
 
 
 def process_policy_definitions(config_before, config_after):
-     
+    """
+    This function takes the route policies from the NSO device configuration and converts them to OpenConfig route
+    policies. The OpenConfig route policies are then added to the openconfig_routing_policies dictionary.
+    
+    :param config_before: The NSO device configuration before the translation
+    :param config_after: The NSO device configuration after the translation
+    :return: None
+    
+    """
+
+
     policy = {
             "openconfig-routing-policy:policy-definitions": {
                 "openconfig-routing-policy:policy-definition": []
@@ -554,7 +628,24 @@ def process_policy_definitions(config_before, config_after):
     openconfig_routing_policies.update(policy)
 
 
+
+
 def format_route_policy(old_route_policy):
+    """
+    This function takes a route policy and returns a dictionary with the following keys:
+    match: The prefix-list or as-path-list that the route policy matches
+    action: The action taken by the route policy
+    set: The set command used by the route policy
+    set_value: The value of the set command
+    prepend: The prepend command used by the route policy
+
+    :param old_route_policy: The route policy to be formatted
+    :return: A dictionary containing the match, action, set, set_value, and prepend values
+
+    The overall objective is to take the string representation of a route policy and return a dictionary so the
+    process_policy_definitions function can easily construct the OpenConfig route policy.
+
+    """
 
     # Define the regular expressions to match the required sections
     specific_prefix_regex = re.compile(r'\((\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d+)\)')
@@ -577,9 +668,10 @@ def format_route_policy(old_route_policy):
     # Check unsupported actions
     # Check if the route policy contains a specific prefix
     if specific_prefix or "elseif" in old_route_policy:
-        print(f"""found: {old_route_policy}
-              this prefix is unsupported at this time.
-              Skipping...""")
+        print(f"""
+found: {old_route_policy}
+this prefix is unsupported at this time.
+Skipping...""")
         return None
     
     # Check if the route policy contains a match and action
