@@ -244,68 +244,68 @@ This entry contains a deny operation, which is not supported in OpenConfig. Tran
     elif type in community_list_after:
         del community_list_after[type]
 
-# TODO: Add support for extcommunity-lists
+
 def process_ext_community_sets(config_before, config_after):
     ext_community_sets = {"openconfig-bgp-policy:ext-community-sets": {"openconfig-bgp-policy:ext-community-set": []}}
-    ext_community_list = config_before.get("tailf-ned-cisco-ios-xr:ip", {}).get("extcommunity-list", {})
-    ext_community_list_after = config_after.get("tailf-ned-cisco-ios-xr:ip", {}).get("extcommunity-list", {})
-    process_ext_community_members(ext_community_sets, "number", ext_community_list, ext_community_list_after)
-    process_ext_community_members(ext_community_sets, "standard", ext_community_list, ext_community_list_after)
+    ext_community_list = config_before.get("tailf-ned-cisco-ios-xr:extcommunity-set", {}).get("opaque", [])
+    ext_community_list_after = config_after.get("tailf-ned-cisco-ios-xr:extcommunity-set", {}).get("opaque", [])
     process_ext_community_members(ext_community_sets, "expanded", ext_community_list, ext_community_list_after)
     openconfig_routing_policies["openconfig-routing-policy:routing-policy"]["openconfig-routing-policy:defined-sets"]["openconfig-bgp-policy:bgp-defined-sets"].update(ext_community_sets)
 
-# TODO: Add support for extcommunity-lists
+
 def process_ext_community_members(ext_community_sets, type, ext_community_list, ext_community_list_after):
     all_processed = True
-    updated_ext_community_list = []
-    name_or_num_key = "no" if type == "number" else "name"
+    updated_community_list = []
 
-    for ext_community_index, ext_community in enumerate(ext_community_list.get(type, {"no-mode-list": []}).get("no-mode-list", [])):
-        ext_new_community_set = {
-            "openconfig-bgp-policy:ext-community-set-name": ext_community.get(name_or_num_key),
+
+    for ext_community_index, ext_community in enumerate(ext_community_list):
+        new_ext_community_set = {
+            "openconfig-bgp-policy:ext-community-set-name": ext_community.get("name"),
             "openconfig-bgp-policy:config": {
-                "openconfig-bgp-policy:ext-community-set-name": ext_community.get(name_or_num_key),
+                "openconfig-bgp-policy:ext-community-set-name": ext_community.get("name"),
                 "openconfig-bgp-policy:ext-community-member": []
             }
         }
-        ext_members = ext_new_community_set["openconfig-bgp-policy:config"]["openconfig-bgp-policy:ext-community-member"]
-        entry_after = common.get_index_or_default(ext_community_list_after.get(type, {"no-mode-list": []}).get("no-mode-list", []), ext_community_index, {}).get("entry", [])
-
-        for entry_index, entry in enumerate(ext_community.get("entry", [])):
-            if not "expr" in entry:
+        
+        members = new_ext_community_set["openconfig-bgp-policy:config"]["openconfig-bgp-policy:ext-community-member"]
+        entry_after = common.get_index_or_default(ext_community_list_after, ext_community_index, {})
+        for entry_index, entry in enumerate(ext_community.get("set", [])):
+            if not "value" in entry:
                 continue
-            if entry["expr"].startswith("deny"):
+            if entry["value"].startswith("deny"):
                 all_processed = False
                 routing_policy_notes.append(
 f"""
-Ext Community Name: {ext_community.get(name_or_num_key)}
-Ext Community Type: {type}
-Ext Entry: {entry["expr"]}
-This ext entry contains a deny operation, which is not supported in OpenConfig. Translation, of the entire list, to OC will be skipped.
+Community Name: {ext_community.get("name")}
+Community Type: {type}
+Entry: {entry["value"]}
+This entry contains a deny operation, which is not supported in OpenConfig. Translation, of the entire list, to OC will be skipped.
 """)
                 continue
 
-            member = entry["expr"][entry["expr"].find(' rt ') + 4:]
-            ext_members.append(well_known_members.get(member, member))
+            member = entry["value"][entry["value"].find(' ') + 1:]
+            members.append(well_known_members.get(member, member))
 
             # Ensure the value we're nullifying does exist
             if common.get_index_or_default(entry_after, entry_index, None):
                 entry_after[entry_index] = None
 
         if all_processed:
-            ext_community_sets["openconfig-bgp-policy:ext-community-sets"]["openconfig-bgp-policy:ext-community-set"].append(ext_new_community_set)
-            common.get_index_or_default(ext_community_list_after.get(type, {"no-mode-list": []}).get("no-mode-list", []), ext_community_index, {})[name_or_num_key] = None
+            ext_community_sets["openconfig-bgp-policy:ext-community-sets"]["openconfig-bgp-policy:ext-community-set"].append(new_ext_community_set)
+            common.get_index_or_default(ext_community_list_after, ext_community_index, {})["name"] = None
+            common.get_index_or_default(ext_community_list_after, ext_community_index, {})["set"] = None
     
-    for community_list_item in ext_community_list_after.get(type, {"no-mode-list": []}).get("no-mode-list", []):
-        if name_or_num_key in community_list_item and community_list_item[name_or_num_key]:
-            updated_ext_community_list.append(community_list_item)
+    for community_list_item in ext_community_list_after:
+        if "name" in community_list_item and community_list_item["name"]:
+            updated_community_list.append(community_list_item)
     
-    if len(updated_ext_community_list) > 0:
-        ext_community_list_after[type]["no-mode-list"] = updated_ext_community_list
-    elif type in ext_community_list_after and "no-mode-list" in ext_community_list_after[type]:
-        del ext_community_list_after[type]["no-mode-list"]
+    if len(updated_community_list) > 0:
+        ext_community_list_after[type] = updated_community_list
+    elif type in ext_community_list_after:
+        del ext_community_list_after[type]
 
-# TODO: route-policies
+
+
 def process_policy_definitions(config_before, config_after):
      
     policy = {
@@ -317,7 +317,6 @@ def process_policy_definitions(config_before, config_after):
     for route_policy_index, route_policy in enumerate(config_before.get("tailf-ned-cisco-ios-xr:route-policy", [])):
         
         current_route_policy = format_route_policy(route_policy.get("value"))
-        print(f"processing {route_policy.get('name')}\n   {current_route_policy}")
         if current_route_policy is None:
             continue
         if current_route_policy.get("match") and current_route_policy.get("action"):
@@ -645,134 +644,7 @@ def format_route_policy(old_route_policy):
 
     
 
-# TODO:
-def format_well_known_communities(community_number):
-    for i in well_known_members:
-        if i in community_number:
-            index = community_number.index(i)
-            community_number[index] = well_known_members.get(i, i)
 
-# TODO:
-def process_set(route_map_set, actions):
-    if "tag" in route_map_set:
-        actions.update({
-            "openconfig-routing-policy:set-tag": {
-                "openconfig-routing-policy:config": {
-                    "openconfig-routing-policy:mode": "INLINE"
-                },
-                "openconfig-routing-policy:inline": {
-                    "openconfig-routing-policy:config": {
-                        "openconfig-routing-policy:tag": [str(route_map_set["tag"])]
-                    }
-                }
-            }
-        })
-    if route_map_set.get("origin", {}).get("origin-value", None) and route_map_set["origin"]["origin-value"] != "egp":
-        actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:config"].update({
-            "openconfig-bgp-policy:set-route-origin": route_map_set["origin"]["origin-value"].upper()
-        })
-    if route_map_set.get("local-preference", {}).get("value", None):
-        actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:config"].update({
-            "openconfig-bgp-policy:set-local-pref": str(route_map_set["local-preference"]["value"])
-        })
-    if len(route_map_set.get("ip", {}).get("next-hop", {}).get("self", [])) > 0:
-        actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:config"].update({
-            "openconfig-bgp-policy:set-next-hop": "SELF"
-        })
-    if len(route_map_set.get("ip", {}).get("next-hop", {}).get("address", [])) > 0:
-        actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:config"].update({
-            "openconfig-bgp-policy:set-next-hop": route_map_set["ip"]["next-hop"]["address"]
-        })
-    if "metric" in route_map_set:
-        actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:config"].update({
-            "openconfig-bgp-policy:set-med": route_map_set["metric"]
-        })
-    if "weight" in route_map_set:
-        actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:config"].update({
-            "openconfig-routing-policy-ext:set-weight": route_map_set["weight"]
-        })
-    if route_map_set.get("as-path", {}).get("prepend", {}).get("as-list", None):
-        as_list = route_map_set["as-path"]["prepend"]["as-list"].split(" ")
-        actions["openconfig-bgp-policy:bgp-actions"].update({
-            "openconfig-bgp-policy:set-as-path-prepend": {"openconfig-bgp-policy:config": {}}
-        })
-        path_prepend = actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-as-path-prepend"][
-            "openconfig-bgp-policy:config"]
-        path_prepend["openconfig-bgp-policy:asn"] = as_list[0]
-
-        if len(as_list) > 1:
-            path_prepend["openconfig-bgp-policy:repeat-n"] = str(len(as_list))
-    if len(route_map_set.get("community", {}).get("community-number", [])) > 0:
-        community_number = route_map_set["community"]["community-number"]
-        actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-community"].update({
-            "openconfig-bgp-policy:config": {
-                "openconfig-bgp-policy:method": "INLINE"
-            }
-        })
-
-        if "additive" in route_map_set["community"]["community-number"]:
-            actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-community"]["openconfig-bgp-policy:config"][
-                "openconfig-bgp-policy:options"] = "ADD"
-            community_number.remove("additive")
-        else:
-            actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-community"]["openconfig-bgp-policy:config"][
-                "openconfig-bgp-policy:options"] = "REPLACE"
-
-        format_well_known_communities(community_number)
-        actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-community"].update({
-            "openconfig-bgp-policy:inline": {
-                "openconfig-bgp-policy:config": {
-                    "openconfig-bgp-policy:communities": community_number
-                }
-            }
-        })
-    if route_map_set.get("comm-list", {}).get("name", None) and len(route_map_set.get("comm-list", {}).get("delete", [])) > 0:
-        actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-community"].update({
-            "openconfig-bgp-policy:config": {
-                "openconfig-bgp-policy:method": "REFERENCE",
-                "openconfig-bgp-policy:options": "REMOVE"
-            },
-            "openconfig-bgp-policy:reference": {
-                "openconfig-bgp-policy:config": {
-                    "openconfig-bgp-policy:community-set-ref": route_map_set["comm-list"]["name"]
-                }
-            }
-        })
-    if len(route_map_set.get("extcommunity", {}).get("rt", [])) > 0:
-        rt_number = route_map_set["extcommunity"]["rt"]
-        actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-ext-community"].update({
-            "openconfig-bgp-policy:config": {
-                "openconfig-bgp-policy:method": "INLINE"
-            }
-        })
-
-        if "additive" in route_map_set["extcommunity"]["rt"]:
-            actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-ext-community"]["openconfig-bgp-policy:config"][
-                "openconfig-bgp-policy:options"] = "ADD"
-            rt_number.remove("additive")
-        else:
-            actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-ext-community"]["openconfig-bgp-policy:config"][
-                "openconfig-bgp-policy:options"] = "REPLACE"
-
-        actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-ext-community"].update({
-            "openconfig-bgp-policy:inline": {
-                "openconfig-bgp-policy:config": {
-                    "openconfig-bgp-policy:communities": rt_number
-                }
-            }
-        })
-    if route_map_set.get("extcomm-list", {}).get("name", None) and len(route_map_set.get("extcomm-list", {}).get("delete", [])) > 0:
-        actions["openconfig-bgp-policy:bgp-actions"]["openconfig-bgp-policy:set-ext-community"].update({
-            "openconfig-bgp-policy:config": {
-                "openconfig-bgp-policy:method": "REFERENCE",
-                "openconfig-bgp-policy:options": "REMOVE"
-            },
-            "openconfig-bgp-policy:reference": {
-                "openconfig-bgp-policy:config": {
-                    "openconfig-bgp-policy:ext-community-set-ref": route_map_set["extcomm-list"]["name"]
-                }
-            }
-        })
 
 def main(before: dict, leftover: dict, translation_notes: list = []) -> dict:
     """
