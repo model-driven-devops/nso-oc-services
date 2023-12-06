@@ -29,8 +29,8 @@
                         type: 'DEFAULT_INSTANCE'
                         enabled: true
                 openconfig-system:system:
-                  config:
-                    hostname: 'test'
+                  openconfig-system:config:
+                    openconfig-system:hostname: 'test'
 
           - name: NED init VLANs
             tags:

@@ -1,0 +1,167 @@
+---
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-save
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
+
+- hosts: localhost
+  gather_facts: no
+  tags:
+    - disable_ned_checks
+  vars:
+    device_name: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
+    content: |
+      config-warning:
+        - warning: .*
+  tasks:
+    - name: Convert string to JSON
+      set_fact:
+        configs: "{{ content | from_yaml | to_json }}"
+    - name: JSON configs
+      debug:
+        msg: "{{ configs }}"
+    - name: DISABLE NED checks - For error message from deleting radius server before removing radius server group
+      uri:
+        url: "http://{{ lookup('env', 'NSO_HOST') }}:8080/restconf/data/tailf-ncs:devices/device={{device_name}}/ned-settings/tailf-ned-cisco-ios-meta:cisco-ios/write/config-warning"
+        url_username: "{{ lookup('env', 'NSO_USERNAME') }}"
+        url_password: "{{ lookup('env', 'NSO_PASSWORD') }}"
+        force_basic_auth: yes
+        validate_certs: no
+        status_code: [200,201,204]
+        method: PATCH
+        headers: "{
+          'Content-Type': 'application/yang-data+json',
+          'Accept': 'application/yang-data+json'}"
+        body_format: json
+        body: "{{ configs }}"
+
+- name: test system
+  hosts: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
+  gather_facts: no
+  connection: network_cli
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
+    ansible_network_os: 'cisco.ios.ios'
+  tasks:
+    - name: test system_config
+      tags:
+        - system_config
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system:config:
+                openconfig-system:domain-name: 'test123.com'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip domain name test123.com:' in changes"
+
+    - name: test udld
+      tags:
+        - udld
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:udld:
+                  openconfig-system-ext:config:
+                    openconfig-system-ext:udld: 'AGGRESSIVE'
+                    openconfig-system-ext:message-time: 29
+                    openconfig-system-ext:recovery: 'ENABLED'
+                    openconfig-system-ext:recovery-interval: 999
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+udld aggressive:' in changes"
+          - "'+udld message time 29:' in changes"
+          - "'+udld recovery:' in changes"
+          - "'+udld recovery interval 999:' in changes"
+
+    - name: test DHCP Snooping
+      tags:
+        - dhcp_snooping
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:dhcp-snooping:
+                  openconfig-system-ext:global-config:
+                    openconfig-system-ext:config:
+                      openconfig-system-ext:enable: 'ENABLED'
+                  openconfig-system-ext:vlans:
+                    - openconfig-system-ext:vlan-id: 2
+                      openconfig-system-ext:config:
+                        openconfig-system-ext:vlan-id: 2
+                        openconfig-system-ext:enable: 'ENABLED'
+                    - openconfig-system-ext:vlan-id: 100
+                      openconfig-system-ext:config:
+                        openconfig-system-ext:vlan-id: 100
+                        openconfig-system-ext:enable: 'ENABLED'
+                    - openconfig-system-ext:vlan-id: 200
+                      openconfig-system-ext:config:
+                        openconfig-system-ext:vlan-id: 200
+                        openconfig-system-ext:enable: 'ENABLED'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip dhcp snooping:' in changes"
+          - "'+ip dhcp snooping vlan 2,100,200:' in changes"
+
+    - name: test dynamic ARP inspection
+      tags:
+        - dai
+      import_role:
+        name: nso-openconfig-test
+      vars:
+        content: |
+          mdd:openconfig:
+            openconfig-system:system:
+              openconfig-system-ext:services:
+                openconfig-system-ext:dynamic-arp-inspection:
+                  openconfig-system-ext:vlans:
+                    - openconfig-system-ext:vlan-id: 2
+                      openconfig-system-ext:config:
+                        openconfig-system-ext:vlan-id: 2
+                        openconfig-system-ext:enable: 'ENABLED'
+                    - openconfig-system-ext:vlan-id: 100
+                      openconfig-system-ext:config:
+                        openconfig-system-ext:vlan-id: 100
+                        openconfig-system-ext:enable: 'ENABLED'
+                    - openconfig-system-ext:vlan-id: 200
+                      openconfig-system-ext:config:
+                        openconfig-system-ext:vlan-id: 200
+                        openconfig-system-ext:enable: 'ENABLED'
+        api_method: PUT
+        api_ignore_errors: false
+        rollback: false
+        assertion_ignore_errors: false
+        assertions:
+          - "'+ip arp inspection vlan 2,100,200:' in changes"
+
+- hosts: nso
+  connection: local
+  gather_facts: no
+  roles:
+    - nso-rollback-load
+  run_once: true
+  vars:
+    rollback_file: "{{ lookup('env', 'PWD') }}/rollback.yaml"
