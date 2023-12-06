@@ -17,6 +17,7 @@ module openconfig-system-ext{
   import openconfig-inet-types { prefix oc-inet; }
   import openconfig-system-logging { prefix oc-log; }
   import openconfig-aaa-types { prefix oc-aaa-types; }
+  import openconfig-vlan-types { prefix oc-vlan-types; }
 
   // Include NAT submodule.
   include system-ext-sub-nat;
@@ -30,6 +31,18 @@ module openconfig-system-ext{
   description
     "Augmentation to openconfig system model.";
 
+  revision "2023-07-11" {
+    description
+      "Added Dynamic ARP inspection support";
+  }
+  revision "2023-07-11" {
+    description
+      "Added DHCP Snooping support";
+  }
+  revision "2023-07-10" {
+    description
+      "Added UDLD support";
+  }
   revision "2023-05-18" {
     description
       "Added key chain support";
@@ -51,17 +64,17 @@ module openconfig-system-ext{
       "Drop or ignore ip options";
   }
   identity ENABLE {
-    base  IP_OPTIONS;
+    base IP_OPTIONS;
     description
       "Process IP options packets that are sent to the router";
   }
   identity DROP {
-    base  IP_OPTIONS;
+    base IP_OPTIONS;
     description
       "Drops IP options packets that are sent to the router";
   }
    identity IGNORE {
-    base  IP_OPTIONS;
+    base IP_OPTIONS;
     description
       "Ignores IP options packets that are sent to the router";
   }
@@ -243,7 +256,7 @@ module openconfig-system-ext{
     }
     leaf infinite {
       type boolean;
-      default false;
+      //default false;
       description "Never expires";
     }
     leaf stop-time {
@@ -419,7 +432,7 @@ module openconfig-system-ext{
               enum MACSEC;
               enum TCP;
             }
-           default NOT_APPLICABLE;
+           //default NOT_APPLICABLE;
           }
           list keys {
             key "id";
@@ -584,6 +597,134 @@ module openconfig-system-ext{
             }
             description
               "Configure a system to boot from network-wide config file.";
+          }
+        }
+      }
+      container udld  {
+        description
+          "Configure global UDLD settings.";
+        container config {
+          leaf udld {
+            type enumeration {
+              enum ENABLED;
+              enum AGGRESSIVE;
+              enum DISABLED;
+            }
+            //default DISABLED;
+            description
+              "Enable (or enable in aggressive mode) UDLD protocol on fiber ports except where locally configured.";
+          }
+          leaf message-time {
+            when "../udld = 'ENABLED' or ../udld = 'AGGRESSIVE'" {
+              description
+                "Time in seconds between sending of messages in steady state.";
+            }
+            type uint8 {
+              range "0 .. 90";
+            }
+          }
+          leaf recovery {
+            when "../udld = 'ENABLED' or ../udld = 'AGGRESSIVE'" {
+              description
+                "Enable timer to recover from udld error disable state.";
+            }
+            type enumeration {
+              enum ENABLED;
+              enum DISABLED;
+            }
+            //default DISABLED;
+          }
+          leaf recovery-interval {
+            when "../recovery = 'ENABLED'" {
+              description
+                "Error disable recovery timer-interval value (sec).";
+            }
+            type uint32 {
+              range "30 .. 86400";
+            }
+          }
+        }
+      }
+      container dhcp-snooping {
+        description
+          "Configure DHCP Snooping settings.";
+        container global-config {
+          container config {
+            description
+              "Global configuration parameters relating to DHCP Snooping";
+            leaf enable {
+              type enumeration {
+                enum ENABLED;
+                enum DISABLED;
+              }
+              //default DISABLED;
+              description
+                "Enable DHCP Snooping globally.";
+            }
+          }
+        }
+        list vlans {
+          key "vlan-id";
+          description
+            "List of the vlans";
+          leaf vlan-id {
+            type leafref {
+              path "../config/vlan-id";
+            }
+            description
+            "Reference to the list key";
+          }
+          container config {
+            description
+              "Configuration parameters relating to DHCP Snooping";
+            leaf vlan-id {
+              type oc-vlan-types:vlan-id;
+              description
+                "VLAN ID";
+            }
+            leaf enable {
+              type enumeration {
+                enum ENABLED;
+                enum DISABLED;
+              }
+              default DISABLED;
+              description
+                "Enable DHCP Snooping vlan for VLAN ID.";
+            }
+          }
+        }
+      }
+      container dynamic-arp-inspection {
+        description
+          "Configure DAI settings.";
+        list vlans {
+          key "vlan-id";
+          description
+            "List of the vlans";
+          leaf vlan-id {
+            type leafref {
+              path "../config/vlan-id";
+            }
+            description
+            "Reference to the list key";
+          }
+          container config {
+            description
+              "Configuration parameters relating to dynamic ARP inspection";
+            leaf vlan-id {
+              type oc-vlan-types:vlan-id;
+              description
+                "VLAN ID";
+            }
+            leaf enable {
+              type enumeration {
+                enum ENABLED;
+                enum DISABLED;
+               }
+               default DISABLED;
+               description
+                 "Enable dynamic ARP inspection for VLAN ID.";
+            }
           }
         }
       }

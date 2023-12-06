@@ -1,0 +1,119 @@
+---
+- hosts: localhost
+  gather_facts: no
+  environment:
+    NSO_DEVICE: xeswitch1
+  vars:
+    device: "{{ lookup('env', 'TEST_DEVICE_XESWITCH') | default('xeswitch1', True) }}"
+  tasks:
+    - name: Run xeswitch1 system setup
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_load_rollback: False
+        will_save_rollback: True
+        script_path: ../../../package_nso_to_oc/xe/xe_system.py
+        api_test_data:
+          - name: Set up OC service config
+            tags:
+              - oc_set_up
+            api_path: mdd:openconfig
+            api_method: PUT
+            content: |
+              mdd:openconfig:
+                openconfig-system:system:
+                  openconfig-system:config:
+                    openconfig-system:hostname: 'test'
+
+    - name: Run xeswitch1 system test 1
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_load_rollback: False
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_system.py
+        api_test_data:
+          - name: NED init UDLD
+            tags:
+              - udld
+            api_path: config/tailf-ned-cisco-ios:udld
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:udld:
+                enable:
+                  - null
+                message:
+                  time: 60
+                recovery:
+                  - null
+                recovery-conf:
+                  recovery:
+                    interval: 120
+        assertions:
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['udld']['config']['udld'] == 'ENABLED'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['udld']['config']['message-time'] == 60"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['udld']['config']['recovery'] == 'ENABLED'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['udld']['config']['recovery-interval'] == 120"
+
+    - name: Run xeswitch1 system test 2
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_load_rollback: False
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_system.py
+        api_test_data:
+          - name: NED init DHCP Snooping
+            tags:
+              - dhcp_snooping
+            api_path: config/tailf-ned-cisco-ios:ip
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:ip:
+                dhcp:
+                  snooping-conf:
+                    snooping:
+                      - null
+                  snooping:
+                    vlan:
+                      - 2
+                      - 100
+                      - 200
+        assertions:
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['dhcp-snooping']['global-config']['config']['enable'] == 'ENABLED'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['dhcp-snooping']['vlans'][0]['vlan-id'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['dhcp-snooping']['vlans'][0]['config']['enable'] == 'ENABLED'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['dhcp-snooping']['vlans'][1]['vlan-id'] == 100"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['dhcp-snooping']['vlans'][1]['config']['enable'] == 'ENABLED'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['dhcp-snooping']['vlans'][2]['vlan-id'] == 200"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['dhcp-snooping']['vlans'][2]['config']['enable'] == 'ENABLED'"
+
+
+    - name: Run xeswitch1 system test 3
+      include_role:
+        name: ned-to-oc-test
+      vars:
+        will_load_rollback: True
+        will_save_rollback: False
+        script_path: ../../../package_nso_to_oc/xe/xe_system.py
+        api_test_data:
+          - name: NED init dynamic ARP inspection
+            tags:
+              - dia
+            api_path: config/tailf-ned-cisco-ios:ip
+            api_method: PATCH
+            content: |
+              tailf-ned-cisco-ios:ip:
+                arp:
+                  inspection:
+                    vlan:
+                      - 2
+                      - 100
+                      - 200
+        assertions:
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['dynamic-arp-inspection']['vlans'][0]['vlan-id'] == 2"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['dynamic-arp-inspection']['vlans'][0]['config']['enable'] == 'ENABLED'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['dynamic-arp-inspection']['vlans'][1]['vlan-id'] == 100"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['dynamic-arp-inspection']['vlans'][1]['config']['enable'] == 'ENABLED'"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['dynamic-arp-inspection']['vlans'][2]['vlan-id'] == 200"
+          - "oc_result.json['mdd:openconfig']['openconfig-system:system']['openconfig-system-ext:services']['dynamic-arp-inspection']['vlans'][2]['config']['enable'] == 'ENABLED'"

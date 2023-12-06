@@ -62,7 +62,7 @@ module openconfig-cgmp-ext{
         enum PROXY;              // CGMP for hosts and proxy for multicast routers
         enum ROUTER-ONLY;        // CGMP proxy for multicast routers only
       }
-      default NOT_APPLICABLE;
+      //default NOT_APPLICABLE;
       description
         "CGMP configuration options.";
     }

@@ -124,7 +124,7 @@ submodule system-ext-sub-nat {
                       }
                     }
                   }
-                  default NONE;
+                  //default NONE;
                   description
                     "Associates the NAT translation rule with a particular VPN routing and forwarding (VRF) instance.";
                 }
