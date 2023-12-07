@@ -1,6 +1,6 @@
 <ncs-package xmlns="http://tail-f.com/ns/ncs-packages">
   <name>mdd</name>
-  <package-version>2.80.0</package-version>
+  <package-version>2.81.1</package-version>
   <description>Translates OpenConfig models to NSO devices and augments OpenConfig models with custom configurations.</description>
   <ncs-min-version>5.5</ncs-min-version>
   <component>
