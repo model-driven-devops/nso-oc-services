@@ -7,7 +7,7 @@
     "@semantic-release/release-notes-generator",
     "@semantic-release/github",
     ["@semantic-release/exec", {
-      "prepareCmd": "sed -i 's|<package-version>[0-9\\.]+</package-version>|<package-version>${nextRelease.version}</package-version>|' mdd/package-meta-data.xml"
+      "prepareCmd": "sed -i 's|<package-version>[0-9\\.]+</package-version>|<package-version>${nextRelease.version}</package-version>|' mdd/package-meta-data.xml",
       "publishCmd": "/bin/true"
     }],
     ["@semantic-release/git", {
