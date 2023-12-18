@@ -509,10 +509,10 @@ def process_neighbor_and_neighbor_tag(is_afi_safi, attr_name, bgp_before, bgp_le
             process_as_override(neighbor, peer_or_neighbor, index, neighbor_leftover)
             process_send_label(neighbor, peer_or_neighbor, index, neighbor_leftover)
 
-            if attr_name == ATTR_NEIGHBOR:
-                process_shutdown(neighbor, peer_or_neighbor, index, neighbor_leftover)
-                process_peer_group(neighbor, peer_or_neighbor, index, neighbor_leftover)
-                process_ttl_security(neighbor, peer_or_neighbor, index, neighbor_leftover)
+        if attr_name == ATTR_NEIGHBOR:
+            process_shutdown(neighbor, peer_or_neighbor, index, neighbor_leftover)
+            process_peer_group(neighbor, peer_or_neighbor, index, neighbor_leftover)
+            process_ttl_security(neighbor, peer_or_neighbor, index, neighbor_leftover)
         if len(neighbor_leftover) > index and neighbor_leftover[index] != None:
             if "peer-group" in neighbor_leftover[index]:
                 del neighbor_leftover[index]["peer-group"]
@@ -548,13 +548,16 @@ def delete_leftover_neighbor_prop(attr_name, index, neighbor_leftover):
         del neighbor_leftover[index][attr_name]
 
 def process_send_community(neighbor, peer_group_or_neighbor, index, neighbor_leftover):
-    if not neighbor.get("send-community", {}).get("send-community-where"):
+    if not neighbor.get("send-community"):
         return
-
-    peer_group_or_neighbor["openconfig-network-instance:config"][
-        "openconfig-network-instance:send-community"] = neighbor["send-community"]["send-community-where"].upper()
+    if neighbor.get("send-community", {}).get("send-community-where"):
+        peer_group_or_neighbor["openconfig-network-instance:config"][
+            "openconfig-network-instance:send-community"] = neighbor["send-community"]["send-community-where"].upper()
+    else:
+        peer_group_or_neighbor["openconfig-network-instance:config"][
+            "openconfig-network-instance:send-community"] = "STANDARD"
     delete_leftover_neighbor_prop("send-community", index, neighbor_leftover)
-    
+
 def process_route_reflectors(neighbor, peer_group_or_neighbor, index, neighbor_leftover, is_afi_safi):
     if not "route-reflector-client" in neighbor and not "cluster-id" in neighbor:
         return
@@ -716,7 +719,6 @@ def process_shutdown(neighbor, peer_group_or_neighbor, index, neighbor_leftover)
 def process_peer_group(neighbor, peer_group_or_neighbor, index, neighbor_leftover):
     if not "peer-group" in neighbor:
         return
-    
     peer_group_or_neighbor["openconfig-network-instance:config"][
         "openconfig-network-instance:peer-group"] = neighbor["peer-group"]
     delete_leftover_neighbor_prop("peer-group", index, neighbor_leftover)

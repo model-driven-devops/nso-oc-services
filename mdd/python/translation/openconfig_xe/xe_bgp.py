@@ -62,7 +62,8 @@ def xe_bgp_global_program_service(self, nso_props, service_protocol, network_ins
         device_bgp_cbd.bgp.default.ipv4_unicast = False  # If using AFI_SAFI turn off BGP ipv4 default
         for afi_safi_service in service_bgp_global.afi_safis.afi_safi:
             if network_instance_type == 'oc-ni-types:DEFAULT_INSTANCE' and afi_safi_service.config.enabled:
-                if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST':
+                if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_UNICAST' or \
+                        afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
                     if not device_bgp_cbd.address_family.ipv4.exists('unicast'):
                         device_bgp_cbd.address_family.ipv4.create('unicast')
                     if afi_safi_service.ipv4_unicast.config.send_default_route:
@@ -344,6 +345,8 @@ def xe_bgp_neighbors_program_service(self, nso_props, service_protocol, network_
                                 apply_policy(neighbor_object_cdb, afi_safi_service)
                                 if service_bgp_neighbor.config.send_community and service_bgp_neighbor.config.send_community != 'NONE':
                                     send_community(neighbor_object_cdb, service_bgp_neighbor)
+                                if afi_safi_service.config.afi_safi_name == 'oc-bgp-types:IPV4_LABELED_UNICAST':
+                                    neighbor_object_cdb.send_label.create()
                             elif afi_safi_service.config.afi_safi_name == 'oc-bgp-types:L3VPN_IPV4_UNICAST':
                                 if not device_bgp_cbd.address_family.vpnv4['unicast'].neighbor.exists(
                                         service_bgp_neighbor.neighbor_address):
