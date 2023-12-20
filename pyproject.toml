@@ -1,8 +1,34 @@
 [build-system]
-requires = ["setuptools","packaging"]
+requires = ["setuptools", "packaging"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "nso-oc"
 description = "Cisco NSO OpenConfig Tools"
-dynamic = ["version"]
+readme = "./package_nso_to_oc/README.md"
+license = {file = "LICENSE"}
+dependencies = ["urllib3"]
+classifiers = [
+    "License :: Other/Proprietary License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+]
+
+[project.scripts]
+"nso-oc" = "package_nso_to_oc.main:main"
+
+[project.urls]
+"homepage" = "https://github.com/model-driven-devops/nso-oc-services"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["package_nso_to_oc", "package_nso_to_oc.*"]
+
+[tool.setuptools.package-dir]
+package_nso_to_oc = "package_nso_to_oc"
+
+# TODO: setuptools claims the [tool.distutils] table is experimental and likely to change
+# Place the <package>.egg-info directory at the root of the bundle to match prior behavior
+[tool.distutils.egg_info]
+egg_base = "."
+

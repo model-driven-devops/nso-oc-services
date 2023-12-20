@@ -13,6 +13,9 @@
     ["@semantic-release/git", {
       "assets": "mdd/package-meta-data.xml",
       "message": "chore(release): Update NSO package version to ${nextRelease.version} [skip ci]"
+    }],
+    ["semantic-release-pypi", {
+      "repoUrl": "https://upload.pypi.org/legacy/"
     }]
   ]
 }
