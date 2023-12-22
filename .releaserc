@@ -5,21 +5,14 @@
       "preset": "conventionalcommits"
     }],
     "@semantic-release/release-notes-generator",
-    [
-        "@semantic-release/exec",
-        {
-            "prepareCmd": "sed -i 's|<package-version>.*</package-version>|<package-version>${nextRelease.version}</package-version>|g' mdd/package-meta-data.xml"
-        }
-    ],
-    [
-        "semantic-release-pypi",
-        {
-            "repoUrl": "https://upload.pypi.org/legacy/"
-        }
-    ],
     "@semantic-release/github",
     ["@semantic-release/exec", {
-        "publishCmd": "/bin/true"
+      "prepareCmd": "sed -i 's|<package-version>.*</package-version>|<package-version>${nextRelease.version}</package-version>|' mdd/package-meta-data.xml",
+      "publishCmd": "/bin/true"
+    }],
+    ["@semantic-release/git", {
+      "assets": "mdd/package-meta-data.xml",
+      "message": "chore(release): Update NSO package version to ${nextRelease.version} [skip ci]"
     }]
   ]
 }

@@ -199,6 +199,45 @@ def xe_system_program_service(self, nso_props) -> None:
     elif nso_props.service.oc_sys__system.services.config.service_password_encryption is False:
         if device_cdb.ios__service.password_encryption.exists():
             device_cdb.ios__service.password_encryption.delete()
+    # UDLD
+    if nso_props.service.oc_sys__system.services.udld.config.udld == "ENABLED":
+        device_cdb.ios__udld.enable.create()
+    elif nso_props.service.oc_sys__system.services.udld.config.udld == "AGGRESSIVE":
+        device_cdb.ios__udld.aggressive.create()
+    elif nso_props.service.oc_sys__system.services.udld.config.udld == "DISABLED":
+        if device_cdb.ios__udld.enable.exists():
+            device_cdb.ios__udld.enable.delete()
+        elif device_cdb.ios__udld.aggressive.exists():
+            device_cdb.ios__udld.aggressive.delete()
+    if nso_props.service.oc_sys__system.services.udld.config.message_time:
+        device_cdb.ios__udld.message.time = nso_props.service.oc_sys__system.services.udld.config.message_time
+    if nso_props.service.oc_sys__system.services.udld.config.recovery == "ENABLED":
+        device_cdb.ios__udld.recovery.create()
+    elif nso_props.service.oc_sys__system.services.udld.config.udld == "DISABLED":
+        if device_cdb.ios__udld.recovery.exists():
+            device_cdb.ios__udld.recovery.delete()
+    if nso_props.service.oc_sys__system.services.udld.config.recovery_interval:
+        device_cdb.ios__udld.recovery_conf.recovery.interval = nso_props.service.oc_sys__system.services.udld.config.recovery_interval
+    # DHCP Snooping
+    if nso_props.service.oc_sys__system.services.dhcp_snooping.global_config.config.enable == "ENABLED":
+        if not device_cdb.ios__ip.dhcp.snooping_conf.snooping.exists():
+            device_cdb.ios__ip.dhcp.snooping_conf.snooping.create()
+    elif nso_props.service.oc_sys__system.services.dhcp_snooping.global_config.config.enable == "DISABLED":
+        if device_cdb.ios__ip.dhcp.snooping_conf.snooping.exists():
+            device_cdb.ios__ip.dhcp.snooping_conf.snooping.delete()
+    if len(nso_props.service.oc_sys__system.services.dhcp_snooping.vlans) > 0:
+        for vlan in nso_props.service.oc_sys__system.services.dhcp_snooping.vlans:
+            vlan_id = vlan.vlan_id
+            vlan_status = vlan.config.enable
+            if vlan_status == 'ENABLED':
+                device_cdb.ios__ip.dhcp.snooping.vlan.create(vlan_id)
+    # DAI
+    if len(nso_props.service.oc_sys__system.services.dynamic_arp_inspection.vlans) > 0:
+        for vlan in nso_props.service.oc_sys__system.services.dynamic_arp_inspection.vlans:
+            vlan_id = vlan.vlan_id
+            vlan_status = vlan.config.enable
+            if vlan_status == 'ENABLED':
+                device_cdb.ios__ip.arp.inspection.vlan.create(vlan_id)
     # service http
     if nso_props.service.oc_sys__system.services.http.config.http_enabled:
         device_cdb.ios__ip.http.server = True
@@ -633,9 +672,8 @@ def xe_system_program_service(self, nso_props) -> None:
                 device_cdb.ios__ip.name_server.name_server_list.create(service_dns_server.address)
             elif nso_props.service.oc_netinst__network_instances.network_instance[
                 service_dns_server.config.use_vrf].config.type == 'oc-ni-types:L3VRF':
-                if not device_cdb.ios__ip.name_server.vrf.exists(service_dns_server.config.use_vrf):
-                    device_cdb.ios__ip.name_server.vrf.create(service_dns_server.config.use_vrf)
-                device_cdb.ios__ip.name_server.vrf[service_dns_server.config.use_vrf].name_server_list.create(service_dns_server.address)
+                name_server_vrf = device_cdb.ios__ip.name_server.vrf.create(service_dns_server.config.use_vrf)
+                name_server_vrf.name_server_list.create(service_dns_server.address)
     # SSH server
     if nso_props.service.oc_sys__system.ssh_server.config.enable:
         for service_line_vty in device_cdb.ios__line.vty:
@@ -670,7 +708,6 @@ def xe_system_program_service(self, nso_props) -> None:
             nso_props.service.oc_sys__system.ssh_server.config.ssh_source_interface)
         device_cdb.ios__ip.ssh.source_interface[interface_type] = interface_number
     if nso_props.service.oc_sys__system.ssh_server.algorithm.config.encryption:
-        device_cdb.ios__ip.ssh.server.algorithm.encryption.delete()
         for enc in nso_props.service.oc_sys__system.ssh_server.algorithm.config.encryption:
             if enc == 'triple-des-cbc':
                 device_cdb.ios__ip.ssh.server.algorithm.encryption.create(enc.replace('triple-des-cbc', '3des-cbc'))
@@ -713,10 +750,7 @@ def xe_system_program_service(self, nso_props) -> None:
                     if nso_props.service.oc_netinst__network_instances.network_instance[
                         service_ntp_server.config.ntp_use_vrf].config.type == 'oc-ni-types:L3VRF':
                         if service_ntp_server.config.association_type == 'SERVER':
-                            if not device_cdb.ios__ntp.server.vrf.exists(service_ntp_server.config.ntp_use_vrf):
-                                device_cdb.ios__ntp.server.vrf.create(service_ntp_server.config.ntp_use_vrf)
-                            device_cdb_server_vrf = device_cdb.ios__ntp.server.vrf[
-                                service_ntp_server.config.ntp_use_vrf]
+                            device_cdb_server_vrf = device_cdb.ios__ntp.server.vrf.create(service_ntp_server.config.ntp_use_vrf)
                             if not device_cdb_server_vrf.peer_list.exists(service_ntp_server.config.address):
                                 device_cdb_server_vrf.peer_list.create(service_ntp_server.config.address)
                             if service_ntp_server.config.ntp_source_address:
@@ -724,9 +758,7 @@ def xe_system_program_service(self, nso_props) -> None:
                             peer_cdb = device_cdb_server_vrf.peer_list[service_ntp_server.config.address]
                             xe_configure_ntp_server(service_ntp_server, peer_cdb)
                         elif service_ntp_server.config.association_type == 'PEER':
-                            if not device_cdb.ios__ntp.peer.vrf.exists(service_ntp_server.config.ntp_use_vrf):
-                                device_cdb.ios__ntp.peer.vrf.create(service_ntp_server.config.ntp_use_vrf)
-                            device_cdb_peer_vrf = device_cdb.ios__ntp.peer.vrf[service_ntp_server.config.ntp_use_vrf]
+                            device_cdb_peer_vrf = device_cdb.ios__ntp.peer.vrf.create(service_ntp_server.config.ntp_use_vrf)
                             if not device_cdb_peer_vrf.peer_list.exists(service_ntp_server.config.address):
                                 device_cdb_peer_vrf.peer_list.create(service_ntp_server.config.address)
                             if service_ntp_server.config.ntp_source_address:
@@ -738,16 +770,12 @@ def xe_system_program_service(self, nso_props) -> None:
                     elif nso_props.service.oc_netinst__network_instances.network_instance[
                         service_ntp_server.config.ntp_use_vrf].config.type == 'oc-ni-types:DEFAULT_INSTANCE':
                         if service_ntp_server.config.association_type == 'SERVER':
-                            if not device_cdb.ios__ntp.server.peer_list.exists(service_ntp_server.config.address):
-                                device_cdb.ios__ntp.server.peer_list.create(service_ntp_server.config.address)
-                            peer_cdb = device_cdb.ios__ntp.server.peer_list[service_ntp_server.config.address]
+                            peer_cdb = device_cdb.ios__ntp.server.peer_list.create(service_ntp_server.config.address)
                             if service_ntp_server.config.ntp_source_address:
                                 xe_configure_ntp_server_source_address(self, nso_props, service_ntp_server, peer_cdb)
                             xe_configure_ntp_server(service_ntp_server, peer_cdb)
                         elif service_ntp_server.config.association_type == 'PEER':
-                            if not device_cdb.ios__ntp.peer.peer_list.exists(service_ntp_server.config.address):
-                                device_cdb.ios__ntp.peer.peer_list.create(service_ntp_server.config.address)
-                            peer_cdb = device_cdb.ios__ntp.peer.peer_list[service_ntp_server.config.address]
+                            peer_cdb = device_cdb.ios__ntp.peer.peer_list.create(service_ntp_server.config.address)
                             if service_ntp_server.config.ntp_source_address:
                                 xe_configure_ntp_server_source_address(self, nso_props, service_ntp_server, peer_cdb)
                             xe_configure_ntp_server(service_ntp_server, peer_cdb)
@@ -758,9 +786,7 @@ def xe_system_program_service(self, nso_props) -> None:
                             'XE supports ntp association association in network instances oc-ni-types:DEFAULT_INSTANCE and oc-ni-types:L3VRF')
                 else:
                     if service_ntp_server.config.association_type == 'SERVER':
-                        if not device_cdb.ios__ntp.server.peer_list.exists(service_ntp_server.config.address):
-                            device_cdb.ios__ntp.server.peer_list.create(service_ntp_server.config.address)
-                        peer_cdb = device_cdb.ios__ntp.server.peer_list[service_ntp_server.config.address]
+                        peer_cdb = device_cdb.ios__ntp.server.peer_list.create(service_ntp_server.config.address)
                         if service_ntp_server.config.ntp_source_address:
                             xe_configure_ntp_server_source_address(self, nso_props, service_ntp_server, peer_cdb)
                         xe_configure_ntp_server(service_ntp_server, peer_cdb)

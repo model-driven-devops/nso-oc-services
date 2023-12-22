@@ -25,7 +25,7 @@ jobs:
 
       # actual configuration of semantic-release is done in .releaserc
       - name: Install dependencies
-        run: npm install semantic-release && npm install @semantic-release/exec conventional-changelog-conventionalcommits @semantic-release/release-notes-generator semantic-release-pypi
+        run: npm install semantic-release && npm install @semantic-release/exec @semantic-release/git conventional-changelog-conventionalcommits @semantic-release/release-notes-generator semantic-release-pypi
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -40,19 +40,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PYPI_TOKEN: ${{ secrets.CISCOPS_PYPI_TOKEN }}
         run: npx semantic-release
-
-      - name: Commit version change
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git commit -m "Update version" -a
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-
-      - name: Push changes
-        run: |
-          git push origin HEAD:main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true

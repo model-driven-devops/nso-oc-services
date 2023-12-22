@@ -1,3 +1,8 @@
 [build-system]
 requires = ["setuptools","packaging"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "nso-oc"
+description = "Cisco NSO OpenConfig Tools"
+dynamic = ["version"]

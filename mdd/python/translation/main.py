@@ -6,7 +6,9 @@ from ncs.maagic import Root, ListElement
 from ncs.application import Application, Service
 
 from translation.openconfig_xe.xe_main import check_xe_features
+from translation.openconfig_xe.xe_main import clean_xe_cdb
 from translation.openconfig_xr.xr_main import check_xr_features
+from translation.openconfig_xr.xr_main import clean_xr_cdb
 from translation.openconfig_nx.nx_main import check_nx_features
 
 from translation.common import NsoProps
@@ -23,8 +25,10 @@ class OCCallback(Service):
 
         # Each NED may have a template and will have python processing code
         if 'cisco-ios-cli' in nso_props.root.devices.device[nso_props.device_name].device_type.cli.ned_id:
+            clean_xe_cdb(nso_props)
             check_xe_features(self, nso_props)
         elif 'cisco-iosxr-cli' in nso_props.root.devices.device[nso_props.device_name].device_type.cli.ned_id:
+            clean_xr_cdb(nso_props)
             check_xr_features(self, nso_props)
         elif 'cisco-nx-cli' in nso_props.root.devices.device[nso_props.device_name].device_type.cli.ned_id:
             check_nx_features(self, nso_props)

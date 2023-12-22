@@ -57,7 +57,7 @@ module openconfig-if-ethernet-mdd-ext {
                 enum BPS;
                 enum PPS;
                }
-               default NONE;
+               //default NONE;
                description
                  "Select the broadcast suppression type.";
             }
@@ -93,7 +93,7 @@ module openconfig-if-ethernet-mdd-ext {
                 enum BPS;
                 enum PPS;
                }
-               default NONE;
+               //default NONE;
                description
                  "Select the unicast suppression type.";
             }
@@ -135,7 +135,7 @@ module openconfig-if-ethernet-mdd-ext {
             enum ENABLED;
             enum DISABLED;
           }
-          default DISABLED;
+          //default DISABLED;
           description
             "Select Unknown Unicast Flood Blocking.";
         }
@@ -144,7 +144,7 @@ module openconfig-if-ethernet-mdd-ext {
             enum ENABLED;
             enum DISABLED;
           }
-          default DISABLED;
+          //default DISABLED;
           description
            "Select Unknown Multicast Flood Blocking.";
         }
@@ -166,7 +166,7 @@ module openconfig-if-ethernet-mdd-ext {
             enum ENABLED;
             enum DISABLED;
           }
-          default DISABLED;
+          //default DISABLED;
           description
             "Select IP Source Guard.";
         }
