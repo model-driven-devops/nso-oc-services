@@ -77,3 +77,13 @@ def verify_ipv4(ip: str) -> bool:
             return False
     except ValueError:
         return False
+
+
+def is_qos_configured(nso_props):
+    if (len(nso_props.service.oc_qos__qos.classifiers.classifier) > 0 or
+        len(nso_props.service.oc_qos__qos.forwarding_groups.forwarding_group) > 0 or
+        len(nso_props.service.oc_qos__qos.interfaces.interface) > 0 or
+        len(nso_props.service.oc_qos__qos.scheduler_policies.scheduler_policy)):
+        return True
+    
+    return False

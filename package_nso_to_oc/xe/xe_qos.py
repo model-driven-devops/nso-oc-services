@@ -1286,7 +1286,7 @@ def set_qos_class_map_ip(config_leftover, class_map_index, class_map, openconfig
                                                             "openconfig-qos:conditions": {
                                                                 "openconfig-qos:ipv4": {
                                                                     "openconfig-qos:config": {
-                                                                        "openconfig-qos:dscp-set": modify_dscp(class_map["match"]["ip"]["dscp"]),
+                                                                        "openconfig-qos:dscp-set": modify_dscp_list(class_map["match"]["ip"]["dscp"]),
                                                                         "openconfig-qos:protocol": 4
                                                                     }
                                                                 }
@@ -1343,7 +1343,7 @@ def set_qos_class_map(config_leftover, class_map_index, class_map, openconfig_cl
                                                           "openconfig-qos:conditions": {
                                                               "openconfig-qos:ipv4": {
                                                                   "openconfig-qos:config": {
-                                                                      "openconfig-qos:dscp-set": modify_dscp(class_map["match"]["dscp"])
+                                                                      "openconfig-qos:dscp-set": modify_dscp_list(class_map["match"]["dscp"])
                                                                   }
                                                               }
                                                           },
@@ -1360,6 +1360,13 @@ def set_qos_class_map(config_leftover, class_map_index, class_map, openconfig_cl
 
 
 def modify_dscp(dscp_list):
+    dscp = dscp_list[0]
+    if type(dscp) is int and (dscp % 2) != 0:
+        return dscp
+    return dscp_dict.get(dscp, 'default')
+
+
+def modify_dscp_list(dscp_list):
     new_dscp_list = []
     for dscp in dscp_list:
         if type(dscp) is int and (dscp % 2) != 0:

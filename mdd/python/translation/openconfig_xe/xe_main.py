@@ -40,11 +40,9 @@ def check_xe_features(oc_self, nso_props) -> None:
     # OpenConfig System
     xe_system_program_service(oc_self, nso_props)
 
-<<<<<<< HEAD
     # OpenConfig QoS
     if nso_props.service.oc_qos__qos:
         xe_qos_program_service(oc_self, nso_props)
-=======
 
 def clean_xe_cdb(nso_props) -> None:
     """
@@ -83,4 +81,4 @@ def clean_xe_cdb(nso_props) -> None:
     device.ios__ntp.trusted_key.delete()
     device.ios__router.bgp.delete()
     device.ios__router.ospf.delete()
->>>>>>> main
+

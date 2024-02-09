@@ -7,6 +7,7 @@ from translation.openconfig_xr.xr_acls import xr_acls_interfaces_program_service
 from translation.openconfig_xr.xr_acls import xr_acls_lines_program_service
 from translation.openconfig_xr.xr_acls import xr_acls_ntp_program_service
 from translation.openconfig_xr.xr_network_instances import xr_network_instances_program_service
+from translation.common import is_qos_configured
 
 
 def check_xr_features(oc_self, nso_props) -> None:
@@ -40,6 +41,10 @@ def check_xr_features(oc_self, nso_props) -> None:
 
     # OpenConfig System
     xr_system_program_service(oc_self, nso_props)
+
+    # OpenConfig QoS
+    if is_qos_configured(nso_props):
+        raise NotImplementedError('openconfig-qos has not yet been implemented for XR')
 
 
 def clean_xr_cdb(nso_props) -> None:

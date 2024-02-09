@@ -1,5 +1,4 @@
 # -*- mode: python; python-indent: 4 -*-
-from translation.openconfig_xe.common import xe_system_get_interface_ip_address
 from translation.common import get_interface_type_and_number
 
 dscp_dict = {8:'cs1', 10:'af11', 12:'af12', 14:'af13', 16:'cs2', 18:'af21', 20:'af22',
