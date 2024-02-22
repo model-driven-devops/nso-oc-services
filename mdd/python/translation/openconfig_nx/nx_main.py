@@ -1,6 +1,8 @@
 # -*- mode: python; python-indent: 4 -*-
 from translation.common import is_oc_routing_policy_configured
 from translation.openconfig_nx.nx_system import nx_system_program_service
+from translation.common import is_qos_configured
+
 
 def check_nx_features(self, nso_props) -> None:
     """
@@ -33,3 +35,8 @@ def check_nx_features(self, nso_props) -> None:
 
     # OpenConfig System
     nx_system_program_service(self, nso_props)
+
+    # Openconfig QoS
+    if is_qos_configured(nso_props):
+        raise NotImplementedError('openconfig-qos has not yet been implemented for XR')
+
